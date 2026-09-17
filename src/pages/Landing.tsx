@@ -4,10 +4,11 @@ import { ArrowRight, Palette, Images, MailCheck, Gift, MapPin, CalendarDays, QrC
 import { WEDDING_STYLES, PHASES } from '../lib/weddingStyles';
 import { publicPath } from '../lib/format';
 import VisionImage, { TiltCard, VisionFrame } from '../components/vision/VisionImage';
+import ImmersiveThemes from '../components/ImmersiveThemes';
 
 const STEPS = [
   { n: '01', title: 'Je crée', text: 'Prénoms, date, lieu. Trois réponses, trente secondes.' },
-  { n: '02', title: 'Je choisis', text: 'Un environnement spatial parmi huit directions.' },
+  { n: '02', title: 'Je choisis', text: 'Un environnement spatial parmi dix directions qui cassent les codes.' },
   { n: '03', title: 'J’ajoute', text: 'Photos, programme, infos — le site se compose seul.' },
   { n: '04', title: 'Je partage', text: 'Un lien, un QR code. Vos invités sont conquis.' },
 ];
@@ -40,7 +41,7 @@ export default function Landing() {
             <span className="vp-title text-[15px]">Wedding Site</span>
           </Link>
           <div className="hidden items-center gap-1 md:flex">
-            {[{ href: '#styles', label: 'Environnements' }, { href: '#experience', label: 'Éditeur' }, { href: '#modules', label: 'Modules' }].map((l) => (
+            {[{ href: '#styles', label: 'Environnements' }, { href: '#styles-immersive', label: 'Manifeste' }, { href: '#experience', label: 'Éditeur' }, { href: '#modules', label: 'Modules' }].map((l) => (
               <a key={l.href} href={l.href} className="vp-press rounded-full px-3.5 py-2 text-[13.5px] font-medium text-[var(--vp-ink-soft)] transition hover:bg-black/[0.055] hover:text-[var(--vp-ink)]">
                 {l.label}
               </a>
@@ -188,15 +189,16 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <div className="vp-eyebrow">Huit environnements</div>
+              <div className="vp-eyebrow">Dix environnements • 0 doublon</div>
               <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>
                 Choisissez votre espace.
                 <br />
                 Le reste est automatique.
               </h2>
+              <p className="vp-caption mt-3 max-w-md">Avant : bouquet.jpg en double. Maintenant : 10 visuels uniques qui n’ont rien à voir avec un mariage.</p>
             </div>
-            <Link to="/creer" className="vp-chip vp-press shrink-0 text-[var(--vp-ink-soft)]">
-              Essayer maintenant <ChevronRight size={16} />
+            <Link to="#styles-immersive" className="vp-chip vp-press shrink-0 bg-black text-white hover:bg-black/80">
+              Voir la verticale immersive <ChevronRight size={16} />
             </Link>
           </motion.div>
         </div>
@@ -227,6 +229,9 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      {/* GRANDE VERTICALITÉ IMMERSIVE - PARALLAX */}
+      <ImmersiveThemes />
 
       {/* Éditeur */}
       <section id="experience" className="px-5 py-20 sm:px-8 sm:py-28">

@@ -4,6 +4,7 @@ export const NAV_LINKS = [
   { key: 'programme', label: 'Programme' },
   { key: 'lieux', label: 'Lieux' },
   { key: 'infos', label: 'Infos' },
+  { key: 'packages', label: 'Packages' },
   { key: 'galerie', label: 'Galerie' },
   { key: 'faq', label: 'FAQ' },
 ];

@@ -9,6 +9,19 @@ import { ownerSiteId, unauthorized } from '../server/auth.js';
  * Pas de POST ici : la création passe par `api/create-site.js`, qui génère la
  * clé d’édition dans le même mouvement.
  */
+
+function parseBody(req) {
+  if (!req.body) return {};
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+  return req.body;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
@@ -44,7 +57,8 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     }
 
-    const { id, ...patch } = req.body || {};
+    const body = parseBody(req);
+    const { id, ...patch } = body || {};
     if (!id) return res.status(400).json({ error: 'id requis' });
     if (owner !== Number(id)) return unauthorized(res, 'Clé d’édition requise');
 
@@ -61,6 +75,6 @@ export default async function handler(req, res) {
     }
   } catch (err) {
     console.error('API wedding-sites error:', err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message || 'Erreur interne' });
   }
 }

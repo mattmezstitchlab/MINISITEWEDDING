@@ -37,8 +37,6 @@ export default function Onboarding() {
     setError('');
     setCreating(true);
     try {
-      // `seedSite` mémorise la clé d’édition renvoyée par `/api/create-site` :
-      // elle sera nécessaire à l’éditeur comme à l’aperçu du brouillon.
       const { site } = await seedSite({ partner1, partner2, wedding_date: date, venue, city, style });
       navigate(`/generer?site=${site.id}`);
     } catch (err) {
@@ -49,7 +47,6 @@ export default function Onboarding() {
 
   return (
     <div className="vp-env flex min-h-screen flex-col">
-      {/* Navigation : capsule de verre + progression */}
       <nav className="sticky top-3 z-40 mx-auto w-[calc(100%-1rem)] max-w-5xl sm:top-4">
         <div className="vp-glass vp-spec flex flex-wrap items-center justify-between gap-3 rounded-[26px] px-4 py-2.5 sm:px-5">
           <Link to="/" className="flex items-center gap-2.5">
@@ -80,7 +77,7 @@ export default function Onboarding() {
       </nav>
 
       <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
-        <div className="w-full max-w-3xl">
+        <div className="w-full max-w-5xl">
           <AnimatePresence mode="wait">
             {step === 0 && (
               <motion.div key="s0" initial={{ opacity: 0, y: 26, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.985 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
@@ -103,9 +100,7 @@ export default function Onboarding() {
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="vp-glass vp-spec mt-8 rounded-[26px] px-6 py-8 text-center">
                     <div className="vp-eyebrow">Aperçu</div>
                     <div className="vp-title mt-2" style={{ fontSize: 'clamp(2.2rem, 6.4vw, 3.6rem)' }}>
-                      {partner1 || '…'}{' '}
-                      <span className="text-[var(--vp-muted-2)]">&amp;</span>{' '}
-                      {partner2 || '…'}
+                      {partner1 || '…'} <span className="text-[var(--vp-muted-2)]">&amp;</span> {partner2 || '…'}
                     </div>
                   </motion.div>
                 )}
@@ -165,12 +160,38 @@ export default function Onboarding() {
             {step === 3 && (
               <motion.div key="s3" initial={{ opacity: 0, y: 26, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.985 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
                 <div className="text-center">
-                  <div className="vp-eyebrow">Étape 4 · L’environnement</div>
-                  <h1 className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 5.4vw, 3.1rem)' }}>Quel espace vous ressemble ?</h1>
-                  <p className="vp-body mx-auto mt-3 max-w-md">Huit environnements spatiaux. Une seule évidence.</p>
+                  <div className="vp-eyebrow">Étape 4 · On casse les codes ?</div>
+                  <h1 className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 5.4vw, 3.1rem)' }}>Quel mariage vous ressemble vraiment ?</h1>
+                  <p className="vp-body mx-auto mt-3 max-w-2xl">
+                    Fini le château + pivoines en boucle. 8 partis pris radicaux, 8 images uniques, 8 couleurs qui claquent.
+                    Un mariage peut être un club à 2h17, un motel vide, un bunker en béton, un fanzine photocopié.
+                  </p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    <span className="vp-chip !text-[11px]">Anti-château</span>
+                    <span className="vp-chip !text-[11px]">Plus de bouquet.jpg en double</span>
+                    <span className="vp-chip !text-[11px]">Buzz garanti</span>
+                  </div>
                 </div>
-                <div className="mt-8">
+                <div className="mt-10">
                   <StylePicker value={style} onChange={setStyle} />
+                </div>
+                <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                  <div className="vp-glass vp-spec rounded-[18px] p-4">
+                    <div className="text-[13px] font-semibold">Ce qui fait du buzz :</div>
+                    <ul className="mt-2 list-disc pl-4 text-[12.5px] leading-relaxed text-[var(--vp-muted)]">
+                      <li>Visuels ultra-distincts → chaque partage est reconnaissable</li>
+                      <li>Manifeste intégré → les invités comprennent le délire</li>
+                      <li>Accent qui claque → le site n’est plus beige</li>
+                    </ul>
+                  </div>
+                  <div className="vp-glass vp-spec rounded-[18px] p-4">
+                    <div className="text-[13px] font-semibold">Exemples qui cartonnent :</div>
+                    <ul className="mt-2 list-disc pl-4 text-[12.5px] leading-relaxed text-[var(--vp-muted)]">
+                      <li><b>Club Amour</b> : invitation = flyer rave, dress code = club kid</li>
+                      <li><b>Punk Papier</b> : faire-part photocopié, coût 0€, anti-luxe</li>
+                      <li><b>Desert Motel</b> : elopement Americana, piscine vide, 38°C</li>
+                    </ul>
+                  </div>
                 </div>
               </motion.div>
             )}

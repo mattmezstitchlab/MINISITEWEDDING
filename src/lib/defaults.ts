@@ -2,15 +2,13 @@ import { apiSend } from './http';
 import { saveEditToken, setActiveToken } from './auth';
 import { slugify } from './format';
 import { styleById } from './weddingStyles';
+import { getThemeConfig } from './themeConfigs';
 import type { WeddingSite } from './types';
 
 /**
  * Contenu par défaut d’un site de mariage.
- *
- * Source unique : ces constantes servent à la fois à l’amorçage d’un nouveau
- * site (onboarding) et au jeu de démonstration (`demo.ts`). Auparavant les
- * deux étaient recopiés à la main — les FAQ, horaires et événements étaient
- * dupliqués mot pour mot, avec déjà quelques écarts.
+ * Maintenant thématisé : chaque style a son propre vocabulaire,
+ * son programme, ses infos, ses FAQ, et ses packages.
  */
 
 export const SECTION_DEFAULTS = [
@@ -20,6 +18,7 @@ export const SECTION_DEFAULTS = [
   { key: 'lieux', title: 'Lieux' },
   { key: 'infos', title: 'Infos pratiques' },
   { key: 'rsvp', title: 'RSVP' },
+  { key: 'packages', title: 'Packages' },
   { key: 'cagnotte', title: 'Cagnotte' },
   { key: 'galerie', title: 'Galerie' },
   { key: 'faq', title: 'FAQ' },
@@ -27,7 +26,7 @@ export const SECTION_DEFAULTS = [
   { key: 'footer', title: 'Pied de page' },
 ];
 
-/** Déroulé type. Les lieux restent vides : l’amorçage les remplit avec le lieu saisi. */
+/** Fallbacks si pas de config thématique */
 export const PROGRAMME_DEFAULTS = [
   { time: '14:30', title: 'Cérémonie', description: 'Échange des vœux et des alliances.', place: '' },
   { time: '16:00', title: 'Cocktail', description: 'Coupe de champagne et photos de groupe.', place: '' },
@@ -67,7 +66,6 @@ export const GIFT_DEFAULTS = [
   },
 ];
 
-/** Cartes d’infos indépendantes du lieu saisi. */
 export const GENERIC_INFO_DEFAULTS = [
   { category: 'Parking', title: 'Parking privé', detail: 'Un parking est réservé aux invités à l’entrée du domaine.', event_time: '', link_label: '' },
   { category: 'Hébergements', title: 'Où dormir ?', detail: 'Hôtels et chambres d’hôtes à proximité — réservez tôt.', event_time: '', link_label: '' },
@@ -75,7 +73,6 @@ export const GENERIC_INFO_DEFAULTS = [
   { category: 'Contacts', title: 'Une question ?', detail: 'Écrivez-nous, nous répondons à tout, vite.', event_time: '', link_label: '' },
 ];
 
-/** Les deux cartes de lieux, dérivées du lieu saisi (cérémonie puis réception). */
 export function locationInfos(venue: string, city: string) {
   const place = venue.trim() || 'Le lieu';
   const address = city.trim() || 'Adresse à préciser';
@@ -89,7 +86,6 @@ export function infoDefaults(venue: string, city: string) {
   return [...locationInfos(venue, city), ...GENERIC_INFO_DEFAULTS];
 }
 
-/** Première photo de galerie : celle de l’environnement choisi. */
 export function galleryDefaults(themeImage: string) {
   return [
     { url: themeImage, caption: 'Nous deux' },
@@ -112,12 +108,15 @@ export interface NewSiteInput {
   style: string;
 }
 
-/** Le site lui-même, tel qu’envoyé à `POST /api/wedding-sites`. */
+/** Le site lui-même, thématisé */
 export function buildSitePayload(input: NewSiteInput) {
   const theme = styleById(input.style);
+  const config = getThemeConfig(input.style);
   const p1 = input.partner1.trim();
   const p2 = input.partner2.trim();
   const base = slugify(`${p1}-${p2}`) || 'notre-mariage';
+
+  const editorial = config?.editorial;
 
   return {
     slug: `${base}-${Math.random().toString(36).slice(2, 6)}`,
@@ -128,79 +127,142 @@ export function buildSitePayload(input: NewSiteInput) {
     city: input.city.trim(),
     style: input.style,
     phase: 'avant',
-    typography: 'spatial',
+    typography: editorial?.typography || 'spatial',
     accent_color: theme.accent,
-    button_style: 'pill',
-    shape: 'soft',
-    layout: 'magazine',
-    animation_level: 'fluide',
+    button_style: editorial?.button_style || 'pill',
+    shape: editorial?.shape || 'soft',
+    layout: editorial?.layout || 'magazine',
+    animation_level: editorial?.animation_level || 'fluide',
     hero_photo: theme.image,
     hero_title: `${p1} & ${p2}`,
-    hero_subtitle: 'Nous nous marions',
-    story_title: 'Tout a commencé par un regard',
-    story_text: storyText(p1, p2),
+    hero_subtitle: editorial?.hero_subtitle || 'Nous nous marions',
+    story_title: editorial?.story_title || 'Tout a commencé par un regard',
+    story_text: editorial ? editorial.story_text(p1, p2) : storyText(p1, p2),
     story_photo: '/images/couple-paris.jpg',
-    announcement: 'Nous avons hâte de vous retrouver.',
+    announcement: editorial?.announcement || 'Nous avons hâte de vous retrouver.',
     contact_email: '',
     contact_phone: '',
     published: false,
   };
 }
 
-/** Site créé et clé d’édition associée (renvoyée une seule fois par l’API). */
 export interface CreatedSite {
   site: WeddingSite;
   editToken: string;
 }
 
+async function runBatched(tasks: Array<() => Promise<unknown>>, batchSize = 5) {
+  for (let i = 0; i < tasks.length; i += batchSize) {
+    const batch = tasks.slice(i, i + batchSize).map((fn) => fn());
+    const results = await Promise.allSettled(batch);
+    const failed = results.filter((r) => r.status === 'rejected');
+    if (failed.length > 0) {
+      const retry = await Promise.allSettled(
+        failed.map((_, idx) => {
+          const taskIndex = i + results.findIndex((r) => r.status === 'rejected');
+          return tasks[taskIndex]?.() ?? Promise.resolve();
+        })
+      );
+      const stillFailed = retry.filter((r) => r.status === 'rejected');
+      if (stillFailed.length > 0) {
+        const firstError = (stillFailed[0] as PromiseRejectedResult).reason;
+        throw firstError;
+      }
+    }
+  }
+}
+
 /**
- * Crée un site complet : le site et sa clé d’édition, puis toutes ses sections
- * en parallèle (elles sont indépendantes et portent déjà leur `position`).
- * Auparavant, 34 requêtes partaient les unes après les autres.
+ * Crée un site complet thématisé : sections avec titres du thème,
+ * programme, infos, FAQ, RSVP, cagnotte issus de THEME_CONFIGS.
  */
 export async function seedSite(input: NewSiteInput): Promise<CreatedSite> {
   const theme = styleById(input.style);
-  const created = await apiSend<{ site: WeddingSite; edit_token: string }>(
-    '/api/create-site',
-    'POST',
-    buildSitePayload(input)
-  );
+  const config = getThemeConfig(input.style);
+
+  let created: { site: WeddingSite; edit_token: string };
+  try {
+    created = await apiSend<{ site: WeddingSite; edit_token: string }>(
+      '/api/create-site',
+      'POST',
+      buildSitePayload(input)
+    );
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes('FUNCTION_INVOCATION_FAILED') || msg.includes('server error') || msg.includes('500')) {
+      throw new Error(
+        `La création a échoué côté serveur. Vérifiez que les variables Supabase sont bien configurées sur Vercel (NEXT_PUBLIC_SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY). Détail: ${msg}`
+      );
+    }
+    throw e;
+  }
+
   const site = created.site;
   const editToken = created.edit_token;
 
-  // Sans cela, les créations de sections qui suivent seraient refusées (403).
   saveEditToken(site, editToken);
   setActiveToken(editToken);
 
   const site_id = site.id;
 
-  const rows: Array<Promise<unknown>> = [
-    ...SECTION_DEFAULTS.map((s, position) =>
-      apiSend('/api/site-sections', 'POST', { site_id, section_key: s.key, title: s.title, visible: true, position })
+  // Sections : titres thématisés si config existe
+  const sections = config?.sections || SECTION_DEFAULTS;
+  const programme = config?.programme || PROGRAMME_DEFAULTS;
+  const infos = config ? config.infos : infoDefaults(input.venue, input.city);
+  const faq = config?.faq || FAQ_DEFAULTS;
+  const rsvpEvents = config?.rsvpEvents || RSVP_EVENT_DEFAULTS;
+  const gifts = config?.gifts || GIFT_DEFAULTS;
+
+  // Pour les lieux, si config a déjà des infos avec lieux, on ajoute quand même le lieu saisi en plus si besoin
+  const finalInfos = config
+    ? [...config.infos.slice(0, 2).map(i => ({ ...i, title: input.venue.trim() || i.title, detail: input.city.trim() || i.detail })), ...config.infos.slice(2)]
+    : infos;
+
+  const tasks: Array<() => Promise<unknown>> = [
+    ...sections.map((s, position) => () =>
+      apiSend('/api/site-sections', 'POST', { site_id, section_key: s.key, title: s.title, visible: (s as any).visible ?? true, position })
     ),
-    ...PROGRAMME_DEFAULTS.map((p, position) =>
+    ...programme.map((p, position) => () =>
       apiSend('/api/programme', 'POST', {
-        site_id, event_time: p.time, title: p.title, description: p.description,
-        place: p.place || input.venue.trim(), icon: 'clock', position,
+        site_id,
+        event_time: p.time,
+        title: p.title,
+        description: p.description,
+        place: (p.place as string) || input.venue.trim(),
+        icon: (p as any).icon || 'clock',
+        position,
       })
     ),
-    ...infoDefaults(input.venue, input.city).map((i, position) =>
+    ...finalInfos.map((i, position) => () =>
       apiSend('/api/infos', 'POST', { site_id, ...i, position })
     ),
-    ...galleryDefaults(theme.image).map((g, position) =>
+    ...galleryDefaults(theme.image).map((g, position) => () =>
       apiSend('/api/gallery', 'POST', { site_id, url: g.url, caption: g.caption, position, is_private: false })
     ),
-    ...FAQ_DEFAULTS.map((f, position) =>
+    ...faq.map((f, position) => () =>
       apiSend('/api/faqs', 'POST', { site_id, question: f.question, answer: f.answer, position })
     ),
-    ...RSVP_EVENT_DEFAULTS.map((e, position) =>
+    ...rsvpEvents.map((e, position) => () =>
       apiSend('/api/rsvp-events', 'POST', { site_id, name: e.name, description: e.description, position })
     ),
-    ...GIFT_DEFAULTS.map((g, position) =>
+    ...gifts.map((g, position) => () =>
       apiSend('/api/gifts', 'POST', { site_id, ...g, current_amount: 0, position })
+    ),
+    // Packages : on les stocke aussi dans gift_options avec gift_type = package pour affichage
+    ...(config?.packages || []).map((pkg, position) =>
+      () =>
+        apiSend('/api/gifts', 'POST', {
+          site_id,
+          gift_type: 'package',
+          title: `${pkg.name} — ${pkg.price}`,
+          description: `${pkg.description} | ${pkg.features.join(' • ')}`,
+          goal_amount: 0,
+          current_amount: 0,
+          position: 100 + position,
+        })
     ),
   ];
 
-  await Promise.all(rows);
+  await runBatched(tasks, 6);
   return { site, editToken };
 }

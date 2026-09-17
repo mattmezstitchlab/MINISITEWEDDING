@@ -11,6 +11,19 @@ import { createToken, hashToken } from '../server/auth.js';
  * Réponse : `{ site, edit_token }`. Le jeton en clair n’est renvoyé **qu’ici,
  * une seule fois** ; la base n’en conserve que l’empreinte SHA-256.
  */
+
+function parseBody(req) {
+  if (!req.body) return {};
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+  return req.body;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -19,13 +32,32 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const payload = req.body || {};
+    const payload = parseBody(req);
     if (!payload.slug || !payload.partner1 || !payload.partner2) {
       return res.status(400).json({ error: 'slug, partner1 et partner2 sont requis' });
     }
 
-    const { data: site, error } = await supabase.from('wedding_sites').insert(payload).select().single();
-    if (error) throw error;
+    // Nettoyage minimal pour éviter un insert qui explose à cause d'un type
+    if (payload.wedding_date === '') delete payload.wedding_date;
+
+    let site = null;
+    let lastError = null;
+
+    // Tentative avec retry sur collision de slug (très rare mais possible avec random)
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const tryPayload = attempt === 0 ? payload : { ...payload, slug: `${payload.slug}-${Math.random().toString(36).slice(2, 4)}` };
+      const { data, error } = await supabase.from('wedding_sites').insert(tryPayload).select().single();
+      if (!error) {
+        site = data;
+        break;
+      }
+      lastError = error;
+      // 23505 = unique violation Postgres
+      const isSlugConflict = error.code === '23505' || (error.message && error.message.includes('slug'));
+      if (!isSlugConflict) break;
+    }
+
+    if (!site) throw lastError || new Error('Impossible de créer le site');
 
     const token = createToken();
     const { error: secretError } = await supabase
@@ -34,13 +66,20 @@ export default async function handler(req, res) {
 
     if (secretError) {
       // Sans clé, le site serait inadministrable : on ne le laisse pas orphelin.
-      await supabase.from('wedding_sites').delete().eq('id', site.id);
+      try {
+        await supabase.from('wedding_sites').delete().eq('id', site.id);
+      } catch (cleanupErr) {
+        console.error('Cleanup after secret insert failed:', cleanupErr);
+      }
       throw secretError;
     }
 
     return res.status(201).json({ site, edit_token: token });
   } catch (err) {
     console.error('API create-site error:', err);
-    return res.status(500).json({ error: err.message });
+    // Si la config Supabase manque, le message de db-client.js est explicite
+    const message = err && err.message ? err.message : 'Erreur interne';
+    // On évite de renvoyer la stack complète en prod, mais on garde le message
+    return res.status(500).json({ error: message });
   }
 }

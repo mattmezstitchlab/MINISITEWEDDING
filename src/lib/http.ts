@@ -31,7 +31,20 @@ function headers(json: boolean): Record<string, string> {
 async function parse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const text = await res.text();
-    throw new ApiError(res.status, text || `Erreur ${res.status}`);
+    let message = text || `Erreur ${res.status}`;
+    try {
+      const json = JSON.parse(text);
+      if (json && typeof json.error === 'string' && json.error.trim()) {
+        message = json.error;
+      }
+    } catch {
+      // text n'est pas du JSON, on le garde tel quel
+      // Cas Vercel FUNCTION_INVOCATION_FAILED : le body est une page HTML
+      if (text.includes('FUNCTION_INVOCATION_FAILED')) {
+        message = `Le serveur a rencontré une erreur (FUNCTION_INVOCATION_FAILED). Vérifiez la configuration Supabase côté Vercel. Détail: ${text.slice(0, 300)}`;
+      }
+    }
+    throw new ApiError(res.status, message);
   }
   return (await res.json()) as T;
 }
