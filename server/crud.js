@@ -31,6 +31,19 @@ import { ownerSiteId, isPublished, rowSiteId, unauthorized } from './auth.js';
  *        (ressources partagées, sans `site_id`).
  * @returns {(req: any, res: any) => Promise<any>} Handler serverless.
  */
+
+function parseBody(req) {
+  if (!req.body) return {};
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+  return req.body;
+}
+
 export function crud(options) {
   const {
     table,
@@ -50,23 +63,34 @@ export function crud(options) {
   async function authorizeRead(req, res, siteId) {
     if (read === 'public') return null;
     if (!siteId) return res.status(400).json({ error: 'site_id requis' });
-    const owner = await ownerSiteId(req);
-    if (owner === siteId) return null;
-    if (read === 'published-or-owner' && (await isPublished(siteId))) return null;
-    return unauthorized(res, owner ? 'Clé d’édition d’un autre site' : 'Clé d’édition requise');
+    try {
+      const owner = await ownerSiteId(req);
+      if (owner === siteId) return null;
+      if (read === 'published-or-owner' && (await isPublished(siteId))) return null;
+      return unauthorized(res, owner ? 'Clé d’édition d’un autre site' : 'Clé d’édition requise');
+    } catch (e) {
+      console.error(`authorizeRead ${label} error:`, e);
+      return res.status(500).json({ error: e.message });
+    }
   }
 
   /** Autorise une écriture. `rowId` est renseigné pour PUT/DELETE. */
   async function authorizeWrite(req, res, method, rowId) {
     const mode = writeMode(method);
     if (mode === 'public') return null;
-    const owner = await ownerSiteId(req);
-    if (!owner) return unauthorized(res, 'Clé d’édition requise');
-    if (mode === 'any-owner') return null;
-    const siteId = rowId ? await rowSiteId(table, rowId) : Number(req.body?.site_id) || null;
-    if (!siteId) return res.status(rowId ? 404 : 400).json({ error: rowId ? 'Ligne introuvable' : 'site_id requis' });
-    if (siteId !== owner) return unauthorized(res, 'Clé d’édition d’un autre site');
-    return null;
+    try {
+      const owner = await ownerSiteId(req);
+      if (!owner) return unauthorized(res, 'Clé d’édition requise');
+      if (mode === 'any-owner') return null;
+      const body = parseBody(req);
+      const siteId = rowId ? await rowSiteId(table, rowId) : Number(body?.site_id) || null;
+      if (!siteId) return res.status(rowId ? 404 : 400).json({ error: rowId ? 'Ligne introuvable' : 'site_id requis' });
+      if (siteId !== owner) return unauthorized(res, 'Clé d’édition d’un autre site');
+      return null;
+    } catch (e) {
+      console.error(`authorizeWrite ${label} error:`, e);
+      return res.status(500).json({ error: e.message });
+    }
   }
 
   return async function handler(req, res) {
@@ -78,6 +102,7 @@ export function crud(options) {
 
     try {
       const query = req.query || {};
+      const body = parseBody(req);
 
       if (req.method === 'GET') {
         const siteId = Number(query.site_id) || null;
@@ -98,13 +123,13 @@ export function crud(options) {
       if (req.method === 'POST') {
         const denied = await authorizeWrite(req, res, 'POST', null);
         if (denied) return denied;
-        const { data, error } = await supabase.from(table).insert(req.body).select().single();
+        const { data, error } = await supabase.from(table).insert(body).select().single();
         if (error) throw error;
         return res.status(201).json(data);
       }
 
       if (req.method === 'PUT') {
-        const { id, ...patch } = req.body || {};
+        const { id, ...patch } = body || {};
         if (!id) return res.status(400).json({ error: 'id requis' });
         const denied = await authorizeWrite(req, res, 'PUT', id);
         if (denied) return denied;
@@ -114,7 +139,7 @@ export function crud(options) {
       }
 
       // DELETE
-      const { id } = req.body || {};
+      const { id } = body || {};
       if (!id) return res.status(400).json({ error: 'id requis' });
       const denied = await authorizeWrite(req, res, 'DELETE', id);
       if (denied) return denied;
@@ -123,7 +148,7 @@ export function crud(options) {
       return res.status(200).json({ ok: true });
     } catch (err) {
       console.error(`API ${label} error:`, err);
-      return res.status(500).json({ error: err.message });
+      return res.status(500).json({ error: err.message || 'Erreur interne' });
     }
   };
 }

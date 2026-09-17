@@ -3,6 +3,18 @@ import { ownerSiteId, unauthorized } from '../server/auth.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '12mb' } } };
 
+function parseBody(req) {
+  if (!req.body) return {};
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+  return req.body;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -13,7 +25,7 @@ export default async function handler(req, res) {
     // Téléverser dans le bucket public exige une clé d’édition valide.
     if (!(await ownerSiteId(req))) return unauthorized(res, 'Clé d’édition requise');
 
-    const { fileName, fileBase64, contentType } = req.body;
+    const { fileName, fileBase64, contentType } = parseBody(req);
     if (!fileName || !fileBase64) return res.status(400).json({ error: 'Fichier manquant' });
     const buffer = Buffer.from(fileBase64, 'base64');
     const safeName = `${Date.now()}-${String(fileName)}`.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -23,6 +35,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: data.publicUrl });
   } catch (err) {
     console.error('Upload error:', err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message || 'Erreur interne' });
   }
 }

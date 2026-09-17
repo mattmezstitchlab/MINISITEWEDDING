@@ -10,6 +10,7 @@ import Gallery from './Gallery';
 import Faq from './Faq';
 import Contact from './Contact';
 import Footer from './Footer';
+import Packages from './Packages';
 
 /**
  * Registre des sections, indexé par `site_sections.section_key`.
@@ -24,6 +25,7 @@ export const SECTION_COMPONENTS: Record<string, ComponentType> = {
   lieux: Lieux,
   infos: Infos,
   rsvp: Rsvp,
+  packages: Packages,
   cagnotte: Gifts,
   galerie: Gallery,
   faq: Faq,

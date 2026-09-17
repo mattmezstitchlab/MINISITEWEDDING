@@ -40,31 +40,46 @@ function headerToken(req) {
 export async function ownerSiteId(req) {
   const token = headerToken(req);
   if (!token) return null;
-  const { data, error } = await supabase
-    .from('site_secrets')
-    .select('site_id')
-    .eq('edit_token', hashToken(token))
-    .maybeSingle();
-  if (error || !data) return null;
-  return Number(data.site_id);
+  try {
+    const { data, error } = await supabase
+      .from('site_secrets')
+      .select('site_id')
+      .eq('edit_token', hashToken(token))
+      .maybeSingle();
+    if (error || !data) return null;
+    return Number(data.site_id);
+  } catch (e) {
+    console.error('ownerSiteId error:', e);
+    return null;
+  }
 }
 
 export async function isPublished(siteId) {
   if (!siteId) return false;
-  const { data, error } = await supabase
-    .from('wedding_sites')
-    .select('published')
-    .eq('id', siteId)
-    .maybeSingle();
-  return Boolean(!error && data && data.published);
+  try {
+    const { data, error } = await supabase
+      .from('wedding_sites')
+      .select('published')
+      .eq('id', siteId)
+      .maybeSingle();
+    return Boolean(!error && data && data.published);
+  } catch (e) {
+    console.error('isPublished error:', e);
+    return false;
+  }
 }
 
 /** `site_id` d’une ligne, pour autoriser une mise à jour ou une suppression. */
 export async function rowSiteId(table, rowId) {
   if (!rowId) return null;
-  const { data, error } = await supabase.from(table).select('site_id').eq('id', rowId).maybeSingle();
-  if (error || !data) return null;
-  return Number(data.site_id);
+  try {
+    const { data, error } = await supabase.from(table).select('site_id').eq('id', rowId).maybeSingle();
+    if (error || !data) return null;
+    return Number(data.site_id);
+  } catch (e) {
+    console.error('rowSiteId error:', e);
+    return null;
+  }
 }
 
 export function unauthorized(res, message = 'Accès refusé') {

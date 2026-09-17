@@ -7,6 +7,7 @@ import { daysUntil } from '../lib/format';
 import { SiteViewContext } from './sections/context';
 import type { SiteViewValue } from './sections/context';
 import { SECTION_COMPONENTS } from './sections';
+import SupermarcheTicket from './themes/SupermarcheTicket';
 
 /**
  * Rendu d’un site de mariage — utilisé tel quel par la page publique, et en
@@ -94,21 +95,26 @@ export default function PublicSiteView({ data, preview = false, selectedKey, onS
 
   return (
     <SiteViewContext.Provider value={value}>
-      <div
-        className={`vp-env min-h-screen ${dark ? 'vp-env-dark' : ''}`}
-        style={{ fontFamily: fonts.body, color: value.ink, ...envVars(theme, accent) } as CSSProperties}
-      >
-        {ordered.map((s) => {
-          const Section = SECTION_COMPONENTS[s.section_key];
-          return <div key={s.section_key}>{wrap(s.section_key, Section ? <Section /> : null)}</div>;
-        })}
-        {ordered.length === 0 && (
-          <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center" style={{ color: value.muted }}>
-            <Camera size={32} strokeWidth={1.5} />
-            <p>Votre site prend forme…</p>
-          </div>
-        )}
-      </div>
+      {/* Mode spécial SUPERMARCHÉ 22H : ticket de caisse thermique */}
+      {site.style === 'supermarche' ? (
+        <SupermarcheTicket data={data} preview={preview} />
+      ) : (
+        <div
+          className={`vp-env min-h-screen ${dark ? 'vp-env-dark' : ''}`}
+          style={{ fontFamily: fonts.body, color: value.ink, ...envVars(theme, accent) } as CSSProperties}
+        >
+          {ordered.map((s) => {
+            const Section = SECTION_COMPONENTS[s.section_key];
+            return <div key={s.section_key}>{wrap(s.section_key, Section ? <Section /> : null)}</div>;
+          })}
+          {ordered.length === 0 && (
+            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center" style={{ color: value.muted }}>
+              <Camera size={32} strokeWidth={1.5} />
+              <p>Votre site prend forme…</p>
+            </div>
+          )}
+        </div>
+      )}
     </SiteViewContext.Provider>
   );
 }

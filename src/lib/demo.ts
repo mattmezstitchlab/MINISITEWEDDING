@@ -44,6 +44,17 @@ export const DEMO_MEDIA: MediaAsset[] = [
   { id: 9, category: 'Champagne', title: 'Coupe de champagne', url: '/images/champagne.jpg', collection: 'Black Tie', kind: 'photo', orientation: 'portrait' },
   { id: 10, category: 'Textures', title: 'Noir & blanc', url: '/images/noir-blanc.jpg', collection: 'Editorial Paris', kind: 'photo', orientation: 'carre' },
   { id: 11, category: 'Cérémonie', title: 'Hero — mariage', url: '/images/hero-wedding.jpg', collection: 'Château', kind: 'photo', orientation: 'paysage' },
+  // Nouveaux univers qui cassent les codes
+  { id: 12, category: 'Béton', title: 'Béton Brut — chapelle', url: '/images/brutal.jpg', collection: 'Béton Brut', kind: 'photo', orientation: 'portrait' },
+  { id: 13, category: 'Club', title: 'Club Amour — 02h17', url: '/images/club-amour.jpg', collection: 'Club Amour', kind: 'photo', orientation: 'paysage' },
+  { id: 14, category: 'Desert', title: 'Desert Motel — piscine', url: '/images/desert-motel.jpg', collection: 'Desert Motel', kind: 'photo', orientation: 'paysage' },
+  { id: 15, category: 'Cosmic', title: 'Cosmic — verre liquide', url: '/images/cosmic.jpg', collection: 'Cosmic', kind: 'photo', orientation: 'carre' },
+  { id: 16, category: 'Punk', title: 'Punk Papier — zine', url: '/images/punk-papier.jpg', collection: 'Punk Papier', kind: 'photo', orientation: 'portrait' },
+  { id: 17, category: 'Forêt', title: 'Forêt Noire — rituel', url: '/images/foret-noire.jpg', collection: 'Forêt Noire', kind: 'photo', orientation: 'paysage' },
+  { id: 18, category: 'Cinéma', title: 'Cinéma — rideau rouge', url: '/images/cinema.jpg', collection: 'Cinéma', kind: 'photo', orientation: 'paysage' },
+  { id: 19, category: 'Brocante', title: 'Brocante Club — maximalisme', url: '/images/brocante.jpg', collection: 'Brocante Club', kind: 'photo', orientation: 'paysage' },
+  { id: 20, category: 'Supermarché', title: 'Supermarché 22h — rayon 7', url: '/images/supermarche.jpg', collection: 'Supermarché 22h', kind: 'photo', orientation: 'paysage' },
+  { id: 21, category: 'Laverie', title: 'Laverie Club — tambour 7', url: '/images/laverie.jpg', collection: 'Laverie Club', kind: 'photo', orientation: 'paysage' },
 ];
 
 const site: WeddingSite = {
@@ -54,21 +65,21 @@ const site: WeddingSite = {
   wedding_date: '2027-07-18',
   venue: VENUE,
   city: 'Chantilly, Oise',
-  style: 'editorial',
+  style: 'cinema', // nouveau style par défaut pour la démo — plus buzz que editorial
   phase: 'avant',
   typography: 'spatial',
-  accent_color: '#16171A',
+  accent_color: '#C80000',
   button_style: 'pill',
   shape: 'soft',
   layout: 'magazine',
   animation_level: 'fluide',
-  hero_photo: '/images/hero-wedding.jpg',
+  hero_photo: '/images/cinema.jpg',
   hero_title: 'Matt & Marie',
-  hero_subtitle: 'Nous nous marions',
+  hero_subtitle: 'Première — 18.07.2027',
   story_title: 'Tout a commencé par un regard',
   story_text: storyText('Matt', 'Marie'),
   story_photo: '/images/couple-paris.jpg',
-  announcement: 'Nous avons hâte de vous retrouver.',
+  announcement: 'Nous avons hâte de vous retrouver. Tenue : black tie, mais venez comme vous êtes.',
   contact_email: 'matt.et.marie@byaime.fr',
   contact_phone: '+33 6 12 34 56 78',
   published: true,
@@ -96,14 +107,14 @@ const infos: InfoPratique[] = [
 ].map((row, i) => ({ id: i + 1, site_id: SITE_ID, position: i, ...row }));
 
 const gallery: GalleryPhoto[] = [
-  { url: '/images/hero-wedding.jpg', caption: 'Nous deux' },
-  { url: '/images/couple-paris.jpg', caption: 'Paris, toujours' },
-  { url: '/images/alliances.jpg', caption: 'Les alliances' },
-  { url: '/images/bouquet.jpg', caption: 'Le bouquet' },
-  { url: '/images/chateau.jpg', caption: 'Le château' },
-  { url: '/images/champagne.jpg', caption: 'À la vie' },
-  { url: '/images/garden.jpg', caption: 'Les jardins' },
-  { url: '/images/danse.jpg', caption: 'Première danse' },
+  { url: '/images/cinema.jpg', caption: 'Première' },
+  { url: '/images/brutal.jpg', caption: 'Béton' },
+  { url: '/images/club-amour.jpg', caption: '02h17' },
+  { url: '/images/desert-motel.jpg', caption: 'Desert Motel' },
+  { url: '/images/foret-noire.jpg', caption: 'Forêt Noire' },
+  { url: '/images/brocante.jpg', caption: 'Brocante Club' },
+  { url: '/images/cosmic.jpg', caption: 'Cosmic' },
+  { url: '/images/punk-papier.jpg', caption: 'Punk Papier' },
 ].map((row, i) => ({ id: i + 1, site_id: SITE_ID, position: i, is_private: false, ...row }));
 
 const faqs: Faq[] = FAQ_DEFAULTS.map((f, i) => ({ id: i + 1, site_id: SITE_ID, position: i, ...f }));
