@@ -2,48 +2,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, Loader2, MapPin, CalendarDays, Heart, Palette } from 'lucide-react';
-import { apiSend, slugify, formatDateLong, daysUntil } from '../lib/api';
-import { WEDDING_STYLES } from '../lib/weddingStyles';
-import type { WeddingSite } from '../lib/types';
-import VisionImage from '../components/vision/VisionImage';
-
-const SECTION_DEFAULTS = [
-  { key: 'hero', title: 'Accueil' },
-  { key: 'histoire', title: 'Notre histoire' },
-  { key: 'programme', title: 'Programme' },
-  { key: 'lieux', title: 'Lieux' },
-  { key: 'infos', title: 'Infos pratiques' },
-  { key: 'rsvp', title: 'RSVP' },
-  { key: 'cagnotte', title: 'Cagnotte' },
-  { key: 'galerie', title: 'Galerie' },
-  { key: 'faq', title: 'FAQ' },
-  { key: 'contact', title: 'Contact' },
-  { key: 'footer', title: 'Pied de page' },
-];
-
-const PROGRAMME_DEFAULTS = [
-  { time: '14:30', title: 'Cérémonie', desc: 'Échange des vœux et des alliances.', place: '' },
-  { time: '16:00', title: 'Cocktail', desc: 'Coupe de champagne et photos de groupe.', place: '' },
-  { time: '18:30', title: 'Dîner', desc: 'Dîner assis, discours et surprises.', place: '' },
-  { time: '21:00', title: 'Ouverture du bal', desc: 'La première danse, puis à vous.', place: '' },
-  { time: '23:30', title: 'Soirée', desc: 'Dansez jusqu’au bout de la nuit.', place: '' },
-];
-
-const FAQ_DEFAULTS = [
-  { q: 'Comment venir ?', a: 'Toutes les adresses et itinéraires sont indiqués dans la rubrique Lieux. Un parking est prévu à proximité.' },
-  { q: 'Où dormir ?', a: 'Plusieurs hôtels et chambres d’hôtes autour du lieu. Réservez tôt et mentionnez notre mariage.' },
-  { q: 'Y a-t-il un parking ?', a: 'Oui, un parking privé est réservé aux invités juste à côté du lieu de réception.' },
-  { q: 'Les enfants sont-ils invités ?', a: 'Nous adorons vos enfants, mais la soirée est réservée aux adultes — sauf mention sur votre invitation.' },
-  { q: 'Quel est le dress code ?', a: 'Tenue de cocktail. Mesdames, prévoyez des chaussures adaptées aux jardins.' },
-  { q: 'À quelle heure arriver ?', a: 'Merci d’arriver 30 minutes avant la cérémonie pour vous installer sereinement.' },
-];
-
-const RSVP_EVENTS_DEFAULTS = [
-  { name: 'Cérémonie', desc: '14:30' },
-  { name: 'Cocktail', desc: '16:00' },
-  { name: 'Dîner', desc: '18:30' },
-  { name: 'Brunch', desc: 'Lendemain, 11:00' },
-];
+import { formatDateLong, daysUntil } from '../lib/format';
+import { seedSite } from '../lib/defaults';
+import StylePicker from '../components/StylePicker';
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -76,60 +37,10 @@ export default function Onboarding() {
     setError('');
     setCreating(true);
     try {
-      const theme = WEDDING_STYLES.find((s) => s.id === style) ?? WEDDING_STYLES[0];
-      const base = slugify(`${partner1}-${partner2}`) || 'notre-mariage';
-      const slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
-      const site = await apiSend<WeddingSite>('/api/wedding-sites', 'POST', {
-        slug, partner1: partner1.trim(), partner2: partner2.trim(), wedding_date: date,
-        venue: venue.trim(), city: city.trim(), style, phase: 'avant',
-        typography: 'spatial', accent_color: theme.accent, button_style: 'pill',
-        shape: 'soft', layout: 'magazine', animation_level: 'fluide',
-        hero_photo: theme.image, hero_title: `${partner1.trim()} & ${partner2.trim()}`,
-        hero_subtitle: 'Nous nous marions',
-        story_title: 'Tout a commencé par un regard',
-        story_text: `C’est une histoire comme on les aime : une rencontre, un éclat de rire, puis l’évidence.\n\nDepuis ce jour, ${partner1.trim()} et ${partner2.trim()} ne se quittent plus. Et aujourd’hui, ils veulent écrire la suite avec vous, entourés de celles et ceux qu’ils aiment.`,
-        story_photo: '/images/couple-paris.jpg',
-        announcement: 'Nous avons hâte de vous retrouver.',
-        contact_email: '', contact_phone: '', published: false,
-      });
-      const siteId = site.id;
-      for (let i = 0; i < SECTION_DEFAULTS.length; i++) {
-        await apiSend('/api/site-sections', 'POST', { site_id: siteId, section_key: SECTION_DEFAULTS[i].key, title: SECTION_DEFAULTS[i].title, visible: true, position: i });
-      }
-      for (let i = 0; i < PROGRAMME_DEFAULTS.length; i++) {
-        const p = PROGRAMME_DEFAULTS[i];
-        await apiSend('/api/programme', 'POST', { site_id: siteId, event_time: p.time, title: p.title, description: p.desc, place: venue.trim(), icon: 'clock', position: i });
-      }
-      const infosDefaults = [
-        { category: 'Cérémonie', title: venue.trim() || 'Le lieu de cérémonie', detail: city.trim() || 'Adresse à préciser', time: '14:30', link: 'Voir l’itinéraire' },
-        { category: 'Réception', title: venue.trim() || 'Le lieu de réception', detail: city.trim() || 'Adresse à préciser', time: '18:30', link: 'Voir l’itinéraire' },
-        { category: 'Parking', title: 'Parking privé', detail: 'Un parking est réservé aux invités à côté du lieu.', time: '', link: '' },
-        { category: 'Hébergements', title: 'Où dormir ?', detail: 'Hôtels et chambres d’hôtes à proximité — réservez tôt.', time: '', link: '' },
-        { category: 'Dress code', title: 'Tenue de cocktail', detail: 'Élégance estivale. Prévoyez des chaussures adaptées aux jardins.', time: '', link: '' },
-        { category: 'Contacts', title: 'Une question ?', detail: 'Écrivez-nous, nous répondons à tout, vite.', time: '', link: '' },
-      ];
-      for (let i = 0; i < infosDefaults.length; i++) {
-        const inf = infosDefaults[i];
-        await apiSend('/api/infos', 'POST', { site_id: siteId, category: inf.category, title: inf.title, detail: inf.detail, event_time: inf.time, link_label: inf.link, position: i });
-      }
-      const galleryDefaults = [
-        { url: theme.image, caption: 'Nous deux' },
-        { url: '/images/alliances.jpg', caption: 'Les alliances' },
-        { url: '/images/bouquet.jpg', caption: 'Le bouquet' },
-        { url: '/images/champagne.jpg', caption: 'À la vie' },
-      ];
-      for (let i = 0; i < galleryDefaults.length; i++) {
-        await apiSend('/api/gallery', 'POST', { site_id: siteId, url: galleryDefaults[i].url, caption: galleryDefaults[i].caption, position: i, is_private: false });
-      }
-      for (let i = 0; i < FAQ_DEFAULTS.length; i++) {
-        await apiSend('/api/faqs', 'POST', { site_id: siteId, question: FAQ_DEFAULTS[i].q, answer: FAQ_DEFAULTS[i].a, position: i });
-      }
-      for (let i = 0; i < RSVP_EVENTS_DEFAULTS.length; i++) {
-        await apiSend('/api/rsvp-events', 'POST', { site_id: siteId, name: RSVP_EVENTS_DEFAULTS[i].name, description: RSVP_EVENTS_DEFAULTS[i].desc, position: i });
-      }
-      await apiSend('/api/gifts', 'POST', { site_id: siteId, gift_type: 'Voyage de noces', title: 'Notre lune de miel', description: 'Aidez-nous à créer des souvenirs inoubliables.', goal_amount: 5000, current_amount: 0, position: 0 });
-      await apiSend('/api/gifts', 'POST', { site_id: siteId, gift_type: 'Participation libre', title: 'Cagnotte des mariés', description: 'Chaque attention nous touche, quel qu’en soit le montant.', goal_amount: 0, current_amount: 0, position: 1 });
-      navigate(`/generer?site=${siteId}`);
+      // `seedSite` mémorise la clé d’édition renvoyée par `/api/create-site` :
+      // elle sera nécessaire à l’éditeur comme à l’aperçu du brouillon.
+      const { site } = await seedSite({ partner1, partner2, wedding_date: date, venue, city, style });
+      navigate(`/generer?site=${site.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue. Réessayez.');
       setCreating(false);
@@ -258,30 +169,8 @@ export default function Onboarding() {
                   <h1 className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 5.4vw, 3.1rem)' }}>Quel espace vous ressemble ?</h1>
                   <p className="vp-body mx-auto mt-3 max-w-md">Huit environnements spatiaux. Une seule évidence.</p>
                 </div>
-                <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  {WEDDING_STYLES.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => setStyle(s.id)}
-                      className={`vp-press text-left transition-all duration-500 ${
-                        style === s.id ? 'scale-[1.01] ring-2 ring-[var(--vp-accent)] ring-offset-4 ring-offset-transparent' : 'hover:scale-[1.01]'
-                      }`}
-                      style={{ borderRadius: 14 }}
-                    >
-                      <span className="relative block overflow-hidden rounded-[14px]">
-                        <VisionImage src={s.image} alt={s.name} fallbackLabel={s.name} aura={s.aura} className="aspect-[3/4] w-full object-cover" />
-                        {style === s.id && (
-                          <span className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
-                            <Check size={15} className="text-[var(--vp-accent)]" strokeWidth={2.6} />
-                          </span>
-                        )}
-                      </span>
-                      <span className="block px-0.5 pt-2.5">
-                        <span className="vp-title block text-[16px]">{s.name}</span>
-                        <span className="vp-caption mt-0.5 block !text-[11.5px]">{s.tagline}</span>
-                      </span>
-                    </button>
-                  ))}
+                <div className="mt-8">
+                  <StylePicker value={style} onChange={setStyle} />
                 </div>
               </motion.div>
             )}

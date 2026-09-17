@@ -34,7 +34,6 @@ export interface SiteSection {
   title: string;
   visible: boolean;
   position: number;
-  settings?: Record<string, unknown> | null;
 }
 
 export interface ProgrammeEvent {

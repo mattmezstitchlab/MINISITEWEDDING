@@ -7,10 +7,6 @@
  * ------------------------------------------------------------------ */
 
 @theme {
-  --font-display: "Fraunces", Georgia, serif;
-  --font-editorial: "Cormorant Garamond", Georgia, serif;
-  --font-body: "Inter", system-ui, sans-serif;
-  --font-modern: "Manrope", system-ui, sans-serif;
   --font-spatial: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
     "Inter", "Manrope", system-ui, sans-serif;
 }
@@ -38,11 +34,10 @@
   /* Matériaux verre — clair */
   --vp-glass-1: rgba(255, 255, 255, 0.62);
   --vp-glass-2: rgba(255, 255, 255, 0.44);
-  --vp-glass-3: rgba(255, 255, 255, 0.28);
+
   /* Matériaux verre — sombre */
   --vp-glass-d1: rgba(30, 33, 46, 0.62);
   --vp-glass-d2: rgba(26, 29, 41, 0.46);
-  --vp-glass-d3: rgba(255, 255, 255, 0.08);
 
   /* Bordures / liserés spéculaires */
   --vp-edge: rgba(255, 255, 255, 0.62);
@@ -53,21 +48,14 @@
   /* Profondeurs : presque rien, juste de quoi décoller le verre du fond */
   --vp-depth-1: 0 1px 2px rgba(12, 14, 24, 0.04);
   --vp-depth-2: 0 1px 3px rgba(12, 14, 24, 0.05);
-  --vp-depth-3: 0 2px 6px rgba(12, 14, 24, 0.06);
 
   /* Courbure continue */
   --vp-r-field: 9px;
-  --vp-r-xs: 10px;
   --vp-r-sm: 14px;
-  --vp-r-md: 20px;
-  --vp-r-lg: 26px;
-  --vp-r-xl: 34px;
-  --vp-r-2xl: 44px;
   --vp-r-pill: 999px;
 
   /* Dynamique */
   --vp-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --vp-ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 html {
@@ -133,22 +121,6 @@ body {
   background: linear-gradient(180deg, var(--vp-env-dark-a) 0%, var(--vp-env-dark-b) 55%, var(--vp-env-dark-c) 100%);
 }
 
-@keyframes vp-drift {
-  0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(1.5%, -1.5%, 0) scale(1.035); }
-  100% { transform: translate3d(-1.5%, 1.5%, 0) scale(1.02); }
-}
-
-/* Halo coloré réutilisable (blobs flous) */
-.vp-aura {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(70px);
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: -1;
-}
-
 /* ------------------------------------------------------------------ *
  *  Matériaux : le verre
  * ------------------------------------------------------------------ */
@@ -187,12 +159,13 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.vp-glass-dark-thin {
-  background: var(--vp-glass-d2);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
-  backdrop-filter: blur(22px) saturate(160%);
-  border: 1px solid color-mix(in srgb, var(--vp-edge-dark) 80%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), var(--vp-depth-1);
+/* Verre posé sur une photo : blanc très translucide, liseré clair */
+.vp-glass-photo {
+  background: rgba(255, 255, 255, 0.13);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Voile ultra-fin posé sur une photo (barres de navigation, overlays) */
@@ -229,30 +202,6 @@ body {
 
 .vp-spec-dark::after {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 45%, transparent 100%);
-}
-
-/* Balayage lumineux au survol */
-.vp-sheen {
-  position: relative;
-  overflow: hidden;
-}
-
-.vp-sheen::before {
-  content: "";
-  position: absolute;
-  top: -60%;
-  left: -30%;
-  width: 45%;
-  height: 220%;
-  transform: rotate(18deg) translateX(-180%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
-  transition: transform 0.9s var(--vp-ease);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.vp-sheen:hover::before {
-  transform: rotate(18deg) translateX(420%);
 }
 
 /* ------------------------------------------------------------------ *
@@ -379,31 +328,6 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), var(--vp-depth-2);
 }
 
-.vp-btn-dark {
-  color: #f6f7fc;
-  background: linear-gradient(180deg, rgba(52, 56, 74, 0.92), rgba(28, 31, 45, 0.94));
-  -webkit-backdrop-filter: blur(22px) saturate(170%);
-  backdrop-filter: blur(22px) saturate(170%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), var(--vp-depth-2);
-}
-
-.vp-btn-dark:hover { filter: brightness(1.12); }
-
-.vp-btn-quiet {
-  color: var(--vp-ink-soft);
-  background: rgba(15, 17, 28, 0.045);
-  border: 1px solid transparent;
-  box-shadow: none;
-}
-
-.vp-btn-quiet:hover {
-  filter: none;
-  background: rgba(15, 17, 28, 0.08);
-  box-shadow: none;
-  transform: none;
-}
-
 .vp-chip {
   display: inline-flex;
   align-items: center;
@@ -419,13 +343,6 @@ body {
   border: 1px solid color-mix(in srgb, var(--vp-edge) 72%, transparent);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
   transition: background-color 0.3s var(--vp-ease), color 0.3s var(--vp-ease), transform 0.3s var(--vp-ease);
-}
-
-.vp-chip-dark {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: #eef0fa;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .vp-field {
@@ -493,11 +410,6 @@ body {
   box-shadow: inset 0 1px 2px rgba(12, 14, 24, 0.05);
 }
 
-.vp-segmented-dark {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
 .vp-seg-item {
   display: inline-flex;
   align-items: center;
@@ -516,42 +428,6 @@ body {
   box-shadow: inset 0 1px 0 #fff, var(--vp-depth-1);
 }
 
-.vp-segmented-dark .vp-seg-item[data-on="true"] {
-  color: #0c0e18;
-  background: rgba(255, 255, 255, 0.94);
-}
-
-/* Interrupteur */
-.vp-switch {
-  width: 52px;
-  height: 31px;
-  border-radius: var(--vp-r-pill);
-  background: rgba(120, 120, 140, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: inset 0 1px 3px rgba(12, 14, 24, 0.12);
-  position: relative;
-  transition: background-color 0.35s var(--vp-ease);
-  cursor: pointer;
-  flex: none;
-}
-
-.vp-switch::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(12, 14, 24, 0.28);
-  transition: transform 0.35s var(--vp-ease);
-}
-
-.vp-switch[data-on="true"] { background: var(--vp-green); }
-.vp-switch[data-on="true"]::after { transform: translateX(21px); }
-
-/* Curseur de progression */
 .vp-progress {
   height: 8px;
   border-radius: var(--vp-r-pill);
@@ -584,7 +460,7 @@ body {
   justify-content: center;
   border-radius: var(--vp-r-sm);
   color: #fff;
-  background: var(--vp-c, var(--vp-accent));
+  background: var(--vp-accent);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
@@ -605,8 +481,6 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(15, 17, 28, 0.32); background-clip: content-box; }
 
-.vp-scroll-dark::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); background-clip: content-box; }
-
 input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.55; }
 
 img { user-select: none; }
@@ -625,6 +499,5 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   html { scroll-behavior: auto; }
   .vp-env::before { animation: none; }
   .vp-lift:hover, .vp-tilt { transform: none !important; }
-  .vp-sheen::before { display: none; }
   * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }

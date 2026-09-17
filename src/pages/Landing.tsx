@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Palette, Images, MailCheck, Gift, MapPin, CalendarDays, QrCode, ChevronRight, Heart, Layers } from 'lucide-react';
 import { WEDDING_STYLES, PHASES } from '../lib/weddingStyles';
+import { publicPath } from '../lib/format';
 import VisionImage, { TiltCard, VisionFrame } from '../components/vision/VisionImage';
 
 const STEPS = [
@@ -14,10 +15,10 @@ const STEPS = [
 const MODULES = [
   { icon: MailCheck, title: 'RSVP élégant', text: 'Présences, régimes, hébergement. Des statistiques limpides, jamais de tableaux austères.' },
   { icon: Gift, title: 'Liste & cagnotte', text: 'Voyage de noces, cagnotte, liste de cadeaux. Objectifs, progression, bouton Participer.' },
-  { icon: Images, title: 'Bibliothèque média', text: 'Seize univers photo, six collections cohérentes, vos propres images en un glisser-déposer.' },
+  { icon: Images, title: 'Bibliothèque média', text: 'Onze univers photo, six collections cohérentes, vos propres images en un glisser-déposer.' },
   { icon: MapPin, title: 'Infos pratiques', text: 'Adresses, parking, hébergements, dress code. Des cartes de verre, toujours claires.' },
   { icon: CalendarDays, title: 'Programme Jour J', text: 'Une timeline spatiale : cérémonie, cocktail, dîner, bal. Heure, lieu, photo.' },
-  { icon: QrCode, title: 'Partage magique', text: 'prenom-prenom.byaime.fr, QR code à imprimer, partage WhatsApp, Messages, Email.' },
+  { icon: QrCode, title: 'Partage magique', text: 'Un lien à vos prénoms, un QR code à imprimer, partage WhatsApp, Messages, Email.' },
 ];
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
@@ -109,7 +110,7 @@ export default function Landing() {
                   <span className="h-2.5 w-2.5 rounded-full bg-[#E5E5EA]" />
                   <span className="h-2.5 w-2.5 rounded-full bg-[#E5E5EA]" />
                   <span className="h-2.5 w-2.5 rounded-full bg-[#E5E5EA]" />
-                  <span className="vp-caption ml-2 truncate text-[11px]">matt-marie.byaime.fr</span>
+                  <span className="vp-caption ml-2 truncate text-[11px]">{publicPath('matt-marie')}</span>
                 </div>
                 <div className="overflow-hidden rounded-[26px]">
                   <VisionImage

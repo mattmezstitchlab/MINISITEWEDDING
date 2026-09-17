@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Upload, Check, Image as ImageIcon, Loader2 } from 'lucide-react';
 import type { MediaAsset } from '../lib/types';
-import { apiGet, apiSend } from '../lib/api';
+import { apiGet, apiSend } from '../lib/http';
 import { MEDIA_CATEGORIES, MEDIA_COLLECTIONS } from '../lib/weddingStyles';
 import { DEMO_MEDIA, DEMO_ENABLED } from '../lib/demo';
 import VisionImage from './vision/VisionImage';
@@ -26,11 +26,17 @@ export default function MediaLibrary({ open, onClose, onSelect, title }: Props) 
 
   useEffect(() => {
     if (!open) return;
-    setLoading(true);
+    let active = true;
+    const fallback = () => (DEMO_ENABLED ? DEMO_MEDIA : []);
     apiGet<MediaAsset[]>('/api/media')
-      .then((data) => setAssets(data && data.length ? data : DEMO_ENABLED ? DEMO_MEDIA : []))
-      .catch(() => setAssets(DEMO_ENABLED ? DEMO_MEDIA : []))
-      .finally(() => setLoading(false));
+      .then((data) => (data && data.length ? data : fallback()))
+      .catch(() => fallback())
+      .then((assets) => {
+        if (!active) return;
+        setAssets(assets);
+        setLoading(false);
+      });
+    return () => { active = false; };
   }, [open]);
 
   const filtered = useMemo(() => {
