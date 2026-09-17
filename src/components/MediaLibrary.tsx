@@ -5,6 +5,8 @@ import { X, Search, Upload, Check, Image as ImageIcon, Loader2 } from 'lucide-re
 import type { MediaAsset } from '../lib/types';
 import { apiGet, apiSend } from '../lib/api';
 import { MEDIA_CATEGORIES, MEDIA_COLLECTIONS } from '../lib/weddingStyles';
+import { DEMO_MEDIA, DEMO_ENABLED } from '../lib/demo';
+import VisionImage from './vision/VisionImage';
 
 interface Props {
   open: boolean;
@@ -26,8 +28,8 @@ export default function MediaLibrary({ open, onClose, onSelect, title }: Props) 
     if (!open) return;
     setLoading(true);
     apiGet<MediaAsset[]>('/api/media')
-      .then(setAssets)
-      .catch(() => setAssets([]))
+      .then((data) => setAssets(data && data.length ? data : DEMO_ENABLED ? DEMO_MEDIA : []))
+      .catch(() => setAssets(DEMO_ENABLED ? DEMO_MEDIA : []))
       .finally(() => setLoading(false));
   }, [open]);
 
@@ -74,35 +76,35 @@ export default function MediaLibrary({ open, onClose, onSelect, title }: Props) 
           <motion.div
             initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-5xl max-h-[92vh] bg-[#FAF8F5] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl"
+            className="vp-env vp-glass-float flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-[34px] sm:max-w-5xl sm:rounded-[34px]"
           >
-            <div className="px-6 sm:px-8 pt-6 pb-4 border-b border-black/10 bg-white/70 backdrop-blur">
+            <div className="vp-veil-light px-6 pb-4 pt-6 sm:px-8">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl sm:text-2xl font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{title || 'Bibliothèque média'}</h3>
-                  <p className="text-sm text-neutral-500 mt-0.5">{filtered.length} visuel{filtered.length > 1 ? 's' : ''} — cliquez pour insérer</p>
+                  <h3 className="vp-h2 text-[22px] sm:text-[24px]">{title || 'Bibliothèque média'}</h3>
+                  <p className="vp-caption mt-0.5 !text-sm">{filtered.length} visuel{filtered.length > 1 ? 's' : ''} — cliquez pour insérer</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-neutral-900 text-white text-sm cursor-pointer hover:bg-neutral-700 transition">
+                  <label className="vp-btn vp-press !px-4 !py-2.5 !text-[13.5px] cursor-pointer">
                     {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
                     <span className="hidden sm:inline">{uploading ? 'Import…' : 'Importer'}</span>
                     <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
                   </label>
-                  <button onClick={onClose} className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition" aria-label="Fermer"><X size={18} /></button>
+                  <button onClick={onClose} className="vp-press flex h-10 w-10 items-center justify-center rounded-full bg-black/5 transition hover:bg-black/10" aria-label="Fermer"><X size={18} /></button>
                 </div>
               </div>
               <div className="mt-4 relative">
-                <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" />
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher : alliances, château, bouquet…" className="w-full pl-11 pr-4 py-3 rounded-full bg-white border border-black/10 text-[15px] outline-none focus:border-black/30 transition" />
+                <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--vp-muted-2)]" />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher : alliances, château, bouquet…" className="vp-field !rounded-full !py-3 !pl-11 !text-[15px]" />
               </div>
               <div className="mt-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                 {['Tout', ...MEDIA_CATEGORIES].map((c) => (
-                  <button key={c} onClick={() => setCategory(c)} className={`shrink-0 px-4 py-2 rounded-full text-[13px] transition ${category === c ? 'bg-neutral-900 text-white' : 'bg-white border border-black/10 text-neutral-600 hover:border-black/30'}`}>{c}</button>
+                  <button key={c} onClick={() => setCategory(c)} className={`vp-chip vp-press shrink-0 ${category === c ? '!bg-[var(--vp-ink)] !text-white' : 'text-[var(--vp-ink-soft)]'}`}>{c}</button>
                 ))}
               </div>
               <div className="mt-2 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                 {['Toutes', ...MEDIA_COLLECTIONS].map((c) => (
-                  <button key={c} onClick={() => setCollection(c)} className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] tracking-wide transition ${collection === c ? 'bg-[#8A6D4B] text-white' : 'bg-[#8A6D4B]/10 text-[#8A6D4B] hover:bg-[#8A6D4B]/20'}`}>{c}</button>
+                  <button key={c} onClick={() => setCollection(c)} className={`vp-chip vp-press shrink-0 !py-1.5 !text-[12px] ${collection === c ? '!bg-[var(--vp-accent)] !text-white' : '!text-[var(--vp-accent)]'}`}>{c}</button>
                 ))}
               </div>
             </div>
@@ -110,26 +112,26 @@ export default function MediaLibrary({ open, onClose, onSelect, title }: Props) 
               {loading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="aspect-[4/3] rounded-2xl bg-black/5 animate-pulse" />
+                    <div key={i} className="aspect-[4/3] animate-pulse rounded-[20px] bg-white/40" />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
-                <div className="py-16 text-center text-neutral-400">
-                  <ImageIcon size={36} strokeWidth={1.25} className="mx-auto" />
-                  <p className="mt-3">Aucun visuel trouvé. Essayez un autre mot.</p>
+                <div className="py-16 text-center text-[var(--vp-muted)]">
+                  <ImageIcon size={36} strokeWidth={1.5} className="mx-auto" />
+                  <p className="vp-caption mt-3">Aucun visuel trouvé. Essayez un autre mot.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {filtered.map((a) => (
-                    <button key={a.id} onClick={() => choose(a.url)} className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-black/5 text-left">
-                      <img src={a.url} alt={a.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <span className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition" />
+                    <button key={a.id} onClick={() => choose(a.url)} className="vp-press group relative aspect-[4/3] overflow-hidden rounded-[12px] border border-black/8 bg-[#F5F5F7] text-left">
+                      <VisionImage src={a.url} alt={a.title} fallbackLabel={a.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <span className="absolute inset-0 bg-[#05060C]/0 transition group-hover:bg-[#05060C]/25" />
                       <span className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-white bg-black/55 backdrop-blur px-2.5 py-1 rounded-full truncate">{a.title}</span>
+                        <span className="truncate rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white">{a.title}</span>
                       </span>
                       {picked === a.url && (
-                        <span className="absolute inset-0 bg-black/45 flex items-center justify-center">
-                          <span className="w-11 h-11 rounded-full bg-white flex items-center justify-center"><Check size={20} className="text-neutral-900" /></span>
+                        <span className="absolute inset-0 flex items-center justify-center bg-[#05060C]/40">
+                          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white"><Check size={20} className="text-[var(--vp-accent)]" strokeWidth={2.6} /></span>
                         </span>
                       )}
                     </button>

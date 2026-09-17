@@ -33,9 +33,17 @@ export default function Countdown({ target, accent, light }: Props) {
 
   if (parts.passed) {
     return (
-      <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-full ${light ? 'bg-white/15 text-white backdrop-blur-md' : 'bg-black/5'}`}>
-        <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: light ? '#fff' : accent }} />
-        <span className="text-sm tracking-[0.2em] uppercase">Ce jour est arrivé</span>
+      <div
+        className={`inline-flex items-center gap-3 rounded-full px-6 py-3 ${light ? 'text-white' : ''}`}
+        style={{
+          background: light ? 'rgba(255,255,255,0.14)' : 'rgba(12,14,24,0.05)',
+          backdropFilter: 'blur(22px) saturate(180%)',
+          border: light ? '1px solid rgba(255,255,255,0.22)' : '1px solid rgba(255,255,255,0.6)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)',
+        }}
+      >
+        <span className="h-2 w-2 animate-pulse rounded-full" style={{ background: light ? '#fff' : accent, boxShadow: `0 0 12px ${light ? '#fff' : accent}` }} />
+        <span className="text-[13px] font-semibold uppercase tracking-[0.18em]">Ce jour est arrivé</span>
       </div>
     );
   }
@@ -52,17 +60,25 @@ export default function Countdown({ target, accent, light }: Props) {
       {cells.map((c, i) => (
         <div key={c.l} className="flex items-stretch gap-2 sm:gap-3">
           <div
-            className={`min-w-[66px] sm:min-w-[84px] px-3 py-3 sm:py-4 rounded-2xl text-center ${light ? 'bg-white/10 backdrop-blur-md border border-white/20' : 'bg-white/80 backdrop-blur border border-black/5 shadow-[0_8px_30px_rgba(0,0,0,0.06)]'}`}
+            className="min-w-[64px] px-3 py-3 text-center sm:min-w-[84px] sm:py-4"
+            style={{
+              borderRadius: 20,
+              background: light ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.62)',
+              backdropFilter: 'blur(28px) saturate(190%)',
+              WebkitBackdropFilter: 'blur(28px) saturate(190%)',
+              border: light ? '1px solid rgba(255,255,255,0.24)' : '1px solid rgba(255,255,255,0.7)',
+              boxShadow: light ? 'inset 0 1px 0 rgba(255,255,255,0.3)' : 'inset 0 1px 0 rgba(255,255,255,0.6)',
+            }}
           >
             <div
-              className={`text-2xl sm:text-4xl font-light tabular-nums ${light ? 'text-white' : 'text-neutral-900'}`}
-              style={{ fontFamily: 'Fraunces, Georgia, serif' }}
+              className={`vp-num text-2xl sm:text-[38px] ${light ? 'text-white' : 'text-[var(--vp-ink)]'}`}
+              style={{ fontWeight: 620, letterSpacing: '-0.035em', lineHeight: 1.1 }}
             >
               {String(c.v).padStart(2, '0')}
             </div>
-            <div className={`mt-1 text-[10px] sm:text-[11px] tracking-[0.25em] uppercase ${light ? 'text-white/70' : 'text-neutral-500'}`}>{c.l}</div>
+            <div className={`mt-1 text-[9.5px] font-semibold uppercase tracking-[0.22em] sm:text-[11px] ${light ? 'text-white/70' : 'text-[var(--vp-muted)]'}`}>{c.l}</div>
           </div>
-          {i < cells.length - 1 && <div className={`hidden sm:block w-px my-2 ${light ? 'bg-white/25' : 'bg-black/10'}`} />}
+          {i < cells.length - 1 && <div className={`my-2 hidden w-px sm:block ${light ? 'bg-white/25' : 'bg-black/10'}`} />}
         </div>
       ))}
     </div>

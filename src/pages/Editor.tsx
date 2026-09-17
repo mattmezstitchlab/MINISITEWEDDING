@@ -8,7 +8,8 @@ import {
 } from 'lucide-react';
 import type { WeddingSite, SiteSection, ProgrammeEvent, InfoPratique, GalleryPhoto, Faq, RsvpEvent, GiftOption, PublicSiteData } from '../lib/types';
 import { apiGet, apiSend } from '../lib/api';
-import { PHASES } from '../lib/weddingStyles';
+import { DEMO_DATA, DEMO_ENABLED } from '../lib/demo';
+import { PHASES, fontsFor } from '../lib/weddingStyles';
 import PublicSiteView from '../components/PublicSiteView';
 import MediaLibrary from '../components/MediaLibrary';
 import AppearancePanel from '../components/AppearancePanel';
@@ -17,8 +18,8 @@ import SharePanel from '../components/SharePanel';
 
 type Drawer = null | 'appearance' | 'rsvp' | 'share' | 'structure';
 
-const fieldCls = 'w-full px-4 py-2.5 rounded-xl bg-white border border-black/10 text-[14px] outline-none focus:border-black/40 transition';
-const labelCls = 'block text-[11px] tracking-[0.18em] uppercase text-neutral-400 font-medium mb-1.5';
+const fieldCls = 'vp-field !px-4 !py-2.5 !text-[14px]';
+const labelCls = 'vp-label !mb-1.5 !tracking-[0.12em]';
 
 interface Ctx {
   site: WeddingSite;
@@ -38,10 +39,10 @@ function PhotoField({ label, value, onPick, openMedia }: { label: string; value:
   return (
     <div>
       <label className={labelCls}>{label}</label>
-      <button onClick={() => openMedia(onPick, label)} className="group relative w-full aspect-[16/10] rounded-2xl overflow-hidden bg-black/5 border border-black/10">
-        {value ? <img src={value} alt={label} className="w-full h-full object-cover" /> : <span className="text-sm text-neutral-400">Choisir une photo</span>}
-        <span className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition flex items-center justify-center">
-          <span className="opacity-0 group-hover:opacity-100 transition text-white text-[13px] font-medium px-4 py-2 rounded-full bg-white/20 backdrop-blur">Choisir dans la bibliothèque</span>
+      <button onClick={() => openMedia(onPick, label)} className="vp-press group relative aspect-[16/10] w-full overflow-hidden rounded-[12px] border border-black/8 bg-[#F5F5F7]">
+        {value ? <img src={value} alt={label} className="h-full w-full object-cover" /> : <span className="text-sm font-medium text-[var(--vp-muted)]">Choisir une photo</span>}
+        <span className="absolute inset-0 flex items-center justify-center bg-[#05060C]/0 transition group-hover:bg-[#05060C]/35">
+          <span className="rounded-full bg-[var(--vp-accent)] px-4 py-2 text-[13px] font-semibold text-white opacity-0 transition group-hover:opacity-100">Choisir dans la bibliothèque</span>
         </span>
       </button>
     </div>
@@ -51,6 +52,7 @@ function PhotoField({ label, value, onPick, openMedia }: { label: string; value:
 function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
   const { site, patchSite, refresh, openMedia, notify } = ctx;
   const [busy, setBusy] = useState(false);
+  const heroFonts = fontsFor(site.typography);
 
   const save = async (fn: () => Promise<unknown>, msg = 'Enregistré') => {
     setBusy(true);
@@ -61,10 +63,18 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
     return (
       <div className="space-y-5">
         <PhotoField label="Photo du Hero" value={site.hero_photo} onPick={(url) => patchSite({ hero_photo: url })} openMedia={openMedia} />
-        <div><label className={labelCls}>Titre principal</label><input className={fieldCls} value={site.hero_title} onChange={(e) => patchSite({ hero_title: e.target.value })} style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.2rem' }} /></div>
+        <div>
+          <label className={labelCls}>Titre principal</label>
+          <input
+            className={fieldCls}
+            value={site.hero_title}
+            onChange={(e) => patchSite({ hero_title: e.target.value })}
+            style={{ fontFamily: heroFonts.heading, fontWeight: heroFonts.weight, fontSize: '1.25rem', letterSpacing: '-0.02em' }}
+          />
+        </div>
         <div><label className={labelCls}>Sur-titre</label><input className={fieldCls} value={site.hero_subtitle} onChange={(e) => patchSite({ hero_subtitle: e.target.value })} /></div>
         <div><label className={labelCls}>Phrase d’accueil</label><input className={fieldCls} value={site.announcement} onChange={(e) => patchSite({ announcement: e.target.value })} /></div>
-        <p className="text-[12px] text-neutral-400">La photo occupe tout l’écran, le compte à rebours se calcule seul depuis votre date.</p>
+        <p className="vp-caption !text-[12px]">La photo occupe tout l’écran, le compte à rebours se calcule seul depuis votre date.</p>
       </div>
     );
   }
@@ -83,7 +93,7 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
         {ctx.programme.map((p) => (
           <ProgRow key={p.id} p={p} save={save} />
         ))}
-        <button disabled={busy} onClick={() => save(() => apiSend('/api/programme', 'POST', { site_id: site.id, event_time: '12:00', title: 'Nouveau moment', description: '', place: '', icon: 'clock', position: ctx.programme.length }), 'Moment ajouté')} className="w-full py-3 rounded-2xl border border-dashed border-black/20 text-sm text-neutral-500 hover:border-black/50 hover:text-black transition flex items-center justify-center gap-2 disabled:opacity-50"><Plus size={16} /> Ajouter un moment</button>
+        <button disabled={busy} onClick={() => save(() => apiSend('/api/programme', 'POST', { site_id: site.id, event_time: '12:00', title: 'Nouveau moment', description: '', place: '', icon: 'clock', position: ctx.programme.length }), 'Moment ajouté')} className="vp-press flex w-full items-center justify-center gap-2 rounded-[18px] border border-dashed border-black/25 bg-white/35 py-3 text-sm font-medium text-[var(--vp-muted)] backdrop-blur-xl transition hover:border-[var(--vp-accent)] hover:text-[var(--vp-accent)] disabled:opacity-50"><Plus size={16} /> Ajouter un moment</button>
       </div>
     );
   }
@@ -92,7 +102,7 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
       <div className="space-y-5">
         <div><label className={labelCls}>Lieu</label><input className={fieldCls} value={site.venue} onChange={(e) => patchSite({ venue: e.target.value })} /></div>
         <div><label className={labelCls}>Ville</label><input className={fieldCls} value={site.city} onChange={(e) => patchSite({ city: e.target.value })} /></div>
-        <p className="text-[12px] text-neutral-400">Les boutons « Voir l’itinéraire » ouvrent Google Maps avec ces adresses.</p>
+        <p className="vp-caption !text-[12px]">Les boutons « Voir l’itinéraire » ouvrent Google Maps avec ces adresses.</p>
       </div>
     );
   }
@@ -102,18 +112,18 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
         {ctx.infos.map((inf) => (
           <InfoRow key={inf.id} inf={inf} save={save} />
         ))}
-        <button disabled={busy} onClick={() => save(() => apiSend('/api/infos', 'POST', { site_id: site.id, category: 'Nouveau', title: 'Nouvelle information', detail: '', event_time: '', link_label: '', position: ctx.infos.length }), 'Carte ajoutée')} className="w-full py-3 rounded-2xl border border-dashed border-black/20 text-sm text-neutral-500 hover:border-black/50 hover:text-black transition flex items-center justify-center gap-2 disabled:opacity-50"><Plus size={16} /> Ajouter une carte</button>
+        <button disabled={busy} onClick={() => save(() => apiSend('/api/infos', 'POST', { site_id: site.id, category: 'Nouveau', title: 'Nouvelle information', detail: '', event_time: '', link_label: '', position: ctx.infos.length }), 'Carte ajoutée')} className="vp-press flex w-full items-center justify-center gap-2 rounded-[18px] border border-dashed border-black/25 bg-white/35 py-3 text-sm font-medium text-[var(--vp-muted)] backdrop-blur-xl transition hover:border-[var(--vp-accent)] hover:text-[var(--vp-accent)] disabled:opacity-50"><Plus size={16} /> Ajouter une carte</button>
       </div>
     );
   }
   if (sectionKey === 'rsvp') {
     return (
       <div className="space-y-3">
-        <p className="text-[13px] text-neutral-500 leading-relaxed">Les invités indiquent présence, convives, régimes, hébergement et message. Choisissez les moments proposés :</p>
+        <p className="vp-caption !text-[13px] leading-relaxed">Les invités indiquent présence, convives, régimes, hébergement et message. Choisissez les moments proposés :</p>
         {ctx.rsvpEvents.map((ev) => (
           <RsvpEventRow key={ev.id} ev={ev} save={save} />
         ))}
-        <button disabled={busy} onClick={() => save(() => apiSend('/api/rsvp-events', 'POST', { site_id: site.id, name: 'Nouvel événement', description: '', position: ctx.rsvpEvents.length }), 'Événement ajouté')} className="w-full py-3 rounded-2xl border border-dashed border-black/20 text-sm text-neutral-500 hover:border-black/50 hover:text-black transition flex items-center justify-center gap-2 disabled:opacity-50"><Plus size={16} /> Ajouter un événement</button>
+        <button disabled={busy} onClick={() => save(() => apiSend('/api/rsvp-events', 'POST', { site_id: site.id, name: 'Nouvel événement', description: '', position: ctx.rsvpEvents.length }), 'Événement ajouté')} className="vp-press flex w-full items-center justify-center gap-2 rounded-[18px] border border-dashed border-black/25 bg-white/35 py-3 text-sm font-medium text-[var(--vp-muted)] backdrop-blur-xl transition hover:border-[var(--vp-accent)] hover:text-[var(--vp-accent)] disabled:opacity-50"><Plus size={16} /> Ajouter un événement</button>
       </div>
     );
   }
@@ -123,8 +133,8 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
         {ctx.gifts.map((g) => (
           <GiftRow key={g.id} g={g} save={save} />
         ))}
-        <button disabled={busy} onClick={() => save(() => apiSend('/api/gifts', 'POST', { site_id: site.id, gift_type: 'Cagnotte', title: 'Nouvelle cagnotte', description: '', goal_amount: 0, current_amount: 0, position: ctx.gifts.length }), 'Cagnotte ajoutée')} className="w-full py-3 rounded-2xl border border-dashed border-black/20 text-sm text-neutral-500 hover:border-black/50 hover:text-black transition flex items-center justify-center gap-2 disabled:opacity-50"><Plus size={16} /> Ajouter une cagnotte</button>
-        <p className="text-[12px] text-neutral-400">Les moyens de paiement se connecteront ici — l’architecture est prête.</p>
+        <button disabled={busy} onClick={() => save(() => apiSend('/api/gifts', 'POST', { site_id: site.id, gift_type: 'Cagnotte', title: 'Nouvelle cagnotte', description: '', goal_amount: 0, current_amount: 0, position: ctx.gifts.length }), 'Cagnotte ajoutée')} className="vp-press flex w-full items-center justify-center gap-2 rounded-[18px] border border-dashed border-black/25 bg-white/35 py-3 text-sm font-medium text-[var(--vp-muted)] backdrop-blur-xl transition hover:border-[var(--vp-accent)] hover:text-[var(--vp-accent)] disabled:opacity-50"><Plus size={16} /> Ajouter une cagnotte</button>
+        <p className="vp-caption !text-[12px]">Les moyens de paiement se connecteront ici — l’architecture est prête.</p>
       </div>
     );
   }
@@ -133,15 +143,15 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
       <div className="space-y-3">
         <div className="grid grid-cols-2 gap-2.5">
           {ctx.gallery.map((g) => (
-            <div key={g.id} className="relative group rounded-2xl overflow-hidden aspect-square bg-black/5">
+            <div key={g.id} className="group relative aspect-square overflow-hidden rounded-[12px] border border-black/8 bg-[#F5F5F7]">
               <img src={g.url} alt={g.caption || ''} className="w-full h-full object-cover" />
-              <button onClick={() => save(() => apiSend('/api/gallery', 'DELETE', { id: g.id }), 'Photo supprimée')} className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition flex items-center justify-center" aria-label="Supprimer"><Trash2 size={14} /></button>
-              {g.is_private && <span className="absolute bottom-2 left-2 text-[10px] px-2 py-1 rounded-full bg-black/60 text-white">Privée</span>}
+              <button onClick={() => save(() => apiSend('/api/gallery', 'DELETE', { id: g.id }), 'Photo supprimée')} className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white opacity-0 backdrop-blur-xl transition group-hover:opacity-100" aria-label="Supprimer"><Trash2 size={14} /></button>
+              {g.is_private && <span className="absolute bottom-2 left-2 rounded-full bg-black/45 px-2 py-1 text-[10px] font-medium text-white backdrop-blur-xl">Privée</span>}
             </div>
           ))}
         </div>
-        <button onClick={() => openMedia((url) => { save(() => apiSend('/api/gallery', 'POST', { site_id: site.id, url, caption: '', position: ctx.gallery.length, is_private: false }), 'Photo ajoutée'); }, 'Ajouter à la galerie')} className="w-full py-3.5 rounded-2xl bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-700 transition flex items-center justify-center gap-2"><Images size={16} /> Choisir des photos</button>
-        <p className="text-[12px] text-neutral-400">Après le mariage, continuez à publier ici — la galerie devient vos souvenirs.</p>
+        <button onClick={() => openMedia((url) => { save(() => apiSend('/api/gallery', 'POST', { site_id: site.id, url, caption: '', position: ctx.gallery.length, is_private: false }), 'Photo ajoutée'); }, 'Ajouter à la galerie')} className="vp-btn vp-press w-full !py-3.5 !text-[14px]"><Images size={16} /> Choisir des photos</button>
+        <p className="vp-caption !text-[12px]">Après le mariage, continuez à publier ici — la galerie devient vos souvenirs.</p>
       </div>
     );
   }
@@ -151,7 +161,7 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
         {ctx.faqs.map((f) => (
           <FaqRow key={f.id} f={f} save={save} />
         ))}
-        <button disabled={busy} onClick={() => save(() => apiSend('/api/faqs', 'POST', { site_id: site.id, question: 'Nouvelle question ?', answer: 'Votre réponse…', position: ctx.faqs.length }), 'Question ajoutée')} className="w-full py-3 rounded-2xl border border-dashed border-black/20 text-sm text-neutral-500 hover:border-black/50 hover:text-black transition flex items-center justify-center gap-2 disabled:opacity-50"><Plus size={16} /> Ajouter une question</button>
+        <button disabled={busy} onClick={() => save(() => apiSend('/api/faqs', 'POST', { site_id: site.id, question: 'Nouvelle question ?', answer: 'Votre réponse…', position: ctx.faqs.length }), 'Question ajoutée')} className="vp-press flex w-full items-center justify-center gap-2 rounded-[18px] border border-dashed border-black/25 bg-white/35 py-3 text-sm font-medium text-[var(--vp-muted)] backdrop-blur-xl transition hover:border-[var(--vp-accent)] hover:text-[var(--vp-accent)] disabled:opacity-50"><Plus size={16} /> Ajouter une question</button>
       </div>
     );
   }
@@ -163,7 +173,7 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
       </div>
     );
   }
-  return <p className="text-[13px] text-neutral-400">Le pied de page reprend vos prénoms, la date et la phase du mariage — rien à régler.</p>;
+  return <p className="vp-caption !text-[13px]">Le pied de page reprend vos prénoms, la date et la phase du mariage — rien à régler.</p>;
 }
 
 type SaveFn = (fn: () => Promise<unknown>, msg?: string) => Promise<void>;
@@ -175,7 +185,7 @@ function ProgRow({ p, save }: { p: ProgrammeEvent; save: SaveFn }) {
   const [place, setPlace] = useState(p.place || '');
   useEffect(() => { setTime(p.event_time); setTitle(p.title); setDesc(p.description || ''); setPlace(p.place || ''); }, [p.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div className="p-4 rounded-2xl bg-white border border-black/10 space-y-2.5">
+    <div className="vp-glass vp-spec space-y-2.5 rounded-[20px] p-4">
       <div className="grid grid-cols-[86px_1fr] gap-2">
         <input className={fieldCls} value={time} onChange={(e) => setTime(e.target.value)} onBlur={() => time !== p.event_time && save(() => apiSend('/api/programme', 'PUT', { id: p.id, event_time: time }), 'Heure mise à jour')} />
         <input className={fieldCls} value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => title !== p.title && save(() => apiSend('/api/programme', 'PUT', { id: p.id, title }), 'Titre mis à jour')} />
@@ -183,7 +193,7 @@ function ProgRow({ p, save }: { p: ProgrammeEvent; save: SaveFn }) {
       <input className={fieldCls} value={desc} placeholder="Description" onChange={(e) => setDesc(e.target.value)} onBlur={() => desc !== (p.description || '') && save(() => apiSend('/api/programme', 'PUT', { id: p.id, description: desc }), 'Description mise à jour')} />
       <div className="flex gap-2">
         <input className={fieldCls} value={place} placeholder="Lieu" onChange={(e) => setPlace(e.target.value)} onBlur={() => place !== (p.place || '') && save(() => apiSend('/api/programme', 'PUT', { id: p.id, place }), 'Lieu mis à jour')} />
-        <button onClick={() => save(() => apiSend('/api/programme', 'DELETE', { id: p.id }), 'Moment supprimé')} className="w-10 shrink-0 rounded-xl hover:bg-red-50 text-neutral-300 hover:text-red-500 flex items-center justify-center transition" aria-label="Supprimer"><Trash2 size={16} /></button>
+        <button onClick={() => save(() => apiSend('/api/programme', 'DELETE', { id: p.id }), 'Moment supprimé')} className="vp-press flex w-10 shrink-0 items-center justify-center rounded-[12px] text-[var(--vp-muted-2)] transition hover:bg-[color-mix(in_srgb,var(--vp-red)_14%,transparent)] hover:text-[var(--vp-red)]" aria-label="Supprimer"><Trash2 size={16} /></button>
       </div>
     </div>
   );
@@ -196,14 +206,14 @@ function InfoRow({ inf, save }: { inf: InfoPratique; save: SaveFn }) {
   const [detail, setDetail] = useState(inf.detail || '');
   useEffect(() => { setCat(inf.category); setTime(inf.event_time || ''); setTitle(inf.title); setDetail(inf.detail || ''); }, [inf.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div className="p-4 rounded-2xl bg-white border border-black/10 space-y-2.5">
+    <div className="vp-glass vp-spec space-y-2.5 rounded-[20px] p-4">
       <div className="grid grid-cols-[1fr_76px] gap-2">
         <input className={fieldCls} value={cat} onChange={(e) => setCat(e.target.value)} onBlur={() => cat !== inf.category && save(() => apiSend('/api/infos', 'PUT', { id: inf.id, category: cat }), 'Catégorie mise à jour')} />
         <input className={fieldCls} value={time} placeholder="Heure" onChange={(e) => setTime(e.target.value)} onBlur={() => time !== (inf.event_time || '') && save(() => apiSend('/api/infos', 'PUT', { id: inf.id, event_time: time }), 'Heure mise à jour')} />
       </div>
       <input className={fieldCls} value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => title !== inf.title && save(() => apiSend('/api/infos', 'PUT', { id: inf.id, title }), 'Titre mis à jour')} />
       <textarea rows={2} className={fieldCls} value={detail} onChange={(e) => setDetail(e.target.value)} onBlur={() => detail !== (inf.detail || '') && save(() => apiSend('/api/infos', 'PUT', { id: inf.id, detail }), 'Détail mis à jour')} />
-      <button onClick={() => save(() => apiSend('/api/infos', 'DELETE', { id: inf.id }), 'Carte supprimée')} className="text-[12px] text-neutral-400 hover:text-red-500 transition inline-flex items-center gap-1"><Trash2 size={13} /> Supprimer cette carte</button>
+      <button onClick={() => save(() => apiSend('/api/infos', 'DELETE', { id: inf.id }), 'Carte supprimée')} className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--vp-muted)] transition hover:text-[var(--vp-red)]"><Trash2 size={13} /> Supprimer cette carte</button>
     </div>
   );
 }
@@ -214,7 +224,7 @@ function RsvpEventRow({ ev, save }: { ev: RsvpEvent; save: SaveFn }) {
   return (
     <div className="flex gap-2">
       <input className={fieldCls} value={name} onChange={(e) => setName(e.target.value)} onBlur={() => name !== ev.name && save(() => apiSend('/api/rsvp-events', 'PUT', { id: ev.id, name }), 'Événement mis à jour')} />
-      <button onClick={() => save(() => apiSend('/api/rsvp-events', 'DELETE', { id: ev.id }), 'Événement supprimé')} className="w-10 shrink-0 rounded-xl hover:bg-red-50 text-neutral-300 hover:text-red-500 flex items-center justify-center transition" aria-label="Supprimer"><Trash2 size={16} /></button>
+      <button onClick={() => save(() => apiSend('/api/rsvp-events', 'DELETE', { id: ev.id }), 'Événement supprimé')} className="vp-press flex w-10 shrink-0 items-center justify-center rounded-[12px] text-[var(--vp-muted-2)] transition hover:bg-[color-mix(in_srgb,var(--vp-red)_14%,transparent)] hover:text-[var(--vp-red)]" aria-label="Supprimer"><Trash2 size={16} /></button>
     </div>
   );
 }
@@ -227,7 +237,7 @@ function GiftRow({ g, save }: { g: GiftOption; save: SaveFn }) {
   const [current, setCurrent] = useState(String(Number(g.current_amount) || 0));
   useEffect(() => { setType(g.gift_type); setTitle(g.title); setDesc(g.description || ''); setGoal(String(Number(g.goal_amount) || 0)); setCurrent(String(Number(g.current_amount) || 0)); }, [g.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div className="p-4 rounded-2xl bg-white border border-black/10 space-y-2.5">
+    <div className="vp-glass vp-spec space-y-2.5 rounded-[20px] p-4">
       <input className={fieldCls} value={type} onChange={(e) => setType(e.target.value)} onBlur={() => type !== g.gift_type && save(() => apiSend('/api/gifts', 'PUT', { id: g.id, gift_type: type }), 'Type mis à jour')} />
       <input className={fieldCls} value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => title !== g.title && save(() => apiSend('/api/gifts', 'PUT', { id: g.id, title }), 'Titre mis à jour')} />
       <textarea rows={2} className={fieldCls} value={desc} onChange={(e) => setDesc(e.target.value)} onBlur={() => desc !== (g.description || '') && save(() => apiSend('/api/gifts', 'PUT', { id: g.id, description: desc }), 'Description mise à jour')} />
@@ -235,7 +245,7 @@ function GiftRow({ g, save }: { g: GiftOption; save: SaveFn }) {
         <div><label className={labelCls}>Objectif (€)</label><input type="number" className={fieldCls} value={goal} onChange={(e) => setGoal(e.target.value)} onBlur={() => save(() => apiSend('/api/gifts', 'PUT', { id: g.id, goal_amount: Number(goal) || 0 }), 'Objectif mis à jour')} /></div>
         <div><label className={labelCls}>Collecté (€)</label><input type="number" className={fieldCls} value={current} onChange={(e) => setCurrent(e.target.value)} onBlur={() => save(() => apiSend('/api/gifts', 'PUT', { id: g.id, current_amount: Number(current) || 0 }), 'Montant mis à jour')} /></div>
       </div>
-      <button onClick={() => save(() => apiSend('/api/gifts', 'DELETE', { id: g.id }), 'Cagnotte supprimée')} className="text-[12px] text-neutral-400 hover:text-red-500 transition inline-flex items-center gap-1"><Trash2 size={13} /> Supprimer</button>
+      <button onClick={() => save(() => apiSend('/api/gifts', 'DELETE', { id: g.id }), 'Cagnotte supprimée')} className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--vp-muted)] transition hover:text-[var(--vp-red)]"><Trash2 size={13} /> Supprimer</button>
     </div>
   );
 }
@@ -245,10 +255,10 @@ function FaqRow({ f, save }: { f: Faq; save: SaveFn }) {
   const [a, setA] = useState(f.answer);
   useEffect(() => { setQ(f.question); setA(f.answer); }, [f.id]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div className="p-4 rounded-2xl bg-white border border-black/10 space-y-2.5">
+    <div className="vp-glass vp-spec space-y-2.5 rounded-[20px] p-4">
       <input className={fieldCls} value={q} onChange={(e) => setQ(e.target.value)} onBlur={() => q !== f.question && save(() => apiSend('/api/faqs', 'PUT', { id: f.id, question: q }), 'Question mise à jour')} />
       <textarea rows={2} className={fieldCls} value={a} onChange={(e) => setA(e.target.value)} onBlur={() => a !== f.answer && save(() => apiSend('/api/faqs', 'PUT', { id: f.id, answer: a }), 'Réponse mise à jour')} />
-      <button onClick={() => save(() => apiSend('/api/faqs', 'DELETE', { id: f.id }), 'Question supprimée')} className="text-[12px] text-neutral-400 hover:text-red-500 transition inline-flex items-center gap-1"><Trash2 size={13} /> Supprimer</button>
+      <button onClick={() => save(() => apiSend('/api/faqs', 'DELETE', { id: f.id }), 'Question supprimée')} className="inline-flex items-center gap-1 text-[12px] font-medium text-[var(--vp-muted)] transition hover:text-[var(--vp-red)]"><Trash2 size={13} /> Supprimer</button>
     </div>
   );
 }
@@ -296,7 +306,14 @@ export default function Editor() {
       setSite(s); setSections(sec); setProgramme(prog); setInfos(inf);
       setGallery(gal); setFaqs(fq); setRsvpEvents(rev); setGifts(gf);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Chargement impossible');
+      // En local, l’API serverless n’existe pas : on édite le jeu de démo.
+      if (DEMO_ENABLED) {
+        setSite(DEMO_DATA.site); setSections(DEMO_DATA.sections); setProgramme(DEMO_DATA.programme);
+        setInfos(DEMO_DATA.infos); setGallery(DEMO_DATA.gallery); setFaqs(DEMO_DATA.faqs);
+        setRsvpEvents(DEMO_DATA.rsvpEvents); setGifts(DEMO_DATA.gifts);
+      } else {
+        setError(err instanceof Error ? err.message : 'Chargement impossible');
+      }
     } finally {
       setLoading(false);
     }
@@ -346,19 +363,21 @@ export default function Editor() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F4F2EE] flex flex-col items-center justify-center gap-4">
-        <Loader2 size={28} className="animate-spin text-neutral-400" />
-        <p className="text-neutral-500" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.3rem' }}>Ouverture de votre éditeur…</p>
+      <div className="vp-env flex min-h-screen flex-col items-center justify-center gap-5">
+        <div className="vp-glass vp-spec flex h-16 w-16 items-center justify-center rounded-[22px]">
+          <Loader2 size={26} className="animate-spin text-[var(--vp-accent)]" />
+        </div>
+        <p className="vp-h2 text-[20px]">Ouverture de votre éditeur…</p>
       </div>
     );
   }
 
   if (error || !site) {
     return (
-      <div className="min-h-screen bg-[#F4F2EE] flex flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="text-xl" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>Ce site est introuvable.</p>
-        <p className="text-sm text-neutral-500">{error}</p>
-        <Link to="/creer" className="px-6 py-3 rounded-full bg-neutral-900 text-white text-sm">Créer un site</Link>
+      <div className="vp-env flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+        <p className="vp-h2 text-[22px]">Ce site est introuvable.</p>
+        <p className="vp-caption">{error}</p>
+        <Link to="/creer" className="vp-btn vp-press !px-6">Créer un site</Link>
       </div>
     );
   }
@@ -376,11 +395,11 @@ export default function Editor() {
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => onDropSection(e, idx)}
           onClick={() => { setSelectedKey(s.section_key); setDrawer(null); }}
-          className={`group flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer transition border ${selectedKey === s.section_key ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white border-black/10 hover:border-black/25'} ${dragIdx === idx ? 'opacity-40' : ''} ${!s.visible ? 'opacity-60' : ''}`}
+          className={`vp-press group flex cursor-pointer items-center gap-2.5 rounded-[16px] border px-3 py-2.5 transition-all duration-300 ${selectedKey === s.section_key ? 'border-transparent bg-[var(--vp-ink)] text-white' : 'border-white/60 bg-white/55 hover:border-white/90 hover:bg-white/80 backdrop-blur-xl'} ${dragIdx === idx ? 'opacity-40' : ''} ${!s.visible ? 'opacity-60' : ''}`}
         >
           <GripVertical size={15} className="shrink-0 opacity-40 cursor-grab" />
           <span className="flex-1 text-[13px] font-medium truncate">{s.title}</span>
-          <button onClick={(e) => { e.stopPropagation(); toggleVisible(s); }} className="w-7 h-7 rounded-lg flex items-center justify-center opacity-50 hover:opacity-100 transition" aria-label={s.visible ? 'Masquer' : 'Afficher'}>
+          <button onClick={(e) => { e.stopPropagation(); toggleVisible(s); }} className="flex h-7 w-7 items-center justify-center rounded-[10px] opacity-50 transition hover:bg-black/5 hover:opacity-100" aria-label={s.visible ? 'Masquer' : 'Afficher'}>
             {s.visible ? <Eye size={15} /> : <EyeOff size={15} />}
           </button>
         </div>
@@ -389,64 +408,67 @@ export default function Editor() {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-[#F4F2EE] text-[#1A1A1A]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <header className="h-[60px] shrink-0 bg-white/85 backdrop-blur-xl border-b border-black/10 flex items-center gap-2 sm:gap-3 px-3 sm:px-5 z-30">
-        <Link to="/" className="w-9 h-9 rounded-full hover:bg-black/5 flex items-center justify-center transition" aria-label="Retour"><ArrowLeft size={18} /></Link>
-        <div className="min-w-0 hidden sm:block">
-          <div className="text-[14px] font-medium truncate" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.05rem' }}>{site.partner1} & {site.partner2}</div>
-          <div className="text-[11px] text-neutral-400 tabular-nums truncate">{site.slug}.byaime.fr {site.published && '· Publié'}</div>
+    <div className="vp-env flex h-screen flex-col overflow-hidden">
+      <header className="vp-veil-light relative z-30 flex h-[64px] shrink-0 items-center gap-2 px-3 sm:gap-3 sm:px-5">
+        <Link to="/" className="vp-press flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-black/5" aria-label="Retour"><ArrowLeft size={18} /></Link>
+        <div className="hidden min-w-0 sm:block">
+          <div className="vp-title truncate text-[16px]">{site.partner1} & {site.partner2}</div>
+          <div className="vp-num vp-caption truncate !text-[11px]">{site.slug}.byaime.fr {site.published && '· Publié'}</div>
         </div>
         <div className="flex-1" />
-        <div className="hidden md:flex items-center p-1 rounded-full bg-black/5">
-          <button onClick={() => setDevice('desktop')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium transition ${device === 'desktop' ? 'bg-white shadow-sm' : 'text-neutral-500'}`}><Monitor size={14} /> Desktop</button>
-          <button onClick={() => setDevice('mobile')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium transition ${device === 'mobile' ? 'bg-white shadow-sm' : 'text-neutral-500'}`}><Smartphone size={14} /> Mobile</button>
+        <div className="vp-segmented hidden md:inline-flex">
+          <button onClick={() => setDevice('desktop')} className="vp-seg-item" data-on={device === 'desktop'}><Monitor size={14} /> Desktop</button>
+          <button onClick={() => setDevice('mobile')} className="vp-seg-item" data-on={device === 'mobile'}><Smartphone size={14} /> Mobile</button>
         </div>
-        <button onClick={() => setDrawer('structure')} className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-black/5 text-[13px] font-medium"><LayoutList size={15} /> Sections</button>
-        <div className="hidden sm:flex items-center gap-1.5">
-          <button onClick={() => setDrawer(drawer === 'appearance' ? null : 'appearance')} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition ${drawer === 'appearance' ? 'bg-neutral-900 text-white' : 'bg-black/5 hover:bg-black/10'}`}><Palette size={15} /> <span className="hidden xl:inline">Apparence</span></button>
-          <button onClick={() => openMedia(() => { fetchAll(); }, 'Bibliothèque média')} className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium bg-black/5 hover:bg-black/10 transition"><Images size={15} /> <span className="hidden xl:inline">Médias</span></button>
-          <button onClick={() => { setDrawer(drawer === 'rsvp' ? null : 'rsvp'); setRsvpTick((t) => t + 1); }} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition ${drawer === 'rsvp' ? 'bg-neutral-900 text-white' : 'bg-black/5 hover:bg-black/10'}`}><MailCheck size={15} /> <span className="hidden xl:inline">RSVP</span></button>
-          <button onClick={() => setDrawer(drawer === 'share' ? null : 'share')} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition ${drawer === 'share' ? 'bg-neutral-900 text-white' : 'bg-black/5 hover:bg-black/10'}`}><Share2 size={15} /> <span className="hidden xl:inline">Partager</span></button>
+        <button onClick={() => setDrawer('structure')} className="vp-chip vp-press lg:hidden"><LayoutList size={15} /> Sections</button>
+        <div className="hidden items-center gap-1.5 sm:flex">
+          <button onClick={() => setDrawer(drawer === 'appearance' ? null : 'appearance')} className={`vp-chip vp-press ${drawer === 'appearance' ? '!bg-[var(--vp-ink)] !text-white' : ''}`}><Palette size={15} /> <span className="hidden xl:inline">Apparence</span></button>
+          <button onClick={() => openMedia(() => { fetchAll(); }, 'Bibliothèque média')} className="vp-chip vp-press"><Images size={15} /> <span className="hidden xl:inline">Médias</span></button>
+          <button onClick={() => { setDrawer(drawer === 'rsvp' ? null : 'rsvp'); setRsvpTick((t) => t + 1); }} className={`vp-chip vp-press ${drawer === 'rsvp' ? '!bg-[var(--vp-ink)] !text-white' : ''}`}><MailCheck size={15} /> <span className="hidden xl:inline">RSVP</span></button>
+          <button onClick={() => setDrawer(drawer === 'share' ? null : 'share')} className={`vp-chip vp-press ${drawer === 'share' ? '!bg-[var(--vp-ink)] !text-white' : ''}`}><Share2 size={15} /> <span className="hidden xl:inline">Partager</span></button>
         </div>
         {site.published ? (
-          <Link to={`/p/${site.slug}`} target="_blank" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 text-white text-[13px] font-medium hover:bg-emerald-500 transition"><Globe size={15} /> Voir</Link>
+          <Link to={`/p/${site.slug}`} target="_blank" className="vp-btn vp-press !px-4 !py-2 !text-[13px]"><Globe size={15} /> Voir</Link>
         ) : (
-          <button onClick={publish} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#8A6D4B] text-white text-[13px] font-medium hover:bg-[#75593C] transition"><Rocket size={15} /> Publier</button>
+          <button onClick={publish} className="vp-btn vp-press !px-4 !py-2 !text-[13px]"><Rocket size={15} /> Publier</button>
         )}
       </header>
 
       <div className="flex-1 flex min-h-0">
-        <aside className="hidden lg:flex w-[264px] shrink-0 flex-col bg-white/60 backdrop-blur border-r border-black/10 p-4 overflow-y-auto">
-          <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-medium px-2 mb-2">Structure du site</div>
+        <aside className="vp-veil-light hidden w-[264px] shrink-0 flex-col overflow-y-auto border-r-0 p-4 lg:flex">
+          <div className="vp-eyebrow mb-2.5 px-2">Structure du site</div>
           {structureList}
-          <div className="mt-5 px-2">
-            <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-medium mb-2">Phase du mariage</div>
-            <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-black/5">
+          <div className="mt-6 px-1">
+            <div className="vp-eyebrow mb-2.5">Phase du mariage</div>
+            <div className="vp-segmented grid w-full grid-cols-3">
               {PHASES.map((p) => (
-                <button key={p.id} onClick={() => { patchSite({ phase: p.id }); notify(`Phase : ${p.name}`); }} className={`py-2 rounded-xl text-[12px] font-medium transition ${site.phase === p.id ? 'bg-white shadow-sm' : 'text-neutral-500'}`}>{p.name}</button>
+                <button key={p.id} onClick={() => { patchSite({ phase: p.id }); notify(`Phase : ${p.name}`); }} className="vp-seg-item justify-center !px-1 !py-2" data-on={site.phase === p.id}>{p.name}</button>
               ))}
             </div>
-            <p className="mt-2 text-[11px] text-neutral-400 leading-relaxed">{PHASES.find((p) => p.id === site.phase)?.desc}</p>
+            <p className="vp-caption mt-2.5 !text-[11.5px] leading-relaxed">{PHASES.find((p) => p.id === site.phase)?.desc}</p>
           </div>
         </aside>
 
         <main className="flex-1 min-w-0 overflow-y-auto" onClick={() => setDrawer(null)}>
           <div className={`mx-auto py-5 px-3 sm:px-6 transition-all duration-500 ${device === 'mobile' ? 'max-w-[400px]' : 'max-w-5xl'}`}>
-            <div className={`overflow-hidden bg-white shadow-[0_20px_70px_rgba(0,0,0,0.10)] border border-black/10 transition-all duration-500 ${device === 'mobile' ? 'rounded-[2.2rem] border-[6px] border-neutral-900' : 'rounded-2xl'}`}>
-              {device === 'mobile' && <div className="bg-neutral-900 pt-2.5 pb-1.5 flex justify-center"><div className="w-24 h-5 bg-black rounded-full" /></div>}
-              <PublicSiteView data={data} preview selectedKey={selectedKey} onSelectSection={(k) => setSelectedKey(k)} />
+            <div className={`vp-glass-float overflow-hidden transition-all duration-500 ${device === 'mobile' ? 'rounded-[38px] p-2' : 'rounded-[26px]'}`}>
+              {device === 'mobile' && <div className="flex justify-center pb-2 pt-1"><div className="h-5 w-24 rounded-full bg-black/70" /></div>}
+              <div className="overflow-hidden" style={{ borderRadius: device === 'mobile' ? 30 : 20 }}>
+                <PublicSiteView data={data} preview selectedKey={selectedKey} onSelectSection={(k) => setSelectedKey(k)} />
+              </div>
             </div>
-            <p className="mt-4 text-center text-[12px] text-neutral-400">Cliquez sur une section du site pour la modifier — aperçu {device === 'mobile' ? 'mobile' : 'desktop'} en temps réel.</p>
+            <p className="vp-caption mt-4 text-center !text-[12px]">Cliquez sur une section du site pour la modifier — aperçu {device === 'mobile' ? 'mobile' : 'desktop'} en temps réel.</p>
           </div>
         </main>
 
-        <aside className="hidden lg:flex w-[320px] shrink-0 flex-col bg-white border-l border-black/10 min-h-0">
-          <div className="px-5 pt-5 pb-3 border-b border-black/5 shrink-0">
-            <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-medium">Sélection</div>
-            <div className="mt-1 text-lg font-light flex items-center gap-2" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>
+        <aside className="vp-veil-light hidden w-[320px] shrink-0 flex-col border-l-0 lg:flex">
+          <div className="shrink-0 px-5 pb-3 pt-5">
+            <div className="vp-eyebrow">Sélection</div>
+            <div className="vp-h2 mt-1 flex items-center gap-2 text-[20px]">
               {selectedSection?.title || 'Section'}
-              {selectedSection && !selectedSection.visible && <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/10 text-neutral-500 tracking-wide uppercase">Masquée</span>}
+              {selectedSection && !selectedSection.visible && <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--vp-muted)]">Masquée</span>}
             </div>
+            <div className="vp-hr mt-3.5" />
           </div>
           <div className="flex-1 overflow-y-auto p-5">
             <SectionEditor sectionKey={selectedKey} ctx={ctx} />
@@ -454,27 +476,27 @@ export default function Editor() {
         </aside>
       </div>
 
-      <div className="lg:hidden shrink-0 bg-white/90 backdrop-blur-xl border-t border-black/10 px-3 py-2.5 flex items-center justify-around z-30">
-        <button onClick={() => setDevice(device === 'mobile' ? 'desktop' : 'mobile')} className="flex flex-col items-center gap-0.5 text-[10px] text-neutral-500 p-1.5">{device === 'mobile' ? <Monitor size={19} /> : <Smartphone size={19} />} Aperçu</button>
-        <button onClick={() => setDrawer('appearance')} className="flex flex-col items-center gap-0.5 text-[10px] text-neutral-500 p-1.5"><Palette size={19} /> Style</button>
-        <button onClick={() => openMedia(() => { fetchAll(); }, 'Bibliothèque média')} className="flex flex-col items-center gap-0.5 text-[10px] text-neutral-500 p-1.5"><Images size={19} /> Photos</button>
-        <button onClick={() => { setDrawer('rsvp'); setRsvpTick((t) => t + 1); }} className="flex flex-col items-center gap-0.5 text-[10px] text-neutral-500 p-1.5"><MailCheck size={19} /> RSVP</button>
-        <button onClick={() => setDrawer('share')} className="flex flex-col items-center gap-0.5 text-[10px] text-neutral-500 p-1.5"><Share2 size={19} /> Partage</button>
+      <div className="vp-veil-light z-30 flex shrink-0 items-center justify-around px-3 py-2 lg:hidden">
+        <button onClick={() => setDevice(device === 'mobile' ? 'desktop' : 'mobile')} className="vp-press flex flex-col items-center gap-0.5 p-1.5 text-[10px] font-medium text-[var(--vp-muted)]">{device === 'mobile' ? <Monitor size={19} /> : <Smartphone size={19} />} Aperçu</button>
+        <button onClick={() => setDrawer('appearance')} className="vp-press flex flex-col items-center gap-0.5 p-1.5 text-[10px] font-medium text-[var(--vp-muted)]"><Palette size={19} /> Style</button>
+        <button onClick={() => openMedia(() => { fetchAll(); }, 'Bibliothèque média')} className="vp-press flex flex-col items-center gap-0.5 p-1.5 text-[10px] font-medium text-[var(--vp-muted)]"><Images size={19} /> Photos</button>
+        <button onClick={() => { setDrawer('rsvp'); setRsvpTick((t) => t + 1); }} className="vp-press flex flex-col items-center gap-0.5 p-1.5 text-[10px] font-medium text-[var(--vp-muted)]"><MailCheck size={19} /> RSVP</button>
+        <button onClick={() => setDrawer('share')} className="vp-press flex flex-col items-center gap-0.5 p-1.5 text-[10px] font-medium text-[var(--vp-muted)]"><Share2 size={19} /> Partage</button>
       </div>
 
       <AnimatePresence>
         {drawer && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDrawer(null)} className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]" />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 300 }} className="fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] bg-[#FAF8F5] shadow-2xl flex flex-col">
-              <div className="flex items-center justify-between px-6 h-[68px] border-b border-black/10 bg-white/70 backdrop-blur shrink-0">
-                <div className="text-[13px] tracking-[0.25em] uppercase font-medium">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDrawer(null)} className="fixed inset-0 z-40 bg-[#05060C]/25 backdrop-blur-[6px]" />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 30, stiffness: 300 }} className="vp-env fixed bottom-0 right-0 top-0 z-50 flex w-full flex-col sm:w-[430px]">
+              <div className="vp-veil-light flex h-[68px] shrink-0 items-center justify-between px-6">
+                <div className="vp-eyebrow !tracking-[0.18em] !text-[var(--vp-ink)]">
                   {drawer === 'appearance' && 'Apparence de votre mariage'}
                   {drawer === 'rsvp' && 'RSVP'}
                   {drawer === 'share' && 'Publication & partage'}
                   {drawer === 'structure' && 'Structure du site'}
                 </div>
-                <button onClick={() => setDrawer(null)} className="w-9 h-9 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition" aria-label="Fermer"><X size={17} /></button>
+                <button onClick={() => setDrawer(null)} className="vp-press flex h-9 w-9 items-center justify-center rounded-full bg-black/5 transition hover:bg-black/10" aria-label="Fermer"><X size={17} /></button>
               </div>
               <div className="flex-1 overflow-y-auto p-6">
                 {drawer === 'appearance' && <AppearancePanel site={site} onPatch={patchSite} />}
@@ -484,7 +506,7 @@ export default function Editor() {
                   <div>
                     {structureList}
                     <div className="mt-6">
-                      <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-medium mb-3">Modifier : {selectedSection?.title}</div>
+                      <div className="vp-eyebrow mb-3">Modifier : {selectedSection?.title}</div>
                       <SectionEditor sectionKey={selectedKey} ctx={ctx} />
                     </div>
                   </div>
@@ -496,7 +518,7 @@ export default function Editor() {
       </AnimatePresence>
 
       <div className="lg:hidden">
-        <button onClick={() => setDrawer('structure')} className="fixed bottom-[76px] right-4 z-30 flex items-center gap-2 px-4 py-3 rounded-full bg-neutral-900 text-white text-[13px] font-medium shadow-xl">
+        <button onClick={() => setDrawer('structure')} className="vp-btn vp-press fixed bottom-[76px] right-4 z-30 !px-4 !py-3 !text-[13px]">
           Modifier : {selectedSection?.title || 'section'} <ChevronDown size={15} className="rotate-[-90deg]" />
         </button>
       </div>
@@ -505,8 +527,8 @@ export default function Editor() {
 
       <AnimatePresence>
         {toast && (
-          <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-2 px-5 py-3 rounded-full bg-neutral-900 text-white text-sm shadow-2xl">
-            <Check size={16} className="text-emerald-400" /> {toast}
+          <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="vp-glass-dark vp-spec-dark fixed bottom-24 left-1/2 z-[80] flex -translate-x-1/2 items-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-white lg:bottom-8">
+            <Check size={16} className="text-[var(--vp-green)]" strokeWidth={2.5} /> {toast}
           </motion.div>
         )}
       </AnimatePresence>

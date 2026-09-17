@@ -1,0 +1,112 @@
+import type { PublicSiteData, MediaAsset } from './types';
+
+/**
+ * Jeu de démonstration.
+ *
+ * L’API (fonctions serverless + Supabase) n’est pas joignable en local :
+ * en développement uniquement, ces données prennent le relais pour que
+ * l’aperçu reste explorable. En production, rien ne change : l’API prime
+ * et une erreur remonte normalement.
+ */
+export const DEMO_ENABLED = import.meta.env.DEV;
+
+export const DEMO_MEDIA: MediaAsset[] = [
+  { id: 1, category: 'Couple', title: 'Couple à Paris', url: '/images/couple-paris.jpg', collection: 'Editorial Paris', kind: 'photo', orientation: 'portrait' },
+  { id: 2, category: 'Alliances', title: 'Les alliances', url: '/images/alliances.jpg', collection: 'Editorial Paris', kind: 'photo', orientation: 'carre' },
+  { id: 3, category: 'Bouquet', title: 'Bouquet pivoines', url: '/images/bouquet.jpg', collection: 'Garden Wedding', kind: 'photo', orientation: 'portrait' },
+  { id: 4, category: 'Château', title: 'Château de Chantilly', url: '/images/chateau.jpg', collection: 'Château', kind: 'photo', orientation: 'paysage' },
+  { id: 5, category: 'Table', title: 'Table black tie', url: '/images/table-noir.jpg', collection: 'Black Tie', kind: 'photo', orientation: 'paysage' },
+  { id: 6, category: 'Danse', title: 'Première danse', url: '/images/danse.jpg', collection: 'Modern Romance', kind: 'photo', orientation: 'paysage' },
+  { id: 7, category: 'Nature', title: 'Jardin anglais', url: '/images/garden.jpg', collection: 'Garden Wedding', kind: 'photo', orientation: 'paysage' },
+  { id: 8, category: 'Décoration', title: 'Terrasse au soleil', url: '/images/terrasse.jpg', collection: "Côte d'Azur", kind: 'photo', orientation: 'paysage' },
+  { id: 9, category: 'Champagne', title: 'Coupe de champagne', url: '/images/champagne.jpg', collection: 'Black Tie', kind: 'photo', orientation: 'portrait' },
+  { id: 10, category: 'Textures', title: 'Noir & blanc', url: '/images/noir-blanc.jpg', collection: 'Editorial Paris', kind: 'photo', orientation: 'carre' },
+  { id: 11, category: 'Cérémonie', title: 'Hero — mariage', url: '/images/hero-wedding.jpg', collection: 'Château', kind: 'photo', orientation: 'paysage' },
+];
+
+export const DEMO_DATA: PublicSiteData = {
+  site: {
+    id: 1,
+    slug: 'matt-marie',
+    partner1: 'Matt',
+    partner2: 'Marie',
+    wedding_date: '2027-07-18',
+    venue: 'Château de Chantilly',
+    city: 'Chantilly, Oise',
+    style: 'editorial',
+    phase: 'avant',
+    typography: 'spatial',
+    accent_color: '#16171A',
+    button_style: 'pill',
+    shape: 'soft',
+    layout: 'magazine',
+    animation_level: 'fluide',
+    hero_photo: '/images/hero-wedding.jpg',
+    hero_title: 'Matt & Marie',
+    hero_subtitle: 'Nous nous marions',
+    story_title: 'Tout a commencé par un regard',
+    story_text:
+      'C’est une histoire comme on les aime : une rencontre, un éclat de rire, puis l’évidence.\n\nDepuis ce jour, Matt et Marie ne se quittent plus. Et aujourd’hui, ils veulent écrire la suite avec vous, entourés de celles et ceux qu’ils aiment.',
+    story_photo: '/images/couple-paris.jpg',
+    announcement: 'Nous avons hâte de vous retrouver.',
+    contact_email: 'matt.et.marie@byaime.fr',
+    contact_phone: '+33 6 12 34 56 78',
+    published: true,
+  },
+  sections: [
+    { id: 1, site_id: 1, section_key: 'hero', title: 'Accueil', visible: true, position: 0 },
+    { id: 2, site_id: 1, section_key: 'histoire', title: 'Notre histoire', visible: true, position: 1 },
+    { id: 3, site_id: 1, section_key: 'programme', title: 'Programme', visible: true, position: 2 },
+    { id: 4, site_id: 1, section_key: 'lieux', title: 'Lieux', visible: true, position: 3 },
+    { id: 5, site_id: 1, section_key: 'infos', title: 'Infos pratiques', visible: true, position: 4 },
+    { id: 6, site_id: 1, section_key: 'rsvp', title: 'RSVP', visible: true, position: 5 },
+    { id: 7, site_id: 1, section_key: 'cagnotte', title: 'Cagnotte', visible: true, position: 6 },
+    { id: 8, site_id: 1, section_key: 'galerie', title: 'Galerie', visible: true, position: 7 },
+    { id: 9, site_id: 1, section_key: 'faq', title: 'FAQ', visible: true, position: 8 },
+    { id: 10, site_id: 1, section_key: 'contact', title: 'Contact', visible: true, position: 9 },
+    { id: 11, site_id: 1, section_key: 'footer', title: 'Pied de page', visible: true, position: 10 },
+  ],
+  programme: [
+    { id: 1, site_id: 1, event_time: '14:30', title: 'Cérémonie', description: 'Échange des vœux et des alliances, dans l’orangerie.', place: 'Orangerie du château', icon: 'clock', position: 0 },
+    { id: 2, site_id: 1, event_time: '16:00', title: 'Cocktail', description: 'Coupe de champagne et photos de groupe dans les jardins.', place: 'Jardins à la française', icon: 'clock', position: 1 },
+    { id: 3, site_id: 1, event_time: '18:30', title: 'Dîner', description: 'Dîner assis, discours et surprises.', place: 'Grande nef', icon: 'clock', position: 2 },
+    { id: 4, site_id: 1, event_time: '21:00', title: 'Ouverture du bal', description: 'La première danse, puis à vous.', place: 'Grande nef', icon: 'clock', position: 3 },
+    { id: 5, site_id: 1, event_time: '23:30', title: 'Soirée', description: 'Dansez jusqu’au bout de la nuit.', place: 'Orangerie', icon: 'clock', position: 4 },
+  ],
+  infos: [
+    { id: 1, site_id: 1, category: 'Cérémonie', title: 'Château de Chantilly', detail: 'Orangerie — 7 rue du Connétable, Chantilly', event_time: '14:30', link_label: 'Voir l’itinéraire', position: 0 },
+    { id: 2, site_id: 1, category: 'Réception', title: 'Château de Chantilly', detail: 'Grande nef — 7 rue du Connétable, Chantilly', event_time: '18:30', link_label: 'Voir l’itinéraire', position: 1 },
+    { id: 3, site_id: 1, category: 'Parking', title: 'Parking privé', detail: 'Un parking est réservé aux invités à l’entrée du domaine.', event_time: '', link_label: '', position: 2 },
+    { id: 4, site_id: 1, category: 'Hébergements', title: 'Où dormir ?', detail: 'Hôtels et chambres d’hôtes à proximité — réservez tôt.', event_time: '', link_label: '', position: 3 },
+    { id: 5, site_id: 1, category: 'Dress code', title: 'Tenue de cocktail', detail: 'Élégance estivale. Prévoyez des chaussures adaptées aux jardins.', event_time: '', link_label: '', position: 4 },
+    { id: 6, site_id: 1, category: 'Contacts', title: 'Une question ?', detail: 'Écrivez-nous, nous répondons à tout, vite.', event_time: '', link_label: '', position: 5 },
+  ],
+  gallery: [
+    { id: 1, site_id: 1, url: '/images/hero-wedding.jpg', caption: 'Nous deux', position: 0, is_private: false },
+    { id: 2, site_id: 1, url: '/images/couple-paris.jpg', caption: 'Paris, toujours', position: 1, is_private: false },
+    { id: 3, site_id: 1, url: '/images/alliances.jpg', caption: 'Les alliances', position: 2, is_private: false },
+    { id: 4, site_id: 1, url: '/images/bouquet.jpg', caption: 'Le bouquet', position: 3, is_private: false },
+    { id: 5, site_id: 1, url: '/images/chateau.jpg', caption: 'Le château', position: 4, is_private: false },
+    { id: 6, site_id: 1, url: '/images/champagne.jpg', caption: 'À la vie', position: 5, is_private: false },
+    { id: 7, site_id: 1, url: '/images/garden.jpg', caption: 'Les jardins', position: 6, is_private: false },
+    { id: 8, site_id: 1, url: '/images/danse.jpg', caption: 'Première danse', position: 7, is_private: false },
+  ],
+  faqs: [
+    { id: 1, site_id: 1, question: 'Comment venir ?', answer: 'Toutes les adresses et itinéraires sont indiqués dans la rubrique Lieux. Un parking est prévu à proximité.', position: 0 },
+    { id: 2, site_id: 1, question: 'Où dormir ?', answer: 'Plusieurs hôtels et chambres d’hôtes autour du lieu. Réservez tôt et mentionnez notre mariage.', position: 1 },
+    { id: 3, site_id: 1, question: 'Y a-t-il un parking ?', answer: 'Oui, un parking privé est réservé aux invités juste à côté du lieu de réception.', position: 2 },
+    { id: 4, site_id: 1, question: 'Les enfants sont-ils invités ?', answer: 'Nous adorons vos enfants, mais la soirée est réservée aux adultes — sauf mention sur votre invitation.', position: 3 },
+    { id: 5, site_id: 1, question: 'Quel est le dress code ?', answer: 'Tenue de cocktail. Mesdames, prévoyez des chaussures adaptées aux jardins.', position: 4 },
+    { id: 6, site_id: 1, question: 'À quelle heure arriver ?', answer: 'Merci d’arriver 30 minutes avant la cérémonie pour vous installer sereinement.', position: 5 },
+  ],
+  rsvpEvents: [
+    { id: 1, site_id: 1, name: 'Cérémonie', description: '14:30', position: 0 },
+    { id: 2, site_id: 1, name: 'Cocktail', description: '16:00', position: 1 },
+    { id: 3, site_id: 1, name: 'Dîner', description: '18:30', position: 2 },
+    { id: 4, site_id: 1, name: 'Brunch', description: 'Lendemain, 11:00', position: 3 },
+  ],
+  gifts: [
+    { id: 1, site_id: 1, gift_type: 'Voyage de noces', title: 'Notre lune de miel', description: 'Aidez-nous à créer des souvenirs inoubliables au bout du monde.', goal_amount: 5000, current_amount: 1840, position: 0 },
+    { id: 2, site_id: 1, gift_type: 'Participation libre', title: 'Cagnotte des mariés', description: 'Chaque attention nous touche, quel qu’en soit le montant.', goal_amount: 0, current_amount: 0, position: 1 },
+  ],
+};
