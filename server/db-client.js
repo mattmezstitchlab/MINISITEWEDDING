@@ -15,6 +15,21 @@ import { triggerRestore } from './db-wake.js';
  * au lieu d'un JSON 500. On passe donc en création paresseuse.
  */
 
+/**
+ * La base est injoignable : variables absentes, projet en pause, facture
+ * impayée… Ce n’est pas un bug du handler, c’est une indisponibilité. On la
+ * distingue par un `code` pour que l’API réponde 503 (voir `server/errors.js`)
+ * et que le front puisse basculer sur une copie statique
+ * (voir `src/lib/staticSite.ts`).
+ */
+export class SupabaseUnavailableError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'SupabaseUnavailableError';
+    this.code = 'SUPABASE_UNAVAILABLE';
+  }
+}
+
 function resolveUrl() {
   return (
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -44,13 +59,13 @@ function getClient() {
   const key = resolveServiceKey();
 
   if (!url) {
-    _initError = new Error(
+    _initError = new SupabaseUnavailableError(
       'Configuration Supabase manquante: NEXT_PUBLIC_SUPABASE_URL / VITE_SUPABASE_URL non défini. Vérifiez les variables d’environnement Vercel.'
     );
     throw _initError;
   }
   if (!key) {
-    _initError = new Error(
+    _initError = new SupabaseUnavailableError(
       'Configuration Supabase manquante: SUPABASE_SERVICE_ROLE_KEY non défini. Vérifiez les variables d’environnement Vercel.'
     );
     throw _initError;

@@ -1,5 +1,6 @@
 import supabase from '../server/db-client.js';
 import { ownerSiteId, unauthorized } from '../server/auth.js';
+import { respondError } from '../server/errors.js';
 
 /**
  * Le site lui-même. Écrit à la main plutôt qu’avec la fabrique `crud()` :
@@ -74,7 +75,6 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
   } catch (err) {
-    console.error('API wedding-sites error:', err);
-    return res.status(500).json({ error: err.message || 'Erreur interne' });
+    return respondError(res, err, 'wedding-sites');
   }
 }

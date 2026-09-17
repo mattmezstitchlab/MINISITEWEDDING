@@ -1,20 +1,27 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, Loader2, MapPin, CalendarDays, Heart, Palette } from 'lucide-react';
 import { formatDateLong, daysUntil } from '../lib/format';
 import { seedSite } from '../lib/defaults';
 import StylePicker from '../components/StylePicker';
 
+/** `state.preselectedStyle` : l’univers cliqué depuis la page d’accueil. */
+function usePreselectedStyle(): string {
+  const state = useLocation().state as { preselectedStyle?: string } | null;
+  return typeof state?.preselectedStyle === 'string' ? state.preselectedStyle : '';
+}
+
 export default function Onboarding() {
   const navigate = useNavigate();
+  const preselected = usePreselectedStyle();
   const [step, setStep] = useState(0);
   const [partner1, setPartner1] = useState('');
   const [partner2, setPartner2] = useState('');
   const [date, setDate] = useState('2027-07-18');
   const [venue, setVenue] = useState('');
   const [city, setCity] = useState('');
-  const [style, setStyle] = useState('');
+  const [style, setStyle] = useState(preselected);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
@@ -89,11 +96,11 @@ export default function Onboarding() {
                 <div className="mt-10 grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="vp-label ml-1">Premier prénom</label>
-                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
+                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Sarah" autoFocus className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
                   </div>
                   <div>
                     <label className="vp-label ml-1">Second prénom</label>
-                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
+                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Gabriel" className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
                   </div>
                 </div>
                 {(partner1 || partner2) && (
@@ -163,13 +170,14 @@ export default function Onboarding() {
                   <div className="vp-eyebrow">Étape 4 · On casse les codes ?</div>
                   <h1 className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 5.4vw, 3.1rem)' }}>Quel mariage vous ressemble vraiment ?</h1>
                   <p className="vp-body mx-auto mt-3 max-w-2xl">
-                    Fini le château + pivoines en boucle. 8 partis pris radicaux, 8 images uniques, 8 couleurs qui claquent.
-                    Un mariage peut être un club à 2h17, un motel vide, un bunker en béton, un fanzine photocopié.
+                    Dix partis pris radicaux. Un mariage peut être un club à 2h17, un motel vide,
+                    un bunker en béton ou un fanzine photocopié.
                   </p>
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    <span className="vp-chip !text-[11px]">Anti-château</span>
-                    <span className="vp-chip !text-[11px]">Plus de bouquet.jpg en double</span>
-                    <span className="vp-chip !text-[11px]">Buzz garanti</span>
+                    <span className="vp-chip !text-[11px]">Béton Brut</span>
+                    <span className="vp-chip !text-[11px]">Club à 2h17</span>
+                    <span className="vp-chip !text-[11px]">Motel du désert</span>
+                    <span className="vp-chip !text-[11px]">Fanzine photocopié</span>
                   </div>
                 </div>
                 <div className="mt-10">
@@ -177,15 +185,15 @@ export default function Onboarding() {
                 </div>
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">
                   <div className="vp-glass vp-spec rounded-[18px] p-4">
-                    <div className="text-[13px] font-semibold">Ce qui fait du buzz :</div>
+                    <div className="text-[13px] font-semibold">Ce que l’environnement compose :</div>
                     <ul className="mt-2 list-disc pl-4 text-[12.5px] leading-relaxed text-[var(--vp-muted)]">
-                      <li>Visuels ultra-distincts → chaque partage est reconnaissable</li>
-                      <li>Manifeste intégré → les invités comprennent le délire</li>
-                      <li>Accent qui claque → le site n’est plus beige</li>
+                      <li>Des textes, un programme et une FAQ écrits pour cet univers</li>
+                      <li>Des couleurs et une typographie assorties</li>
+                      <li>Un ton que vos invités saisissent dès l’invitation</li>
                     </ul>
                   </div>
                   <div className="vp-glass vp-spec rounded-[18px] p-4">
-                    <div className="text-[13px] font-semibold">Exemples qui cartonnent :</div>
+                    <div className="text-[13px] font-semibold">Trois exemples :</div>
                     <ul className="mt-2 list-disc pl-4 text-[12.5px] leading-relaxed text-[var(--vp-muted)]">
                       <li><b>Club Amour</b> : invitation = flyer rave, dress code = club kid</li>
                       <li><b>Punk Papier</b> : faire-part photocopié, coût 0€, anti-luxe</li>

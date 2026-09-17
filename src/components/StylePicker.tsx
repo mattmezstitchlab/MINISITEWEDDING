@@ -11,7 +11,7 @@ interface Props {
  * Sélecteur d’environnement — version qui casse les codes.
  *
  * Chaque carte est un mini-manifeste : image radicalement distincte,
- * accent qui claque, tagline qui provoque. Plus de doublons bouquet.jpg.
+ * accent qui claque, tagline qui provoque.
  * On veut que l'utilisateur s'arrête et se dise "ah, on peut faire ça ?"
  */
 export default function StylePicker({ value, onChange }: Props) {

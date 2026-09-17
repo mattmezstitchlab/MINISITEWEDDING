@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Copy, Check, MessageCircle, Mail, MessageSquare, Share2, Eye, EyeOff, Globe, KeyRound, Printer } from 'lucide-react';
-import type { WeddingSite } from '../lib/types';
+import { Copy, Check, MessageCircle, Mail, MessageSquare, Share2, Eye, EyeOff, Globe, KeyRound, Printer, Download } from 'lucide-react';
+import type { PublicSiteData, WeddingSite } from '../lib/types';
 import { publicUrl, publicPath } from '../lib/format';
 import { getEditToken } from '../lib/auth';
 
 interface Props {
   site: WeddingSite;
+  /** Données complètes du site, pour télécharger une copie statique. */
+  data?: PublicSiteData | null;
   onPublishedChange: (v: boolean) => void;
 }
 
@@ -25,7 +27,29 @@ async function copyText(value: string) {
   }
 }
 
-export default function SharePanel({ site, onPublishedChange }: Props) {
+/**
+ * Télécharge `public/sites/<slug>.json` : la copie qui permet au site de
+ * s’afficher quand Supabase ne répond plus (voir `src/lib/staticSite.ts`).
+ * Pratique quand on n’a pas les clés de service sous la main pour lancer
+ * `npm run snapshot`.
+ */
+/** Le fichier `public/sites/<slug>.json` : le site tel qu’il sera servi. */
+function snapshotText(site: WeddingSite, data: PublicSiteData): string {
+  return JSON.stringify({ ...data, site: { ...data.site, ...site }, exported_at: new Date().toISOString() }, null, 2);
+}
+
+function downloadSnapshot(site: WeddingSite, data: PublicSiteData) {
+  const url = URL.createObjectURL(new Blob([snapshotText(site, data)], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${site.slug}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+export default function SharePanel({ site, data, onPublishedChange }: Props) {
   const [copied, setCopied] = useState<'url' | 'key' | null>(null);
   const [revealKey, setRevealKey] = useState(false);
   const fullUrl = publicUrl(site.slug);
@@ -67,6 +91,28 @@ export default function SharePanel({ site, onPublishedChange }: Props) {
           </Link>
         </div>
       </div>
+
+      {data && (
+        <div className="vp-glass vp-spec mt-4 rounded-[24px] p-5 text-left">
+          <div className="vp-eyebrow"><Download size={13} className="mr-1 inline" />Publier pour vos invités</div>
+          <p className="vp-caption mt-2 !text-[11.5px] leading-relaxed">
+            Vos modifications sont enregistrées sur cet appareil. Pour que le lien
+            fonctionne chez vos invités, téléchargez ce fichier puis déposez-le dans
+            {' '}<code className="vp-num">public/sites/</code> du dépôt : le site se redéploie tout seul.
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button onClick={() => downloadSnapshot(site, data)} className="vp-btn vp-btn-glass vp-press !py-2.5 !text-[12.5px]">
+              <Download size={15} /> Télécharger
+            </button>
+            <button onClick={() => copy(snapshotText(site, data), 'key')} className="vp-btn vp-btn-glass vp-press !py-2.5 !text-[12.5px]">
+              {copied === 'key' ? <Check size={15} strokeWidth={2.5} /> : <Copy size={15} />}{copied === 'key' ? 'Copié' : 'Copier'}
+            </button>
+          </div>
+          <p className="vp-caption mt-2.5 !text-[10.5px] leading-relaxed">
+            Le fichier doit s’appeler exactement <code className="vp-num">{site.slug}.json</code>.
+          </p>
+        </div>
+      )}
 
       <div className="vp-glass vp-spec mt-4 rounded-[24px] p-5 text-left">
         <div className="vp-eyebrow"><KeyRound size={13} className="mr-1 inline" />Clé d’édition</div>

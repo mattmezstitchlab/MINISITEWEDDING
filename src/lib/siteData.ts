@@ -5,6 +5,7 @@ import type {
 } from './types';
 import { apiGet, ApiError } from './http';
 import { DEMO_DATA, DEMO_ENABLED } from './demo';
+import { STATIC_SITES, loadStaticSite } from './staticSite';
 
 /**
  * Chargement d’un site complet.
@@ -15,8 +16,18 @@ import { DEMO_DATA, DEMO_ENABLED } from './demo';
  * publiés.
  *
  * Le site public et l’éditeur demandaient exactement les mêmes huit
- * ressources, avec le même repli sur la démo en cas d’erreur : la logique
- * vit désormais ici, une seule fois.
+ * ressources, avec le même repli en cas d’erreur : la logique vit désormais
+ * ici, une seule fois.
+ *
+ * Ordre des replis quand l’API ne répond pas (base en pause, variables
+ * manquantes, réseau coupé) :
+ *   1. la copie statique `public/sites/<slug>.json`, si elle existe — c’est le
+ *      vrai contenu du site, servi sans Supabase (voir `staticSite.ts`) ;
+ *   2. le jeu de démonstration, en développement seulement ;
+ *   3. l’erreur, affichée telle quelle.
+ * Seuls les échecs **serveur** déclenchent le repli : un 404 (site absent ou
+ * brouillon) et un 403 (clé refusée) sont des réponses légitimes de l’API, pas
+ * une indisponibilité — basculer dessus publierait un brouillon.
  */
 
 export interface SiteTarget {
@@ -33,7 +44,20 @@ function targetQuery(target: SiteTarget): string {
   return params.toString();
 }
 
-export async function loadSiteData(target: SiteTarget): Promise<PublicSiteData> {
+/** Résultat d’un chargement : les données, et d’où elles viennent. */
+export interface LoadedSite {
+  data: PublicSiteData;
+  /** Vrai quand les données viennent d’une copie statique, pas de la base. */
+  degraded: boolean;
+}
+
+/** Un 5xx ou une requête qui n’aboutit pas = base injoignable, donc repli. */
+function isUnavailable(err: unknown): boolean {
+  if (err instanceof ApiError) return err.status >= 500;
+  return true; // `fetch` rejeté : réseau, DNS, CORS, fonction serverless muette
+}
+
+async function fetchFromApi(target: SiteTarget): Promise<PublicSiteData> {
   const site = await apiGet<WeddingSite>(`/api/wedding-sites?${targetQuery(target)}`);
   const [sections, programme, infos, gallery, faqs, rsvpEvents, gifts] = await Promise.all([
     apiGet<SiteSection[]>(`/api/site-sections?site_id=${site.id}`),
@@ -47,10 +71,33 @@ export async function loadSiteData(target: SiteTarget): Promise<PublicSiteData> 
   return { site, sections, programme, infos, gallery, faqs, rsvpEvents, gifts };
 }
 
+export async function loadSiteData(target: SiteTarget): Promise<LoadedSite> {
+  // Mode 100 % statique : aucune requête à l’API, les copies font foi.
+  if (STATIC_SITES && target.slug) {
+    const snapshot = await loadStaticSite(target.slug);
+    if (snapshot) return { data: snapshot, degraded: true };
+    throw new ApiError(404, 'Aucune copie statique pour ce site');
+  }
+
+  try {
+    return { data: await fetchFromApi(target), degraded: false };
+  } catch (err) {
+    // Les copies sont indexées par slug : l’éditeur (qui charge par id) n’en
+    // profite pas, il a de toute façon besoin d’écrire dans la base.
+    if (isUnavailable(err) && target.slug) {
+      const snapshot = await loadStaticSite(target.slug);
+      if (snapshot) return { data: snapshot, degraded: true };
+    }
+    throw err;
+  }
+}
+
 export interface SiteDataState {
   data: PublicSiteData | null;
   /** Vrai quand les données affichées sont celles de la démo (API injoignable). */
   demo: boolean;
+  /** Vrai quand les données viennent d’une copie statique (base injoignable). */
+  degraded: boolean;
   loading: boolean;
   error: string;
   /** Code HTTP de l’échec, le cas échéant (403 = clé d’édition refusée). */
@@ -67,7 +114,7 @@ export interface SiteDataActions {
 export function useSiteData(target: SiteTarget): SiteDataState & SiteDataActions {
   // Identité stable du target : les appelants passent un objet littéral à chaque rendu.
   const key = `${target.slug ?? ''}|${target.id ?? ''}`;
-  const [state, setState] = useState<SiteDataState>({ data: null, demo: false, loading: true, error: '', status: null });
+  const [state, setState] = useState<SiteDataState>({ data: null, demo: false, degraded: false, loading: true, error: '', status: null });
   // Une requête plus récente invalide les précédentes (changement de slug, rechargements).
   const generation = useRef(0);
 
@@ -77,15 +124,16 @@ export function useSiteData(target: SiteTarget): SiteDataState & SiteDataActions
       if (gen === generation.current) setState(next);
     };
     return loadSiteData(target)
-      .then((data) => commit({ data, demo: false, loading: false, error: '', status: null }))
+      .then(({ data, degraded }) => commit({ data, demo: false, degraded, loading: false, error: '', status: null }))
       .catch((err: unknown) => {
         // En local, l’API serverless n’existe pas : le jeu de démo prend le relais.
         if (DEMO_ENABLED) {
-          commit({ data: DEMO_DATA, demo: true, loading: false, error: '', status: null });
+          commit({ data: DEMO_DATA, demo: true, degraded: false, loading: false, error: '', status: null });
         } else {
           commit({
             data: null,
             demo: false,
+            degraded: false,
             loading: false,
             error: err instanceof Error ? err.message : 'Chargement impossible',
             status: err instanceof ApiError ? err.status : null,

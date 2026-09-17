@@ -7,7 +7,7 @@
  * d’accès — qui peut lire, qui peut écrire, ce que refuse une clé d’un autre
  * site — c’est-à-dire exactement ce qui a été ouvert avant l’arrivée des clés.
  */
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -18,7 +18,7 @@ const work = mkdtempSync(join(tmpdir(), 'wedding-api-'));
 
 cpSync(join(repoRoot, 'api'), join(work, 'api'), { recursive: true });
 mkdirSync(join(work, 'server'));
-for (const f of ['auth.js', 'crud.js']) {
+for (const f of ['auth.js', 'crud.js', 'errors.js']) {
   cpSync(join(repoRoot, 'server', f), join(work, 'server', f));
 }
 cpSync(new URL('./mock-db-client.js', import.meta.url), join(work, 'server/db-client.js'));
@@ -226,6 +226,65 @@ for (const [name, handler] of [['programme', programme], ['infos', infos], ['gal
 /* Site « historique » publié, sans clé : lecture publique OK, édition impossible. */
 check('site sans clé, publié, lecture publique → 200', (await call(weddingSites, { query: { slug: 'avant-auth' } })).statusCode, 200);
 check('site sans clé : édition impossible → 403', (await call(weddingSites, { method: 'PUT', body: { id: 7, partner1: 'x' }, token: 'nimporte' })).statusCode, 403);
+
+/* --------------------------------------- 8. base injoignable (Supabase coupé) */
+
+/**
+ * Même décor, mais avec le VRAI `server/db-client.js` et aucune variable
+ * d’environnement : l’état d’un déploiement dont le projet Supabase est en
+ * pause (facture impayée) ou dont les variables ont sauté.
+ *
+ * L’API doit alors répondre **503 `supabase_unavailable`** et non 500 : c’est
+ * ce code qui autorise le front à servir la copie statique du site
+ * (`public/sites/<slug>.json`) au lieu d’une page d’erreur à un invité.
+ */
+{
+  // Un .env local ou des variables exportées ne doivent pas fausser le test :
+  // on part d’une configuration vide, puis on charge les VRAIS handlers du
+  // dépôt (pas de copie), avec le vrai `server/db-client.js`.
+  for (const key of [
+    'NEXT_PUBLIC_SUPABASE_URL', 'VITE_SUPABASE_URL', 'SUPABASE_URL',
+    'SUPABASE_SERVICE_ROLE_KEY', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'VITE_SUPABASE_ANON_KEY',
+  ]) delete process.env[key];
+
+  const loadReal = async (relative) => (await import(pathToFileURL(join(repoRoot, relative)).href)).default;
+  const quiet = console.error;
+  console.error = () => {};            // les handlers journalisent l’indisponibilité
+  const downSites = await loadReal('api/wedding-sites.js');
+  const downMedia = await loadReal('api/media.js');
+  const downCreate = await loadReal('api/create-site.js');
+  res = await call(downSites, { query: { slug: 'sarah-gabriel' } });
+  check('base coupée : lecture d’un site → 503', res.statusCode, 503);
+  check('base coupée : code supabase_unavailable', res.body?.code, 'supabase_unavailable');
+  check('base coupée : le message explique quoi régler', /SUPABASE_URL/.test(res.body?.error ?? ''), true);
+  check('base coupée : lecture publique (media) → 503', (await call(downMedia, {})).statusCode, 503);
+  res = await call(downCreate, { method: 'POST', body: sitePayload('nouveau', false) });
+  check('base coupée : création d’un site → 503', res.statusCode, 503);
+  console.error = quiet;
+}
+
+/* --------------------------------------------------------- 9. copies statiques */
+
+/**
+ * Les fichiers servis en repli doivent rester chargeables : un nom de fichier
+ * qui ne correspond pas au slug, ou une liste manquante, casserait le rendu au
+ * moment précis où la base est indisponible.
+ */
+{
+  const dir = join(repoRoot, 'public', 'sites');
+  check('le dossier des copies statiques existe', existsSync(dir), true);
+  const files = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json')).sort() : [];
+  for (const f of files) {
+    const snap = JSON.parse(readFileSync(join(dir, f), 'utf8'));
+    check(`${f} : le slug correspond au nom du fichier`, snap.site?.slug, f.replace(/\.json$/, ''));
+    check(
+      `${f} : les sept listes d’un site complet sont présentes`,
+      ['sections', 'programme', 'infos', 'gallery', 'faqs', 'rsvpEvents', 'gifts'].every((k) => Array.isArray(snap[k])),
+      true
+    );
+    check(`${f} : les sections sont ordonnées`, snap.sections.every((s, i) => i === 0 || s.position >= snap.sections[i - 1].position), true);
+  }
+}
 
 /* ------------------------------------------------------------------ bilan */
 

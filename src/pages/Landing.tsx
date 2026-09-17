@@ -1,9 +1,17 @@
+import { Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Palette, Images, MailCheck, Gift, MapPin, CalendarDays, QrCode, ChevronRight, Heart, Layers } from 'lucide-react';
+import { ArrowRight, Palette, Images, MailCheck, Gift, MapPin, CalendarDays, QrCode, ChevronRight, Heart } from 'lucide-react';
 import { WEDDING_STYLES, PHASES } from '../lib/weddingStyles';
-import { publicPath } from '../lib/format';
 import VisionImage, { TiltCard, VisionFrame } from '../components/vision/VisionImage';
+import HeroCycle from '../components/HeroCycle';
+
+/**
+ * Les aperçus dans le téléphone lisent le contenu réel des thèmes
+ * (`themeConfigs.ts`) : ce module est chargé à part, pour que le hero
+ * s’affiche sans l’attendre.
+ */
+const PhoneShowcase = lazy(() => import('../components/PhoneShowcase'));
 import ImmersiveThemes from '../components/ImmersiveThemes';
 
 const STEPS = [
@@ -16,7 +24,7 @@ const STEPS = [
 const MODULES = [
   { icon: MailCheck, title: 'RSVP élégant', text: 'Présences, régimes, hébergement. Des statistiques limpides, jamais de tableaux austères.' },
   { icon: Gift, title: 'Liste & cagnotte', text: 'Voyage de noces, cagnotte, liste de cadeaux. Objectifs, progression, bouton Participer.' },
-  { icon: Images, title: 'Bibliothèque média', text: 'Onze univers photo, six collections cohérentes, vos propres images en un glisser-déposer.' },
+  { icon: Images, title: 'Bibliothèque média', text: 'Des collections cohérentes, vos propres images en un glisser-déposer.' },
   { icon: MapPin, title: 'Infos pratiques', text: 'Adresses, parking, hébergements, dress code. Des cartes de verre, toujours claires.' },
   { icon: CalendarDays, title: 'Programme Jour J', text: 'Une timeline spatiale : cérémonie, cocktail, dîner, bal. Heure, lieu, photo.' },
   { icon: QrCode, title: 'Partage magique', text: 'Un lien à vos prénoms, un QR code à imprimer, partage WhatsApp, Messages, Email.' },
@@ -48,9 +56,6 @@ export default function Landing() {
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/p/matt-marie" className="vp-btn vp-btn-glass vp-press hidden !px-4 !py-2 !text-[13.5px] sm:inline-flex">
-              Voir un exemple
-            </Link>
             <Link to="/creer" className="vp-btn vp-press !px-4.5 !py-2 !text-[13.5px]">
               Créer mon site <ArrowRight size={15} />
             </Link>
@@ -58,106 +63,53 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero : environnement + fenêtre flottante */}
-      <header className="relative flex min-h-[100svh] flex-col items-center justify-center px-5 pb-20 pt-32 sm:px-8 sm:pt-36">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="text-center lg:text-left">
-            <motion.h1
-              initial={{ opacity: 0, y: 26 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              className="vp-title mt-6"
-              style={{ fontSize: 'clamp(2.7rem, 6.6vw, 5rem)' }}
-            >
-              Votre mariage.
-              <br />
-              Votre histoire.
-              <br />
-              Un seul endroit.
-            </motion.h1>
+      {/* Hero plein écran : les dix environnements en fond, pitch en haut */}
+      <HeroCycle>
+        <motion.h1
+          initial={{ opacity: 0, y: 26 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="vp-title max-w-3xl text-white"
+          style={{ fontSize: 'clamp(2.1rem, 4.6vw, 3.6rem)' }}
+        >
+          Votre mariage. Votre histoire.
+          <br />
+          Un seul endroit.
+        </motion.h1>
 
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="vp-body mx-auto mt-6 max-w-lg lg:mx-0 lg:text-[17px]">
-              Le mini-site de votre mariage, composé automatiquement à partir de quelques réponses. Aucun outil à apprendre. Juste de l’émotion, en verre et en lumière.
-            </motion.p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="vp-body mt-5 max-w-lg !text-[16.5px] !text-white/70"
+        >
+          Le mini-site de votre mariage, composé automatiquement à partir de quelques réponses.
+          Aucun outil à apprendre. Juste de l’émotion, en verre et en lumière.
+        </motion.p>
 
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
-              <Link to="/creer" className="vp-btn vp-press w-full !px-8 !py-4 sm:w-auto">
-                Créer mon site <ArrowRight size={16} />
-              </Link>
-              <Link to="/p/matt-marie" className="vp-btn vp-btn-glass vp-press w-full !px-8 !py-4 sm:w-auto">
-                Voir un exemple
-              </Link>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.05 }} className="mt-10 hidden flex-wrap items-center justify-center gap-2 lg:flex lg:justify-start">
-              {STEPS.map((s) => (
-                <span key={s.n} className="vp-chip !text-[12px] text-[var(--vp-muted)]">
-                  <span className="vp-num font-semibold text-[var(--vp-ink)]">{s.n}</span> {s.title}
-                </span>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Fenêtre flottante : l’aperçu du site, comme une fenêtre visionOS */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, rotateX: 12 }}
-            animate={{ opacity: 1, y: 0, rotateX: 0 }}
-            transition={{ delay: 0.5, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-            className="vp-perspective relative mx-auto w-full max-w-[440px] lg:max-w-none"
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.75 }}
+          className="mt-8 flex flex-col gap-3 sm:flex-row"
+        >
+          <Link to="/creer" className="vp-btn vp-press w-full !px-8 !py-4 sm:w-auto">
+            Créer mon site <ArrowRight size={16} />
+          </Link>
+          <a
+            href="#apercus"
+            className="vp-press inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-8 py-4 text-[15px] font-medium text-white backdrop-blur-md transition hover:bg-white/20 sm:w-auto"
           >
-            <TiltCard max={5}>
-              <div className="vp-glass overflow-hidden rounded-[34px] p-2.5">
-                <div className="flex items-center gap-2 px-2 pb-2.5 pt-1">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#E5E5EA]" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#E5E5EA]" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#E5E5EA]" />
-                  <span className="vp-caption ml-2 truncate text-[11px]">{publicPath('matt-marie')}</span>
-                </div>
-                <div className="overflow-hidden rounded-[26px]">
-                  <VisionImage
-                    src="/images/hero-wedding.jpg"
-                    alt="Mariage Matt & Marie"
-                    loading="eager"
-                    fallbackLabel="Matt & Marie"
-                    className="aspect-[4/5] w-full object-cover"
-                  />
-                </div>
-                <div className="flex items-end justify-between gap-4 px-3 pb-2 pt-4">
-                  <div>
-                    <div className="vp-eyebrow">Château de Chantilly</div>
-                    <div className="vp-title mt-1 text-[27px]">Matt &amp; Marie</div>
-                    <div className="vp-num vp-caption mt-0.5">18.07.2027</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="vp-eyebrow">Compte à rebours</div>
-                    <div className="vp-title vp-num mt-0.5 text-[22px]">J-304</div>
-                  </div>
-                </div>
-              </div>
-            </TiltCard>
+            Voir les dix mini-sites
+          </a>
+        </motion.div>
+      </HeroCycle>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.15, type: 'spring', damping: 20 }}
-              className="vp-glass vp-spec absolute -bottom-6 -left-4 flex items-center gap-2.5 rounded-[20px] px-4 py-3 sm:-left-8"
-            >
-              <span className="h-2.5 w-2.5 rounded-full bg-[var(--vp-green)]" />
-              <span className="text-[13px] font-semibold">Site publié</span>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.3, type: 'spring', damping: 20 }}
-              className="vp-glass-dark vp-spec-dark absolute -right-3 top-8 flex items-center gap-2 rounded-[18px] px-3.5 py-2.5 text-white sm:-right-6"
-            >
-              <Layers size={15} />
-              <span className="text-[12.5px] font-semibold">11 sections</span>
-            </motion.div>
-          </motion.div>
-        </div>
-      </header>
+      <Suspense
+        fallback={<div aria-hidden="true" className="mx-auto my-20 h-[620px] max-w-[320px] animate-pulse rounded-[46px] bg-black/[0.04]" />}
+      >
+        <PhoneShowcase />
+      </Suspense>
 
       {/* Quatre gestes */}
       <section className="px-5 py-20 sm:px-8 sm:py-28">
@@ -189,13 +141,13 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <div className="vp-eyebrow">Dix environnements • 0 doublon</div>
+              <div className="vp-eyebrow">Dix environnements</div>
               <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>
                 Choisissez votre espace.
                 <br />
                 Le reste est automatique.
               </h2>
-              <p className="vp-caption mt-3 max-w-md">Avant : bouquet.jpg en double. Maintenant : 10 visuels uniques qui n’ont rien à voir avec un mariage.</p>
+              <p className="vp-caption mt-3 max-w-md">Un bunker de béton, un club à 2h17, un motel du désert. Chaque environnement emporte ses couleurs, ses textes et ses modules.</p>
             </div>
             <Link to="#styles-immersive" className="vp-chip vp-press shrink-0 bg-black text-white hover:bg-black/80">
               Voir la verticale immersive <ChevronRight size={16} />
@@ -216,12 +168,9 @@ export default function Landing() {
                       className="aspect-[3/4] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                     />
                   </div>
-                  <div className="flex items-start justify-between gap-3 px-1 pt-3">
-                    <div>
-                      <div className="vp-title text-[18px]">{s.name}</div>
-                      <div className="vp-caption mt-0.5">{s.tagline}</div>
-                    </div>
-                    <span className="mt-1.5 h-4 w-4 shrink-0 rounded-full" style={{ background: s.accent }} />
+                  <div className="px-1 pt-3">
+                    <div className="vp-title text-[18px]">{s.name}</div>
+                    <div className="vp-caption mt-0.5">{s.tagline}</div>
                   </div>
                 </div>
               </TiltCard>
@@ -267,10 +216,10 @@ export default function Landing() {
                 </VisionFrame>
                 <div className="flex items-center justify-between gap-4 px-3 pb-1.5 pt-4">
                   <div>
-                    <div className="vp-eyebrow">Matt &amp; Marie</div>
-                    <div className="vp-title vp-num mt-0.5 text-[21px]">18.07.2027</div>
+                    <div className="vp-eyebrow">Section : Programme</div>
+                    <div className="vp-title mt-0.5 text-[19px]">Glisser pour réordonner</div>
                   </div>
-                  <Link to="/p/matt-marie" className="vp-btn vp-btn-glass vp-press !px-4 !py-2 !text-[13px]">Voir</Link>
+                  <Link to="/creer" className="vp-btn vp-btn-glass vp-press !px-4 !py-2 !text-[13px]">Essayer</Link>
                 </div>
               </div>
             </TiltCard>
@@ -333,28 +282,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Exemple réel */}
-      <section className="px-5 pb-20 sm:px-8 sm:pb-28">
-        <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="vp-perspective mx-auto max-w-6xl">
-          <TiltCard max={3}>
-            <div className="overflow-hidden rounded-[38px] bg-white">
-              <VisionImage src="/images/chateau.jpg" alt="Château de Chantilly" fallbackLabel="Château de Chantilly" className="h-[300px] w-full object-cover sm:h-[420px]" />
-              <div className="max-w-xl px-8 py-10 sm:px-12 sm:py-12">
-                <div className="vp-eyebrow">Un vrai mariage</div>
-                <div className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>
-                  Matt &amp; Marie
-                  <span className="vp-num text-[var(--vp-muted)]"> · 18.07.2027</span>
-                </div>
-                <p className="vp-body mt-3">Château de Chantilly. Entrez, explorez, répondez au RSVP — comme un invité.</p>
-                <Link to="/p/matt-marie" className="vp-btn vp-press mt-6">
-                  Voir l’exemple <ArrowRight size={16} />
-                </Link>
-              </div>
-            </div>
-          </TiltCard>
-        </motion.div>
-      </section>
-
       {/* Appel final */}
       <section className="px-5 pb-24 sm:px-8">
         <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="vp-glass vp-spec mx-auto max-w-4xl overflow-hidden rounded-[38px] px-8 py-16 text-center sm:py-20">
@@ -383,8 +310,8 @@ export default function Landing() {
           </div>
           <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
           <div className="flex items-center gap-4">
+            <a href="#apercus" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Aperçus</a>
             <Link to="/creer" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Créer</Link>
-            <Link to="/p/matt-marie" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Exemple</Link>
           </div>
         </div>
       </footer>

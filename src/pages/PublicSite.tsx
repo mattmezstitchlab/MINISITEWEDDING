@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { getEditToken, setActiveToken } from '../lib/auth';
 import { useSiteData } from '../lib/siteData';
+import { isRemote } from '../lib/dataSource';
 import PublicSiteView from '../components/PublicSiteView';
 
 export default function PublicSite() {
@@ -17,7 +18,7 @@ export default function PublicSite() {
   // posée. Un en-tête périmé est sans effet, l’API compare la clé au site visé.
   const [token] = useState(() => getEditToken({ slug }));
   setActiveToken(token);
-  const { data, demo, loading } = useSiteData({ slug });
+  const { data, demo, degraded, loading } = useSiteData({ slug });
   const site = data?.site;
 
   useEffect(() => {
@@ -53,10 +54,26 @@ export default function PublicSite() {
 
   return (
     <>
-      <PublicSiteView data={data} />
+      <PublicSiteView data={data} degraded={degraded} />
       {demo && (
         <div className="vp-glass-dark vp-spec-dark fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-2 text-[12px] font-medium text-white">
           Aperçu local — données de démonstration
+        </div>
+      )}
+      {/* Le site vient du navigateur : seul cet appareil le voit tant qu’il
+          n’est pas publié dans `public/sites/`. */}
+      {!isRemote() && !demo && !degraded && (
+        <div className="vp-glass-dark vp-spec-dark fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-2 text-center text-[12px] font-medium text-white">
+          Aperçu sur cet appareil — publiez depuis l’éditeur pour le partager.
+        </div>
+      )}
+      {/* Une base distante était attendue et ne répond pas : le site est servi
+          depuis sa copie `public/sites/<slug>.json`. L’affichage reste complet,
+          seules les réponses RSVP sont suspendues. En mode autonome, servir ce
+          fichier est le fonctionnement normal — donc aucune bannière. */}
+      {isRemote() && degraded && !demo && (
+        <div className="vp-glass-dark vp-spec-dark fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-2 text-center text-[12px] font-medium text-white">
+          Site affiché depuis une copie — les réponses sont suspendues pour l’instant.
         </div>
       )}
     </>
