@@ -15,26 +15,26 @@ export interface WeddingStyle {
 
 export const WEDDING_STYLES: WeddingStyle[] = [
   {
-    id: 'editorial', name: 'Editorial', tagline: 'Comme une couverture de magazine',
-    description: 'Titres majestueux, grille magazine, photographie grand format.',
+    id: 'editorial', name: 'Studio Editorial', tagline: 'Comme une revue d’architecture & d’art',
+    description: 'Titres architecturaux affirmés, grille magazine, photographie grand format.',
     bg: '#FAF7F2', surface: '#FFFFFF', ink: '#1B1B1B', muted: '#8A857C', accent: '#1B1B1B', line: '#E8E2D6',
     dark: false, image: '/images/hero-wedding.jpg',
   },
   {
-    id: 'minimal', name: 'Minimaliste', tagline: 'Le silence est un luxe absolu',
+    id: 'minimal', name: 'Minimaliste Pur', tagline: 'Le silence et l’aération comme luxe absolu',
     description: 'Blanc minéral, respiration maximale, typographie discrète et contemporaine.',
     bg: '#FFFFFF', surface: '#F7F7F5', ink: '#111111', muted: '#9A9A98', accent: '#111111', line: '#ECECEA',
     dark: false, image: '/images/bouquet.jpg',
   },
   {
     id: 'romantique', name: 'Romance Poudrée', tagline: 'Douceur rose poudré & lumière naturelle',
-    description: 'Teintes délicates, typographie poétique, atmosphère tendre.',
+    description: 'Teintes délicates, typographie épurée, atmosphère tendre.',
     bg: '#FDF6F3', surface: '#FFFFFF', ink: '#3E2E2E', muted: '#A68F8A', accent: '#B76E79', line: '#F0DDD6',
     dark: false, image: '/images/couple-paris.jpg',
   },
   {
     id: 'nature', name: 'Garden Chic', tagline: 'Provence, sauge & matières nobles',
-    description: 'Verts sauge, pierres chaudes, esprit champêtre et grand air.',
+    description: 'Verts sauge, pierres chaudes, esprit contemporain et grand air.',
     bg: '#F5F6F0', surface: '#FFFFFF', ink: '#2C3325', muted: '#8B917F', accent: '#5B6E4E', line: '#DFE2D2',
     dark: false, image: '/images/garden.jpg',
   },
@@ -78,39 +78,39 @@ export interface TypoOption {
 
 export const TYPO_OPTIONS: TypoOption[] = [
   {
+    id: 'studio-display',
+    name: 'Studio Display',
+    hint: 'Moderne, architectural et aéré',
+    heading: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif',
+    body: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif',
+  },
+  {
+    id: 'minimal',
+    name: 'Minimaliste Pur',
+    hint: 'Luxe contemporain, net et pur',
+    heading: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif',
+    body: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif',
+  },
+  {
     id: 'editorial',
-    name: 'Fraunces Éditorial',
-    hint: 'La typographie signature du mariage',
-    heading: '"Fraunces", Georgia, serif',
-    body: '"Fraunces", Georgia, serif',
+    name: 'Éditorial Moderne',
+    hint: 'Grand format & lettrages affirmés',
+    heading: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif',
+    body: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif',
   },
   {
-    id: 'romantique',
-    name: 'Fraunces Romantique',
-    hint: 'Italiques douces et courbes élégantes',
-    heading: '"Fraunces", Georgia, serif',
-    body: '"Fraunces", Georgia, serif',
-  },
-  {
-    id: 'intemporel',
-    name: 'Fraunces Intemporel',
-    hint: 'Élégance littéraire et pureté',
-    heading: '"Fraunces", Georgia, serif',
-    body: '"Fraunces", Georgia, serif',
-  },
-  {
-    id: 'delicat',
-    name: 'Fraunces Délicat',
-    hint: 'Plein et déliés harmonieux',
-    heading: '"Fraunces", Georgia, serif',
-    body: '"Fraunces", Georgia, serif',
+    id: 'grand-angle',
+    name: 'Grand Angle',
+    hint: 'Titres amples et respiration maximale',
+    heading: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif',
+    body: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif',
   },
 ];
 
 export function fontsFor(_typoId?: string): { heading: string; body: string } {
   return {
-    heading: '"Fraunces", Georgia, serif',
-    body: '"Fraunces", Georgia, serif',
+    heading: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    body: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
   };
 }
 

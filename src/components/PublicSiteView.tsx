@@ -314,12 +314,27 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.15 }} className="mt-8">
           <Countdown target={site.wedding_date} accent={accent} light fontFamily={fonts.heading} />
         </motion.div>
-        {!preview && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.35 }} className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center gap-3 w-full max-w-xs sm:max-w-none">
-            <a href="#sec-rsvp" className="w-full sm:w-auto px-7 py-3.5 sm:px-9 sm:py-4 text-white text-xs sm:text-sm tracking-[0.18em] uppercase font-semibold text-center" style={{ background: accent, borderRadius: btnR }}>Répondre à l’invitation</a>
-            <a href="#sec-programme" className="w-full sm:w-auto px-7 py-3.5 sm:px-9 sm:py-4 text-white text-xs sm:text-sm tracking-[0.18em] uppercase border border-white/40 backdrop-blur-sm text-center font-medium" style={{ borderRadius: btnR }}>Programme</a>
-          </motion.div>
-        )}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.35 }}
+          className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md mx-auto text-center"
+        >
+          <a
+            href="#sec-rsvp"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-8 sm:px-10 py-4 text-white text-[13px] tracking-[0.18em] uppercase font-semibold text-center transition hover:opacity-90 shadow-lg"
+            style={{ background: accent, borderRadius: btnR }}
+          >
+            Répondre à l’invitation
+          </a>
+          <a
+            href="#sec-programme"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-8 sm:px-10 py-4 text-white text-[13px] tracking-[0.18em] uppercase border border-white/40 backdrop-blur-sm text-center font-medium transition hover:bg-white/10"
+            style={{ borderRadius: btnR }}
+          >
+            Programme
+          </a>
+        </motion.div>
       </div>
       <div className="relative pb-8 flex flex-col items-center gap-2 text-white/60">
         <span className="text-[10px] tracking-[0.3em] uppercase">Défiler</span>
@@ -344,22 +359,22 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
   );
 
   const renderStory = () => (
-    <section className="py-20 sm:py-28 px-6" style={{ background: theme.bg, color: theme.ink }}>
+    <section className="py-24 sm:py-36 px-6 sm:px-12" style={{ background: theme.bg, color: theme.ink }}>
       <div className="max-w-5xl mx-auto">
         {eyebrow('Notre histoire')}
-        <h2 className="mt-5 text-center font-light" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.4rem)' }}>{site.story_title || 'Tout a commencé par un regard'}</h2>
-        <div className="mt-12 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+        <h2 className="mt-6 text-center font-normal tracking-tight" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2.2rem, 5vw, 3.6rem)' }}>{site.story_title || 'Tout a commencé par un regard'}</h2>
+        <div className="mt-14 grid md:grid-cols-2 gap-12 md:gap-20 items-center">
           <motion.div initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.8 }}>
-            <img src={site.story_photo || theme.image} alt="Notre histoire" className="w-full aspect-[4/5] object-cover shadow-[0_20px_60px_rgba(0,0,0,0.10)]" style={{ borderRadius: cardR }} />
+            <img src={site.story_photo || theme.image} alt="Notre histoire" className="w-full aspect-[4/5] object-cover shadow-[0_25px_70px_rgba(0,0,0,0.08)]" style={{ borderRadius: cardR }} />
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.8 }}>
             {(site.story_text || '').split('\n\n').filter(Boolean).map((p, i) => (
-              <p key={i} className={`leading-[1.9] text-[16px] sm:text-[17px] ${i > 0 ? 'mt-5' : ''} ${dark ? 'text-white/75' : 'text-neutral-600'}`} style={i === 0 ? { fontSize: '1.15em' } : undefined}>{p}</p>
+              <p key={i} className={`leading-[1.95] text-[15px] sm:text-[17px] font-light ${i > 0 ? 'mt-6' : ''} ${dark ? 'text-white/75' : 'text-neutral-600'}`} style={i === 0 ? { fontSize: '1.15em' } : undefined}>{p}</p>
             ))}
             {d > 0 && (
-              <div className="mt-8 inline-flex items-center gap-3 px-5 py-3 border" style={{ borderColor: theme.line, borderRadius: btnR }}>
+              <div className="mt-10 inline-flex items-center gap-3 px-6 py-3.5 border shadow-sm" style={{ borderColor: theme.line, borderRadius: btnR, background: theme.surface }}>
                 <CalendarDays size={18} style={{ color: accent }} />
-                <span className="text-sm tracking-wide" style={{ color: theme.muted }}>J-{d} avant le grand jour — {formatDateLong(site.wedding_date)}</span>
+                <span className="text-sm tracking-wide font-medium" style={{ color: theme.muted }}>J-{d} avant le grand jour — {formatDateLong(site.wedding_date)}</span>
               </div>
             )}
           </motion.div>
@@ -369,23 +384,23 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
   );
 
   const renderProgramme = () => (
-    <section className="py-20 sm:py-28 px-6" style={{ background: theme.surface, color: theme.ink }}>
+    <section className="py-24 sm:py-36 px-6 sm:px-12" style={{ background: theme.surface, color: theme.ink }}>
       <div className="max-w-3xl mx-auto">
         {eyebrow('Programme du Jour J')}
-        <h2 className="mt-5 text-center font-light" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.4rem)' }}>Le déroulé de la journée</h2>
-        <div className="mt-14 relative">
+        <h2 className="mt-6 text-center font-normal tracking-tight" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2.2rem, 5vw, 3.6rem)' }}>Le déroulé de la journée</h2>
+        <div className="mt-16 relative">
           <div className="absolute left-[19px] sm:left-1/2 top-2 bottom-2 w-px" style={{ background: theme.line }} />
           {programme.map((ev, i) => (
-            <motion.div key={ev.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.6, delay: i * 0.05 }} className={`relative flex gap-6 sm:gap-0 pb-10 last:pb-0 ${i % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse'}`}>
+            <motion.div key={ev.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.6, delay: i * 0.05 }} className={`relative flex gap-6 sm:gap-0 pb-14 last:pb-0 ${i % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse'}`}>
               <div className="sm:w-1/2 sm:px-10" style={{ textAlign: i % 2 === 1 ? 'left' : undefined }}>
                 <div className="text-left sm:text-right" style={i % 2 === 1 ? { textAlign: 'left' } : undefined}>
-                  <div className="text-sm tracking-[0.25em] font-medium" style={{ color: accent }}>{ev.event_time}</div>
-                  <div className="mt-1.5 text-2xl" style={{ fontFamily: fonts.heading }}>{ev.title}</div>
-                  {ev.description && <p className={`mt-2 text-[15px] leading-relaxed ${dark ? 'text-white/65' : 'text-neutral-500'}`}>{ev.description}</p>}
-                  {ev.place && <div className="mt-2 inline-flex items-center gap-1.5 text-sm" style={{ color: theme.muted }}><MapPin size={14} />{ev.place}</div>}
+                  <div className="text-xs sm:text-sm tracking-[0.25em] font-semibold" style={{ color: accent }}>{ev.event_time}</div>
+                  <div className="mt-1.5 text-2xl font-semibold tracking-tight" style={{ fontFamily: fonts.heading }}>{ev.title}</div>
+                  {ev.description && <p className={`mt-2.5 text-[15px] leading-relaxed font-light ${dark ? 'text-white/65' : 'text-neutral-500'}`}>{ev.description}</p>}
+                  {ev.place && <div className="mt-2.5 inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: theme.muted }}><MapPin size={14} />{ev.place}</div>}
                 </div>
               </div>
-              <div className="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 top-0 w-10 h-10 rounded-full flex items-center justify-center border" style={{ background: theme.surface, borderColor: theme.line }}>
+              <div className="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 top-0 w-10 h-10 rounded-full flex items-center justify-center border shadow-sm" style={{ background: theme.surface, borderColor: theme.line }}>
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: accent }} />
               </div>
               <div className="hidden sm:block sm:w-1/2" />
@@ -405,26 +420,24 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
       { label: 'Réception', img: '/images/table-noir.jpg', title: reception?.title || site.venue, detail: reception?.detail || site.city, time: reception?.event_time || '' },
     ];
     return (
-      <section className="py-20 sm:py-28 px-6" style={{ background: theme.bg, color: theme.ink }}>
+      <section className="py-24 sm:py-36 px-6 sm:px-12" style={{ background: theme.bg, color: theme.ink }}>
         <div className="max-w-5xl mx-auto">
           {eyebrow('Lieux')}
-          <h2 className="mt-5 text-center font-light" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.4rem)' }}>Où nous retrouver</h2>
-          <div className="mt-12 grid md:grid-cols-2 gap-6">
+          <h2 className="mt-6 text-center font-normal tracking-tight" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2.2rem, 5vw, 3.6rem)' }}>Où nous retrouver</h2>
+          <div className="mt-16 grid md:grid-cols-2 gap-8 sm:gap-10">
             {cards.map((c, i) => (
-              <motion.div key={c.label} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.7, delay: i * 0.1 }} className="overflow-hidden border" style={{ borderColor: theme.line, borderRadius: cardR, background: theme.surface }}>
+              <motion.div key={c.label} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.7, delay: i * 0.1 }} className="overflow-hidden border shadow-[0_15px_40px_rgba(0,0,0,0.04)]" style={{ borderColor: theme.line, borderRadius: cardR, background: theme.surface }}>
                 <div className="relative h-64 sm:h-80 overflow-hidden">
                   <img src={c.img} alt={c.label} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
-                  <span className="absolute top-4 left-4 text-[11px] tracking-[0.25em] uppercase px-4 py-2 bg-black/55 text-white backdrop-blur-sm" style={{ borderRadius: btnR }}>{c.label}</span>
+                  <span className="absolute top-4 left-4 text-[11px] tracking-[0.25em] uppercase px-4 py-2 bg-black/60 text-white backdrop-blur-md font-semibold" style={{ borderRadius: btnR }}>{c.label}</span>
                 </div>
-                <div className="p-7 sm:p-8">
-                  {c.time && <div className="text-sm tracking-[0.25em] font-medium" style={{ color: accent }}>{c.time}</div>}
-                  <div className="mt-1 text-2xl" style={{ fontFamily: fonts.heading }}>{c.title}</div>
-                  <div className="mt-1.5 flex items-center gap-1.5 text-[15px]" style={{ color: theme.muted }}><MapPin size={15} />{c.detail}</div>
-                  {!preview && (
-                    <a href={mapsUrl(`${c.title} ${c.detail}`)} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 px-6 py-3 text-sm tracking-[0.12em] uppercase border transition hover:opacity-80" style={{ borderColor: accent, color: accent, borderRadius: btnR }}>
-                      <Navigation size={15} /> Voir l’itinéraire
-                    </a>
-                  )}
+                <div className="p-8 sm:p-10">
+                  {c.time && <div className="text-xs tracking-[0.25em] font-semibold" style={{ color: accent }}>{c.time}</div>}
+                  <div className="mt-1 text-2xl font-semibold tracking-tight" style={{ fontFamily: fonts.heading }}>{c.title}</div>
+                  <div className="mt-2 flex items-center gap-2 text-[15px] font-light" style={{ color: theme.muted }}><MapPin size={15} />{c.detail}</div>
+                  <a href={mapsUrl(`${c.title} ${c.detail}`)} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 px-6 py-3.5 text-xs sm:text-sm tracking-[0.14em] uppercase font-semibold border transition hover:opacity-80" style={{ borderColor: accent, color: accent, borderRadius: btnR }}>
+                    <Navigation size={15} /> Voir l’itinéraire
+                  </a>
                 </div>
               </motion.div>
             ))}
@@ -435,20 +448,20 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
   };
 
   const renderInfos = () => (
-    <section className="py-20 sm:py-28 px-6" style={{ background: theme.surface, color: theme.ink }}>
+    <section className="py-24 sm:py-36 px-6 sm:px-12" style={{ background: theme.surface, color: theme.ink }}>
       <div className="max-w-5xl mx-auto">
         {eyebrow('Tout ce qu’il faut savoir')}
-        <h2 className="mt-5 text-center font-light" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.4rem)' }}>Informations pratiques</h2>
-        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        <h2 className="mt-6 text-center font-normal tracking-tight" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2.2rem, 5vw, 3.6rem)' }}>Informations pratiques</h2>
+        <div className="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {infos.map((info, i) => (
-            <motion.div key={info.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }} transition={{ duration: 0.5, delay: (i % 3) * 0.08 }} className="p-7 border" style={{ borderColor: theme.line, borderRadius: cardR, background: theme.bg }}>
-              <div className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: `${accent}14`, color: accent }}><InfoIcon category={info.category} /></div>
-              <div className="mt-4 text-[11px] tracking-[0.25em] uppercase" style={{ color: accent }}>{info.category}</div>
-              {info.event_time && <div className="mt-1 text-sm font-medium tabular-nums">{info.event_time}</div>}
-              <div className="mt-1 text-xl" style={{ fontFamily: fonts.heading }}>{info.title}</div>
-              {info.detail && <p className={`mt-2 text-[14px] leading-relaxed ${dark ? 'text-white/65' : 'text-neutral-500'}`}>{info.detail}</p>}
-              {info.link_label && !preview && (
-                <a href={mapsUrl(`${info.title} ${info.detail}`)} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-sm underline underline-offset-4" style={{ color: accent }}>{info.link_label}</a>
+            <motion.div key={info.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }} transition={{ duration: 0.5, delay: (i % 3) * 0.08 }} className="p-8 sm:p-9 border shadow-[0_10px_30px_rgba(0,0,0,0.02)]" style={{ borderColor: theme.line, borderRadius: cardR, background: theme.bg }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: `${accent}14`, color: accent }}><InfoIcon category={info.category} /></div>
+              <div className="mt-5 text-[11px] tracking-[0.25em] uppercase font-semibold" style={{ color: accent }}>{info.category}</div>
+              {info.event_time && <div className="mt-1 text-sm font-semibold tabular-nums">{info.event_time}</div>}
+              <div className="mt-1.5 text-xl font-semibold tracking-tight" style={{ fontFamily: fonts.heading }}>{info.title}</div>
+              {info.detail && <p className={`mt-2.5 text-[14px] leading-relaxed font-light ${dark ? 'text-white/65' : 'text-neutral-500'}`}>{info.detail}</p>}
+              {info.link_label && (
+                <a href={mapsUrl(`${info.title} ${info.detail}`)} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4" style={{ color: accent }}>{info.link_label}</a>
               )}
             </motion.div>
           ))}
@@ -459,61 +472,84 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
   );
 
   const renderRsvp = () => (
-    <section className="relative py-20 sm:py-28 px-6 overflow-hidden" style={{ background: '#141414', color: '#fff' }}>
+    <section className="relative py-28 sm:py-36 px-6 sm:px-12 overflow-hidden" style={{ background: '#141414', color: '#fff' }}>
       <div className="absolute inset-0 opacity-25"><img src="/images/danse.jpg" alt="" className="w-full h-full object-cover" /></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
       <div className="relative max-w-2xl mx-auto text-center">
         {eyebrow('RSVP')}
-        <h2 className="mt-5 font-light text-white" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.4rem)' }}>Serez-vous des nôtres ?</h2>
-        <p className="mt-3 text-white/70">Merci de répondre avant le 1er juin — votre réponse nous est précieuse.</p>
-        <div className="mt-10 p-7 sm:p-10 border border-white/15 bg-white/[0.07] backdrop-blur-xl text-white" style={{ borderRadius: cardR }}>
-          {preview ? (
-            <div className="text-left space-y-4 opacity-90">
-              <div className="grid grid-cols-2 gap-4"><div className="h-12 rounded-xl bg-white/10" /><div className="h-12 rounded-xl bg-white/10" /></div>
-              <div className="h-12 rounded-xl bg-white/10" />
-              <div className="grid grid-cols-2 gap-4"><div className="h-16 rounded-xl bg-white/10" /><div className="h-16 rounded-xl bg-white/10" /></div>
-              <div className="py-4 rounded-xl text-center text-sm tracking-[0.2em] uppercase" style={{ background: accent }}>Envoyer ma réponse</div>
-              <p className="text-center text-white/60 text-sm pt-1">Le formulaire élégant apparaîtra ici sur votre site public.</p>
-            </div>
-          ) : (
-            <RsvpForm site={site} events={rsvpEvents} accent={accent} headingFont={fonts.heading} btnRadius={btnR} />
-          )}
+        <h2 className="mt-6 font-normal tracking-tight text-white" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2.2rem, 5vw, 3.6rem)' }}>Serez-vous des nôtres ?</h2>
+        <p className="mt-3 text-white/70 font-light text-base sm:text-lg">Merci de répondre avant le 1er juin — votre réponse nous est précieuse.</p>
+        <div className="mt-12 p-8 sm:p-12 border border-white/15 bg-white/[0.07] backdrop-blur-xl text-white shadow-2xl" style={{ borderRadius: cardR }}>
+          <RsvpForm site={site} events={rsvpEvents} accent={accent} headingFont={fonts.heading} btnRadius={btnR} />
         </div>
       </div>
     </section>
   );
 
   const renderCagnotte = () => (
-    <section className="py-20 sm:py-28 px-6" style={{ background: theme.bg, color: theme.ink }}>
+    <section className="py-24 sm:py-36 px-6" style={{ background: theme.bg, color: theme.ink }}>
       <div className="max-w-4xl mx-auto text-center">
         <div className="mx-auto w-14 h-14 rounded-full flex items-center justify-center" style={{ background: `${accent}14`, color: accent }}><Gift size={24} strokeWidth={1.5} /></div>
-        <h2 className="mt-5 font-light" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Liste de mariage</h2>
-        <p className="mt-4 text-lg italic max-w-xl mx-auto" style={{ fontFamily: fonts.heading, color: theme.muted }}>« Nous préférons créer des souvenirs plutôt que recevoir des objets. »</p>
-        <div className="mt-10 grid sm:grid-cols-2 gap-5 text-left">
+        <h2 className="mt-5 font-normal tracking-tight" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.4rem)' }}>Liste de mariage</h2>
+        <p className="mt-4 text-base sm:text-lg max-w-xl mx-auto font-light leading-relaxed" style={{ color: theme.muted }}>« Nous préférons créer des souvenirs précieux plutôt que recevoir des objets. »</p>
+        <div className="mt-14 grid sm:grid-cols-2 gap-6 sm:gap-8 items-stretch text-left">
           {gifts.map((g) => {
             const goal = Number(g.goal_amount) || 0;
             const current = Number(g.current_amount) || 0;
             const pct = goal > 0 ? Math.min(100, Math.round((current / goal) * 100)) : 0;
             return (
-              <motion.div key={g.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }} transition={{ duration: 0.6 }} className="p-7 border" style={{ borderColor: theme.line, borderRadius: cardR, background: theme.surface }}>
-                <div className="text-[11px] tracking-[0.25em] uppercase" style={{ color: accent }}>{g.gift_type}</div>
-                <div className="mt-2 text-2xl" style={{ fontFamily: fonts.heading }}>{g.title}</div>
-                {g.description && <p className={`mt-2 text-[14px] leading-relaxed ${dark ? 'text-white/65' : 'text-neutral-500'}`}>{g.description}</p>}
-                {goal > 0 && (
-                  <div className="mt-5">
-                    <div className="flex justify-between text-sm mb-2"><span className="font-medium tabular-nums">{current.toLocaleString('fr-FR')} €</span><span style={{ color: theme.muted }} className="tabular-nums">sur {goal.toLocaleString('fr-FR')} €</span></div>
-                    <div className="h-2 rounded-full overflow-hidden" style={{ background: `${accent}1f` }}>
-                      <motion.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.2 }} className="h-full rounded-full" style={{ background: accent }} />
+              <motion.div
+                key={g.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.6 }}
+                className="p-8 sm:p-10 border flex flex-col justify-between h-full shadow-[0_10px_35px_rgba(0,0,0,0.03)]"
+                style={{ borderColor: theme.line, borderRadius: cardR, background: theme.surface }}
+              >
+                <div>
+                  <div className="text-[11px] tracking-[0.25em] uppercase font-semibold" style={{ color: accent }}>{g.gift_type}</div>
+                  <div className="mt-2 text-2xl font-semibold tracking-tight" style={{ fontFamily: fonts.heading }}>{g.title}</div>
+                  {g.description && <p className={`mt-3 text-[14px] leading-relaxed font-light ${dark ? 'text-white/65' : 'text-neutral-500'}`}>{g.description}</p>}
+                </div>
+
+                <div className="mt-8 pt-4">
+                  {goal > 0 ? (
+                    <div className="mb-6">
+                      <div className="flex justify-between text-sm mb-2 font-medium">
+                        <span className="tabular-nums font-semibold">{current.toLocaleString('fr-FR')} €</span>
+                        <span style={{ color: theme.muted }} className="tabular-nums font-light">sur {goal.toLocaleString('fr-FR')} €</span>
+                      </div>
+                      <div className="h-2 rounded-full overflow-hidden" style={{ background: `${accent}1f` }}>
+                        <motion.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.2 }} className="h-full rounded-full" style={{ background: accent }} />
+                      </div>
                     </div>
-                  </div>
-                )}
-                {!preview && (
-                  giftThanks === g.id ? (
-                    <div className="mt-5 flex items-center gap-2 text-sm" style={{ color: accent }}><Check size={16} /> Merci infiniment pour votre attention.</div>
                   ) : (
-                    <button onClick={() => setGiftThanks(g.id)} className="mt-5 w-full py-3.5 text-white text-sm tracking-[0.15em] uppercase font-medium" style={{ background: accent, borderRadius: btnR }}>Participer</button>
-                  )
-                )}
+                    <div className="mb-6">
+                      <div className="flex justify-between text-sm mb-2 font-medium">
+                        <span className="tabular-nums font-semibold">{current > 0 ? `${current.toLocaleString('fr-FR')} € collectés` : 'Participation libre'}</span>
+                        <span style={{ color: theme.muted }} className="font-light">Sans montant fixé</span>
+                      </div>
+                      <div className="h-2 rounded-full overflow-hidden bg-black/5">
+                        <div className="h-full rounded-full w-full opacity-25" style={{ background: accent }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {giftThanks === g.id ? (
+                    <div className="flex items-center justify-center gap-2 py-4 text-sm font-semibold text-center" style={{ color: accent }}>
+                      <Check size={16} /> Merci infiniment pour votre attention.
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => !preview && setGiftThanks(g.id)}
+                      className="w-full py-4 text-white text-[13px] tracking-[0.16em] uppercase font-semibold transition hover:opacity-90 shadow-sm"
+                      style={{ background: accent, borderRadius: btnR }}
+                    >
+                      Participer
+                    </button>
+                  )}
+                </div>
               </motion.div>
             );
           })}
@@ -527,42 +563,42 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
     const layout = site.layout || 'magazine';
     const visible = gallery.filter((g) => !g.is_private);
     return (
-      <section className="py-20 sm:py-28" style={{ background: theme.surface, color: theme.ink }}>
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="py-24 sm:py-36" style={{ background: theme.surface, color: theme.ink }}>
+        <div className="max-w-6xl mx-auto px-6 sm:px-12 text-center">
           {eyebrow('Galerie')}
-          <h2 className="mt-5 text-center font-light" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.4rem)' }}>Nos images</h2>
+          <h2 className="mt-6 font-normal tracking-tight" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2.2rem, 5vw, 3.6rem)' }}>Nos images</h2>
         </div>
-        <div className="mt-12 max-w-6xl mx-auto px-6">
+        <div className="mt-16 max-w-6xl mx-auto px-6 sm:px-12">
           {visible.length === 0 && <p className="text-center py-8" style={{ color: theme.muted }}>Les premières photos arrivent bientôt.</p>}
           {layout === 'immersif' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {visible.map((g) => (
-                <motion.img key={g.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.8 }} src={g.url} alt={g.caption || ''} onClick={() => !preview && setLightbox(g.url)} className={`w-full max-h-[80vh] object-cover ${preview ? '' : 'cursor-zoom-in'}`} style={{ borderRadius: cardR }} />
+                <motion.img key={g.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.8 }} src={g.url} alt={g.caption || ''} onClick={() => !preview && setLightbox(g.url)} className={`w-full max-h-[85vh] object-cover ${preview ? '' : 'cursor-zoom-in'} shadow-[0_20px_50px_rgba(0,0,0,0.06)]`} style={{ borderRadius: cardR }} />
               ))}
             </div>
           )}
           {layout === 'galerie' && (
-            <div className="columns-2 md:columns-3 gap-4 space-y-4">
+            <div className="columns-2 md:columns-3 gap-6 space-y-6">
               {visible.map((g, i) => (
-                <motion.img key={g.id} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: (i % 3) * 0.1 }} src={g.url} alt={g.caption || ''} onClick={() => !preview && setLightbox(g.url)} className={`w-full object-cover break-inside-avoid ${preview ? '' : 'cursor-zoom-in'}`} style={{ borderRadius: cardR }} />
+                <motion.img key={g.id} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: (i % 3) * 0.1 }} src={g.url} alt={g.caption || ''} onClick={() => !preview && setLightbox(g.url)} className={`w-full object-cover break-inside-avoid ${preview ? '' : 'cursor-zoom-in'} shadow-[0_10px_30px_rgba(0,0,0,0.04)]`} style={{ borderRadius: cardR }} />
               ))}
             </div>
           )}
           {layout === 'minimal' && (
-            <div className="grid sm:grid-cols-2 gap-8 sm:gap-12">
+            <div className="grid sm:grid-cols-2 gap-10 sm:gap-14">
               {visible.map((g) => (
                 <motion.figure key={g.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-                  <img src={g.url} alt={g.caption || ''} onClick={() => !preview && setLightbox(g.url)} className={`w-full aspect-[4/3] object-cover ${preview ? '' : 'cursor-zoom-in'}`} style={{ borderRadius: cardR }} />
-                  {g.caption && <figcaption className="mt-3 text-sm italic" style={{ color: theme.muted, fontFamily: fonts.heading }}>{g.caption}</figcaption>}
+                  <img src={g.url} alt={g.caption || ''} onClick={() => !preview && setLightbox(g.url)} className={`w-full aspect-[4/3] object-cover ${preview ? '' : 'cursor-zoom-in'} shadow-[0_15px_40px_rgba(0,0,0,0.05)]`} style={{ borderRadius: cardR }} />
+                  {g.caption && <figcaption className="mt-4 text-sm font-light italic" style={{ color: theme.muted }}>{g.caption}</figcaption>}
                 </motion.figure>
               ))}
             </div>
           )}
           {layout === 'magazine' && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
               {visible.map((g, i) => (
                 <motion.div key={g.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: (i % 4) * 0.07 }} className={i % 5 === 0 ? 'col-span-2 row-span-2' : ''}>
-                  <img src={g.url} alt={g.caption || ''} onClick={() => !preview && setLightbox(g.url)} className={`w-full h-full object-cover aspect-square ${preview ? '' : 'cursor-zoom-in'}`} style={{ borderRadius: cardR }} />
+                  <img src={g.url} alt={g.caption || ''} onClick={() => !preview && setLightbox(g.url)} className={`w-full h-full object-cover aspect-square ${preview ? '' : 'cursor-zoom-in'} shadow-[0_10px_25px_rgba(0,0,0,0.04)]`} style={{ borderRadius: cardR }} />
                 </motion.div>
               ))}
             </div>
@@ -571,7 +607,7 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
         <AnimatePresence>
           {lightbox && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLightbox(null)} className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 cursor-zoom-out">
-              <img src={lightbox} alt="" className="max-w-full max-h-full object-contain rounded-lg" />
+              <img src={lightbox} alt="" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -580,11 +616,11 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
   };
 
   const renderFaq = () => (
-    <section className="py-20 sm:py-28 px-6" style={{ background: theme.bg, color: theme.ink }}>
+    <section className="py-24 sm:py-36 px-6 sm:px-12" style={{ background: theme.bg, color: theme.ink }}>
       <div className="max-w-2xl mx-auto">
         {eyebrow('Questions fréquentes')}
-        <h2 className="mt-5 text-center font-light" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Tout vous dire</h2>
-        <div className="mt-10 border-t" style={{ borderColor: theme.line }}>
+        <h2 className="mt-6 text-center font-normal tracking-tight" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2.2rem, 5vw, 3.4rem)' }}>Tout vous dire</h2>
+        <div className="mt-14 border-t" style={{ borderColor: theme.line }}>
           {faqs.map((f) => (
             <FaqItem key={f.id} q={f.question} a={f.answer} dark={dark} line={theme.line} muted={theme.muted} headingFont={fonts.heading} />
           ))}
@@ -595,19 +631,19 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
   );
 
   const renderContact = () => (
-    <section className="py-20 sm:py-24 px-6 text-center" style={{ background: theme.surface, color: theme.ink }}>
+    <section className="py-24 sm:py-32 px-6 sm:px-12 text-center" style={{ background: theme.surface, color: theme.ink }}>
       <div className="max-w-xl mx-auto">
         {eyebrow('Contact')}
-        <h2 className="mt-5 font-light" style={{ fontFamily: fonts.heading, fontSize: 'clamp(1.8rem, 4vw, 2.6rem)' }}>Une question ? Écrivez-nous</h2>
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <h2 className="mt-6 font-normal tracking-tight" style={{ fontFamily: fonts.heading, fontSize: 'clamp(2rem, 4vw, 2.8rem)' }}>Une question ? Écrivez-nous</h2>
+        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           {site.contact_email && (
-            <a href={`mailto:${site.contact_email}`} className="inline-flex items-center gap-2 px-7 py-3.5 border text-sm tracking-wide" style={{ borderColor: theme.line, borderRadius: btnR }}><Mail size={16} style={{ color: accent }} />{site.contact_email}</a>
+            <a href={`mailto:${site.contact_email}`} className="inline-flex items-center gap-2.5 px-8 py-4 border text-sm tracking-wide font-medium shadow-sm transition hover:opacity-80" style={{ borderColor: theme.line, borderRadius: btnR }}><Mail size={16} style={{ color: accent }} />{site.contact_email}</a>
           )}
           {site.contact_phone && (
-            <a href={`tel:${site.contact_phone.replace(/\s/g, '')}`} className="inline-flex items-center gap-2 px-7 py-3.5 border text-sm tracking-wide" style={{ borderColor: theme.line, borderRadius: btnR }}><Phone size={16} style={{ color: accent }} />{site.contact_phone}</a>
+            <a href={`tel:${site.contact_phone.replace(/\s/g, '')}`} className="inline-flex items-center gap-2.5 px-8 py-4 border text-sm tracking-wide font-medium shadow-sm transition hover:opacity-80" style={{ borderColor: theme.line, borderRadius: btnR }}><Phone size={16} style={{ color: accent }} />{site.contact_phone}</a>
           )}
           {!site.contact_email && !site.contact_phone && (
-            <p className="text-sm" style={{ color: theme.muted }}>Les coordonnées seront ajoutées très bientôt.</p>
+            <p className="text-sm font-light" style={{ color: theme.muted }}>Les coordonnées seront ajoutées très bientôt.</p>
           )}
         </div>
       </div>

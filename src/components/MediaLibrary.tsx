@@ -79,7 +79,7 @@ export default function MediaLibrary({ open, onClose, onSelect, title }: Props) 
             <div className="px-6 sm:px-8 pt-6 pb-4 border-b border-black/10 bg-white/70 backdrop-blur">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl sm:text-2xl font-medium tracking-tight" style={{ fontFamily: '"Fraunces", Georgia, serif' }}>{title || 'Bibliothèque média'}</h3>
+                  <h3 className="text-xl sm:text-2xl font-medium tracking-tight" style={{ fontFamily: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif' }}>{title || 'Bibliothèque média'}</h3>
                   <p className="text-sm text-neutral-500 mt-0.5">{filtered.length} visuel{filtered.length > 1 ? 's' : ''} — cliquez pour insérer</p>
                 </div>
                 <div className="flex items-center gap-2">

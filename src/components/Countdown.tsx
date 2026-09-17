@@ -32,7 +32,7 @@ export default function Countdown({ target, accent, light, fontFamily }: Props) 
     return () => clearInterval(timer);
   }, [target]);
 
-  const numFont = fontFamily || '"Fraunces", Georgia, serif';
+  const numFont = fontFamily || '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif';
 
   if (parts.passed) {
     return (

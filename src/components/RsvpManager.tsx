@@ -46,7 +46,7 @@ export default function RsvpManager({ siteId, events, refreshKey }: Props) {
     <div>
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h3 className="text-xl font-medium tracking-tight" style={{ fontFamily: '"Fraunces", Georgia, serif' }}>Réponses des invités</h3>
+          <h3 className="text-xl font-medium tracking-tight" style={{ fontFamily: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif' }}>Réponses des invités</h3>
           <p className="text-[13px] text-neutral-400 mt-0.5">Mis à jour en temps réel</p>
         </div>
         <button onClick={fetchAll} className="w-9 h-9 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition" aria-label="Actualiser">
@@ -57,7 +57,7 @@ export default function RsvpManager({ siteId, events, refreshKey }: Props) {
         {stats.map((s) => (
           <div key={s.label} className={`p-4 rounded-2xl ${s.bg}`}>
             <s.icon size={17} strokeWidth={1.75} className="opacity-70" />
-            <div className="mt-2 text-xl font-semibold tabular-nums tracking-tight" style={{ fontFamily: '"Fraunces", Georgia, serif' }}>{s.value}</div>
+            <div className="mt-2 text-xl font-semibold tabular-nums tracking-tight" style={{ fontFamily: '"Wix Madefor Display", "Plus Jakarta Sans", system-ui, sans-serif' }}>{s.value}</div>
             <div className="text-[11px] tracking-[0.18em] uppercase opacity-60">{s.label}</div>
           </div>
         ))}
