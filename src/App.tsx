@@ -5,6 +5,7 @@ import Onboarding from './pages/Onboarding';
 import Generating from './pages/Generating';
 import Editor from './pages/Editor';
 import PublicSite from './pages/PublicSite';
+import PackagesShowcase from './pages/PackagesShowcase';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -18,6 +19,7 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/packages" element={<PackagesShowcase />} />
         <Route path="/creer" element={<Onboarding />} />
         <Route path="/generer" element={<Generating />} />
         <Route path="/editeur/:id" element={<Editor />} />

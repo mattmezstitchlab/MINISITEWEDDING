@@ -33,11 +33,16 @@ export default function Landing() {
             <span className="text-[13px] tracking-[0.25em] uppercase font-medium">Wedding Site</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-[13px] tracking-[0.12em] uppercase text-neutral-500 font-medium">
+            <Link to="/packages" className="text-black font-semibold flex items-center gap-1.5 hover:text-[#8A6D4B] transition">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              5 Collections Agence
+            </Link>
             <a href="#styles" className="hover:text-black transition">Styles</a>
             <a href="#experience" className="hover:text-black transition">Expérience</a>
             <a href="#modules" className="hover:text-black transition">Modules</a>
           </div>
           <div className="flex items-center gap-2">
+            <Link to="/packages" className="inline-flex sm:hidden text-[11px] tracking-wide px-3 py-1.5 rounded-full bg-black text-white">5 Packages</Link>
             <Link to="/p/matt-marie" className="hidden sm:inline-flex text-[12px] sm:text-[13px] tracking-wide px-4 sm:px-5 py-2.5 rounded-full border border-black/15 hover:border-black/40 transition">Voir un exemple</Link>
             <Link to="/creer" className="inline-flex items-center gap-1.5 text-[12px] sm:text-[13px] tracking-wide px-4 sm:px-5 py-2.5 rounded-full bg-neutral-900 text-white hover:bg-neutral-700 transition font-medium">Créer mon site <ArrowRight size={14} /></Link>
           </div>
@@ -84,6 +89,58 @@ export default function Landing() {
                 <div className="mt-3 text-2xl font-semibold tracking-tight" style={{ fontFamily: studioFont }}>{s.title}</div>
                 <p className="mt-3 text-sm text-neutral-500 leading-relaxed font-light">{s.text}</p>
               </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Showcase Agence Le Monde Aime */}
+      <section className="py-20 sm:py-28 px-4 sm:px-8 bg-[#0D0D10] text-white border-y border-white/10">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-12 border-b border-white/10">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-[0.3em] text-[#C5A059]">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                <span>Showcase Agence // Le Monde Aime</span>
+              </div>
+              <h2 className="mt-4 font-normal tracking-tight text-white" style={{ fontFamily: studioFont, fontSize: 'clamp(2.2rem, 5vw, 3.8rem)' }}>
+                5 Packages d’Agence.<br />
+                <span className="text-white/60">5 Mini-Sites d’Exception.</span>
+              </h2>
+            </div>
+            <div className="lg:max-w-md">
+              <p className="text-sm sm:text-base text-neutral-400 font-light leading-relaxed mb-6">
+                Découvrez les 5 collections créées pour l’agence scénographique <em>Le Monde Aime</em> : Fugace Studio, Irrévérence, Maison Anomalie, Maison Désordre et Orbite & Incartade.
+              </p>
+              <Link
+                to="/packages"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-black text-xs uppercase tracking-[0.2em] font-semibold hover:bg-[#C5A059] transition"
+              >
+                Explorer le Showcase Interactif <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+            {[
+              { id: 'fugace', num: '01', name: 'Fugace Studio', type: 'Jour J Brut', img: '/images/packages/fugace.jpg' },
+              { id: 'irreverence', num: '02', name: 'Irrévérence', type: 'Subversif Chrome', img: '/images/packages/irreverence.jpg' },
+              { id: 'anomalie', num: '03', name: 'Maison Anomalie', type: 'Onirisme Poétique', img: '/images/packages/anomalie.jpg' },
+              { id: 'desordre', num: '04', name: 'Maison Désordre', type: 'Baroque Festin', img: '/images/packages/desordre.jpg' },
+              { id: 'orbite', num: '05', name: 'Orbite & Incartade', type: 'Immersif Secret', img: '/images/packages/orbite.jpg' },
+            ].map((p) => (
+              <Link
+                key={p.id}
+                to={`/packages?pack=${p.id}`}
+                className="group relative rounded-2xl overflow-hidden aspect-[3/4] border border-white/10 hover:border-white/40 transition block shadow-lg"
+              >
+                <img src={p.img} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <div className="text-[10px] font-mono text-[#C5A059]">{p.num} // {p.type}</div>
+                  <div className="text-sm font-semibold text-white mt-0.5 group-hover:underline">{p.name}</div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
