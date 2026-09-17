@@ -15,26 +15,26 @@ export interface WeddingStyle {
 
 export const WEDDING_STYLES: WeddingStyle[] = [
   {
-    id: 'editorial', name: 'Editorial Neo', tagline: 'Comme une couverture de magazine d’art',
-    description: 'Titres néo-grotesques affirmés, grille magazine, photographie grand format.',
+    id: 'editorial', name: 'Editorial', tagline: 'Comme une couverture de magazine',
+    description: 'Titres majestueux, grille magazine, photographie grand format.',
     bg: '#FAF7F2', surface: '#FFFFFF', ink: '#1B1B1B', muted: '#8A857C', accent: '#1B1B1B', line: '#E8E2D6',
     dark: false, image: '/images/hero-wedding.jpg',
   },
   {
-    id: 'minimal', name: 'Minimaliste Pur', tagline: 'Le silence est un luxe absolu',
+    id: 'minimal', name: 'Minimaliste', tagline: 'Le silence est un luxe absolu',
     description: 'Blanc minéral, respiration maximale, typographie discrète et contemporaine.',
     bg: '#FFFFFF', surface: '#F7F7F5', ink: '#111111', muted: '#9A9A98', accent: '#111111', line: '#ECECEA',
     dark: false, image: '/images/bouquet.jpg',
   },
   {
     id: 'romantique', name: 'Romance Poudrée', tagline: 'Douceur rose poudré & lumière naturelle',
-    description: 'Teintes délicates, typographie néo-grotesque épurée, atmosphère tendre.',
+    description: 'Teintes délicates, typographie poétique, atmosphère tendre.',
     bg: '#FDF6F3', surface: '#FFFFFF', ink: '#3E2E2E', muted: '#A68F8A', accent: '#B76E79', line: '#F0DDD6',
     dark: false, image: '/images/couple-paris.jpg',
   },
   {
     id: 'nature', name: 'Garden Chic', tagline: 'Provence, sauge & matières nobles',
-    description: 'Verts sauge, pierres chaudes, esprit contemporain et grand air.',
+    description: 'Verts sauge, pierres chaudes, esprit champêtre et grand air.',
     bg: '#F5F6F0', surface: '#FFFFFF', ink: '#2C3325', muted: '#8B917F', accent: '#5B6E4E', line: '#DFE2D2',
     dark: false, image: '/images/garden.jpg',
   },
@@ -52,7 +52,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
   },
   {
     id: 'noir-blanc', name: 'Monochrome Intemporel', tagline: 'Photographie d’art contrastée',
-    description: 'Monochrome d’auteur, contraste franc, pureté architecturale.',
+    description: 'Monochrome d’auteur, contraste franc, pureté cinématographique.',
     bg: '#FFFFFF', surface: '#F4F4F4', ink: '#0A0A0A', muted: '#8B8B8B', accent: '#0A0A0A', line: '#E2E2E2',
     dark: false, image: '/images/noir-blanc.jpg',
   },
@@ -78,59 +78,39 @@ export interface TypoOption {
 
 export const TYPO_OPTIONS: TypoOption[] = [
   {
-    id: 'neo-grotesk',
-    name: 'Neo Grotesk',
-    hint: 'Audacieux, architectural et suisse',
-    heading: '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif',
-    body: '"Hanken Grotesk", "Space Grotesk", system-ui, sans-serif',
-  },
-  {
-    id: 'neo-minimal',
-    name: 'Neo Minimaliste',
-    hint: 'Luxe contemporain, net et pur',
-    heading: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
-    body: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
-  },
-  {
     id: 'editorial',
-    name: 'Neo Éditorial',
-    hint: 'Titrages affirmés & lecture aérée',
-    heading: '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif',
-    body: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
+    name: 'Fraunces Éditorial',
+    hint: 'La typographie signature du mariage',
+    heading: '"Fraunces", Georgia, serif',
+    body: '"Fraunces", Georgia, serif',
   },
   {
-    id: 'haute-couture',
-    name: 'Haute Couture',
-    hint: 'Contraste serif aérien et touches néo',
-    heading: '"Italiana", "Space Grotesk", Georgia, serif',
-    body: '"Hanken Grotesk", "Space Grotesk", system-ui, sans-serif',
+    id: 'romantique',
+    name: 'Fraunces Romantique',
+    hint: 'Italiques douces et courbes élégantes',
+    heading: '"Fraunces", Georgia, serif',
+    body: '"Fraunces", Georgia, serif',
+  },
+  {
+    id: 'intemporel',
+    name: 'Fraunces Intemporel',
+    hint: 'Élégance littéraire et pureté',
+    heading: '"Fraunces", Georgia, serif',
+    body: '"Fraunces", Georgia, serif',
+  },
+  {
+    id: 'delicat',
+    name: 'Fraunces Délicat',
+    hint: 'Plein et déliés harmonieux',
+    heading: '"Fraunces", Georgia, serif',
+    body: '"Fraunces", Georgia, serif',
   },
 ];
 
-export function fontsFor(typoId: string): { heading: string; body: string } {
-  if (typoId === 'neo-grotesk') {
-    return {
-      heading: '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif',
-      body: '"Hanken Grotesk", "Space Grotesk", system-ui, sans-serif',
-    };
-  }
-  if (typoId === 'neo-minimal' || typoId === 'modern' || typoId === 'sans') {
-    return {
-      heading: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
-      body: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
-    };
-  }
-  if (typoId === 'haute-couture' || typoId === 'serif') {
-    return {
-      heading: '"Italiana", "Space Grotesk", Georgia, serif',
-      body: '"Hanken Grotesk", "Space Grotesk", system-ui, sans-serif',
-    };
-  }
-  const found = TYPO_OPTIONS.find((t) => t.id === typoId);
-  if (found) return { heading: found.heading, body: found.body };
+export function fontsFor(_typoId?: string): { heading: string; body: string } {
   return {
-    heading: '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif',
-    body: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
+    heading: '"Fraunces", Georgia, serif',
+    body: '"Fraunces", Georgia, serif',
   };
 }
 

@@ -6,7 +6,7 @@
       "partner1": "Marie",
       "partner2": "Matt",
       "wedding_date": "2027-07-18",
-      "venue": "Ch\u00e2teau de Chantilly",
+      "venue": "Château de Chantilly",
       "city": "Chantilly, Oise",
       "style": "editorial",
       "phase": "avant",
@@ -19,14 +19,42 @@
       "hero_photo": "/images/hero-wedding.jpg",
       "hero_title": "Marie & Matt",
       "hero_subtitle": "Nous nous marions",
-      "story_title": "Tout a commenc\u00e9 par un regard",
-      "story_text": "C\u2019est une histoire comme on les aime : une rencontre impr\u00e9vue sur les quais de Seine, un \u00e9clat de rire partag\u00e9, puis une \u00e9vidence qui ne s\u2019est plus jamais d\u00e9mentie.\n\nSept ans, des dizaines de voyages et un millier de souvenirs plus tard, nous avons choisi de r\u00e9unir celles et ceux qui comptent le plus pour c\u00e9l\u00e9brer notre amour et d\u00e9buter ce nouveau chapitre ensemble.",
+      "story_title": "Tout a commencé par un regard",
+      "story_text": "C’est une histoire comme on les aime : une rencontre imprévue sur les quais de Seine, un éclat de rire partagé, puis une évidence qui ne s’est plus jamais démentie.\n\nSept ans, des dizaines de voyages et un millier de souvenirs plus tard, nous avons choisi de réunir celles et ceux qui comptent le plus pour célébrer notre amour et débuter ce nouveau chapitre ensemble.",
       "story_photo": "/images/couple-paris.jpg",
-      "announcement": "Nous avons h\u00e2te de vous retrouver le 18 Juillet 2027.",
+      "announcement": "Nous avons hâte de vous retrouver le 18 Juillet 2027.",
       "contact_email": "mariage@marie-matt.fr",
       "contact_phone": "06 12 34 56 78",
       "published": true,
       "created_at": "2026-09-17T03:23:31.035Z"
+    },
+    {
+      "id": 2,
+      "slug": "bibi-matt-hmix",
+      "partner1": "bibi",
+      "partner2": "matt",
+      "wedding_date": "2027-07-31",
+      "venue": "Domaines des charmes",
+      "city": "lesquin",
+      "style": "editorial",
+      "phase": "avant",
+      "typography": "neo-grotesk",
+      "accent_color": "#93354F",
+      "button_style": "pill",
+      "shape": "soft",
+      "layout": "magazine",
+      "animation_level": "fluide",
+      "hero_photo": "/images/hero-wedding.jpg",
+      "hero_title": "bibi & matt",
+      "hero_subtitle": "Nous nous marions",
+      "story_title": "Tout a commencé par un regard",
+      "story_text": "C’est une histoire comme on les aime : une rencontre, un éclat de rire, puis l’évidence.\n\nDepuis ce jour, bibi et matt ne se quittent plus. Et aujourd’hui, ils veulent écrire la suite avec vous, entourés de celles et ceux qu’ils aiment.",
+      "story_photo": "/images/couple-paris.jpg",
+      "announcement": "Nous avons hâte de vous retrouver.",
+      "contact_email": "",
+      "contact_phone": "",
+      "published": false,
+      "created_at": "2026-09-17T03:38:13.372Z"
     }
   ],
   "site_sections": [
@@ -117,6 +145,105 @@
       "title": "Pied de page",
       "visible": true,
       "position": 10
+    },
+    {
+      "id": 12,
+      "site_id": 2,
+      "section_key": "hero",
+      "title": "Accueil",
+      "visible": true,
+      "position": 0,
+      "created_at": "2026-09-17T03:38:13.558Z"
+    },
+    {
+      "id": 13,
+      "site_id": 2,
+      "section_key": "histoire",
+      "title": "Notre histoire",
+      "visible": true,
+      "position": 1,
+      "created_at": "2026-09-17T03:38:13.749Z"
+    },
+    {
+      "id": 14,
+      "site_id": 2,
+      "section_key": "programme",
+      "title": "Programme",
+      "visible": true,
+      "position": 2,
+      "created_at": "2026-09-17T03:38:13.934Z"
+    },
+    {
+      "id": 15,
+      "site_id": 2,
+      "section_key": "lieux",
+      "title": "Lieux",
+      "visible": true,
+      "position": 3,
+      "created_at": "2026-09-17T03:38:14.121Z"
+    },
+    {
+      "id": 16,
+      "site_id": 2,
+      "section_key": "infos",
+      "title": "Infos pratiques",
+      "visible": true,
+      "position": 4,
+      "created_at": "2026-09-17T03:38:14.307Z"
+    },
+    {
+      "id": 17,
+      "site_id": 2,
+      "section_key": "rsvp",
+      "title": "RSVP",
+      "visible": true,
+      "position": 5,
+      "created_at": "2026-09-17T03:38:14.494Z"
+    },
+    {
+      "id": 18,
+      "site_id": 2,
+      "section_key": "cagnotte",
+      "title": "Cagnotte",
+      "visible": true,
+      "position": 6,
+      "created_at": "2026-09-17T03:38:14.677Z"
+    },
+    {
+      "id": 19,
+      "site_id": 2,
+      "section_key": "galerie",
+      "title": "Galerie",
+      "visible": true,
+      "position": 7,
+      "created_at": "2026-09-17T03:38:14.862Z"
+    },
+    {
+      "id": 20,
+      "site_id": 2,
+      "section_key": "faq",
+      "title": "FAQ",
+      "visible": true,
+      "position": 8,
+      "created_at": "2026-09-17T03:38:15.044Z"
+    },
+    {
+      "id": 21,
+      "site_id": 2,
+      "section_key": "contact",
+      "title": "Contact",
+      "visible": true,
+      "position": 9,
+      "created_at": "2026-09-17T03:38:15.226Z"
+    },
+    {
+      "id": 22,
+      "site_id": 2,
+      "section_key": "footer",
+      "title": "Pied de page",
+      "visible": true,
+      "position": 10,
+      "created_at": "2026-09-17T03:38:15.406Z"
     }
   ],
   "programme": [
@@ -124,9 +251,9 @@
       "id": 1,
       "site_id": 1,
       "event_time": "14:30",
-      "title": "C\u00e9r\u00e9monie La\u00efque",
-      "description": "\u00c9change des v\u0153ux et des alliances dans le parterre anglais du ch\u00e2teau.",
-      "place": "Jardins du Ch\u00e2teau",
+      "title": "Cérémonie Laïque",
+      "description": "Échange des vœux et des alliances dans le parterre anglais du château.",
+      "place": "Jardins du Château",
       "icon": "clock",
       "position": 0
     },
@@ -135,7 +262,7 @@
       "site_id": 1,
       "event_time": "16:00",
       "title": "Cocktail & Champagne",
-      "description": "Coupes fra\u00eeches, pi\u00e8ces cocktails cr\u00e9atives et musique acoustique en plein air.",
+      "description": "Coupes fraîches, pièces cocktails créatives et musique acoustique en plein air.",
       "place": "Terrasse du Grand Bassin",
       "icon": "clock",
       "position": 1
@@ -144,8 +271,8 @@
       "id": 3,
       "site_id": 1,
       "event_time": "19:00",
-      "title": "D\u00eener Gastronomique",
-      "description": "D\u00eener assis sous la verri\u00e8re d\u2019\u00e9poque, discours complices et surprises.",
+      "title": "Dîner Gastronomique",
+      "description": "Dîner assis sous la verrière d’époque, discours complices et surprises.",
       "place": "Galerie des Cerfs",
       "icon": "clock",
       "position": 2
@@ -155,8 +282,8 @@
       "site_id": 1,
       "event_time": "21:30",
       "title": "Ouverture du Bal",
-      "description": "La premi\u00e8re danse sous les lustres de cristal, puis \u00e0 tous les invit\u00e9s.",
-      "place": "Salon d\u2019Honneur",
+      "description": "La première danse sous les lustres de cristal, puis à tous les invités.",
+      "place": "Salon d’Honneur",
       "icon": "clock",
       "position": 3
     },
@@ -164,40 +291,95 @@
       "id": 5,
       "site_id": 1,
       "event_time": "23:30",
-      "title": "Soir\u00e9e Dansante",
-      "description": "DJ set live, bar \u00e0 cocktails signature et danse jusqu\u2019au petit matin.",
-      "place": "L\u2019Orangerie",
+      "title": "Soirée Dansante",
+      "description": "DJ set live, bar à cocktails signature et danse jusqu’au petit matin.",
+      "place": "L’Orangerie",
       "icon": "clock",
       "position": 4
+    },
+    {
+      "id": 6,
+      "site_id": 2,
+      "event_time": "14:30",
+      "title": "Cérémonie",
+      "description": "Échange des vœux et des alliances.",
+      "place": "Domaines des charmes",
+      "icon": "clock",
+      "position": 0,
+      "created_at": "2026-09-17T03:38:15.593Z"
+    },
+    {
+      "id": 7,
+      "site_id": 2,
+      "event_time": "16:00",
+      "title": "Cocktail",
+      "description": "Coupe de champagne et photos de groupe.",
+      "place": "Domaines des charmes",
+      "icon": "clock",
+      "position": 1,
+      "created_at": "2026-09-17T03:38:15.775Z"
+    },
+    {
+      "id": 8,
+      "site_id": 2,
+      "event_time": "18:30",
+      "title": "Dîner",
+      "description": "Dîner assis, discours et surprises.",
+      "place": "Domaines des charmes",
+      "icon": "clock",
+      "position": 2,
+      "created_at": "2026-09-17T03:38:15.963Z"
+    },
+    {
+      "id": 9,
+      "site_id": 2,
+      "event_time": "21:00",
+      "title": "Ouverture du bal",
+      "description": "La première danse, puis à vous.",
+      "place": "Domaines des charmes",
+      "icon": "clock",
+      "position": 3,
+      "created_at": "2026-09-17T03:38:16.149Z"
+    },
+    {
+      "id": 10,
+      "site_id": 2,
+      "event_time": "23:30",
+      "title": "Soirée",
+      "description": "Dansez jusqu’au bout de la nuit.",
+      "place": "Domaines des charmes",
+      "icon": "clock",
+      "position": 4,
+      "created_at": "2026-09-17T03:38:16.331Z"
     }
   ],
   "infos": [
     {
       "id": 1,
       "site_id": 1,
-      "category": "C\u00e9r\u00e9monie",
-      "title": "Ch\u00e2teau de Chantilly",
-      "detail": "60500 Chantilly. Arriv\u00e9e recommand\u00e9e \u00e0 14h00 pour vous installer sereinement.",
+      "category": "Cérémonie",
+      "title": "Château de Chantilly",
+      "detail": "60500 Chantilly. Arrivée recommandée à 14h00 pour vous installer sereinement.",
       "event_time": "14:30",
-      "link_label": "Voir l\u2019itin\u00e9raire",
+      "link_label": "Voir l’itinéraire",
       "position": 0
     },
     {
       "id": 2,
       "site_id": 1,
-      "category": "R\u00e9ception",
-      "title": "L\u2019Orangerie du Domaine",
-      "detail": "Acc\u00e8s direct depuis le parc du ch\u00e2teau. Fl\u00e9chage pr\u00e9vu pour les invit\u00e9s.",
+      "category": "Réception",
+      "title": "L’Orangerie du Domaine",
+      "detail": "Accès direct depuis le parc du château. Fléchage prévu pour les invités.",
       "event_time": "16:00",
-      "link_label": "Voir l\u2019itin\u00e9raire",
+      "link_label": "Voir l’itinéraire",
       "position": 1
     },
     {
       "id": 3,
       "site_id": 1,
       "category": "Parking",
-      "title": "Parking Priv\u00e9 P1",
-      "detail": "Parking gratuit et gard\u00e9 r\u00e9serv\u00e9 \u00e0 nos invit\u00e9s \u00e0 l\u2019entr\u00e9e du domaine.",
+      "title": "Parking Privé P1",
+      "detail": "Parking gratuit et gardé réservé à nos invités à l’entrée du domaine.",
       "event_time": "",
       "link_label": "",
       "position": 2
@@ -205,9 +387,9 @@
     {
       "id": 4,
       "site_id": 1,
-      "category": "H\u00e9bergements",
-      "title": "O\u00f9 dormir ?",
-      "detail": "L\u2019Auberge du Jeu de Paume et l\u2019H\u00f4tel Mercure sont \u00e0 5 min. Mentionnez le mariage MARIE & MATT.",
+      "category": "Hébergements",
+      "title": "Où dormir ?",
+      "detail": "L’Auberge du Jeu de Paume et l’Hôtel Mercure sont à 5 min. Mentionnez le mariage MARIE & MATT.",
       "event_time": "",
       "link_label": "En savoir plus",
       "position": 3
@@ -216,8 +398,8 @@
       "id": 5,
       "site_id": 1,
       "category": "Dress code",
-      "title": "\u00c9l\u00e9gance Estivale",
-      "detail": "Robes cocktail ou longues, costumes sombres. Privil\u00e9giez des talons stables pour les pelouses.",
+      "title": "Élégance Estivale",
+      "detail": "Robes cocktail ou longues, costumes sombres. Privilégiez des talons stables pour les pelouses.",
       "event_time": "",
       "link_label": "",
       "position": 4
@@ -227,10 +409,76 @@
       "site_id": 1,
       "category": "Navettes",
       "title": "Navettes Nocturnes",
-      "detail": "Navettes vers Paris Nord et les h\u00f4tels partenaires de 01h00 \u00e0 04h30.",
+      "detail": "Navettes vers Paris Nord et les hôtels partenaires de 01h00 à 04h30.",
       "event_time": "01:00",
       "link_label": "",
       "position": 5
+    },
+    {
+      "id": 7,
+      "site_id": 2,
+      "category": "Cérémonie",
+      "title": "Domaines des charmes",
+      "detail": "lesquin",
+      "event_time": "14:30",
+      "link_label": "Voir l’itinéraire",
+      "position": 0,
+      "created_at": "2026-09-17T03:38:16.514Z"
+    },
+    {
+      "id": 8,
+      "site_id": 2,
+      "category": "Réception",
+      "title": "Domaines des charmes",
+      "detail": "lesquin",
+      "event_time": "18:30",
+      "link_label": "Voir l’itinéraire",
+      "position": 1,
+      "created_at": "2026-09-17T03:38:16.705Z"
+    },
+    {
+      "id": 9,
+      "site_id": 2,
+      "category": "Parking",
+      "title": "Parking privé",
+      "detail": "Un parking est réservé aux invités à côté du lieu.",
+      "event_time": "",
+      "link_label": "",
+      "position": 2,
+      "created_at": "2026-09-17T03:38:16.895Z"
+    },
+    {
+      "id": 10,
+      "site_id": 2,
+      "category": "Hébergements",
+      "title": "Où dormir ?",
+      "detail": "Hôtels et chambres d’hôtes à proximité — réservez tôt.",
+      "event_time": "",
+      "link_label": "",
+      "position": 3,
+      "created_at": "2026-09-17T03:38:17.077Z"
+    },
+    {
+      "id": 11,
+      "site_id": 2,
+      "category": "Dress code",
+      "title": "Tenue de cocktail",
+      "detail": "Élégance estivale. Prévoyez des chaussures adaptées aux jardins.",
+      "event_time": "",
+      "link_label": "",
+      "position": 4,
+      "created_at": "2026-09-17T03:38:17.259Z"
+    },
+    {
+      "id": 12,
+      "site_id": 2,
+      "category": "Contacts",
+      "title": "Une question ?",
+      "detail": "Écrivez-nous, nous répondons à tout, vite.",
+      "event_time": "",
+      "link_label": "",
+      "position": 5,
+      "created_at": "2026-09-17T03:38:17.444Z"
     }
   ],
   "gallery": [
@@ -246,7 +494,7 @@
       "id": 2,
       "site_id": 1,
       "url": "/images/hero-wedding.jpg",
-      "caption": "L\u2019\u00e9l\u00e9gance du grand jour",
+      "caption": "L’élégance du grand jour",
       "position": 1,
       "is_private": false
     },
@@ -270,7 +518,7 @@
       "id": 5,
       "site_id": 1,
       "url": "/images/chateau.jpg",
-      "caption": "Le Ch\u00e2teau de Chantilly",
+      "caption": "Le Château de Chantilly",
       "position": 4,
       "is_private": false
     },
@@ -278,7 +526,7 @@
       "id": 6,
       "site_id": 1,
       "url": "/images/table-noir.jpg",
-      "caption": "D\u00e9tails de table & bougies",
+      "caption": "Détails de table & bougies",
       "position": 5,
       "is_private": false
     },
@@ -286,7 +534,7 @@
       "id": 7,
       "site_id": 1,
       "url": "/images/danse.jpg",
-      "caption": "Sous les \u00e9toiles",
+      "caption": "Sous les étoiles",
       "position": 6,
       "is_private": false
     },
@@ -294,67 +542,151 @@
       "id": 8,
       "site_id": 1,
       "url": "/images/champagne.jpg",
-      "caption": "\u00c0 l\u2019amour",
+      "caption": "À l’amour",
       "position": 7,
       "is_private": false
+    },
+    {
+      "id": 9,
+      "site_id": 2,
+      "url": "/images/hero-wedding.jpg",
+      "caption": "Nous deux",
+      "position": 0,
+      "is_private": false,
+      "created_at": "2026-09-17T03:38:17.629Z"
+    },
+    {
+      "id": 10,
+      "site_id": 2,
+      "url": "/images/alliances.jpg",
+      "caption": "Les alliances",
+      "position": 1,
+      "is_private": false,
+      "created_at": "2026-09-17T03:38:17.811Z"
+    },
+    {
+      "id": 11,
+      "site_id": 2,
+      "url": "/images/bouquet.jpg",
+      "caption": "Le bouquet",
+      "position": 2,
+      "is_private": false,
+      "created_at": "2026-09-17T03:38:17.994Z"
+    },
+    {
+      "id": 12,
+      "site_id": 2,
+      "url": "/images/champagne.jpg",
+      "caption": "À la vie",
+      "position": 3,
+      "is_private": false,
+      "created_at": "2026-09-17T03:38:18.177Z"
     }
   ],
   "faqs": [
     {
       "id": 1,
       "site_id": 1,
-      "question": "Comment venir au Ch\u00e2teau ?",
-      "answer": "En train direct depuis Paris Gare du Nord (25 min jusqu\u2019\u00e0 Chantilly-Gouvieux, puis navette de 5 min). En voiture via l\u2019autoroute A1, sortie 7 Chantilly (environ 45 minutes de Paris).",
+      "question": "Comment venir au Château ?",
+      "answer": "En train direct depuis Paris Gare du Nord (25 min jusqu’à Chantilly-Gouvieux, puis navette de 5 min). En voiture via l’autoroute A1, sortie 7 Chantilly (environ 45 minutes de Paris).",
       "position": 0
     },
     {
       "id": 2,
       "site_id": 1,
-      "question": "O\u00f9 se loger \u00e0 proximit\u00e9 ?",
-      "answer": "Nous avons n\u00e9goci\u00e9 un tarif sp\u00e9cial \u00e0 l\u2019Auberge du Jeu de Paume et \u00e0 l\u2019H\u00f4tel Mercure Chantilly avec le code promo MARIE&MATT2027. Pensez \u00e0 r\u00e9server avant le 1er mai.",
+      "question": "Où se loger à proximité ?",
+      "answer": "Nous avons négocié un tarif spécial à l’Auberge du Jeu de Paume et à l’Hôtel Mercure Chantilly avec le code promo MARIE&MATT2027. Pensez à réserver avant le 1er mai.",
       "position": 1
     },
     {
       "id": 3,
       "site_id": 1,
-      "question": "Y a-t-il un dress code pr\u00e9cis ?",
-      "answer": "Tenue cocktail chic estivale ! Pour les dames, pr\u00e9voyez des talons carr\u00e9s ou des embouts pour la c\u00e9r\u00e9monie sur pelouse.",
+      "question": "Y a-t-il un dress code précis ?",
+      "answer": "Tenue cocktail chic estivale ! Pour les dames, prévoyez des talons carrés ou des embouts pour la cérémonie sur pelouse.",
       "position": 2
     },
     {
       "id": 4,
       "site_id": 1,
-      "question": "Les enfants sont-ils convi\u00e9s ?",
-      "answer": "Pour que tous les invit\u00e9s profitent au maximum de la soir\u00e9e festive, le d\u00eener et la soir\u00e9e dansante sont r\u00e9serv\u00e9s aux adultes. Un service de baby-sitting certifi\u00e9 peut \u00eatre coordonn\u00e9 avec les h\u00f4tels.",
+      "question": "Les enfants sont-ils conviés ?",
+      "answer": "Pour que tous les invités profitent au maximum de la soirée festive, le dîner et la soirée dansante sont réservés aux adultes. Un service de baby-sitting certifié peut être coordonné avec les hôtels.",
       "position": 3
     },
     {
       "id": 5,
       "site_id": 1,
-      "question": "Un brunch est-il pr\u00e9vu le lendemain ?",
-      "answer": "Absolument ! Nous vous donnons rendez-vous le dimanche \u00e0 partir de 11h30 pour un brunch d\u00e9contract\u00e9 au bord de l\u2019eau au domaine.",
+      "question": "Un brunch est-il prévu le lendemain ?",
+      "answer": "Absolument ! Nous vous donnons rendez-vous le dimanche à partir de 11h30 pour un brunch décontracté au bord de l’eau au domaine.",
       "position": 4
     },
     {
       "id": 6,
       "site_id": 1,
-      "question": "Jusqu\u2019\u00e0 quelle heure pourrons-nous danser ?",
-      "answer": "La musique se poursuivra jusqu\u2019\u00e0 05h00 du matin ! Des viennoiseries chaudes et caf\u00e9s seront servis aux plus noctambules.",
+      "question": "Jusqu’à quelle heure pourrons-nous danser ?",
+      "answer": "La musique se poursuivra jusqu’à 05h00 du matin ! Des viennoiseries chaudes et cafés seront servis aux plus noctambules.",
       "position": 5
+    },
+    {
+      "id": 7,
+      "site_id": 2,
+      "question": "Comment venir ?",
+      "answer": "Toutes les adresses et itinéraires sont indiqués dans la rubrique Lieux. Un parking est prévu à proximité.",
+      "position": 0,
+      "created_at": "2026-09-17T03:38:18.357Z"
+    },
+    {
+      "id": 8,
+      "site_id": 2,
+      "question": "Où dormir ?",
+      "answer": "Plusieurs hôtels et chambres d’hôtes autour du lieu. Réservez tôt et mentionnez notre mariage.",
+      "position": 1,
+      "created_at": "2026-09-17T03:38:18.540Z"
+    },
+    {
+      "id": 9,
+      "site_id": 2,
+      "question": "Y a-t-il un parking ?",
+      "answer": "Oui, un parking privé est réservé aux invités juste à côté du lieu de réception.",
+      "position": 2,
+      "created_at": "2026-09-17T03:38:18.724Z"
+    },
+    {
+      "id": 10,
+      "site_id": 2,
+      "question": "Les enfants sont-ils invités ?",
+      "answer": "Nous adorons vos enfants, mais la soirée est réservée aux adultes — sauf mention sur votre invitation.",
+      "position": 3,
+      "created_at": "2026-09-17T03:38:18.905Z"
+    },
+    {
+      "id": 11,
+      "site_id": 2,
+      "question": "Quel est le dress code ?",
+      "answer": "Tenue de cocktail. Mesdames, prévoyez des chaussures adaptées aux jardins.",
+      "position": 4,
+      "created_at": "2026-09-17T03:38:19.088Z"
+    },
+    {
+      "id": 12,
+      "site_id": 2,
+      "question": "À quelle heure arriver ?",
+      "answer": "Merci d’arriver 30 minutes avant la cérémonie pour vous installer sereinement.",
+      "position": 5,
+      "created_at": "2026-09-17T03:38:19.275Z"
     }
   ],
   "rsvp_events": [
     {
       "id": 1,
       "site_id": 1,
-      "name": "C\u00e9r\u00e9monie & Cocktail",
+      "name": "Cérémonie & Cocktail",
       "description": "14:30 - 18:30",
       "position": 0
     },
     {
       "id": 2,
       "site_id": 1,
-      "name": "D\u00eener & Soir\u00e9e",
+      "name": "Dîner & Soirée",
       "description": "19:00 - 05:00",
       "position": 1
     },
@@ -364,6 +696,38 @@
       "name": "Brunch du lendemain",
       "description": "Dimanche 11:30",
       "position": 2
+    },
+    {
+      "id": 4,
+      "site_id": 2,
+      "name": "Cérémonie",
+      "description": "14:30",
+      "position": 0,
+      "created_at": "2026-09-17T03:38:19.462Z"
+    },
+    {
+      "id": 5,
+      "site_id": 2,
+      "name": "Cocktail",
+      "description": "16:00",
+      "position": 1,
+      "created_at": "2026-09-17T03:38:19.642Z"
+    },
+    {
+      "id": 6,
+      "site_id": 2,
+      "name": "Dîner",
+      "description": "18:30",
+      "position": 2,
+      "created_at": "2026-09-17T03:38:19.821Z"
+    },
+    {
+      "id": 7,
+      "site_id": 2,
+      "name": "Brunch",
+      "description": "Lendemain, 11:00",
+      "position": 3,
+      "created_at": "2026-09-17T03:38:20.007Z"
     }
   ],
   "rsvp_responses": [
@@ -380,10 +744,10 @@
       "allergies": "",
       "housing": "Auberge du Jeu de Paume",
       "transport": "Voiture",
-      "message": "Tellement heureux pour vous deux ! Nous avons h\u00e2te d\u2019y \u00eatre.",
+      "message": "Tellement heureux pour vous deux ! Nous avons hâte d’y être.",
       "events": [
-        "C\u00e9r\u00e9monie & Cocktail",
-        "D\u00eener & Soir\u00e9e",
+        "Cérémonie & Cocktail",
+        "Dîner & Soirée",
         "Brunch du lendemain"
       ],
       "created_at": "2026-09-15T03:23:31.035Z"
@@ -397,21 +761,21 @@
       "attending": true,
       "guests_count": 1,
       "children_count": 0,
-      "diet": "V\u00e9g\u00e9tarien",
+      "diet": "Végétarien",
       "allergies": "Arachides",
-      "housing": "H\u00f4tel Mercure",
+      "housing": "Hôtel Mercure",
       "transport": "Train",
-      "message": "Toutes mes f\u00e9licitations ! Comptez sur moi sur la piste de danse.",
+      "message": "Toutes mes félicitations ! Comptez sur moi sur la piste de danse.",
       "events": [
-        "C\u00e9r\u00e9monie & Cocktail",
-        "D\u00eener & Soir\u00e9e"
+        "Cérémonie & Cocktail",
+        "Dîner & Soirée"
       ],
       "created_at": "2026-09-16T03:23:31.035Z"
     },
     {
       "id": 3,
       "site_id": 1,
-      "first_name": "\u00c9lodie",
+      "first_name": "Élodie",
       "last_name": "Moreau",
       "email": "elodie.m@example.com",
       "attending": false,
@@ -421,7 +785,7 @@
       "allergies": "",
       "housing": "",
       "transport": "",
-      "message": "Toutes mes pens\u00e9es affectueuses, retenue \u00e0 l\u2019\u00e9tranger ce week-end l\u00e0. Vous serez magnifiques !",
+      "message": "Toutes mes pensées affectueuses, retenue à l’étranger ce week-end là. Vous serez magnifiques !",
       "events": [],
       "created_at": "2026-09-16T15:23:31.035Z"
     }
@@ -432,7 +796,7 @@
       "site_id": 1,
       "gift_type": "Voyage de noces",
       "title": "Notre lune de miel au Japon",
-      "description": "Une escapade po\u00e9tique entre Tokyo, les temples mill\u00e9naires de Kyoto et les sources chaudes de Hakone.",
+      "description": "Une escapade poétique entre Tokyo, les temples millénaires de Kyoto et les sources chaudes de Hakone.",
       "goal_amount": 6000,
       "current_amount": 3850,
       "position": 0
@@ -441,17 +805,39 @@
       "id": 2,
       "site_id": 1,
       "gift_type": "Participation libre",
-      "title": "Cagnotte des mari\u00e9s",
-      "description": "Chaque attention nous va droit au c\u0153ur pour accompagner nos futurs projets d\u2019amoureux.",
+      "title": "Cagnotte des mariés",
+      "description": "Chaque attention nous va droit au cœur pour accompagner nos futurs projets d’amoureux.",
       "goal_amount": 0,
       "current_amount": 1450,
       "position": 1
+    },
+    {
+      "id": 3,
+      "site_id": 2,
+      "gift_type": "Voyage de noces",
+      "title": "Notre lune de miel",
+      "description": "Aidez-nous à créer des souvenirs inoubliables.",
+      "goal_amount": 5000,
+      "current_amount": 0,
+      "position": 0,
+      "created_at": "2026-09-17T03:38:20.192Z"
+    },
+    {
+      "id": 4,
+      "site_id": 2,
+      "gift_type": "Participation libre",
+      "title": "Cagnotte des mariés",
+      "description": "Chaque attention nous touche, quel qu’en soit le montant.",
+      "goal_amount": 0,
+      "current_amount": 0,
+      "position": 1,
+      "created_at": "2026-09-17T03:38:20.375Z"
     }
   ],
   "media_assets": [
     {
       "id": 15,
-      "category": "Import\u00e9s",
+      "category": "Importés",
       "title": "test",
       "url": "/uploads/1789615487616-test.jpg",
       "collection": "Mes photos",
@@ -461,7 +847,7 @@
     {
       "id": 1,
       "category": "Couple",
-      "title": "Fl\u00e2nerie parisienne",
+      "title": "Flânerie parisienne",
       "url": "/images/couple-paris.jpg",
       "collection": "Editorial Paris",
       "kind": "photo",
@@ -470,7 +856,7 @@
     {
       "id": 2,
       "category": "Couple",
-      "title": "Grand jour au ch\u00e2teau",
+      "title": "Grand jour au château",
       "url": "/images/hero-wedding.jpg",
       "collection": "Editorial Paris",
       "kind": "photo",
@@ -479,7 +865,7 @@
     {
       "id": 3,
       "category": "Couple",
-      "title": "Complicit\u00e9 intemporelle",
+      "title": "Complicité intemporelle",
       "url": "/images/noir-blanc.jpg",
       "collection": "Black Tie",
       "kind": "photo",
@@ -488,7 +874,7 @@
     {
       "id": 4,
       "category": "Danse",
-      "title": "Premi\u00e8re danse \u00e9tincelante",
+      "title": "Première danse étincelante",
       "url": "/images/danse.jpg",
       "collection": "Modern Romance",
       "kind": "photo",
@@ -497,16 +883,16 @@
     {
       "id": 5,
       "category": "Alliances",
-      "title": "Promesse d\u2019or pur",
+      "title": "Promesse d’or pur",
       "url": "/images/alliances.jpg",
-      "collection": "Ch\u00e2teau",
+      "collection": "Château",
       "kind": "photo",
       "orientation": "landscape"
     },
     {
       "id": 6,
       "category": "Bouquet",
-      "title": "Roses poudr\u00e9es & pivoines",
+      "title": "Roses poudrées & pivoines",
       "url": "/images/bouquet.jpg",
       "collection": "Garden Wedding",
       "kind": "photo",
@@ -514,17 +900,17 @@
     },
     {
       "id": 7,
-      "category": "Ch\u00e2teau",
-      "title": "Fa\u00e7ade historique & fontaine",
+      "category": "Château",
+      "title": "Façade historique & fontaine",
       "url": "/images/chateau.jpg",
-      "collection": "Ch\u00e2teau",
+      "collection": "Château",
       "kind": "photo",
       "orientation": "landscape"
     },
     {
       "id": 8,
       "category": "Table",
-      "title": "Table d\u2019honneur aux bougies",
+      "title": "Table d’honneur aux bougies",
       "url": "/images/table-noir.jpg",
       "collection": "Black Tie",
       "kind": "photo",
@@ -532,7 +918,7 @@
     },
     {
       "id": 9,
-      "category": "C\u00e9r\u00e9monie",
+      "category": "Cérémonie",
       "title": "Jardins de Provence",
       "url": "/images/garden.jpg",
       "collection": "Garden Wedding",
@@ -542,16 +928,16 @@
     {
       "id": 10,
       "category": "Nature",
-      "title": "Terrasse sur la M\u00e9diterran\u00e9e",
+      "title": "Terrasse sur la Méditerranée",
       "url": "/images/terrasse.jpg",
-      "collection": "C\u00f4te d'Azur",
+      "collection": "Côte d'Azur",
       "kind": "photo",
       "orientation": "landscape"
     },
     {
       "id": 11,
       "category": "Champagne",
-      "title": "Toast d\u2019exception",
+      "title": "Toast d’exception",
       "url": "/images/champagne.jpg",
       "collection": "Black Tie",
       "kind": "photo",
@@ -560,7 +946,7 @@
     {
       "id": 12,
       "category": "Fleurs",
-      "title": "Composition champ\u00eatre",
+      "title": "Composition champêtre",
       "url": "/images/bouquet.jpg",
       "collection": "Garden Wedding",
       "kind": "photo",
@@ -569,16 +955,16 @@
     {
       "id": 13,
       "category": "Architecture",
-      "title": "P\u00e9ristyle du domaine",
+      "title": "Péristyle du domaine",
       "url": "/images/chateau.jpg",
-      "collection": "Ch\u00e2teau",
+      "collection": "Château",
       "kind": "photo",
       "orientation": "landscape"
     },
     {
       "id": 14,
-      "category": "D\u00e9coration",
-      "title": "Ambiance feutr\u00e9e",
+      "category": "Décoration",
+      "title": "Ambiance feutrée",
       "url": "/images/table-noir.jpg",
       "collection": "Black Tie",
       "kind": "photo",

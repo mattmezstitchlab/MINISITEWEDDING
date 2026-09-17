@@ -32,7 +32,7 @@ export default function Countdown({ target, accent, light, fontFamily }: Props) 
     return () => clearInterval(timer);
   }, [target]);
 
-  const numFont = fontFamily || '"Space Grotesk", "Hanken Grotesk", sans-serif';
+  const numFont = fontFamily || '"Fraunces", Georgia, serif';
 
   if (parts.passed) {
     return (

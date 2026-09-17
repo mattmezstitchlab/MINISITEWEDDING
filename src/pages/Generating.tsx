@@ -36,12 +36,12 @@ export default function Generating() {
   }, [siteId, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#141311] text-white flex items-center justify-center px-6 overflow-hidden" style={{ fontFamily: '"Space Grotesk", "Hanken Grotesk", sans-serif' }}>
+    <div className="min-h-screen bg-[#141311] text-white flex items-center justify-center px-6 overflow-hidden" style={{ fontFamily: '"Fraunces", Georgia, serif' }}>
       <div className="absolute inset-0 opacity-20"><img src="/images/hero-wedding.jpg" alt="" className="w-full h-full object-cover" /></div>
       <div className="absolute inset-0 bg-gradient-to-b from-[#141311]/60 via-[#141311]/80 to-[#141311]" />
       <div className="relative w-full max-w-md text-center">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mx-auto w-16 h-16 rounded-full bg-white text-neutral-900 flex items-center justify-center text-2xl font-semibold" style={{ fontFamily: '"Space Grotesk", sans-serif' }}>W</motion.div>
-        <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-7 font-medium tracking-tight" style={{ fontFamily: '"Space Grotesk", "Hanken Grotesk", sans-serif', fontSize: 'clamp(1.9rem, 6vw, 2.6rem)' }}>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mx-auto w-16 h-16 rounded-full bg-white text-neutral-900 flex items-center justify-center text-2xl font-semibold" style={{ fontFamily: '"Fraunces", Georgia, serif' }}>W</motion.div>
+        <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mt-7 font-medium tracking-tight" style={{ fontFamily: '"Fraunces", Georgia, serif', fontSize: 'clamp(1.9rem, 6vw, 2.6rem)' }}>
           Votre site prend forme…
         </motion.h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="mt-2 text-white/60 text-[15px]">Nous composons votre mariage, page par page.</motion.p>

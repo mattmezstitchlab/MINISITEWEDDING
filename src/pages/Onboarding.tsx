@@ -6,7 +6,7 @@ import { apiSend, slugify, formatDateLong, daysUntil } from '../lib/api';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 import type { WeddingSite } from '../lib/types';
 
-const neoFont = '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif';
+const frauncesFont = '"Fraunces", Georgia, serif';
 
 const SECTION_DEFAULTS = [
   { key: 'hero', title: 'Accueil' },
@@ -83,7 +83,7 @@ export default function Onboarding() {
       const site = await apiSend<WeddingSite>('/api/wedding-sites', 'POST', {
         slug, partner1: partner1.trim(), partner2: partner2.trim(), wedding_date: date,
         venue: venue.trim(), city: city.trim(), style, phase: 'avant',
-        typography: 'neo-grotesk', accent_color: theme.accent, button_style: 'pill',
+        typography: 'editorial', accent_color: theme.accent, button_style: 'pill',
         shape: 'soft', layout: 'magazine', animation_level: 'fluide',
         hero_photo: theme.image, hero_title: `${partner1.trim()} & ${partner2.trim()}`,
         hero_subtitle: 'Nous nous marions',
@@ -140,10 +140,10 @@ export default function Onboarding() {
   const inputCls = 'w-full px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl bg-white border border-black/10 text-base sm:text-lg outline-none focus:border-black/40 transition placeholder:text-neutral-300';
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A] flex flex-col overflow-x-hidden" style={{ fontFamily: neoFont }}>
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A] flex flex-col overflow-x-hidden" style={{ fontFamily: frauncesFont }}>
       <nav className="min-h-[64px] sm:min-h-[68px] flex items-center justify-between gap-2 px-3 sm:px-8 py-2.5 border-b border-black/5 bg-[#FAF8F5]/85 backdrop-blur-xl sticky top-0 z-40">
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px] font-semibold" style={{ fontFamily: neoFont }}>W</span>
+          <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px] font-semibold" style={{ fontFamily: frauncesFont }}>W</span>
           <span className="text-[12px] sm:text-[13px] tracking-[0.25em] uppercase font-semibold hidden md:inline">Wedding Site</span>
         </Link>
         <div className="flex items-center gap-1 sm:gap-2">
@@ -165,35 +165,35 @@ export default function Onboarding() {
           <AnimatePresence mode="wait">
             {step === 0 && (
               <motion.div key="s0" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
-                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Qui se marie ?</h1>
+                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: frauncesFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Qui se marie ?</h1>
                 <p className="mt-2 text-center text-neutral-500 text-sm sm:text-base">Vos prénoms, tels que vous voulez les voir en grand.</p>
                 <div className="mt-8 sm:mt-10 grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold mb-2 ml-1">Premier prénom</label>
-                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className={inputCls} style={{ fontFamily: neoFont, fontSize: '1.4rem' }} />
+                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className={inputCls} style={{ fontFamily: frauncesFont, fontSize: '1.4rem' }} />
                   </div>
                   <div>
                     <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold mb-2 ml-1">Second prénom</label>
-                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className={inputCls} style={{ fontFamily: neoFont, fontSize: '1.4rem' }} />
+                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className={inputCls} style={{ fontFamily: frauncesFont, fontSize: '1.4rem' }} />
                   </div>
                 </div>
                 {(partner1 || partner2) && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 text-center p-6 rounded-3xl bg-white border border-black/5 shadow-sm">
                     <div className="text-[10px] sm:text-[11px] tracking-[0.3em] uppercase text-neutral-400 font-semibold">Aperçu du titre</div>
-                    <div className="mt-2 font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(2rem, 6vw, 3.6rem)' }}>{partner1 || '…'} <span className="font-light text-[#8A6D4B]">&</span> {partner2 || '…'}</div>
+                    <div className="mt-2 font-medium tracking-tight" style={{ fontFamily: frauncesFont, fontSize: 'clamp(2rem, 6vw, 3.6rem)' }}>{partner1 || '…'} <span className="font-light text-[#8A6D4B]">&</span> {partner2 || '…'}</div>
                   </motion.div>
                 )}
               </motion.div>
             )}
             {step === 1 && (
               <motion.div key="s1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }} className="text-center">
-                <h1 className="font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Quelle est la date ?</h1>
+                <h1 className="font-medium tracking-tight" style={{ fontFamily: frauncesFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Quelle est la date ?</h1>
                 <p className="mt-2 text-neutral-500 text-sm sm:text-base">Le compte à rebours démarre dès aujourd’hui.</p>
                 <div className="mt-8 sm:mt-10 max-w-md mx-auto">
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-5 sm:px-6 py-4 sm:py-5 rounded-2xl bg-white border border-black/10 text-lg sm:text-xl outline-none focus:border-black/40 transition text-center font-medium" style={{ fontFamily: neoFont }} />
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-5 sm:px-6 py-4 sm:py-5 rounded-2xl bg-white border border-black/10 text-lg sm:text-xl outline-none focus:border-black/40 transition text-center font-medium" style={{ fontFamily: frauncesFont }} />
                   {date && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 p-5 sm:p-6 rounded-3xl bg-white border border-black/10 shadow-sm">
-                      <div className="capitalize text-lg sm:text-xl font-medium tracking-tight" style={{ fontFamily: neoFont }}>{formatDateLong(date)}</div>
+                      <div className="capitalize text-lg sm:text-xl font-medium tracking-tight" style={{ fontFamily: frauncesFont }}>{formatDateLong(date)}</div>
                       <div className="mt-2 inline-flex items-center gap-2 text-sm text-[#8A6D4B] font-medium"><CalendarDays size={15} /> J-{daysUntil(date)} avant le grand jour</div>
                     </motion.div>
                   )}
@@ -202,7 +202,7 @@ export default function Onboarding() {
             )}
             {step === 2 && (
               <motion.div key="s2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
-                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Où cela se passe ?</h1>
+                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: frauncesFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Où cela se passe ?</h1>
                 <p className="mt-2 text-center text-neutral-500 text-sm sm:text-base">Le lieu qui accueillera votre histoire.</p>
                 <div className="mt-8 sm:mt-10 max-w-xl mx-auto space-y-4">
                   <div>
@@ -224,7 +224,7 @@ export default function Onboarding() {
             )}
             {step === 3 && (
               <motion.div key="s3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
-                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Quel style vous ressemble ?</h1>
+                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: frauncesFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Quel style vous ressemble ?</h1>
                 <p className="mt-2 text-center text-neutral-500 text-sm sm:text-base">Huit directions artistiques. Une seule évidence.</p>
                 <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
                   {WEDDING_STYLES.map((s) => (
@@ -235,7 +235,7 @@ export default function Onboarding() {
                         <span className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center shadow"><Check size={16} className="text-neutral-900" /></span>
                       )}
                       <span className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 text-white">
-                        <span className="block text-base sm:text-lg font-medium tracking-tight" style={{ fontFamily: neoFont }}>{s.name}</span>
+                        <span className="block text-base sm:text-lg font-medium tracking-tight" style={{ fontFamily: frauncesFont }}>{s.name}</span>
                         <span className="block text-[11px] text-white/80 mt-0.5 line-clamp-1">{s.tagline}</span>
                       </span>
                     </button>
