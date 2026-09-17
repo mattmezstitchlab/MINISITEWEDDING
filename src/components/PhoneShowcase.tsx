@@ -23,7 +23,7 @@ import VisionImage from './vision/VisionImage';
 const STEP_MS = 6500;
 
 /** Couple et date d’illustration : le contenu, lui, est celui du thème. */
-const COUPLE = { p1: 'Camille', p2: 'Hugo' };
+const COUPLE = { p1: 'Sarah', p2: 'Gabriel' };
 const WEDDING_DATE = '2027-06-12';
 
 /** Trois photos pour la galerie, communes à tous les aperçus. */

@@ -63,49 +63,47 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero : pitch à gauche, enchaînement des environnements à droite */}
-      <header className="relative flex min-h-[100svh] flex-col items-center justify-center px-5 pb-20 pt-32 sm:px-8 sm:pt-36">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="text-center lg:text-left">
-            <motion.h1
-              initial={{ opacity: 0, y: 26 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              className="vp-title mt-6"
-              style={{ fontSize: 'clamp(2.7rem, 6.6vw, 5rem)' }}
-            >
-              Votre mariage.
-              <br />
-              Votre histoire.
-              <br />
-              Un seul endroit.
-            </motion.h1>
+      {/* Hero plein écran : les dix environnements en fond, pitch en haut */}
+      <HeroCycle>
+        <motion.h1
+          initial={{ opacity: 0, y: 26 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="vp-title max-w-3xl text-white"
+          style={{ fontSize: 'clamp(2.1rem, 4.6vw, 3.6rem)' }}
+        >
+          Votre mariage. Votre histoire.
+          <br />
+          Un seul endroit.
+        </motion.h1>
 
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="vp-body mx-auto mt-6 max-w-lg lg:mx-0 lg:text-[17px]">
-              Le mini-site de votre mariage, composé automatiquement à partir de quelques réponses. Aucun outil à apprendre. Juste de l’émotion, en verre et en lumière.
-            </motion.p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="vp-body mt-5 max-w-lg !text-[16.5px] !text-white/70"
+        >
+          Le mini-site de votre mariage, composé automatiquement à partir de quelques réponses.
+          Aucun outil à apprendre. Juste de l’émotion, en verre et en lumière.
+        </motion.p>
 
-            <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
-              <Link to="/creer" className="vp-btn vp-press w-full !px-8 !py-4 sm:w-auto">
-                Créer mon site <ArrowRight size={16} />
-              </Link>
-              <a href="#apercus" className="vp-btn vp-btn-glass vp-press w-full !px-8 !py-4 sm:w-auto">
-                Voir les dix mini-sites
-              </a>
-            </motion.div>
-          </div>
-
-          {/* Enchaînement des dix environnements : visuels et gros titres */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, rotateX: 12 }}
-            animate={{ opacity: 1, y: 0, rotateX: 0 }}
-            transition={{ delay: 0.5, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-            className="vp-perspective relative mx-auto w-full max-w-[440px] lg:max-w-none"
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.75 }}
+          className="mt-8 flex flex-col gap-3 sm:flex-row"
+        >
+          <Link to="/creer" className="vp-btn vp-press w-full !px-8 !py-4 sm:w-auto">
+            Créer mon site <ArrowRight size={16} />
+          </Link>
+          <a
+            href="#apercus"
+            className="vp-press inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-8 py-4 text-[15px] font-medium text-white backdrop-blur-md transition hover:bg-white/20 sm:w-auto"
           >
-            <HeroCycle />
-          </motion.div>
-        </div>
-      </header>
+            Voir les dix mini-sites
+          </a>
+        </motion.div>
+      </HeroCycle>
 
       <Suspense
         fallback={<div aria-hidden="true" className="mx-auto my-20 h-[620px] max-w-[320px] animate-pulse rounded-[46px] bg-black/[0.04]" />}
