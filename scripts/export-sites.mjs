@@ -11,7 +11,7 @@
  * Usage :
  *   npm run snapshot                       # tous les sites publiés, depuis Supabase
  *   npm run snapshot -- --all              # brouillons compris (voir l’avertissement)
- *   npm run snapshot -- --slug matt-marie  # un seul site
+ *   npm run snapshot -- --slug sarah-gabriel  # un seul site
  *   npm run snapshot:demo                  # le jeu de démonstration, sans Supabase
  *
  * Le contenu vient de la même base que le site en ligne : les huit ressources

@@ -4,13 +4,13 @@ import { Link, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Eye, EyeOff, GripVertical, Monitor, Smartphone, Palette, Images,
-  MailCheck, Share2, Rocket, Check, X, ChevronDown, LayoutList, Loader2, Globe,
-} from 'lucide-react';
+  MailCheck, Share2, Rocket, Check, X, ChevronDown, LayoutList, Loader2, Globe, Database } from 'lucide-react';
 import type { SiteSection, WeddingSite } from '../lib/types';
 import { apiSend, ApiError } from '../lib/http';
 import { publicPath } from '../lib/format';
 import { getEditToken, setActiveToken } from '../lib/auth';
 import { useSiteData } from '../lib/siteData';
+import { isRemote } from '../lib/dataSource';
 import NoAccess from '../components/editor/NoAccess';
 import { PHASES } from '../lib/weddingStyles';
 import PublicSiteView from '../components/PublicSiteView';
@@ -201,6 +201,15 @@ function EditorShell({ id }: { id?: string }) {
           <button onClick={publish} className="vp-btn vp-press !px-4 !py-2 !text-[13px]"><Rocket size={15} /> Publier</button>
         )}
       </header>
+
+      {/* Aucune base distante : les données vivent sur cet appareil. */}
+      {!isRemote() && (
+        <div className="vp-veil-light flex shrink-0 flex-wrap items-center justify-center gap-x-1.5 px-4 py-2 text-center text-[12px] font-medium text-[var(--vp-muted)]">
+          <Database size={14} />
+          <span>Mode autonome — tout est enregistré sur cet appareil.</span>
+          <button onClick={() => setDrawer('share')} className="vp-press underline underline-offset-2">Publier pour vos invités</button>
+        </div>
+      )}
 
       <div className="flex-1 flex min-h-0">
         <aside className="vp-veil-light hidden w-[264px] shrink-0 flex-col overflow-y-auto border-r-0 p-4 lg:flex">

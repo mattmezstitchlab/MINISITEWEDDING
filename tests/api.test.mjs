@@ -253,7 +253,7 @@ check('site sans clé : édition impossible → 403', (await call(weddingSites, 
   const downSites = await loadReal('api/wedding-sites.js');
   const downMedia = await loadReal('api/media.js');
   const downCreate = await loadReal('api/create-site.js');
-  res = await call(downSites, { query: { slug: 'matt-marie' } });
+  res = await call(downSites, { query: { slug: 'sarah-gabriel' } });
   check('base coupée : lecture d’un site → 503', res.statusCode, 503);
   check('base coupée : code supabase_unavailable', res.body?.code, 'supabase_unavailable');
   check('base coupée : le message explique quoi régler', /SUPABASE_URL/.test(res.body?.error ?? ''), true);

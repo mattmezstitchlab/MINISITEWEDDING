@@ -33,9 +33,13 @@ async function copyText(value: string) {
  * Pratique quand on n’a pas les clés de service sous la main pour lancer
  * `npm run snapshot`.
  */
+/** Le fichier `public/sites/<slug>.json` : le site tel qu’il sera servi. */
+function snapshotText(site: WeddingSite, data: PublicSiteData): string {
+  return JSON.stringify({ ...data, site: { ...data.site, ...site }, exported_at: new Date().toISOString() }, null, 2);
+}
+
 function downloadSnapshot(site: WeddingSite, data: PublicSiteData) {
-  const payload = { ...data, site: { ...data.site, ...site }, exported_at: new Date().toISOString() };
-  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+  const url = URL.createObjectURL(new Blob([snapshotText(site, data)], { type: 'application/json' }));
   const a = document.createElement('a');
   a.href = url;
   a.download = `${site.slug}.json`;
@@ -90,14 +94,23 @@ export default function SharePanel({ site, data, onPublishedChange }: Props) {
 
       {data && (
         <div className="vp-glass vp-spec mt-4 rounded-[24px] p-5 text-left">
-          <div className="vp-eyebrow"><Download size={13} className="mr-1 inline" />Copie de secours</div>
+          <div className="vp-eyebrow"><Download size={13} className="mr-1 inline" />Publier pour vos invités</div>
           <p className="vp-caption mt-2 !text-[11.5px] leading-relaxed">
-            Un instantané du site, à ranger dans <code className="vp-num">public/sites/</code> du dépôt :
-            il s’affiche même si la base de données ne répond plus (facture en attente, projet en pause).
+            Vos modifications sont enregistrées sur cet appareil. Pour que le lien
+            fonctionne chez vos invités, téléchargez ce fichier puis déposez-le dans
+            {' '}<code className="vp-num">public/sites/</code> du dépôt : le site se redéploie tout seul.
           </p>
-          <button onClick={() => downloadSnapshot(site, data)} className="vp-btn vp-btn-glass vp-press mt-3 w-full !py-2.5 !text-[12.5px]">
-            <Download size={15} /> Télécharger la copie (.json)
-          </button>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button onClick={() => downloadSnapshot(site, data)} className="vp-btn vp-btn-glass vp-press !py-2.5 !text-[12.5px]">
+              <Download size={15} /> Télécharger
+            </button>
+            <button onClick={() => copy(snapshotText(site, data), 'key')} className="vp-btn vp-btn-glass vp-press !py-2.5 !text-[12.5px]">
+              {copied === 'key' ? <Check size={15} strokeWidth={2.5} /> : <Copy size={15} />}{copied === 'key' ? 'Copié' : 'Copier'}
+            </button>
+          </div>
+          <p className="vp-caption mt-2.5 !text-[10.5px] leading-relaxed">
+            Le fichier doit s’appeler exactement <code className="vp-num">{site.slug}.json</code>.
+          </p>
         </div>
       )}
 

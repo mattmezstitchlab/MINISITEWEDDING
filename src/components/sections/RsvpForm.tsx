@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, Copy, Mail, MessageCircle } from 'lucide-react';
 import { apiSend } from '../../lib/http';
+import { isRemote } from '../../lib/dataSource';
 import { useSiteView } from './context';
 
 const FIELD = 'vp-field vp-field-dark !px-5 !py-3.5 !text-[15px]';
@@ -24,6 +25,7 @@ export default function RsvpForm() {
   const [transport, setTransport] = useState('');
   const [message, setMessage] = useState('');
   const [picked, setPicked] = useState<string[]>([]);
+  const local = !isRemote();
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +41,8 @@ export default function RsvpForm() {
     if (attending === null) { setError('Dites-nous si vous serez présent.'); return; }
     // Copie statique : l’envoi atteindrait une base injoignable. On l’annonce
     // avant, plutôt que de laisser l’invité remplir un formulaire pour rien.
-    if (degraded) { setError('Les réponses sont suspendues pour le moment — réessayez un peu plus tard, ou écrivez-nous directement.'); return; }
+    // En mode autonome, la réponse part par WhatsApp ou e-mail : rien n’est suspendu.
+    if (degraded && !local) { setError('Les réponses sont suspendues pour le moment — réessayez un peu plus tard, ou écrivez-nous directement.'); return; }
     setSending(true);
     try {
       await apiSend('/api/rsvp', 'POST', {
@@ -71,12 +74,54 @@ export default function RsvpForm() {
 
   const stepper = 'flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl leading-none text-white transition hover:bg-white/20 vp-press';
 
+  /*
+   * Sans base de données, une réponse rangée dans le navigateur de l’invité
+   * n’arriverait jamais aux mariés. Elle part donc directement chez eux :
+   * WhatsApp ou e-mail, message déjà rédigé. Un point de collecte central reste
+   * possible en renseignant VITE_RSVP_WEBHOOK (formulaire gratuit type Formspree).
+   */
+  const webhook = import.meta.env.VITE_RSVP_WEBHOOK as string | undefined;
+  const texte = [
+    `RSVP — ${site.partner1} & ${site.partner2}`,
+    `${firstName.trim()} ${lastName.trim()}${email.trim() ? ` · ${email.trim()}` : ''}`,
+    attending ? `Présent·e — ${guests} adulte(s)${children ? `, ${children} enfant(s)` : ''}` : 'Ne pourra pas être présent·e',
+    picked.length ? `Moments : ${picked.join(', ')}` : '',
+    diet.trim() ? `Régime : ${diet.trim()}` : '',
+    allergies.trim() ? `Allergies : ${allergies.trim()}` : '',
+    housing.trim() ? `Hébergement : ${housing.trim()}` : '',
+    transport.trim() ? `Transport : ${transport.trim()}` : '',
+    message.trim() ? message.trim() : '',
+  ].filter(Boolean).join('\n');
+  const pret = Boolean(firstName.trim() && lastName.trim() && attending !== null);
+  const digits = site.contact_phone.replace(/\D/g, '').replace(/^0(?=\d{9}$)/, '33');
+  const bouton = `vp-press flex items-center justify-center gap-2 py-4 text-[15px] font-semibold text-white transition ${pret ? '' : 'pointer-events-none opacity-40'}`;
+  const style = { background: accent, borderRadius: btnR, boxShadow: `0 16px 34px -16px ${accent}, inset 0 1px 0 rgba(255,255,255,0.3)` };
+
+  /** Envoi d’une copie au point de collecte, s’il y en a un : l’invité n’attend pas. */
+  const envoyerAuPointDeCollecte = () => {
+    if (!webhook || !pret) return;
+    void fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ site: site.slug, reponse: texte }),
+    }).catch(() => undefined);
+  };
+
+  const copier = async () => {
+    try {
+      await navigator.clipboard.writeText(texte);
+      setError('Votre réponse est copiée — envoyez-la aux mariés.');
+    } catch {
+      setError('Copie impossible sur cet appareil : envoyez plutôt un WhatsApp ou un e-mail.');
+    }
+  };
+
   return (
     <form onSubmit={submit} className="space-y-5 text-left">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="vp-label !text-white/55">Prénom</label>
-          <input className={FIELD} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Marie" />
+          <input className={FIELD} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Léa" />
         </div>
         <div>
           <label className="vp-label !text-white/55">Nom</label>
@@ -190,20 +235,48 @@ export default function RsvpForm() {
         <label className="vp-label !text-white/55">Un message pour les mariés ?</label>
         <textarea rows={3} className={FIELD} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Quelques mots doux…" />
       </div>
-      {degraded && !error && (
+      {degraded && !local && !error && (
         <p className="text-sm font-medium text-white/70">
           Les réponses sont momentanément suspendues — votre message ne partira pas. Écrivez-nous directement, nous répondons.
         </p>
       )}
       {error && <p className="text-sm font-medium text-[#FF8A80]">{error}</p>}
-      <button
-        type="submit"
-        disabled={sending || degraded}
-        className="vp-press w-full py-4 text-[15px] font-semibold text-white transition disabled:opacity-60"
-        style={{ background: accent, borderRadius: btnR, boxShadow: `0 16px 34px -16px ${accent}, inset 0 1px 0 rgba(255,255,255,0.3)` }}
-      >
-        {degraded ? 'Réponses suspendues' : sending ? 'Envoi en cours…' : 'Envoyer ma réponse'}
-      </button>
+      {local ? (
+        <div className="space-y-2">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {digits && (
+              <a href={`https://wa.me/${digits}?text=${encodeURIComponent(texte)}`} target="_blank" rel="noreferrer" onClick={envoyerAuPointDeCollecte} className={bouton} style={style}>
+                <MessageCircle size={18} /> WhatsApp
+              </a>
+            )}
+            {site.contact_email && (
+              <a
+                href={`mailto:${site.contact_email}?subject=${encodeURIComponent(`RSVP — ${firstName.trim() || 'Invité'} ${lastName.trim()}`)}&body=${encodeURIComponent(texte)}`}
+                onClick={envoyerAuPointDeCollecte}
+                className={bouton}
+                style={style}
+              >
+                <Mail size={18} /> E-mail
+              </a>
+            )}
+          </div>
+          <button type="button" disabled={!pret} onClick={copier} className="w-full py-3 text-[14px] font-medium text-white/70 transition hover:text-white disabled:opacity-40">
+            <Copy size={15} className="mr-1.5 inline" />Copier ma réponse
+          </button>
+          <p className="vp-caption pt-1 text-center !text-white/45">
+            Votre réponse part directement aux mariés, sans serveur intermédiaire.
+          </p>
+        </div>
+      ) : (
+        <button
+          type="submit"
+          disabled={sending || degraded}
+          className="vp-press w-full py-4 text-[15px] font-semibold text-white transition disabled:opacity-60"
+          style={style}
+        >
+          {degraded ? 'Réponses suspendues' : sending ? 'Envoi en cours…' : 'Envoyer ma réponse'}
+        </button>
+      )}
     </form>
   );
 }

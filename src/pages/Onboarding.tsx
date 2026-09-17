@@ -96,11 +96,11 @@ export default function Onboarding() {
                 <div className="mt-10 grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="vp-label ml-1">Premier prénom</label>
-                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
+                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Sarah" autoFocus className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
                   </div>
                   <div>
                     <label className="vp-label ml-1">Second prénom</label>
-                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
+                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Gabriel" className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
                   </div>
                 </div>
                 {(partner1 || partner2) && (

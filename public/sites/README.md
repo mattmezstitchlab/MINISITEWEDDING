@@ -1,19 +1,27 @@
-# Copies statiques des mini-sites
+# Les mini-sites publiés
 
 Un fichier `<slug>.json` par mini-site, servi tel quel par l’hébergeur : c’est
-le repli utilisé quand Supabase ne répond pas (projet en pause, variables
-d’environnement manquantes). Voir `src/lib/staticSite.ts` et la section
-« Quand Supabase ne répond pas » du README.
+ce que voient les invités, depuis n’importe quel appareil. C’est aussi le repli
+utilisé quand une base distante ne répond pas.
 
-## Produire une copie
+En mode autonome (le mode par défaut, sans Supabase), **déposer un fichier ici
+est la publication** : le panneau *Partager* de l’éditeur le produit, il suffit
+de le ranger dans ce dossier et de redéployer.
+
+## Produire un fichier
+
+- le bouton **« Télécharger »** du panneau *Partager* de l’éditeur — le fichier
+  est nommé comme il faut, `<slug>.json` ;
+- ou, si une base distante répond :
 
 ```bash
-npm run snapshot                        # tous les sites publiés, depuis Supabase
+npm run snapshot                        # tous les sites publiés
 npm run snapshot -- --slug mon-site     # un seul site
-npm run snapshot:demo                   # le jeu de démonstration, sans Supabase
+npm run snapshot:demo                   # le jeu de démonstration, sans base
 ```
 
-ou le bouton **« Copie de secours »** du panneau *Partager* de l’éditeur.
+Le nom du fichier doit être exactement le slug du site : c’est l’URL demandée
+par le front (`/sites/<slug>.json`).
 
 ## Forme du fichier
 
@@ -34,5 +42,6 @@ listes. Les listes absentes sont traitées comme vides au chargement.
 }
 ```
 
-Le nom du fichier doit être exactement le slug du site : c’est l’URL demandée
-par le front (`/sites/<slug>.json`).
+Un fichier est un **instantané** : après une modification dans l’éditeur,
+retéléchargez-le et remplacez-le, sinon le lien partagé affichera l’ancienne
+version. Voir la section « Fonctionner sans base de données » du README.

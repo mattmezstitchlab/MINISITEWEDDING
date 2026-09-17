@@ -19,62 +19,97 @@ visuel, et partageable par lien ou QR code.
 | --- | --- |
 | Front | React 19, TypeScript, Vite 7, Tailwind CSS 4, Framer Motion, lucide-react |
 | Routage | react-router-dom 7 |
-| Backend | Fonctions serverless Vercel (`api/`) |
-| Données | Supabase (PostgreSQL + Storage) |
+| Backend | Aucun par défaut ; fonctions serverless Vercel (`api/`) en option |
+| Données | Base du navigateur (`localStorage`) ; Supabase en option |
 | QR code | qrcode.react |
 
 ## Démarrage
 
 ```bash
 npm install
-cp .env.example .env     # puis renseignez les variables Supabase
-npm run dev              # http://localhost:5173
+npm run dev              # http://localhost:5173 — aucune variable requise
 ```
 
 ```bash
 npm run lint     # ESLint
-npm test         # autorisation de l’API + clés d’édition côté front
+npm test         # trois lots : API, front, interface
 npm run build    # tsc -b puis vite build
 npm run preview  # sert le build
 npm run snapshot # copies statiques des sites publiés (voir plus bas)
 ```
 
-**Sans backend en local** : l’API serverless n’existe pas dans `vite dev`. En
-développement uniquement (`import.meta.env.DEV`), les pages basculent alors sur
-le jeu de démonstration de `src/lib/demo.ts` — le mariage fictif « Matt & Marie »
-et les visuels de `public/images/`. En production, rien ne change : une erreur
-d’API remonte normalement.
+**En développement uniquement** (`import.meta.env.DEV`), un slug inconnu bascule
+sur le jeu de démonstration de `src/lib/demo.ts` — un mariage fictif et les
+visuels de `public/images/`. En production, rien de tel : une erreur remonte
+normalement.
 
-## Quand Supabase ne répond pas : les copies statiques
+## Fonctionner sans base de données
 
-Le contenu d’un site vit dans Supabase. Si le projet est en pause — facture
-impayée, inactivité — ou si les variables d’environnement manquent, l’API
-répond **`503 supabase_unavailable`** et plus aucun mini-site ne s’affiche, y
-compris ceux déjà partagés ou imprimés en QR code.
+Par défaut, le projet n’a besoin **d’aucun service externe** : ni compte, ni
+carte bancaire, ni variable d’environnement. Il tourne tel quel après
+`npm install`.
 
-Les **copies statiques** sont la sortie de secours : un instantané JSON par
-site, dans `public/sites/<slug>.json`, servi comme un fichier ordinaire par
-Vercel — aucune fonction serverless, aucune variable d’environnement, aucun
-coût. L’affichage est complet ; restent suspendus l’édition, l’envoi des
-réponses RSVP et les téléversements, qui écrivent en base.
+| | Où vivent les données | Pour qui |
+| --- | --- | --- |
+| Mode autonome (défaut) | le navigateur, sous la clé `wedding-site:db` (`src/lib/localStore.ts`) | créer, modifier, prévisualiser, publier |
+| Fichier publié | `public/sites/<slug>.json`, servi comme un fichier ordinaire | les invités, depuis n’importe quel appareil |
+| Supabase (option) | PostgreSQL + Storage, via les fonctions de `api/` | plusieurs éditeurs, réponses centralisées |
+
+### Créer, modifier, partager
+
+`src/lib/localApi.ts` rejoue les fonctions de `api/` dans le navigateur — mêmes
+chemins, mêmes corps de requête, mêmes codes d’erreur et **mêmes règles
+d’autorisation** : une clé d’édition d’un autre site est refusée (403), un
+brouillon reste invisible, un GET d’enfants sans `site_id` renvoie 400. Aucun
+écran ne sait quelle source il interroge : l’aiguillage tient dans
+`src/lib/dataSource.ts`.
+
+1. **Créer** sur `/creer` : le site complet (sections, programme, infos, FAQ,
+   cagnottes) est composé et rangé sur l’appareil.
+2. **Modifier** dans l’éditeur : chaque changement est écrit immédiatement.
+3. **Publier** depuis le panneau *Partager* → **Télécharger**, puis déposer le
+   fichier dans `public/sites/`. Il doit s’appeler exactement `<slug>.json`. Le
+   déploiement le sert : le lien et le QR code fonctionnent alors partout.
+
+### Les réponses des invités
+
+Sans base, une réponse rangée dans le navigateur de l’invité n’arriverait jamais
+aux mariés. Le formulaire propose donc un envoi direct — **WhatsApp** ou
+**e-mail**, message déjà rédigé à partir des coordonnées du site (sections
+*Contact*). Un point de collecte central reste possible : renseignez
+`VITE_RSVP_WEBHOOK` (formulaire gratuit type Formspree) et chaque réponse y est
+déposée en plus.
+
+### Ce qu’il faut savoir
+
+- **Les modifications restent sur l’appareil** : une seule personne édite à la
+  fois, et le fichier publié sert de sauvegarde. Effacer les données du
+  navigateur efface le brouillon.
+- **Les photos importées sont recompressées** (1600 px, JPEG 0.82) avant d’être
+  rangées : le stockage d’un navigateur se compte en mégaoctets. Si la place
+  manque malgré tout, un message le dit au lieu d’échouer en silence (507).
+- **Un site publié reste un instantané** : après une modification, retéléchargez
+  le fichier et remplacez-le.
+
+### Repasser sur Supabase
+
+Renseignez `VITE_SUPABASE_URL` (et les clés de `api/`) : les mêmes écrans
+parlent alors aux fonctions serverless, sans autre changement.
+`VITE_DATA_SOURCE=local` ou `=api` force l’un des deux chemins — utile pour
+comparer.
+
+### Les copies statiques, repli d’une base distante
+
+Si une base est déclarée et ne répond plus — projet en pause, facture impayée,
+variables manquantes — l’API renvoie **`503 supabase_unavailable`**. Le front
+bascule alors sur `public/sites/<slug>.json` : l’affichage reste complet, seuls
+l’édition et l’envoi des réponses sont suspendus.
 
 ```bash
-npm run snapshot                        # tous les sites publiés, depuis Supabase
-npm run snapshot -- --slug matt-marie   # un seul site
-npm run snapshot -- --all               # brouillons compris (déconseillé)
-npm run snapshot:demo                   # le jeu de démonstration, sans Supabase
+npm run snapshot                        # tous les sites publiés, depuis la base
+npm run snapshot -- --slug mon-site     # un seul site
+npm run snapshot:demo                   # le jeu de démonstration, sans base
 ```
-
-Trois façons de produire une copie :
-
-1. `npm run snapshot`, tant que Supabase répond (clés de service présentes dans
-   le `.env` local) ;
-2. le bouton **« Copie de secours »** du panneau *Partager* de l’éditeur, qui
-   télécharge le même fichier depuis le navigateur — pratique sans accès
-   serveur ;
-3. à la main : le fichier suit la forme de `PublicSiteData`
-   (`src/lib/types.ts`) — un objet `site` et sept listes. Le modèle et les
-   commandes sont dans `public/sites/README.md`.
 
 Le repli est automatique, et invisible pour l’invité :
 
@@ -85,17 +120,8 @@ Le repli est automatique, et invisible pour l’invité :
 | 404 (brouillon) ou 403 (clé refusée) | l’erreur — jamais la copie, qui publierait un brouillon |
 
 Pour ne pas faire attendre les invités pendant que la base est coupée, posez
-`VITE_STATIC_SITES=1` sur Vercel : l’API n’est plus interrogée du tout, les
-copies font foi. Sans cette variable, l’API prime et la copie ne sert qu’en cas
-d’échec.
-
-Deux limites à connaître :
-
-- **une copie est un instantané** — régénérez-la après chaque modification
-  importante, sinon le lien partagé affichera l’ancienne version ;
-- **elle protège l’affichage, pas les données** — un projet gratuit en pause
-  reste restaurable 90 jours ; passé ce délai, la restauration passe par le
-  téléchargement de la sauvegarde et sa réimportation dans un projet neuf.
+`VITE_STATIC_SITES=1` sur l’hébergeur : l’API n’est plus interrogée du tout, les
+copies font foi.
 
 ## Structure
 
@@ -122,6 +148,10 @@ src/
     types.ts            types alignés sur supabase/schema.sql
     auth.ts             clés d’édition : stockage navigateur + clé active
     http.ts             apiGet / apiSend (+ en-tête x-site-token, ApiError)
+    dataSource.ts       base distante ou base locale : l’aiguillage
+    localStore.ts       la base du navigateur (localStorage)
+    localApi.ts         les fonctions de api/, rejouées côté navigateur
+    mediaSeed.ts        bibliothèque d’images livrée avec le projet
     format.ts           dates, slug, liens Google Maps, liens publics
     weddingStyles.ts    environnements, typographies, options d’apparence
     defaults.ts         contenu par défaut + amorçage d’un nouveau site
@@ -132,7 +162,8 @@ src/
 supabase/schema.sql     schéma complet de la base (tables, index, RLS, clés)
 tests/
   api.test.mjs          matrice d’autorisation des handlers, sans base réelle
-  front.test.ts         stockage de la clé, en-tête x-site-token, amorçage
+  front.test.ts         clé d’édition, en-tête x-site-token, amorçage, base locale
+  ui.test.ts            rendu réel des composants, sans base distante
 ```
 
 Les tests remplacent `server/db-client.js` par `tests/mock-db-client.js` et
@@ -148,6 +179,9 @@ Les tests remplacent `server/db-client.js` par `tests/mock-db-client.js` et
   `supabase/schema.sql`, puis un fichier de trois lignes dans `api/` :
   `export default crud({ table: '…' })`. Les particularités (tri, limite,
   filtres, verbes autorisés, recherche par clé) sont des options de la fabrique.
+  La même déclaration se reporte dans `TABLES` de `src/lib/localApi.ts`, pour que
+  le mode autonome autorise exactement la même chose — `tests/front.test.ts`
+  vérifie les deux chemins.
 - **L’autorisation se déclare, elle ne s’oublie pas.** `read` vaut `public`,
   `published-or-owner` ou `owner` ; `write` vaut `public`, `owner`, `any-owner`,
   ou un objet par verbe (`{ POST: 'public', PUT: 'owner' }`). Une table enfant
@@ -159,12 +193,16 @@ Les tests remplacent `server/db-client.js` par `tests/mock-db-client.js` et
 
 ## Déploiement
 
+**Sans base** (le cas par défaut) — déployez le dépôt tel quel : aucune variable
+n’est nécessaire. Les mini-sites partagés sont les fichiers de `public/sites/`,
+produits par le bouton *Télécharger* du panneau *Partager*.
+
 **Vercel** — `vercel.json` ne contient que la configuration du build ; les
 variables d’environnement se règlent dans le dashboard Vercel (jamais dans le
 dépôt).
 
-**Supabase** — exécutez `supabase/schema.sql` dans l’éditeur SQL du projet, puis
-renseignez :
+**Supabase** (optionnel) — exécutez `supabase/schema.sql` dans l’éditeur SQL du
+projet, puis renseignez :
 
 | Variable | Rôle |
 | --- | --- |
@@ -189,6 +227,12 @@ Le navigateur la range dans localStorage (`src/lib/auth.ts`), indexée par
 identifiant (l’éditeur) et par slug (l’aperçu d’un brouillon), et `src/lib/http.ts`
 l’envoie dans l’en-tête `x-site-token`. Côté API, `server/auth.js` résout la clé
 en `site_id` et refuse tout ce qui ne correspond pas au site visé.
+
+**En mode autonome**, la clé est vérifiée par `src/lib/localApi.ts` avec les
+mêmes règles (une clé inconnue ou celle d’un autre site donne 403), mais elle
+vit dans le navigateur : elle protège contre un inconnu qui devinerait l’URL de
+l’éditeur, pas contre quelqu’un qui a l’appareil en main. Rien n’est envoyé
+ailleurs.
 
 | Endpoint | Lecture | Écriture |
 | --- | --- | --- |
@@ -236,10 +280,13 @@ l’exécuter) et le bucket de stockage n’est pas public en écriture ; les li
 partagés sont dérivés de l’origine réelle du déploiement plutôt que d’un domaine
 codé en dur.
 
-La matrice ci-dessus est vérifiée par `npm test` (95 contrôles sur les handlers
-— lecture d’un brouillon, écriture avec la clé d’un autre site, réponses RSVP,
+La matrice ci-dessus est vérifiée par `npm test` : 95 contrôles sur les handlers
+(lecture d’un brouillon, écriture avec la clé d’un autre site, réponses RSVP,
 `GET` sans `site_id`, upload, API en 503 quand la base est coupée, intégrité des
-copies statiques — et 38 sur le front, repli sur copie compris).
+copies statiques), 55 sur le front — dont les mêmes autorisations rejouées par
+la base locale, création d’un site complet sans aucun appel réseau — et 16 sur
+l’interface (rendu réel des composants, envoi RSVP autonome, panneau de
+publication).
 
 ### À traiter
 

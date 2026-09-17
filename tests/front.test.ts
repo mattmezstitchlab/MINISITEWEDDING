@@ -14,6 +14,9 @@ import { apiGet, apiSend, ApiError } from '../src/lib/http';
 import { seedSite } from '../src/lib/defaults';
 import { loadSiteData } from '../src/lib/siteData';
 import { loadStaticSite, snapshotPath } from '../src/lib/staticSite';
+import { setRemote } from '../src/lib/dataSource';
+import { readDb, resetDb } from '../src/lib/localStore';
+import { MemStorage } from './memStorage';
 
 let pass = 0;
 const failures: string[] = [];
@@ -24,13 +27,6 @@ function check(label: string, actual: unknown, expected: unknown) {
 
 /* ------------------------------------------------------------ faux stockage */
 
-class MemStorage {
-  private map = new Map<string, string>();
-  broken = false;
-  getItem(key: string) { if (this.broken) throw new Error('accès interdit'); return this.map.get(key) ?? null; }
-  setItem(key: string, value: string) { if (this.broken) throw new Error('quota dépassé'); this.map.set(key, value); }
-  clear() { this.map.clear(); }
-}
 const mem = new MemStorage();
 
 /* ---------------------------------------------------------------- faux fetch */
@@ -156,29 +152,29 @@ check('amorçage : les sept tables enfants sont servies', new Set(children.map((
 /* ------------------------------------- 4. repli sur copie statique (base coupée) */
 
 const snapshot = {
-  site: { id: 1, slug: 'matt-marie', partner1: 'Matt', partner2: 'Marie', wedding_date: '2027-07-18' },
+  site: { id: 1, slug: 'sarah-gabriel', partner1: 'Sarah', partner2: 'Gabriel', wedding_date: '2027-07-18' },
   sections: [{ id: 1, site_id: 1, section_key: 'hero', title: 'Accueil', visible: true, position: 0 }],
   programme: [], infos: [], gallery: [], faqs: [], rsvpEvents: [], gifts: [],
   exported_at: '2026-09-17T12:00:00.000Z',
 };
 const apiDown = { status: 503, body: { error: 'Configuration Supabase manquante', code: 'supabase_unavailable' } };
 
-check('chemin de la copie statique', snapshotPath('matt-marie'), '/sites/matt-marie.json');
+check('chemin de la copie statique', snapshotPath('sarah-gabriel'), '/sites/sarah-gabriel.json');
 
 // L’API est en panne, une copie existe : le site s’affiche quand même.
 routes.length = 0;
 routes.push({ match: (u) => u.startsWith('/api/'), ...apiDown });
-routes.push({ match: (u) => u === snapshotPath('matt-marie'), status: 200, body: snapshot });
-let loaded = await loadSiteData({ slug: 'matt-marie' });
+routes.push({ match: (u) => u === snapshotPath('sarah-gabriel'), status: 200, body: snapshot });
+let loaded = await loadSiteData({ slug: 'sarah-gabriel' });
 check('base coupée : la copie statique est servie', loaded.degraded, true);
-check('base coupée : le contenu affiché est celui de la copie', loaded.data.site.partner1, 'Matt');
+check('base coupée : le contenu affiché est celui de la copie', loaded.data.site.partner1, 'Sarah');
 
 // L’API répond : la copie n’est jamais demandée.
 routes.length = 0;
 sent.length = 0;
 routes.push({ match: (u) => u.startsWith('/api/wedding-sites'), status: 200, body: snapshot.site });
 routes.push({ match: (u) => u.startsWith('/api/'), status: 200, body: [] });
-loaded = await loadSiteData({ slug: 'matt-marie' });
+loaded = await loadSiteData({ slug: 'sarah-gabriel' });
 check('API en ligne : pas de repli', loaded.degraded, false);
 check('API en ligne : aucune copie n’est lue', sent.some((r) => r.url.startsWith('/sites/')), false);
 
@@ -188,7 +184,7 @@ routes.push({ match: (u) => u.startsWith('/api/'), status: 404, body: { error: '
 routes.push({ match: (u) => u.startsWith('/sites/'), status: 200, body: snapshot });
 let caught2: unknown = null;
 try {
-  await loadSiteData({ slug: 'matt-marie' });
+  await loadSiteData({ slug: 'sarah-gabriel' });
 } catch (err) {
   caught2 = err;
 }
@@ -213,7 +209,7 @@ routes.push({ match: (u) => u.startsWith('/api/'), ...apiDown });
 routes.push({ match: (u) => u.startsWith('/sites/'), status: 200, body: '<!doctype html><html></html>' });
 caught2 = null;
 try {
-  await loadSiteData({ slug: 'matt-marie' });
+  await loadSiteData({ slug: 'sarah-gabriel' });
 } catch (err) {
   caught2 = err;
 }
@@ -222,9 +218,9 @@ check('HTML servi à la place du JSON : pas de repli', caught2 instanceof ApiErr
 // Une copie partielle reste affichable : les listes absentes deviennent vides.
 routes.length = 0;
 routes.push({ match: (u) => u.startsWith('/sites/'), status: 200, body: { site: snapshot.site, sections: snapshot.sections } });
-const partial = await loadStaticSite('matt-marie');
+const partial = await loadStaticSite('sarah-gabriel');
 check('copie partielle : les listes manquantes sont complétées', [partial?.faqs.length, partial?.gifts.length, partial?.rsvpEvents.length], [0, 0, 0]);
-check('copie partielle : le site lui-même est conservé', partial?.site.slug, 'matt-marie');
+check('copie partielle : le site lui-même est conservé', partial?.site.slug, 'sarah-gabriel');
 
 // L’éditeur charge par identifiant : les copies, indexées par slug, ne le concernent pas.
 routes.length = 0;
@@ -239,6 +235,98 @@ try {
 }
 check('éditeur (chargement par id) : aucune copie n’est lue', sent.some((r) => r.url.startsWith('/sites/')), false);
 check('éditeur : l’erreur de l’API remonte', caught2 instanceof ApiError, true);
+routes.length = 0;
+
+
+/* ------------------------------------------------- 5. base locale, sans Supabase */
+
+setRemote(false);
+resetDb();
+setActiveToken(null);
+sent.length = 0;
+
+const local = await seedSite({
+  partner1: 'Sarah', partner2: 'Gabriel', wedding_date: '2027-06-12',
+  venue: 'Château de Larris', city: 'Paris', style: 'cinema',
+});
+
+check('base locale : aucun appel réseau', sent.length, 0);
+check('base locale : le site est créé', typeof local.site.id === 'number' && local.site.slug.length > 0, true);
+check('base locale : la clé d’édition est renvoyée', local.editToken.length, 32);
+check('base locale : le site est rangé dans le navigateur', readDb().sites.length, 1);
+
+const localSite = await loadSiteData({ slug: local.site.slug });
+check('base locale : le mini-site se charge', localSite.data.site.partner1, 'Sarah');
+check('base locale : il n’est pas en mode dégradé', localSite.degraded, false);
+check('base locale : les douze sections sont composées', localSite.data.sections.length, 12);
+check(
+  'base locale : les sept tables sont remplies',
+  [localSite.data.programme.length, localSite.data.infos.length, localSite.data.gallery.length,
+   localSite.data.faqs.length, localSite.data.rsvpEvents.length, localSite.data.gifts.length].every((n) => n > 0),
+  true
+);
+
+// Autorisations : identiques à l’API.
+setActiveToken(null);
+let refus = null;
+try {
+  await apiGet(`/api/programme?site_id=${local.site.id}`);
+} catch (err) {
+  refus = err;
+}
+check('base locale : brouillon sans clé → 403', refus instanceof ApiError ? refus.status : null, 403);
+
+let introuvable = null;
+try {
+  await loadSiteData({ slug: local.site.slug });
+} catch (err) {
+  introuvable = err;
+}
+check('base locale : un brouillon reste invisible sans clé', introuvable instanceof ApiError ? introuvable.status : null, 404);
+
+// Réponse d’un invité : publique à l’envoi, privée à la lecture.
+const reponse = await apiSend('/api/rsvp', 'POST', {
+  site_id: local.site.id, first_name: 'Léa', last_name: 'Martin', attending: true, guests_count: 2,
+});
+check('base locale : l’invité envoie sa réponse', typeof reponse.id === 'number', true);
+let lecture = null;
+try {
+  await apiGet(`/api/rsvp?site_id=${local.site.id}`);
+} catch (err) {
+  lecture = err;
+}
+check('base locale : les réponses restent privées', lecture instanceof ApiError ? lecture.status : null, 403);
+setActiveToken(local.editToken);
+const reponses = await apiGet<{ id: number }[]>(`/api/rsvp?site_id=${local.site.id}`);
+check('base locale : les mariés lisent les réponses', reponses.length, 1);
+
+// Publication : le lien devient public.
+await apiSend('/api/wedding-sites', 'PUT', { id: local.site.id, published: true });
+setActiveToken(null);
+const publicApres = await loadSiteData({ slug: local.site.slug });
+check('base locale : une fois publié, le site est lisible par tous', publicApres.data.site.published, true);
+
+// Une clé d’un autre site ne donne aucun droit.
+setActiveToken('une-cle-inventee');
+let pirate = null;
+try {
+  await apiSend('/api/wedding-sites', 'PUT', { id: local.site.id, partner1: 'Pirate' });
+} catch (err) {
+  pirate = err;
+}
+check('base locale : une clé inconnue est refusée', pirate instanceof ApiError ? pirate.status : null, 403);
+setActiveToken(local.editToken);
+
+// La bibliothèque d’images livrée avec le projet est disponible.
+const medi = await apiGet<{ id: number }[]>('/api/media');
+check('base locale : la bibliothèque d’images est amorcée', medi.length > 0, true);
+
+// Suppression en cascade.
+await apiSend('/api/wedding-sites', 'DELETE', { id: local.site.id });
+const apres = readDb();
+check('base locale : la suppression emporte les enfants', apres.sites.length + apres.programme.length + apres.rsvp.length, 0);
+
+setRemote(true);
 routes.length = 0;
 
 /* ------------------------------------------------------------------- bilan */

@@ -1,4 +1,4 @@
-import type { MediaAsset, PublicSiteData, WeddingSite, SiteSection, ProgrammeEvent, InfoPratique, GalleryPhoto, Faq, RsvpEvent, GiftOption } from './types';
+import type { PublicSiteData, WeddingSite, SiteSection, ProgrammeEvent, InfoPratique, GalleryPhoto, Faq, RsvpEvent, GiftOption } from './types';
 import {
   SECTION_DEFAULTS, PROGRAMME_DEFAULTS, FAQ_DEFAULTS, RSVP_EVENT_DEFAULTS,
   GIFT_DEFAULTS, GENERIC_INFO_DEFAULTS, storyText,
@@ -32,36 +32,13 @@ const DEMO_PLACES = [
   { place: 'Orangerie' },
 ];
 
-export const DEMO_MEDIA: MediaAsset[] = [
-  { id: 1, category: 'Couple', title: 'Couple à Paris', url: '/images/couple-paris.jpg', collection: 'Editorial Paris', kind: 'photo', orientation: 'portrait' },
-  { id: 2, category: 'Alliances', title: 'Les alliances', url: '/images/alliances.jpg', collection: 'Editorial Paris', kind: 'photo', orientation: 'carre' },
-  { id: 3, category: 'Bouquet', title: 'Bouquet pivoines', url: '/images/bouquet.jpg', collection: 'Garden Wedding', kind: 'photo', orientation: 'portrait' },
-  { id: 4, category: 'Château', title: 'Château de Chantilly', url: '/images/chateau.jpg', collection: 'Château', kind: 'photo', orientation: 'paysage' },
-  { id: 5, category: 'Table', title: 'Table black tie', url: '/images/table-noir.jpg', collection: 'Black Tie', kind: 'photo', orientation: 'paysage' },
-  { id: 6, category: 'Danse', title: 'Première danse', url: '/images/danse.jpg', collection: 'Modern Romance', kind: 'photo', orientation: 'paysage' },
-  { id: 7, category: 'Nature', title: 'Jardin anglais', url: '/images/garden.jpg', collection: 'Garden Wedding', kind: 'photo', orientation: 'paysage' },
-  { id: 8, category: 'Décoration', title: 'Terrasse au soleil', url: '/images/terrasse.jpg', collection: "Côte d'Azur", kind: 'photo', orientation: 'paysage' },
-  { id: 9, category: 'Champagne', title: 'Coupe de champagne', url: '/images/champagne.jpg', collection: 'Black Tie', kind: 'photo', orientation: 'portrait' },
-  { id: 10, category: 'Textures', title: 'Noir & blanc', url: '/images/noir-blanc.jpg', collection: 'Editorial Paris', kind: 'photo', orientation: 'carre' },
-  { id: 11, category: 'Cérémonie', title: 'Hero — mariage', url: '/images/hero-wedding.jpg', collection: 'Château', kind: 'photo', orientation: 'paysage' },
-  // Nouveaux univers qui cassent les codes
-  { id: 12, category: 'Béton', title: 'Béton Brut — chapelle', url: '/images/brutal.jpg', collection: 'Béton Brut', kind: 'photo', orientation: 'portrait' },
-  { id: 13, category: 'Club', title: 'Club Amour — 02h17', url: '/images/club-amour.jpg', collection: 'Club Amour', kind: 'photo', orientation: 'paysage' },
-  { id: 14, category: 'Desert', title: 'Desert Motel — piscine', url: '/images/desert-motel.jpg', collection: 'Desert Motel', kind: 'photo', orientation: 'paysage' },
-  { id: 15, category: 'Cosmic', title: 'Cosmic — verre liquide', url: '/images/cosmic.jpg', collection: 'Cosmic', kind: 'photo', orientation: 'carre' },
-  { id: 16, category: 'Punk', title: 'Punk Papier — zine', url: '/images/punk-papier.jpg', collection: 'Punk Papier', kind: 'photo', orientation: 'portrait' },
-  { id: 17, category: 'Forêt', title: 'Forêt Noire — rituel', url: '/images/foret-noire.jpg', collection: 'Forêt Noire', kind: 'photo', orientation: 'paysage' },
-  { id: 18, category: 'Cinéma', title: 'Cinéma — rideau rouge', url: '/images/cinema.jpg', collection: 'Cinéma', kind: 'photo', orientation: 'paysage' },
-  { id: 19, category: 'Brocante', title: 'Brocante Club — maximalisme', url: '/images/brocante.jpg', collection: 'Brocante Club', kind: 'photo', orientation: 'paysage' },
-  { id: 20, category: 'Supermarché', title: 'Supermarché 22h — rayon 7', url: '/images/supermarche.jpg', collection: 'Supermarché 22h', kind: 'photo', orientation: 'paysage' },
-  { id: 21, category: 'Laverie', title: 'Laverie Club — tambour 7', url: '/images/laverie.jpg', collection: 'Laverie Club', kind: 'photo', orientation: 'paysage' },
-];
+export { MEDIA_SEED as DEMO_MEDIA } from './mediaSeed';
 
 const site: WeddingSite = {
   id: SITE_ID,
-  slug: 'matt-marie',
-  partner1: 'Matt',
-  partner2: 'Marie',
+  slug: 'sarah-gabriel',
+  partner1: 'Sarah',
+  partner2: 'Gabriel',
   wedding_date: '2027-07-18',
   venue: VENUE,
   city: 'Chantilly, Oise',
@@ -74,13 +51,13 @@ const site: WeddingSite = {
   layout: 'magazine',
   animation_level: 'fluide',
   hero_photo: '/images/cinema.jpg',
-  hero_title: 'Matt & Marie',
+  hero_title: 'Sarah & Gabriel',
   hero_subtitle: 'Première — 18.07.2027',
   story_title: 'Tout a commencé par un regard',
-  story_text: storyText('Matt', 'Marie'),
+  story_text: storyText('Sarah', 'Gabriel'),
   story_photo: '/images/couple-paris.jpg',
   announcement: 'Nous avons hâte de vous retrouver. Tenue : black tie, mais venez comme vous êtes.',
-  contact_email: 'matt.et.marie@byaime.fr',
+  contact_email: 'sarah.et.gabriel@byaime.fr',
   contact_phone: '+33 6 12 34 56 78',
   published: true,
 };
