@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 .vite-source-tags.js
 .vercel
+
+# Secrets locaux — jamais commités
+.env
+.env.*
+!.env.example

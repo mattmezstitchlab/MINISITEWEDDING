@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Users, Check, X, Baby, Mail, Trash2, RefreshCw, UtensilsCrossed } from 'lucide-react';
 import type { RsvpResponse, RsvpEvent } from '../lib/types';
-import { apiGet, apiSend } from '../lib/api';
+import { apiGet, apiSend } from '../lib/http';
 
 interface Props {
   siteId: number;
@@ -13,15 +13,16 @@ export default function RsvpManager({ siteId, events, refreshKey }: Props) {
   const [responses, setResponses] = useState<RsvpResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchAll = async () => {
-    setLoading(true);
-    try {
-      const data = await apiGet<RsvpResponse[]>(`/api/rsvp?site_id=${siteId}`);
-      setResponses(data);
-    } catch { setResponses([]); } finally { setLoading(false); }
-  };
+  /** Récupère les réponses ; l’état est mis à jour dans les rappels asynchrones. */
+  const fetchResponses = () =>
+    apiGet<RsvpResponse[]>(`/api/rsvp?site_id=${siteId}`)
+      .then((data) => { setResponses(data); setLoading(false); })
+      .catch(() => { setResponses([]); setLoading(false); });
 
-  useEffect(() => { fetchAll(); }, [siteId, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchResponses(); }, [siteId, refreshKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** Bouton « Actualiser » : affiche l’état de chargement, puis recharge. */
+  const refresh = () => { setLoading(true); fetchResponses(); };
 
   const present = responses.filter((r) => r.attending);
   const absent = responses.filter((r) => !r.attending);
@@ -32,7 +33,7 @@ export default function RsvpManager({ siteId, events, refreshKey }: Props) {
   const remove = async (id: number) => {
     if (!confirm('Supprimer cette réponse ?')) return;
     await apiSend('/api/rsvp', 'DELETE', { id });
-    fetchAll();
+    await fetchResponses();
   };
 
   const stats = [
@@ -49,7 +50,7 @@ export default function RsvpManager({ siteId, events, refreshKey }: Props) {
           <h3 className="vp-h2 text-[22px]">Réponses des invités</h3>
           <p className="vp-caption mt-0.5 !text-[13px]">Mis à jour en temps réel</p>
         </div>
-        <button onClick={fetchAll} className="vp-press flex h-9 w-9 items-center justify-center rounded-full bg-black/5 transition hover:bg-black/10" aria-label="Actualiser">
+        <button onClick={refresh} className="vp-press flex h-9 w-9 items-center justify-center rounded-full bg-black/5 transition hover:bg-black/10" aria-label="Actualiser">
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
         </button>
       </div>

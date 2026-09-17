@@ -3,6 +3,7 @@ const RESTORE_URL = process.env.FULLSTACK_RESTORE_API_URL || '';
 
 let _restoreTriggered = false;
 
+/** Demande la restauration du projet quand la base ne répond plus (5xx). */
 export function triggerRestore() {
   if (_restoreTriggered || !PROJECT_REF || !RESTORE_URL) return;
   _restoreTriggered = true;
