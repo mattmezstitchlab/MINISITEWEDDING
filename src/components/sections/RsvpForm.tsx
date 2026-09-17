@@ -9,7 +9,7 @@ const FIELD = 'vp-field vp-field-dark !px-5 !py-3.5 !text-[15px]';
 
 /** Formulaire de réponse : présence, convives, régimes, hébergement, message. */
 export default function RsvpForm() {
-  const { site, data, accent, fonts, headWeight, btnR } = useSiteView();
+  const { site, data, accent, fonts, headWeight, btnR, degraded } = useSiteView();
   const events = data.rsvpEvents;
 
   const [firstName, setFirstName] = useState('');
@@ -37,6 +37,9 @@ export default function RsvpForm() {
     setError('');
     if (!firstName.trim() || !lastName.trim()) { setError('Merci d’indiquer votre prénom et votre nom.'); return; }
     if (attending === null) { setError('Dites-nous si vous serez présent.'); return; }
+    // Copie statique : l’envoi atteindrait une base injoignable. On l’annonce
+    // avant, plutôt que de laisser l’invité remplir un formulaire pour rien.
+    if (degraded) { setError('Les réponses sont suspendues pour le moment — réessayez un peu plus tard, ou écrivez-nous directement.'); return; }
     setSending(true);
     try {
       await apiSend('/api/rsvp', 'POST', {
@@ -187,14 +190,19 @@ export default function RsvpForm() {
         <label className="vp-label !text-white/55">Un message pour les mariés ?</label>
         <textarea rows={3} className={FIELD} value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Quelques mots doux…" />
       </div>
+      {degraded && !error && (
+        <p className="text-sm font-medium text-white/70">
+          Les réponses sont momentanément suspendues — votre message ne partira pas. Écrivez-nous directement, nous répondons.
+        </p>
+      )}
       {error && <p className="text-sm font-medium text-[#FF8A80]">{error}</p>}
       <button
         type="submit"
-        disabled={sending}
+        disabled={sending || degraded}
         className="vp-press w-full py-4 text-[15px] font-semibold text-white transition disabled:opacity-60"
         style={{ background: accent, borderRadius: btnR, boxShadow: `0 16px 34px -16px ${accent}, inset 0 1px 0 rgba(255,255,255,0.3)` }}
       >
-        {sending ? 'Envoi en cours…' : 'Envoyer ma réponse'}
+        {degraded ? 'Réponses suspendues' : sending ? 'Envoi en cours…' : 'Envoyer ma réponse'}
       </button>
     </form>
   );

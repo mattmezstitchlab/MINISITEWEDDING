@@ -1,5 +1,6 @@
 import supabase from '../server/db-client.js';
 import { createToken, hashToken } from '../server/auth.js';
+import { respondError } from '../server/errors.js';
 
 /**
  * Création d’un site et de sa clé d’édition.
@@ -76,10 +77,6 @@ export default async function handler(req, res) {
 
     return res.status(201).json({ site, edit_token: token });
   } catch (err) {
-    console.error('API create-site error:', err);
-    // Si la config Supabase manque, le message de db-client.js est explicite
-    const message = err && err.message ? err.message : 'Erreur interne';
-    // On évite de renvoyer la stack complète en prod, mais on garde le message
-    return res.status(500).json({ error: message });
+    return respondError(res, err, 'create-site');
   }
 }

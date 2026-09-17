@@ -1,5 +1,6 @@
 import supabase from '../server/db-client.js';
 import { ownerSiteId, unauthorized } from '../server/auth.js';
+import { respondError } from '../server/errors.js';
 
 export const config = { api: { bodyParser: { sizeLimit: '12mb' } } };
 
@@ -34,7 +35,6 @@ export default async function handler(req, res) {
     const { data } = supabase.storage.from('wedding-media').getPublicUrl(safeName);
     return res.status(200).json({ url: data.publicUrl });
   } catch (err) {
-    console.error('Upload error:', err);
-    return res.status(500).json({ error: err.message || 'Erreur interne' });
+    return respondError(res, err, 'upload');
   }
 }

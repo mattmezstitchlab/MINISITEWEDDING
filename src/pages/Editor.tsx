@@ -93,10 +93,21 @@ function EditorShell({ id }: { id?: string }) {
   if (locked || status === 403) return <NoAccess siteId={id} invalid />;
 
   if (error || !data) {
+    // 503 = base injoignable (Supabase en pause, variables manquantes) : ce
+    // n’est pas le site qui a disparu. Les mini-sites publiés restent visibles
+    // sur /p/:slug s’ils ont une copie dans public/sites/.
+    const baseDown = status !== null && status >= 500;
     return (
       <div className="vp-env flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="vp-h2 text-[22px]">Ce site est introuvable.</p>
+        <p className="vp-h2 text-[22px]">{baseDown ? 'La base de données ne répond pas.' : 'Ce site est introuvable.'}</p>
         <p className="vp-caption">{error}</p>
+        {baseDown && (
+          <p className="vp-caption !max-w-md">
+            L’édition reprendra dès que Supabase répondra de nouveau. Les mini-sites
+            disposant d’une copie dans <code className="vp-num">public/sites/</code> restent
+            affichés sur leur lien public.
+          </p>
+        )}
         <Link to="/creer" className="vp-btn vp-press !px-6">Créer un site</Link>
       </div>
     );
@@ -258,7 +269,7 @@ function EditorShell({ id }: { id?: string }) {
               <div className="flex-1 overflow-y-auto p-6">
                 {drawer === 'appearance' && <AppearancePanel site={site} onPatch={patchSite} />}
                 {drawer === 'rsvp' && <RsvpManager siteId={site.id} events={rsvpEvents} refreshKey={rsvpTick} />}
-                {drawer === 'share' && <SharePanel site={site} onPublishedChange={(v) => { patchSite({ published: v }); notify(v ? 'Site publié' : 'Site en brouillon'); }} />}
+                {drawer === 'share' && <SharePanel site={site} data={data} onPublishedChange={(v) => { patchSite({ published: v }); notify(v ? 'Site publié' : 'Site en brouillon'); }} />}
                 {drawer === 'structure' && (
                   <div>
                     {structureList}

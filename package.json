@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "node tests/api.test.mjs && node tests/front.test.mjs",
+    "snapshot": "node scripts/export-sites.mjs",
+    "snapshot:demo": "node scripts/export-sites.mjs --demo",
     "preview": "vite preview"
   },
   "dependencies": {

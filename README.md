@@ -36,6 +36,7 @@ npm run lint     # ESLint
 npm test         # autorisation de l’API + clés d’édition côté front
 npm run build    # tsc -b puis vite build
 npm run preview  # sert le build
+npm run snapshot # copies statiques des sites publiés (voir plus bas)
 ```
 
 **Sans backend en local** : l’API serverless n’existe pas dans `vite dev`. En
@@ -43,6 +44,58 @@ développement uniquement (`import.meta.env.DEV`), les pages basculent alors sur
 le jeu de démonstration de `src/lib/demo.ts` — le mariage fictif « Matt & Marie »
 et les visuels de `public/images/`. En production, rien ne change : une erreur
 d’API remonte normalement.
+
+## Quand Supabase ne répond pas : les copies statiques
+
+Le contenu d’un site vit dans Supabase. Si le projet est en pause — facture
+impayée, inactivité — ou si les variables d’environnement manquent, l’API
+répond **`503 supabase_unavailable`** et plus aucun mini-site ne s’affiche, y
+compris ceux déjà partagés ou imprimés en QR code.
+
+Les **copies statiques** sont la sortie de secours : un instantané JSON par
+site, dans `public/sites/<slug>.json`, servi comme un fichier ordinaire par
+Vercel — aucune fonction serverless, aucune variable d’environnement, aucun
+coût. L’affichage est complet ; restent suspendus l’édition, l’envoi des
+réponses RSVP et les téléversements, qui écrivent en base.
+
+```bash
+npm run snapshot                        # tous les sites publiés, depuis Supabase
+npm run snapshot -- --slug matt-marie   # un seul site
+npm run snapshot -- --all               # brouillons compris (déconseillé)
+npm run snapshot:demo                   # le jeu de démonstration, sans Supabase
+```
+
+Trois façons de produire une copie :
+
+1. `npm run snapshot`, tant que Supabase répond (clés de service présentes dans
+   le `.env` local) ;
+2. le bouton **« Copie de secours »** du panneau *Partager* de l’éditeur, qui
+   télécharge le même fichier depuis le navigateur — pratique sans accès
+   serveur ;
+3. à la main : le fichier suit la forme de `PublicSiteData`
+   (`src/lib/types.ts`) — un objet `site` et sept listes. Le plus simple est de
+   copier `public/sites/matt-marie.json` et d’en modifier les valeurs.
+
+Le repli est automatique, et invisible pour l’invité :
+
+| Réponse de l’API | Ce qui s’affiche |
+| --- | --- |
+| 200 | les données de la base — la copie n’est pas lue |
+| 5xx, ou requête qui n’aboutit pas | la copie statique, si elle existe |
+| 404 (brouillon) ou 403 (clé refusée) | l’erreur — jamais la copie, qui publierait un brouillon |
+
+Pour ne pas faire attendre les invités pendant que la base est coupée, posez
+`VITE_STATIC_SITES=1` sur Vercel : l’API n’est plus interrogée du tout, les
+copies font foi. Sans cette variable, l’API prime et la copie ne sert qu’en cas
+d’échec.
+
+Deux limites à connaître :
+
+- **une copie est un instantané** — régénérez-la après chaque modification
+  importante, sinon le lien partagé affichera l’ancienne version ;
+- **elle protège l’affichage, pas les données** — un projet gratuit en pause
+  reste restaurable 90 jours ; passé ce délai, la restauration passe par le
+  téléchargement de la sauvegarde et sa réimportation dans un projet neuf.
 
 ## Structure
 
@@ -56,6 +109,10 @@ server/                 code serveur partagé, JAMAIS exposé comme route
   crud.js               fabrique de handlers CRUD (GET/POST/PUT/DELETE) + autorisations
   db-client.js          client Supabase (clé de service)
   db-wake.js            réveil de la base endormie sur erreur 5xx
+  errors.js             503 supabase_unavailable quand la base est coupée, 500 sinon
+scripts/
+  export-sites.mjs      écrit public/sites/<slug>.json (npm run snapshot)
+public/sites/           copies statiques des mini-sites, servies sans Supabase
 src/
   components/
     PublicSiteView.tsx  coquille du rendu : thème, ordre des sections, aperçu
@@ -69,6 +126,7 @@ src/
     weddingStyles.ts    environnements, typographies, options d’apparence
     defaults.ts         contenu par défaut + amorçage d’un nouveau site
     demo.ts             jeu de démonstration (composé depuis defaults.ts)
+    staticSite.ts       lecture des copies statiques (repli quand la base est coupée)
     siteData.ts         loadSiteData() + useSiteData() (page publique et éditeur)
   pages/                Landing, Onboarding, Generating, Editor, PublicSite
 supabase/schema.sql     schéma complet de la base (tables, index, RLS, clés)
@@ -115,6 +173,7 @@ renseignez :
 | `SUPABASE_SERVICE_ROLE_KEY` | clé de service (contourne RLS) — **serveur uniquement** |
 | `FULLSTACK_PROJECT_REF` | référence du projet, pour le réveil de la base |
 | `FULLSTACK_RESTORE_API_URL` | endpoint de réveil |
+| `VITE_STATIC_SITES` | `1` pour servir les copies de `public/sites/` sans interroger l’API |
 
 ## Sécurité
 
@@ -177,9 +236,10 @@ l’exécuter) et le bucket de stockage n’est pas public en écriture ; les li
 partagés sont dérivés de l’origine réelle du déploiement plutôt que d’un domaine
 codé en dur.
 
-La matrice ci-dessus est vérifiée par `npm test` (89 contrôles sur les handlers
+La matrice ci-dessus est vérifiée par `npm test` (98 contrôles sur les handlers
 — lecture d’un brouillon, écriture avec la clé d’un autre site, réponses RSVP,
-`GET` sans `site_id`, upload — et 25 sur le front).
+`GET` sans `site_id`, upload, API en 503 quand la base est coupée, intégrité des
+copies statiques — et 38 sur le front, repli sur copie compris).
 
 ### À traiter
 

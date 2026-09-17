@@ -17,7 +17,7 @@ export default function PublicSite() {
   // posée. Un en-tête périmé est sans effet, l’API compare la clé au site visé.
   const [token] = useState(() => getEditToken({ slug }));
   setActiveToken(token);
-  const { data, demo, loading } = useSiteData({ slug });
+  const { data, demo, degraded, loading } = useSiteData({ slug });
   const site = data?.site;
 
   useEffect(() => {
@@ -53,10 +53,18 @@ export default function PublicSite() {
 
   return (
     <>
-      <PublicSiteView data={data} />
+      <PublicSiteView data={data} degraded={degraded} />
       {demo && (
         <div className="vp-glass-dark vp-spec-dark fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-2 text-[12px] font-medium text-white">
           Aperçu local — données de démonstration
+        </div>
+      )}
+      {/* La base est injoignable : le site est servi depuis sa copie statique
+          (`public/sites/<slug>.json`). L’affichage reste complet, seules les
+          écritures — réponses RSVP — sont suspendues. */}
+      {degraded && !demo && (
+        <div className="vp-glass-dark vp-spec-dark fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-2 text-center text-[12px] font-medium text-white">
+          Site affiché depuis une copie — les réponses sont suspendues pour l’instant.
         </div>
       )}
     </>

@@ -1,5 +1,6 @@
 import supabase from './db-client.js';
 import { ownerSiteId, isPublished, rowSiteId, unauthorized } from './auth.js';
+import { respondError } from './errors.js';
 
 /**
  * Fabrique de handlers CRUD.
@@ -69,8 +70,7 @@ export function crud(options) {
       if (read === 'published-or-owner' && (await isPublished(siteId))) return null;
       return unauthorized(res, owner ? 'Clé d’édition d’un autre site' : 'Clé d’édition requise');
     } catch (e) {
-      console.error(`authorizeRead ${label} error:`, e);
-      return res.status(500).json({ error: e.message });
+      return respondError(res, e, `${label} (authorizeRead)`);
     }
   }
 
@@ -88,8 +88,7 @@ export function crud(options) {
       if (siteId !== owner) return unauthorized(res, 'Clé d’édition d’un autre site');
       return null;
     } catch (e) {
-      console.error(`authorizeWrite ${label} error:`, e);
-      return res.status(500).json({ error: e.message });
+      return respondError(res, e, `${label} (authorizeWrite)`);
     }
   }
 
@@ -147,8 +146,7 @@ export function crud(options) {
       if (error) throw error;
       return res.status(200).json({ ok: true });
     } catch (err) {
-      console.error(`API ${label} error:`, err);
-      return res.status(500).json({ error: err.message || 'Erreur interne' });
+      return respondError(res, err, label);
     }
   };
 }

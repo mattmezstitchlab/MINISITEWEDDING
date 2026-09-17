@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Copy, Check, MessageCircle, Mail, MessageSquare, Share2, Eye, EyeOff, Globe, KeyRound, Printer } from 'lucide-react';
-import type { WeddingSite } from '../lib/types';
+import { Copy, Check, MessageCircle, Mail, MessageSquare, Share2, Eye, EyeOff, Globe, KeyRound, Printer, Download } from 'lucide-react';
+import type { PublicSiteData, WeddingSite } from '../lib/types';
 import { publicUrl, publicPath } from '../lib/format';
 import { getEditToken } from '../lib/auth';
 
 interface Props {
   site: WeddingSite;
+  /** Données complètes du site, pour télécharger une copie statique. */
+  data?: PublicSiteData | null;
   onPublishedChange: (v: boolean) => void;
 }
 
@@ -25,7 +27,25 @@ async function copyText(value: string) {
   }
 }
 
-export default function SharePanel({ site, onPublishedChange }: Props) {
+/**
+ * Télécharge `public/sites/<slug>.json` : la copie qui permet au site de
+ * s’afficher quand Supabase ne répond plus (voir `src/lib/staticSite.ts`).
+ * Pratique quand on n’a pas les clés de service sous la main pour lancer
+ * `npm run snapshot`.
+ */
+function downloadSnapshot(site: WeddingSite, data: PublicSiteData) {
+  const payload = { ...data, site: { ...data.site, ...site }, exported_at: new Date().toISOString() };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${site.slug}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+export default function SharePanel({ site, data, onPublishedChange }: Props) {
   const [copied, setCopied] = useState<'url' | 'key' | null>(null);
   const [revealKey, setRevealKey] = useState(false);
   const fullUrl = publicUrl(site.slug);
@@ -67,6 +87,19 @@ export default function SharePanel({ site, onPublishedChange }: Props) {
           </Link>
         </div>
       </div>
+
+      {data && (
+        <div className="vp-glass vp-spec mt-4 rounded-[24px] p-5 text-left">
+          <div className="vp-eyebrow"><Download size={13} className="mr-1 inline" />Copie de secours</div>
+          <p className="vp-caption mt-2 !text-[11.5px] leading-relaxed">
+            Un instantané du site, à ranger dans <code className="vp-num">public/sites/</code> du dépôt :
+            il s’affiche même si la base de données ne répond plus (facture en attente, projet en pause).
+          </p>
+          <button onClick={() => downloadSnapshot(site, data)} className="vp-btn vp-btn-glass vp-press mt-3 w-full !py-2.5 !text-[12.5px]">
+            <Download size={15} /> Télécharger la copie (.json)
+          </button>
+        </div>
+      )}
 
       <div className="vp-glass vp-spec mt-4 rounded-[24px] p-5 text-left">
         <div className="vp-eyebrow"><KeyRound size={13} className="mr-1 inline" />Clé d’édition</div>

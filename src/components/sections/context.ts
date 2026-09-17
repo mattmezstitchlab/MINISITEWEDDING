@@ -31,6 +31,12 @@ export interface SiteViewValue {
   daysLeft: number;
   /** Aperçu dans l’éditeur : pas de navigation, pas de formulaire réel. */
   preview: boolean;
+  /**
+   * Site servi depuis une copie statique (`public/sites/<slug>.json`) parce que
+   * la base est injoignable. Le rendu est complet, mais rien ne peut être
+   * enregistré : les sections qui écrivent (RSVP) se mettent en pause.
+   */
+  degraded: boolean;
   scrolled: boolean;
   menuOpen: boolean;
   setMenuOpen: (open: boolean) => void;

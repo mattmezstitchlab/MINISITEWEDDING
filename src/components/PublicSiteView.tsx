@@ -19,12 +19,14 @@ import SupermarcheTicket from './themes/SupermarcheTicket';
  */
 interface Props {
   data: PublicSiteData;
+  /** Copie statique : la base est injoignable, les écritures sont désactivées. */
+  degraded?: boolean;
   preview?: boolean;
   selectedKey?: string | null;
   onSelectSection?: (key: string) => void;
 }
 
-export default function PublicSiteView({ data, preview = false, selectedKey, onSelectSection }: Props) {
+export default function PublicSiteView({ data, degraded = false, preview = false, selectedKey, onSelectSection }: Props) {
   const { site, sections } = data;
   const theme = styleById(site.style);
   const fonts = fontsFor(site.typography);
@@ -64,6 +66,7 @@ export default function PublicSiteView({ data, preview = false, selectedKey, onS
     names: `${site.partner1} & ${site.partner2}`,
     daysLeft: daysUntil(site.wedding_date),
     preview,
+    degraded,
     scrolled,
     menuOpen,
     setMenuOpen,
@@ -71,7 +74,7 @@ export default function PublicSiteView({ data, preview = false, selectedKey, onS
     setLightbox,
     giftThanks,
     setGiftThanks,
-  }), [data, site, theme, fonts, accent, dark, preview, scrolled, menuOpen, lightbox, giftThanks]);
+  }), [data, site, theme, fonts, accent, dark, preview, degraded, scrolled, menuOpen, lightbox, giftThanks]);
 
   /** En aperçu, chaque section devient cliquable et signale si elle est masquée. */
   const wrap = (key: string, content: ReactNode) => {
