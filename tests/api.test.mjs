@@ -272,8 +272,8 @@ check('site sans clé : édition impossible → 403', (await call(weddingSites, 
  */
 {
   const dir = join(repoRoot, 'public', 'sites');
+  check('le dossier des copies statiques existe', existsSync(dir), true);
   const files = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.json')).sort() : [];
-  check('au moins une copie statique est versionnée', files.length > 0, true);
   for (const f of files) {
     const snap = JSON.parse(readFileSync(join(dir, f), 'utf8'));
     check(`${f} : le slug correspond au nom du fichier`, snap.site?.slug, f.replace(/\.json$/, ''));

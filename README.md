@@ -73,8 +73,8 @@ Trois façons de produire une copie :
    télécharge le même fichier depuis le navigateur — pratique sans accès
    serveur ;
 3. à la main : le fichier suit la forme de `PublicSiteData`
-   (`src/lib/types.ts`) — un objet `site` et sept listes. Le plus simple est de
-   copier `public/sites/matt-marie.json` et d’en modifier les valeurs.
+   (`src/lib/types.ts`) — un objet `site` et sept listes. Le modèle et les
+   commandes sont dans `public/sites/README.md`.
 
 Le repli est automatique, et invisible pour l’invité :
 
@@ -236,7 +236,7 @@ l’exécuter) et le bucket de stockage n’est pas public en écriture ; les li
 partagés sont dérivés de l’origine réelle du déploiement plutôt que d’un domaine
 codé en dur.
 
-La matrice ci-dessus est vérifiée par `npm test` (98 contrôles sur les handlers
+La matrice ci-dessus est vérifiée par `npm test` (95 contrôles sur les handlers
 — lecture d’un brouillon, écriture avec la clé d’un autre site, réponses RSVP,
 `GET` sans `site_id`, upload, API en 503 quand la base est coupée, intégrité des
 copies statiques — et 38 sur le front, repli sur copie compris).

@@ -31,7 +31,7 @@ export const STATIC_SITES = import.meta.env.VITE_STATIC_SITES === '1';
 
 const BASE = '/sites';
 
-/** Chemin de la copie d’un site, p. ex. `/sites/matt-marie.json`. */
+/** Chemin de la copie d’un site, p. ex. `/sites/camille-hugo.json`. */
 export function snapshotPath(slug: string): string {
   return `${BASE}/${encodeURIComponent(slug)}.json`;
 }

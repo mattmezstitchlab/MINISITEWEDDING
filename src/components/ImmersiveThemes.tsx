@@ -49,12 +49,8 @@ function ParallaxTheme({ style, index }: { style: WeddingStyle; index: number })
       <div className="absolute left-0 right-0 top-0 flex items-center justify-between p-6 sm:p-10">
         <div className="flex items-center gap-3">
           <span className="vp-num rounded-full bg-white/10 px-3 py-1 text-[12px] font-semibold tracking-widest text-white backdrop-blur-md">
-            {number} — {style.id}
+            {number}
           </span>
-          <span
-            className="h-2.5 w-2.5 rounded-full shadow-[0_0_0_4px_rgba(255,255,255,0.15)]"
-            style={{ background: style.accent }}
-          />
         </div>
         <span className="hidden rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-white/70 backdrop-blur-md sm:block">
           {style.dark ? 'Nuit' : 'Jour'} • {style.tagline}
@@ -116,19 +112,16 @@ function ParallaxTheme({ style, index }: { style: WeddingStyle; index: number })
               <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium uppercase tracking-widest text-white/70 backdrop-blur-md">
                 {style.dark ? 'Ambiance nuit' : 'Ambiance jour'}
               </span>
-              <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-black">
-                {style.accent}
-              </span>
             </div>
           </div>
           <div className="flex flex-col justify-end gap-4">
             <div className="vp-glass-dark vp-spec-dark rounded-[20px] p-4 text-white">
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-white/50">Pourquoi ça buzz</div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-white/50">Le parti pris</div>
               <div className="mt-2 text-[13px] leading-relaxed text-white/80">
                 {index === 0 && 'Anti-château total. Personne n’a osé le béton brut. Photo iconique, presse archi garantie.'}
                 {index === 1 && 'Mariage qui commence à 2h17. Flyer rave, stroboscope. TikTok va adorer.'}
                 {index === 2 && 'Elopement Americana. Motel vide, 38°C. Très Wes Anderson, très Instagram.'}
-                {index === 3 && 'Premier mariage pensé pour Vision Pro. Verre liquide, chrome. Buzz tech assuré.'}
+                {index === 3 && 'Premier mariage pensé pour Vision Pro. Verre liquide, chrome, invitation en vidéo spatiale.'}
                 {index === 4 && 'Faire-part photocopié, coût 0€. Anti-industrie du mariage à 30k. Manifeste punk.'}
                 {index === 5 && 'Forêt profonde, pas garden party. Rituel païen, champignons. Dark cottagecore.'}
                 {index === 6 && 'Mariage = première de film. Ticket, rideau rouge, générique. Hollywood 70s.'}
@@ -165,18 +158,18 @@ export default function ImmersiveThemes() {
           <div className="flex items-center gap-3">
             <span className="h-px w-12 bg-white/20" />
             <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-white/50">
-              10 environnements • 0 doublon • 100% buzz
+              Dix environnements
             </span>
           </div>
           <h2 className="vp-title text-white" style={{ fontSize: 'clamp(2.6rem, 6vw, 5rem)', lineHeight: 0.9 }}>
-            On a tué le<br />
-            <span className="text-white/40">bouquet.jpg</span>
+            Dix partis pris.<br />
+            <span className="text-white/40">Aucun château</span>
             <br />
-            en boucle.
+            en couverture.
           </h2>
           <p className="max-w-2xl text-[17px] leading-relaxed text-white/60 sm:text-[19px]">
-            10 partis pris radicaux. Chaque visuel est unique, chaque couleur claque, chaque concept pourrait faire un article à lui seul.
-            Verticalité immersive, parallax, gros titres. Tu scroll, tu choisis ton camp.
+            Chaque environnement emporte ses images, ses couleurs, ses textes et ses modules.
+            Faites-les défiler, arrêtez-vous sur celui qui vous ressemble.
           </p>
           <div className="flex flex-wrap gap-2">
             {['Anti-château', 'Plus de beige', 'Fini les pivoines', 'Supermarché 22h', 'Laverie Club', 'Béton Brut'].map((t) => (
@@ -200,7 +193,7 @@ export default function ImmersiveThemes() {
       {/* Footer CTA */}
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         <div className="rounded-[32px] bg-white px-8 py-12 text-center sm:px-12 sm:py-16">
-          <div className="vp-eyebrow">Tu as vu ?</div>
+          <div className="vp-eyebrow">Lequel vous ressemble ?</div>
           <h3 className="vp-title mt-4" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>
             Aucun ne ressemble à un mariage.
             <br />

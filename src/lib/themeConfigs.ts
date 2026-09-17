@@ -570,7 +570,7 @@ export const THEME_CONFIGS: Record<string, ThemeModuleConfig> = {
     ],
     packages: [
       { id: 'super-essentiel', name: 'Essentiel', price: '1 500€', description: 'Supermarché 2h, rayon 7', features: ['Supermarché 22h-00h', 'Rayon 7 + caisse 3', 'Caddies + néons', 'Photo surveillance'], cta: 'Choisir Essentiel' },
-      { id: 'super-caddie', name: 'Caddie', price: '3 900€', priceNote: 'Le plus buzz', description: 'Soirée complète supermarché', features: ['Supermarché 22h-02h', 'Rayons + parking + surgelés', 'Dîner 40 pers caisse 3', 'Film caméra surveillance'], cta: 'Choisir Caddie', popular: true },
+      { id: 'super-caddie', name: 'Caddie', price: '3 900€', priceNote: 'Le plus iconique', description: 'Soirée complète supermarché', features: ['Supermarché 22h-02h', 'Rayons + parking + surgelés', 'Dîner 40 pers caisse 3', 'Film caméra surveillance'], cta: 'Choisir Caddie', popular: true },
       { id: 'super-legende', name: 'Légende', price: '7 500€', description: 'On achète le supermarché (presque)', features: ['Supermarché 22h-06h', 'Tout le magasin', 'Dîner 80 pers + after parking', 'Néon + archive'], cta: 'Choisir Légende' },
     ],
     faq: [

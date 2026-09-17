@@ -16,9 +16,8 @@ export interface WeddingStyle {
 }
 
 /**
- * 10 environnements qui cassent les codes du mariage.
- * Fini les doublons bouquet.jpg — chaque style a son image unique,
- * sa couleur qui claque, et son concept qui pourrait faire du buzz.
+ * Dix environnements qui cassent les codes du mariage : chacun a son image,
+ * sa couleur d’accent et son vocabulaire.
  */
 export const WEDDING_STYLES: WeddingStyle[] = [
   {
@@ -78,7 +77,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
     name: 'Punk Papier',
     tagline: 'Zine, agrafes, photocopieuse',
     manifesto: 'Anti-luxe. Faire-part photocopié à 50 exemplaires, typo rançon, épingle à nourrice. Coût : 0€.',
-    synopsis: 'DIY or die. Fanzine, Xerox, collage, scotch. Le mariage le moins cher et le plus punk. Buzz garanti : anti-industrie à 30k.',
+    synopsis: 'DIY or die. Fanzine, Xerox, collage, scotch. Le mariage le moins cher et le plus punk : un manifeste plutôt qu’une facture.',
     ink: '#0A0A0A',
     muted: '#8A8A8A',
     accent: '#FF1A1A',
@@ -130,7 +129,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
     name: 'Supermarché 22h',
     tagline: 'Rayon 7, néons, caddie',
     manifesto: 'On se dit oui entre les céréales et le rayon surgelés. Néons, caddie, amour en libre-service.',
-    synopsis: 'Le plus anti-lieu du monde. Supermarché vide à 22h, néons qui buzzent, baiser entre deux rayons. Photo iconique, coût 0, buzz x1000.',
+    synopsis: 'Le plus anti-lieu du monde. Supermarché vide à 22h, néons qui grésillent, baiser entre deux rayons. Photo iconique, décor déjà là.',
     ink: '#E8FFE8',
     muted: '#8BA38B',
     accent: '#00FF88',

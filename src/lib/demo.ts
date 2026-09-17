@@ -65,7 +65,7 @@ const site: WeddingSite = {
   wedding_date: '2027-07-18',
   venue: VENUE,
   city: 'Chantilly, Oise',
-  style: 'cinema', // nouveau style par défaut pour la démo — plus buzz que editorial
+  style: 'cinema',
   phase: 'avant',
   typography: 'spatial',
   accent_color: '#C80000',
