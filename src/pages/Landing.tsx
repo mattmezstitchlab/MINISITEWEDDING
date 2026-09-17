@@ -35,14 +35,14 @@ export default function Landing() {
           <div className="hidden md:flex items-center gap-8 text-[13px] tracking-[0.12em] uppercase text-neutral-500 font-medium">
             <Link to="/packages" className="text-black font-semibold flex items-center gap-1.5 hover:text-[#8A6D4B] transition">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              5 Collections Agence
+              Collection 12 Packages
             </Link>
             <a href="#styles" className="hover:text-black transition">Styles</a>
             <a href="#experience" className="hover:text-black transition">Expérience</a>
             <a href="#modules" className="hover:text-black transition">Modules</a>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/packages" className="inline-flex sm:hidden text-[11px] tracking-wide px-3 py-1.5 rounded-full bg-black text-white">5 Packages</Link>
+            <Link to="/packages" className="inline-flex sm:hidden text-[11px] tracking-wide px-3 py-1.5 rounded-full bg-black text-white">12 Packages</Link>
             <Link to="/p/matt-marie" className="hidden sm:inline-flex text-[12px] sm:text-[13px] tracking-wide px-4 sm:px-5 py-2.5 rounded-full border border-black/15 hover:border-black/40 transition">Voir un exemple</Link>
             <Link to="/creer" className="inline-flex items-center gap-1.5 text-[12px] sm:text-[13px] tracking-wide px-4 sm:px-5 py-2.5 rounded-full bg-neutral-900 text-white hover:bg-neutral-700 transition font-medium">Créer mon site <ArrowRight size={14} /></Link>
           </div>
@@ -94,7 +94,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Showcase Agence Le Monde Aime */}
+      {/* Showcase Agence Le Monde Aime - 12 Packages */}
       <section className="py-20 sm:py-28 px-4 sm:px-8 bg-[#0D0D10] text-white border-y border-white/10">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-12 border-b border-white/10">
@@ -104,30 +104,37 @@ export default function Landing() {
                 <span>Showcase Agence // Le Monde Aime</span>
               </div>
               <h2 className="mt-4 font-normal tracking-tight text-white" style={{ fontFamily: studioFont, fontSize: 'clamp(2.2rem, 5vw, 3.8rem)' }}>
-                5 Packages d’Agence.<br />
-                <span className="text-white/60">5 Mini-Sites d’Exception.</span>
+                12 Packages d’Agence.<br />
+                <span className="text-white/60">12 Mini-Sites d’Exception.</span>
               </h2>
             </div>
             <div className="lg:max-w-md">
               <p className="text-sm sm:text-base text-neutral-400 font-light leading-relaxed mb-6">
-                Découvrez les 5 collections créées pour l’agence scénographique <em>Le Monde Aime</em> : Fugace Studio, Irrévérence, Maison Anomalie, Maison Désordre et Orbite & Incartade.
+                Découvrez la collection intégrale conçue pour l’agence scénographique <em>Le Monde Aime</em> : du micro-wedding intimiste au festival secret multi-jours, avec démonstrateur interactif, grille comparative et diagnostic sur-mesure.
               </p>
               <Link
                 to="/packages"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-white text-black text-xs uppercase tracking-[0.2em] font-semibold hover:bg-[#C5A059] transition"
               >
-                Explorer le Showcase Interactif <ArrowRight size={14} />
+                Explorer la Collection Complète <ArrowRight size={14} />
               </Link>
             </div>
           </div>
 
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+          <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
-              { id: 'fugace', num: '01', name: 'Fugace Studio', type: 'Jour J Brut', img: '/images/packages/fugace.jpg' },
-              { id: 'irreverence', num: '02', name: 'Irrévérence', type: 'Subversif Chrome', img: '/images/packages/irreverence.jpg' },
-              { id: 'anomalie', num: '03', name: 'Maison Anomalie', type: 'Onirisme Poétique', img: '/images/packages/anomalie.jpg' },
-              { id: 'desordre', num: '04', name: 'Maison Désordre', type: 'Baroque Festin', img: '/images/packages/desordre.jpg' },
-              { id: 'orbite', num: '05', name: 'Orbite & Incartade', type: 'Immersif Secret', img: '/images/packages/orbite.jpg' },
+              { id: 'fugace', num: '01', name: 'Fugace Studio', type: 'Jour J 24h', img: '/images/packages/fugace.jpg' },
+              { id: 'brut-epure', num: '02', name: 'Brut & Épure', type: 'Elopement', img: '/images/packages/brut-epure.jpg' },
+              { id: 'irreverence', num: '03', name: 'Irrévérence', type: 'Subversif', img: '/images/packages/irreverence.jpg' },
+              { id: 'nocturne-volcan', num: '04', name: 'Nocturne & Volcan', type: 'Party Focus', img: '/images/packages/nocturne-volcan.jpg' },
+              { id: 'anomalie', num: '05', name: 'Maison Anomalie', type: 'Surréalisme', img: '/images/packages/anomalie.jpg' },
+              { id: 'ciel-oublie', num: '06', name: 'Ciel Oublié', type: 'Éco-Luxe', img: '/images/packages/ciel-oublie.jpg' },
+              { id: 'solstice-hiver', num: '07', name: 'Solstice d’Hiver', type: 'Warm Luxury', img: '/images/packages/solstice-hiver.jpg' },
+              { id: 'theatre-mirage', num: '08', name: 'Théâtre & Mirage', type: 'Opéra Vivant', img: '/images/packages/theatre-mirage.jpg' },
+              { id: 'desordre', num: '09', name: 'Maison Désordre', type: 'Multi-Day 2J', img: '/images/packages/desordre.jpg' },
+              { id: 'nomade-horizon', num: '10', name: 'Nomade & Horizon', type: 'Destination', img: '/images/packages/nomade-horizon.jpg' },
+              { id: 'archipel-secret', num: '11', name: 'Archipel Secret', type: 'Pop-Up 3D', img: '/images/packages/archipel-secret.jpg' },
+              { id: 'orbite', num: '12', name: 'Orbite & Incartade', type: 'Haute Couture', img: '/images/packages/orbite.jpg' },
             ].map((p) => (
               <Link
                 key={p.id}
@@ -136,9 +143,9 @@ export default function Landing() {
               >
                 <img src={p.img} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="text-[10px] font-mono text-[#C5A059]">{p.num} // {p.type}</div>
-                  <div className="text-sm font-semibold text-white mt-0.5 group-hover:underline">{p.name}</div>
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <div className="text-[9px] font-mono text-[#C5A059]">{p.num} // {p.type}</div>
+                  <div className="text-xs font-semibold text-white mt-0.5 group-hover:underline truncate">{p.name}</div>
                 </div>
               </Link>
             ))}
