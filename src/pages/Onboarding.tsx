@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Check, Loader2, MapPin, CalendarDays, Heart, Pal
 import { apiSend, slugify, formatDateLong, daysUntil } from '../lib/api';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 import type { WeddingSite } from '../lib/types';
+import VisionImage from '../components/vision/VisionImage';
 
 const SECTION_DEFAULTS = [
   { key: 'hero', title: 'Accueil' },
@@ -60,7 +61,7 @@ export default function Onboarding() {
     { icon: Heart, label: 'Les mariés' },
     { icon: CalendarDays, label: 'La date' },
     { icon: MapPin, label: 'Le lieu' },
-    { icon: Palette, label: 'Le style' },
+    { icon: Palette, label: 'L’environnement' },
   ];
 
   const canNext = () => {
@@ -81,7 +82,7 @@ export default function Onboarding() {
       const site = await apiSend<WeddingSite>('/api/wedding-sites', 'POST', {
         slug, partner1: partner1.trim(), partner2: partner2.trim(), wedding_date: date,
         venue: venue.trim(), city: city.trim(), style, phase: 'avant',
-        typography: 'editorial', accent_color: theme.accent, button_style: 'pill',
+        typography: 'spatial', accent_color: theme.accent, button_style: 'pill',
         shape: 'soft', layout: 'magazine', animation_level: 'fluide',
         hero_photo: theme.image, hero_title: `${partner1.trim()} & ${partner2.trim()}`,
         hero_subtitle: 'Nous nous marions',
@@ -135,106 +136,149 @@ export default function Onboarding() {
     }
   };
 
-  const inputCls = 'w-full px-6 py-4 rounded-2xl bg-white border border-black/10 text-lg outline-none focus:border-black/40 transition placeholder:text-neutral-300';
-
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A] flex flex-col" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <nav className="min-h-[68px] flex items-center justify-between gap-3 px-4 sm:px-8 py-3 border-b border-black/5 bg-[#FAF8F5]/80 backdrop-blur-xl sticky top-0 z-40 flex-wrap">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px]" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>W</span>
-          <span className="text-[13px] tracking-[0.3em] uppercase font-medium hidden sm:inline">Wedding Site</span>
-        </Link>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {steps.map((s, i) => (
-            <div key={s.label} className="flex items-center gap-1.5 sm:gap-2">
-              <div className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-[12px] sm:text-[13px] transition ${i === step ? 'bg-neutral-900 text-white' : i < step ? 'bg-emerald-600 text-white' : 'bg-black/5 text-neutral-400'}`}>
-                {i < step ? <Check size={14} /> : <s.icon size={14} />}
-                <span className="hidden sm:inline">{s.label}</span>
+    <div className="vp-env flex min-h-screen flex-col">
+      {/* Navigation : capsule de verre + progression */}
+      <nav className="sticky top-3 z-40 mx-auto w-[calc(100%-1rem)] max-w-5xl sm:top-4">
+        <div className="vp-glass vp-spec flex flex-wrap items-center justify-between gap-3 rounded-[26px] px-4 py-2.5 sm:px-5">
+          <Link to="/" className="flex items-center gap-2.5">
+            <span className="vp-glyph h-8 w-8 rounded-full text-[12px] font-semibold">W</span>
+            <span className="vp-title hidden text-[14px] sm:inline">Wedding Site</span>
+          </Link>
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            {steps.map((s, i) => (
+              <div key={s.label} className="flex items-center gap-1 sm:gap-1.5">
+                <div
+                  className={`flex items-center gap-2 rounded-full px-2.5 py-1.5 text-[12px] font-medium transition-all duration-500 sm:px-3.5 ${
+                    i === step
+                      ? 'bg-[var(--vp-ink)] text-white'
+                      : i < step
+                        ? 'bg-[var(--vp-green)]/90 text-white'
+                        : 'bg-black/[0.05] text-[var(--vp-muted)]'
+                  }`}
+                >
+                  {i < step ? <Check size={14} /> : <s.icon size={14} />}
+                  <span className="hidden sm:inline">{s.label}</span>
+                </div>
+                {i < steps.length - 1 && <span className="h-px w-1.5 bg-black/15 sm:w-5" />}
               </div>
-              {i < steps.length - 1 && <div className="w-2 sm:w-6 h-px bg-black/10" />}
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="vp-num hidden text-[13px] text-[var(--vp-muted)] md:block">{step + 1} / 4</div>
         </div>
-        <div className="hidden md:block text-[13px] text-neutral-400 tabular-nums">{step + 1} / 4</div>
       </nav>
 
-      <div className="flex-1 flex items-center justify-center px-5 sm:px-8 py-10">
+      <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
         <div className="w-full max-w-3xl">
           <AnimatePresence mode="wait">
             {step === 0 && (
-              <motion.div key="s0" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Qui se marie ?</h1>
-                <p className="mt-3 text-center text-neutral-500">Vos prénoms, tels que vous voulez les voir en grand.</p>
-                <div className="mt-10 grid sm:grid-cols-2 gap-4">
+              <motion.div key="s0" initial={{ opacity: 0, y: 26, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.985 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
+                <div className="text-center">
+                  <div className="vp-eyebrow">Étape 1 · Les mariés</div>
+                  <h1 className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 5.4vw, 3.1rem)' }}>Qui se marie ?</h1>
+                  <p className="vp-body mx-auto mt-3 max-w-md">Vos prénoms, tels que vous voulez les voir en grand.</p>
+                </div>
+                <div className="mt-10 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Premier prénom</label>
-                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className={inputCls} style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.6rem' }} />
+                    <label className="vp-label ml-1">Premier prénom</label>
+                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
                   </div>
                   <div>
-                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Second prénom</label>
-                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className={inputCls} style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.6rem' }} />
+                    <label className="vp-label ml-1">Second prénom</label>
+                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className="vp-field !py-5 !text-[1.7rem] !font-semibold" />
                   </div>
                 </div>
                 {(partner1 || partner2) && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 text-center">
-                    <div className="text-[11px] tracking-[0.3em] uppercase text-neutral-400">Aperçu</div>
-                    <div className="mt-2 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2.4rem, 7vw, 4rem)' }}>{partner1 || '…'} <span className="italic text-[#8A6D4B]">&</span> {partner2 || '…'}</div>
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="vp-glass vp-spec mt-8 rounded-[26px] px-6 py-8 text-center">
+                    <div className="vp-eyebrow">Aperçu</div>
+                    <div className="vp-title mt-2" style={{ fontSize: 'clamp(2.2rem, 6.4vw, 3.6rem)' }}>
+                      {partner1 || '…'}{' '}
+                      <span className="text-[var(--vp-muted-2)]">&amp;</span>{' '}
+                      {partner2 || '…'}
+                    </div>
                   </motion.div>
                 )}
               </motion.div>
             )}
+
             {step === 1 && (
-              <motion.div key="s1" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }} className="text-center">
-                <h1 className="font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Quelle est la date ?</h1>
-                <p className="mt-3 text-neutral-500">Le compte à rebours démarre dès aujourd’hui.</p>
-                <div className="mt-10 max-w-md mx-auto">
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-6 py-5 rounded-2xl bg-white border border-black/10 text-xl outline-none focus:border-black/40 transition text-center" style={{ fontFamily: 'Fraunces, Georgia, serif' }} />
+              <motion.div key="s1" initial={{ opacity: 0, y: 26, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.985 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} className="text-center">
+                <div className="vp-eyebrow">Étape 2 · La date</div>
+                <h1 className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 5.4vw, 3.1rem)' }}>Quelle est la date ?</h1>
+                <p className="vp-body mx-auto mt-3 max-w-md">Le compte à rebours démarre dès aujourd’hui.</p>
+                <div className="mx-auto mt-10 max-w-md">
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="vp-field vp-num !py-5 !text-center !text-[1.35rem] !font-semibold" />
                   {date && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 p-6 rounded-3xl bg-white border border-black/10">
-                      <div className="capitalize text-xl" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{formatDateLong(date)}</div>
-                      <div className="mt-1.5 inline-flex items-center gap-2 text-sm text-[#8A6D4B]"><CalendarDays size={15} /> J-{daysUntil(date)} avant le grand jour</div>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="vp-glass vp-spec mt-6 rounded-[26px] p-6">
+                      <div className="vp-h2 text-[19px] capitalize">{formatDateLong(date)}</div>
+                      <div className="vp-chip mt-3 !text-[var(--vp-accent)]">
+                        <CalendarDays size={15} /> <span className="vp-num">J-{daysUntil(date)}</span> avant le grand jour
+                      </div>
                     </motion.div>
                   )}
                 </div>
               </motion.div>
             )}
+
             {step === 2 && (
-              <motion.div key="s2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Où cela se passe ?</h1>
-                <p className="mt-3 text-center text-neutral-500">Le lieu qui accueillera votre histoire.</p>
-                <div className="mt-10 max-w-xl mx-auto space-y-4">
+              <motion.div key="s2" initial={{ opacity: 0, y: 26, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.985 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
+                <div className="text-center">
+                  <div className="vp-eyebrow">Étape 3 · Le lieu</div>
+                  <h1 className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 5.4vw, 3.1rem)' }}>Où cela se passe ?</h1>
+                  <p className="vp-body mx-auto mt-3 max-w-md">Le lieu qui accueillera votre histoire.</p>
+                </div>
+                <div className="mx-auto mt-10 max-w-xl space-y-4">
                   <div>
-                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Lieu de réception</label>
-                    <input value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Château de Chantilly" autoFocus className={inputCls} />
+                    <label className="vp-label ml-1">Lieu de réception</label>
+                    <input value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Château de Chantilly" autoFocus className="vp-field" />
                   </div>
                   <div>
-                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Ville</label>
-                    <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Chantilly, Oise" className={inputCls} />
+                    <label className="vp-label ml-1">Ville</label>
+                    <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Chantilly, Oise" className="vp-field" />
                   </div>
                   {venue && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 p-5 rounded-2xl bg-white border border-black/10">
-                      <span className="w-10 h-10 rounded-full bg-[#8A6D4B]/10 text-[#8A6D4B] flex items-center justify-center shrink-0"><MapPin size={18} /></span>
-                      <div><div className="font-medium">{venue}</div><div className="text-sm text-neutral-400">{city || 'France'}</div></div>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="vp-glass vp-spec flex items-center gap-3.5 rounded-[22px] p-5">
+                      <span className="vp-glyph h-10 w-10 shrink-0 rounded-[14px]">
+                        <MapPin size={17} />
+                      </span>
+                      <div>
+                        <div className="text-[15px] font-semibold">{venue}</div>
+                        <div className="vp-caption">{city || 'France'}</div>
+                      </div>
                     </motion.div>
                   )}
                 </div>
               </motion.div>
             )}
+
             {step === 3 && (
-              <motion.div key="s3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Quel style vous ressemble ?</h1>
-                <p className="mt-3 text-center text-neutral-500">Huit directions artistiques. Une seule évidence.</p>
-                <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <motion.div key="s3" initial={{ opacity: 0, y: 26, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.985 }} transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}>
+                <div className="text-center">
+                  <div className="vp-eyebrow">Étape 4 · L’environnement</div>
+                  <h1 className="vp-title mt-3" style={{ fontSize: 'clamp(2rem, 5.4vw, 3.1rem)' }}>Quel espace vous ressemble ?</h1>
+                  <p className="vp-body mx-auto mt-3 max-w-md">Huit environnements spatiaux. Une seule évidence.</p>
+                </div>
+                <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
                   {WEDDING_STYLES.map((s) => (
-                    <button key={s.id} onClick={() => setStyle(s.id)} className={`relative aspect-[3/4] rounded-3xl overflow-hidden text-left transition ring-offset-4 ring-offset-[#FAF8F5] ${style === s.id ? 'ring-[3px] ring-neutral-900 scale-[1.02]' : 'hover:scale-[1.02]'}`}>
-                      <img src={s.image} alt={s.name} className="absolute inset-0 w-full h-full object-cover" />
-                      <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-                      {style === s.id && (
-                        <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white flex items-center justify-center"><Check size={16} className="text-neutral-900" /></span>
-                      )}
-                      <span className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <span className="block text-lg font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{s.name}</span>
-                        <span className="block text-[11px] text-white/75 mt-0.5">{s.tagline}</span>
+                    <button
+                      key={s.id}
+                      onClick={() => setStyle(s.id)}
+                      className={`vp-press text-left transition-all duration-500 ${
+                        style === s.id ? 'scale-[1.01] ring-2 ring-[var(--vp-accent)] ring-offset-4 ring-offset-transparent' : 'hover:scale-[1.01]'
+                      }`}
+                      style={{ borderRadius: 14 }}
+                    >
+                      <span className="relative block overflow-hidden rounded-[14px]">
+                        <VisionImage src={s.image} alt={s.name} fallbackLabel={s.name} aura={s.aura} className="aspect-[3/4] w-full object-cover" />
+                        {style === s.id && (
+                          <span className="absolute right-2.5 top-2.5 flex h-7 w-7 items-center justify-center rounded-full bg-white">
+                            <Check size={15} className="text-[var(--vp-accent)]" strokeWidth={2.6} />
+                          </span>
+                        )}
+                      </span>
+                      <span className="block px-0.5 pt-2.5">
+                        <span className="vp-title block text-[16px]">{s.name}</span>
+                        <span className="vp-caption mt-0.5 block !text-[11.5px]">{s.tagline}</span>
                       </span>
                     </button>
                   ))}
@@ -243,17 +287,28 @@ export default function Onboarding() {
             )}
           </AnimatePresence>
 
-          {error && <p className="mt-6 text-center text-sm text-red-500">{error}</p>}
+          {error && (
+            <p className="mt-6 rounded-[16px] bg-[color-mix(in_srgb,var(--vp-red)_12%,transparent)] px-4 py-3 text-center text-sm font-medium text-[#B3261E]">{error}</p>
+          )}
 
           <div className="mt-10 flex items-center justify-between gap-4">
             {step > 0 ? (
-              <button onClick={() => setStep(step - 1)} disabled={creating} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-black/15 text-sm font-medium hover:border-black/40 transition disabled:opacity-50"><ArrowLeft size={16} /> Retour</button>
-            ) : <Link to="/" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-black/15 text-sm font-medium hover:border-black/40 transition"><ArrowLeft size={16} /> Accueil</Link>}
-            {step < 3 ? (
-              <button onClick={() => canNext() && setStep(step + 1)} disabled={!canNext()} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-700 transition disabled:opacity-30 disabled:cursor-not-allowed">Continuer <ArrowRight size={16} /></button>
+              <button onClick={() => setStep(step - 1)} disabled={creating} className="vp-btn vp-btn-glass vp-press disabled:opacity-40">
+                <ArrowLeft size={16} /> Retour
+              </button>
             ) : (
-              <button onClick={create} disabled={!canNext() || creating} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#8A6D4B] text-white text-sm font-medium hover:bg-[#75593C] transition disabled:opacity-50 disabled:cursor-not-allowed">
-                {creating ? <><Loader2 size={16} className="animate-spin" /> Création…</> : <>Créer mon site <ArrowRight size={16} /></>}</button>
+              <Link to="/" className="vp-btn vp-btn-glass vp-press">
+                <ArrowLeft size={16} /> Accueil
+              </Link>
+            )}
+            {step < 3 ? (
+              <button onClick={() => canNext() && setStep(step + 1)} disabled={!canNext()} className="vp-btn vp-press !px-7">
+                Continuer <ArrowRight size={16} />
+              </button>
+            ) : (
+              <button onClick={create} disabled={!canNext() || creating} className="vp-btn vp-press !px-7">
+                {creating ? <><Loader2 size={16} className="animate-spin" /> Création…</> : <>Créer mon site <ArrowRight size={16} /></>}
+              </button>
             )}
           </div>
         </div>

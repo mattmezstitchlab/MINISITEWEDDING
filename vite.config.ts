@@ -21,5 +21,16 @@ export default defineConfig(async ({ mode }) => {
     plugins,
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
     define: processEnvDefines,
+    server: {
+      host: true,
+      port: 5173,
+      // Permet l’aperçu en ligne (hôtes proxifiés) en développement.
+      allowedHosts: true as const,
+    },
+    preview: {
+      host: true,
+      port: 4173,
+      allowedHosts: true as const,
+    },
   };
 })

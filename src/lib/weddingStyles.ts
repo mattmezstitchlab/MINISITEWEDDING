@@ -11,56 +11,66 @@ export interface WeddingStyle {
   line: string;
   dark: boolean;
   image: string;
+  /** Dégradé neutre de secours quand une photo manque (aucune teinte colorée) */
+  aura: [string, string, string];
 }
 
 export const WEDDING_STYLES: WeddingStyle[] = [
   {
-    id: 'editorial', name: 'Editorial', tagline: 'Comme un magazine de mode',
-    description: 'Titres majestueux, grille magazine, photographie grand format.',
-    bg: '#FAF7F2', surface: '#FFFFFF', ink: '#1B1B1B', muted: '#8A857C', accent: '#1B1B1B', line: '#E8E2D6',
+    id: 'editorial', name: 'Atelier', tagline: 'Lumière froide, verre pur',
+    description: 'Un espace clair et net : verre régulier, gris bleuté, profondeur douce.',
+    bg: '#FFFFFF', surface: '#FBFBFD', ink: '#101322', muted: '#6A7086', accent: '#16171A', line: '#E4E6EB',
     dark: false, image: '/images/couple-paris.jpg',
+    aura: ['#EDEEF1', '#F7F8FA', '#E4E6EB'],
   },
   {
-    id: 'minimal', name: 'Minimal', tagline: 'Le silence est un luxe',
-    description: 'Blanc absolu, beaucoup d’air, typographie discrète.',
-    bg: '#FFFFFF', surface: '#F7F7F5', ink: '#111111', muted: '#9A9A98', accent: '#111111', line: '#ECECEA',
+    id: 'minimal', name: 'Minimal', tagline: 'Le silence est un matériau',
+    description: 'Blanc absolu, verre ultra-fin, beaucoup d’air. Rien de plus.',
+    bg: '#F7F8FA', surface: '#FFFFFF', ink: '#0E1015', muted: '#8A8D97', accent: '#2A2E3A', line: '#E7E9EF',
     dark: false, image: '/images/bouquet.jpg',
+    aura: ['#F2F3F5', '#FFFFFF', '#ECEDEF'],
   },
   {
-    id: 'romantique', name: 'Romantique', tagline: 'Douceur rose poudré',
-    description: 'Teintes tendres, serif délicat, atmosphère délicate.',
-    bg: '#FDF6F3', surface: '#FFFFFF', ink: '#3E2E2E', muted: '#A68F8A', accent: '#B76E79', line: '#F0DDD6',
+    id: 'romantique', name: 'Romantique', tagline: 'Aurore rose poudré',
+    description: 'Halos tendres, verre teinté de rose, atmosphère délicate.',
+    bg: '#FAF1F4', surface: '#FFF8FA', ink: '#2E2129', muted: '#9C8590', accent: '#D2748F', line: '#F0DDE4',
     dark: false, image: '/images/bouquet.jpg',
+    aura: ['#F4F0F1', '#FBF8F9', '#EAE5E7'],
   },
   {
     id: 'nature', name: 'Nature', tagline: 'Garden wedding',
-    description: 'Verts sauge, matières brutes, esprit bohème chic.',
-    bg: '#F5F6F0', surface: '#FFFFFF', ink: '#2C3325', muted: '#8B917F', accent: '#5B6E4E', line: '#DFE2D2',
+    description: 'Verts sauge, verre végétal, matière brute et lumière filtrée.',
+    bg: '#F0F5F0', surface: '#F8FBF8', ink: '#1F2A20', muted: '#7E8C7C', accent: '#5C8264', line: '#DCE6DC',
     dark: false, image: '/images/garden.jpg',
+    aura: ['#EFF1EE', '#F8FAF7', '#E6E9E4'],
   },
   {
-    id: 'chic', name: 'Chic', tagline: 'Black tie, bougies, doré',
-    description: 'Noir profond, doré discret, élégance nocturne.',
-    bg: '#121212', surface: '#1C1C1C', ink: '#F5F1E8', muted: '#9C958A', accent: '#C6A15B', line: '#2E2C28',
+    id: 'chic', name: 'Chic', tagline: 'Black tie, verre fumé',
+    description: 'Environnement nocturne profond, halos dorés, verre sombre.',
+    bg: '#0C0D14', surface: '#14161F', ink: '#F2F0EA', muted: '#9A9689', accent: '#D8B26A', line: '#262936',
     dark: true, image: '/images/table-noir.jpg',
+    aura: ['#2A2B2F', '#1B1C1F', '#33343A'],
   },
   {
     id: 'mediterraneen', name: 'Méditerranéen', tagline: 'Soleil, mer, terracotta',
-    description: 'Bleu profond, terre cuite, lumière du sud.',
-    bg: '#F7F3E9', surface: '#FFFFFF', ink: '#22333B', muted: '#93876F', accent: '#C1663E', line: '#E5DAC2',
+    description: 'Bleu profond, terre cuite, lumière du sud sur le verre.',
+    bg: '#EFF4F7', surface: '#F8FBFD', ink: '#16262E', muted: '#7E8B93', accent: '#C1663E', line: '#DCE6EC',
     dark: false, image: '/images/terrasse.jpg',
+    aura: ['#EEF1F3', '#F8FAFB', '#E5E9EC'],
   },
   {
     id: 'noir-blanc', name: 'Noir & Blanc', tagline: 'Intemporel absolu',
-    description: 'Photographie monochrome, contraste franc, pur.',
-    bg: '#FFFFFF', surface: '#F4F4F4', ink: '#0A0A0A', muted: '#8B8B8B', accent: '#0A0A0A', line: '#E2E2E2',
+    description: 'Contraste franc, verre neutre, aucune couleur. Pur.',
+    bg: '#F4F4F6', surface: '#FFFFFF', ink: '#0A0A0C', muted: '#83848A', accent: '#16171C', line: '#E2E2E6',
     dark: false, image: '/images/noir-blanc.jpg',
+    aura: ['#EDEDEF', '#FAFAFA', '#E3E3E5'],
   },
   {
     id: 'modern-romance', name: 'Modern Romance', tagline: 'Audacieux et tendre',
-    description: 'Baie profonde, formes généreuses, esprit contemporain.',
-    bg: '#FBF6F8', surface: '#FFFFFF', ink: '#331E28', muted: '#A78B96', accent: '#93354F', line: '#EEDDE3',
+    description: 'Baie profonde, halos violets, verre généreux et contemporain.',
+    bg: '#F8F1F6', surface: '#FFF8FC', ink: '#28162A', muted: '#9B8296', accent: '#8E3C63', line: '#EEDCE8',
     dark: false, image: '/images/danse.jpg',
+    aura: ['#F3F0F2', '#FBF9FA', '#E9E5E8'],
   },
 ];
 
@@ -68,33 +78,37 @@ export function styleById(id: string): WeddingStyle {
   return WEDDING_STYLES.find((s) => s.id === id) ?? WEDDING_STYLES[0];
 }
 
-export interface TypoOption { id: string; name: string; hint: string; heading: string; body: string; }
+export interface TypoOption { id: string; name: string; hint: string; heading: string; body: string; weight: number; }
 
 export const TYPO_OPTIONS: TypoOption[] = [
-  { id: 'serif', name: 'Serif', hint: 'Classique et littéraire', heading: '"Cormorant Garamond", Georgia, serif', body: 'Inter, system-ui, sans-serif' },
-  { id: 'sans', name: 'Sans Serif', hint: 'Net et contemporain', heading: 'Inter, system-ui, sans-serif', body: 'Inter, system-ui, sans-serif' },
-  { id: 'editorial', name: 'Editorial', hint: 'Magazine haut de gamme', heading: 'Fraunces, Georgia, serif', body: 'Inter, system-ui, sans-serif' },
-  { id: 'modern', name: 'Modern', hint: 'Géométrique et affirmé', heading: 'Manrope, system-ui, sans-serif', body: 'Manrope, system-ui, sans-serif' },
+  { id: 'spatial', name: 'Spatial', hint: 'SF, net et lumineux', heading: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif', body: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif', weight: 620 },
+  { id: 'sans', name: 'Sans Serif', hint: 'Contemporain, resserré', heading: 'Inter, system-ui, sans-serif', body: 'Inter, system-ui, sans-serif', weight: 600 },
+  { id: 'editorial', name: 'Editorial', hint: 'Magazine haut de gamme', heading: 'Fraunces, Georgia, serif', body: 'Inter, system-ui, sans-serif', weight: 350 },
+  { id: 'serif', name: 'Serif', hint: 'Classique et littéraire', heading: '"Cormorant Garamond", Georgia, serif', body: 'Inter, system-ui, sans-serif', weight: 400 },
+  { id: 'modern', name: 'Modern', hint: 'Géométrique et affirmé', heading: 'Manrope, system-ui, sans-serif', body: 'Manrope, system-ui, sans-serif', weight: 650 },
 ];
 
-export function fontsFor(typoId: string): { heading: string; body: string } {
-  const found = TYPO_OPTIONS.find((t) => t.id === typoId);
-  if (found) return { heading: found.heading, body: found.body };
-  return { heading: 'Fraunces, Georgia, serif', body: 'Inter, system-ui, sans-serif' };
+export function typoById(id: string): TypoOption {
+  return TYPO_OPTIONS.find((t) => t.id === id) ?? TYPO_OPTIONS[0];
 }
 
-export const ACCENT_PRESETS = ['#1B1B1B', '#8A6D4B', '#B76E79', '#5B6E4E', '#C6A15B', '#2E6E8E', '#C1663E', '#93354F'];
+export function fontsFor(typoId: string): { heading: string; body: string; weight: number } {
+  const found = typoById(typoId);
+  return { heading: found.heading, body: found.body, weight: found.weight };
+}
+
+export const ACCENT_PRESETS = ['#16171A', '#5A5D66', '#8A8D96', '#5C8264', '#C1663E', '#D8B26A', '#D2748F', '#8E3C63'];
 
 export const BUTTON_OPTIONS = [
-  { id: 'pill', name: 'Arrondi', desc: 'Doux et accueillant' },
+  { id: 'pill', name: 'Capsule', desc: 'Signature visionOS' },
   { id: 'soft', name: 'Doux', desc: 'Coins légèrement arrondis' },
-  { id: 'square', name: 'Franc', desc: 'Angles droits, affirmé' },
+  { id: 'square', name: 'Franc', desc: 'Angles nets, affirmé' },
 ];
 
 export const SHAPE_OPTIONS = [
-  { id: 'soft', name: 'Douce', desc: 'Cartes arrondies' },
+  { id: 'soft', name: 'Continue', desc: 'Courbure visionOS' },
   { id: 'sharp', name: 'Franche', desc: 'Angles nets' },
-  { id: 'round', name: 'Généreuse', desc: 'Très arrondie' },
+  { id: 'round', name: 'Généreuse', desc: 'Très enveloppante' },
 ];
 
 export const LAYOUT_OPTIONS = [
@@ -121,13 +135,24 @@ export const PHASES = [
 ];
 
 export function buttonRadius(buttonStyle: string): string {
-  if (buttonStyle === 'square') return '4px';
-  if (buttonStyle === 'soft') return '12px';
+  if (buttonStyle === 'square') return '6px';
+  if (buttonStyle === 'soft') return '14px';
   return '999px';
 }
 
 export function cardRadius(shape: string): string {
-  if (shape === 'sharp') return '2px';
-  if (shape === 'round') return '28px';
-  return '16px';
+  if (shape === 'sharp') return '4px';
+  if (shape === 'round') return '34px';
+  return '22px';
+}
+
+/**
+ * Variables CSS d’un site de mariage.
+ *
+ * Le fond reste blanc (ou graphite neutre pour un thème sombre) : aucune
+ * teinte colorée n’est appliquée à l’environnement. Seule la couleur
+ * d’accent — celle des contrôles — suit le mariage choisi.
+ */
+export function envVars(theme: WeddingStyle, accent: string): Record<string, string> {
+  return { '--vp-accent': accent || theme.accent };
 }

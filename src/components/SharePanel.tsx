@@ -38,40 +38,48 @@ export default function SharePanel({ site, onPublishedChange }: Props) {
 
   return (
     <div className="text-center">
-      <div className="mx-auto w-14 h-14 rounded-full bg-neutral-900 text-white flex items-center justify-center"><Share2 size={22} strokeWidth={1.75} /></div>
-      <h3 className="mt-4 text-2xl font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>Votre site est prêt.</h3>
-      <p className="mt-1.5 text-sm text-neutral-500">Partagez-le avec vos invités, partout.</p>
-      <div className="mt-6 p-5 rounded-2xl bg-white border border-black/10">
-        <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400">Votre adresse personnalisée</div>
-        <div className="mt-2 text-xl font-medium tabular-nums break-all" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{url}</div>
+      <span className="vp-glyph mx-auto flex h-14 w-14 items-center justify-center rounded-[20px]">
+        <Share2 size={22} strokeWidth={1.8} />
+      </span>
+      <h3 className="vp-h2 mt-4 text-[24px]">Votre site est prêt.</h3>
+      <p className="vp-caption mt-1.5">Partagez-le avec vos invités, partout.</p>
+
+      <div className="vp-glass vp-spec mt-6 rounded-[24px] p-5">
+        <div className="vp-eyebrow">Votre adresse personnalisée</div>
+        <div className="vp-num mt-2 break-all text-[19px] font-semibold tracking-tight">{url}</div>
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <button onClick={copy} className="flex items-center justify-center gap-2 py-3 rounded-full bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-700 transition">
-            {copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Copié' : 'Copier le lien'}
+          <button onClick={copy} className="vp-btn vp-press !py-3 !text-[13.5px]">
+            {copied ? <Check size={16} strokeWidth={2.5} /> : <Copy size={16} />}{copied ? 'Copié' : 'Copier le lien'}
           </button>
-          <Link to={`/p/${site.slug}`} target="_blank" className="flex items-center justify-center gap-2 py-3 rounded-full border border-black/15 text-sm font-medium hover:border-black/40 transition">
+          <Link to={`/p/${site.slug}`} target="_blank" className="vp-btn vp-btn-glass vp-press !py-3 !text-[13.5px]">
             <Eye size={16} /> Prévisualiser
           </Link>
         </div>
       </div>
-      <div className="mt-4 p-6 rounded-2xl bg-white border border-black/10">
-        <div className="inline-block p-4 bg-white rounded-2xl border border-black/10 shadow-sm">
-          <QRCodeSVG value={fullUrl} size={160} fgColor="#1A1A1A" level="M" />
+
+      <div className="vp-glass vp-spec mt-4 rounded-[24px] p-6">
+        <div className="inline-block rounded-[14px] border border-black/8 bg-white p-4">
+          <QRCodeSVG value={fullUrl} size={160} fgColor="#0B0C12" level="M" />
         </div>
-        <div className="mt-3 text-[13px] text-neutral-500">QR code élégant, prêt à imprimer<br />sur vos invitations papier.</div>
-        <button onClick={() => window.print()} className="mt-3 inline-flex items-center gap-2 text-[13px] text-neutral-600 underline underline-offset-4 hover:text-black"><Printer size={14} /> Imprimer le QR code</button>
+        <div className="vp-caption mt-3">QR code élégant, prêt à imprimer<br />sur vos invitations papier.</div>
+        <button onClick={() => window.print()} className="vp-press mt-3 inline-flex items-center gap-2 text-[13px] font-medium text-[var(--vp-ink-soft)] underline underline-offset-4 transition hover:text-[var(--vp-accent)]">
+          <Printer size={14} /> Imprimer le QR code
+        </button>
       </div>
+
       <div className="mt-4 grid grid-cols-3 gap-2">
         {channels.map((c) => (
-          <a key={c.name} href={c.href} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-1.5 py-4 rounded-2xl bg-white border border-black/10 hover:border-black/40 transition">
-            <c.icon size={19} strokeWidth={1.75} />
-            <span className="text-[12px] font-medium">{c.name}</span>
+          <a key={c.name} href={c.href} target="_blank" rel="noreferrer" className="vp-glass vp-lift flex flex-col items-center gap-1.5 rounded-[16px] py-4">
+            <c.icon size={19} strokeWidth={1.75} className="text-[var(--vp-ink)]" />
+            <span className="text-[12px] font-semibold">{c.name}</span>
           </a>
         ))}
       </div>
-      <button onClick={() => onPublishedChange(!site.published)} className={`mt-4 w-full py-4 rounded-full text-sm font-medium tracking-wide transition flex items-center justify-center gap-2 ${site.published ? 'bg-emerald-600 text-white' : 'bg-neutral-900 text-white hover:bg-neutral-700'}`}>
+
+      <button onClick={() => onPublishedChange(!site.published)} className="vp-btn vp-press mt-4 w-full !py-4">
         <Globe size={16} />{site.published ? 'Site publié — cliquer pour suspendre' : 'Publier mon site'}
       </button>
-      {!site.published && <p className="mt-2 text-[12px] text-neutral-400">Votre site est en brouillon, visible uniquement par vous.</p>}
+      {!site.published && <p className="vp-caption mt-2 !text-[12px]">Votre site est en brouillon, visible uniquement par vous.</p>}
     </div>
   );
 }
