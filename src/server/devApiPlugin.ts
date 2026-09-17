@@ -48,7 +48,7 @@ function getInitialData(): StorageData {
         city: 'Chantilly, Oise',
         style: 'editorial',
         phase: 'avant',
-        typography: 'editorial',
+        typography: 'neo-grotesk',
         accent_color: '#8A6D4B',
         button_style: 'pill',
         shape: 'soft',

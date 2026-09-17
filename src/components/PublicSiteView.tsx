@@ -81,7 +81,7 @@ function RsvpForm({ site, events, accent, headingFont, btnRadius }: { site: Wedd
     }
   };
 
-  const field = 'w-full px-5 py-3.5 text-[15px] outline-none transition border bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-white/40';
+  const field = 'w-full px-4 sm:px-5 py-3 sm:py-3.5 text-[14px] sm:text-[15px] outline-none transition border bg-white/5 border-white/15 text-white placeholder:text-white/40 focus:border-white/40';
 
   if (sent) {
     return (
@@ -315,9 +315,9 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
           <Countdown target={site.wedding_date} accent={accent} light fontFamily={fonts.heading} />
         </motion.div>
         {!preview && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.35 }} className="mt-10 flex flex-col sm:flex-row items-center gap-3">
-            <a href="#sec-rsvp" className="px-9 py-4 text-white text-sm tracking-[0.2em] uppercase font-medium" style={{ background: accent, borderRadius: btnR }}>Répondre à l’invitation</a>
-            <a href="#sec-programme" className="px-9 py-4 text-white text-sm tracking-[0.2em] uppercase border border-white/40 backdrop-blur-sm" style={{ borderRadius: btnR }}>Programme</a>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.35 }} className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center gap-3 w-full max-w-xs sm:max-w-none">
+            <a href="#sec-rsvp" className="w-full sm:w-auto px-7 py-3.5 sm:px-9 sm:py-4 text-white text-xs sm:text-sm tracking-[0.18em] uppercase font-semibold text-center" style={{ background: accent, borderRadius: btnR }}>Répondre à l’invitation</a>
+            <a href="#sec-programme" className="w-full sm:w-auto px-7 py-3.5 sm:px-9 sm:py-4 text-white text-xs sm:text-sm tracking-[0.18em] uppercase border border-white/40 backdrop-blur-sm text-center font-medium" style={{ borderRadius: btnR }}>Programme</a>
           </motion.div>
         )}
       </div>
@@ -641,8 +641,8 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
   };
 
   return (
-    <div style={{ fontFamily: fonts.body, background: theme.bg }} className="min-h-screen">
-      <style>{`.rsvp-label{display:block;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;opacity:0.65;margin-bottom:8px;font-weight:500;}`}</style>
+    <div style={{ fontFamily: fonts.body, background: theme.bg }} className="min-h-screen overflow-x-hidden">
+      <style>{`.rsvp-label{display:block;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;opacity:0.65;margin-bottom:8px;font-weight:600;}`}</style>
       {ordered.map((s) => (
         <div key={s.section_key}>{wrap(s.section_key, renderers[s.section_key]?.() ?? null)}</div>
       ))}

@@ -39,11 +39,11 @@ export default function SharePanel({ site, onPublishedChange }: Props) {
   return (
     <div className="text-center">
       <div className="mx-auto w-14 h-14 rounded-full bg-neutral-900 text-white flex items-center justify-center"><Share2 size={22} strokeWidth={1.75} /></div>
-      <h3 className="mt-4 text-2xl font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>Votre site est prêt.</h3>
+      <h3 className="mt-4 text-2xl font-medium tracking-tight" style={{ fontFamily: '"Space Grotesk", "Hanken Grotesk", sans-serif' }}>Votre site est prêt.</h3>
       <p className="mt-1.5 text-sm text-neutral-500">Partagez-le avec vos invités, partout.</p>
       <div className="mt-6 p-5 rounded-2xl bg-white border border-black/10">
-        <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400">Votre adresse personnalisée</div>
-        <div className="mt-2 text-xl font-medium tabular-nums break-all" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{url}</div>
+        <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold">Votre adresse personnalisée</div>
+        <div className="mt-2 text-xl font-medium tabular-nums break-all tracking-tight" style={{ fontFamily: '"Space Grotesk", "Hanken Grotesk", sans-serif' }}>{url}</div>
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button onClick={copy} className="flex items-center justify-center gap-2 py-3 rounded-full bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-700 transition">
             {copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Copié' : 'Copier le lien'}

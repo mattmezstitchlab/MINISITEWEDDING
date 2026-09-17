@@ -6,6 +6,8 @@ import { apiSend, slugify, formatDateLong, daysUntil } from '../lib/api';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 import type { WeddingSite } from '../lib/types';
 
+const neoFont = '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif';
+
 const SECTION_DEFAULTS = [
   { key: 'hero', title: 'Accueil' },
   { key: 'histoire', title: 'Notre histoire' },
@@ -81,7 +83,7 @@ export default function Onboarding() {
       const site = await apiSend<WeddingSite>('/api/wedding-sites', 'POST', {
         slug, partner1: partner1.trim(), partner2: partner2.trim(), wedding_date: date,
         venue: venue.trim(), city: city.trim(), style, phase: 'avant',
-        typography: 'editorial', accent_color: theme.accent, button_style: 'pill',
+        typography: 'neo-grotesk', accent_color: theme.accent, button_style: 'pill',
         shape: 'soft', layout: 'magazine', animation_level: 'fluide',
         hero_photo: theme.image, hero_title: `${partner1.trim()} & ${partner2.trim()}`,
         hero_subtitle: 'Nous nous marions',
@@ -135,106 +137,106 @@ export default function Onboarding() {
     }
   };
 
-  const inputCls = 'w-full px-6 py-4 rounded-2xl bg-white border border-black/10 text-lg outline-none focus:border-black/40 transition placeholder:text-neutral-300';
+  const inputCls = 'w-full px-5 sm:px-6 py-3.5 sm:py-4 rounded-2xl bg-white border border-black/10 text-base sm:text-lg outline-none focus:border-black/40 transition placeholder:text-neutral-300';
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A] flex flex-col" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-      <nav className="min-h-[68px] flex items-center justify-between gap-3 px-4 sm:px-8 py-3 border-b border-black/5 bg-[#FAF8F5]/80 backdrop-blur-xl sticky top-0 z-40 flex-wrap">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px]" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>W</span>
-          <span className="text-[13px] tracking-[0.3em] uppercase font-medium hidden sm:inline">Wedding Site</span>
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A] flex flex-col overflow-x-hidden" style={{ fontFamily: neoFont }}>
+      <nav className="min-h-[64px] sm:min-h-[68px] flex items-center justify-between gap-2 px-3 sm:px-8 py-2.5 border-b border-black/5 bg-[#FAF8F5]/85 backdrop-blur-xl sticky top-0 z-40">
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px] font-semibold" style={{ fontFamily: neoFont }}>W</span>
+          <span className="text-[12px] sm:text-[13px] tracking-[0.25em] uppercase font-semibold hidden md:inline">Wedding Site</span>
         </Link>
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {steps.map((s, i) => (
-            <div key={s.label} className="flex items-center gap-1.5 sm:gap-2">
-              <div className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-[12px] sm:text-[13px] transition ${i === step ? 'bg-neutral-900 text-white' : i < step ? 'bg-emerald-600 text-white' : 'bg-black/5 text-neutral-400'}`}>
-                {i < step ? <Check size={14} /> : <s.icon size={14} />}
+            <div key={s.label} className="flex items-center gap-1 sm:gap-2">
+              <div className={`flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-[13px] font-medium transition ${i === step ? 'bg-neutral-900 text-white' : i < step ? 'bg-emerald-600 text-white' : 'bg-black/5 text-neutral-400'}`}>
+                {i < step ? <Check size={13} /> : <s.icon size={13} />}
                 <span className="hidden sm:inline">{s.label}</span>
               </div>
-              {i < steps.length - 1 && <div className="w-2 sm:w-6 h-px bg-black/10" />}
+              {i < steps.length - 1 && <div className="w-1.5 sm:w-6 h-px bg-black/10" />}
             </div>
           ))}
         </div>
-        <div className="hidden md:block text-[13px] text-neutral-400 tabular-nums">{step + 1} / 4</div>
+        <div className="text-[12px] sm:text-[13px] text-neutral-400 tabular-nums font-medium shrink-0">{step + 1} / 4</div>
       </nav>
 
-      <div className="flex-1 flex items-center justify-center px-5 sm:px-8 py-10">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-8 py-8 sm:py-12">
         <div className="w-full max-w-3xl">
           <AnimatePresence mode="wait">
             {step === 0 && (
-              <motion.div key="s0" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Qui se marie ?</h1>
-                <p className="mt-3 text-center text-neutral-500">Vos prénoms, tels que vous voulez les voir en grand.</p>
-                <div className="mt-10 grid sm:grid-cols-2 gap-4">
+              <motion.div key="s0" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Qui se marie ?</h1>
+                <p className="mt-2 text-center text-neutral-500 text-sm sm:text-base">Vos prénoms, tels que vous voulez les voir en grand.</p>
+                <div className="mt-8 sm:mt-10 grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Premier prénom</label>
-                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className={inputCls} style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.6rem' }} />
+                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold mb-2 ml-1">Premier prénom</label>
+                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className={inputCls} style={{ fontFamily: neoFont, fontSize: '1.4rem' }} />
                   </div>
                   <div>
-                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Second prénom</label>
-                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className={inputCls} style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.6rem' }} />
+                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold mb-2 ml-1">Second prénom</label>
+                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className={inputCls} style={{ fontFamily: neoFont, fontSize: '1.4rem' }} />
                   </div>
                 </div>
                 {(partner1 || partner2) && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 text-center">
-                    <div className="text-[11px] tracking-[0.3em] uppercase text-neutral-400">Aperçu</div>
-                    <div className="mt-2 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2.4rem, 7vw, 4rem)' }}>{partner1 || '…'} <span className="italic text-[#8A6D4B]">&</span> {partner2 || '…'}</div>
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 text-center p-6 rounded-3xl bg-white border border-black/5 shadow-sm">
+                    <div className="text-[10px] sm:text-[11px] tracking-[0.3em] uppercase text-neutral-400 font-semibold">Aperçu du titre</div>
+                    <div className="mt-2 font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(2rem, 6vw, 3.6rem)' }}>{partner1 || '…'} <span className="font-light text-[#8A6D4B]">&</span> {partner2 || '…'}</div>
                   </motion.div>
                 )}
               </motion.div>
             )}
             {step === 1 && (
-              <motion.div key="s1" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }} className="text-center">
-                <h1 className="font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Quelle est la date ?</h1>
-                <p className="mt-3 text-neutral-500">Le compte à rebours démarre dès aujourd’hui.</p>
-                <div className="mt-10 max-w-md mx-auto">
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-6 py-5 rounded-2xl bg-white border border-black/10 text-xl outline-none focus:border-black/40 transition text-center" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }} />
+              <motion.div key="s1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }} className="text-center">
+                <h1 className="font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Quelle est la date ?</h1>
+                <p className="mt-2 text-neutral-500 text-sm sm:text-base">Le compte à rebours démarre dès aujourd’hui.</p>
+                <div className="mt-8 sm:mt-10 max-w-md mx-auto">
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-5 sm:px-6 py-4 sm:py-5 rounded-2xl bg-white border border-black/10 text-lg sm:text-xl outline-none focus:border-black/40 transition text-center font-medium" style={{ fontFamily: neoFont }} />
                   {date && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 p-6 rounded-3xl bg-white border border-black/10">
-                      <div className="capitalize text-xl" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{formatDateLong(date)}</div>
-                      <div className="mt-1.5 inline-flex items-center gap-2 text-sm text-[#8A6D4B]"><CalendarDays size={15} /> J-{daysUntil(date)} avant le grand jour</div>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 p-5 sm:p-6 rounded-3xl bg-white border border-black/10 shadow-sm">
+                      <div className="capitalize text-lg sm:text-xl font-medium tracking-tight" style={{ fontFamily: neoFont }}>{formatDateLong(date)}</div>
+                      <div className="mt-2 inline-flex items-center gap-2 text-sm text-[#8A6D4B] font-medium"><CalendarDays size={15} /> J-{daysUntil(date)} avant le grand jour</div>
                     </motion.div>
                   )}
                 </div>
               </motion.div>
             )}
             {step === 2 && (
-              <motion.div key="s2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Où cela se passe ?</h1>
-                <p className="mt-3 text-center text-neutral-500">Le lieu qui accueillera votre histoire.</p>
-                <div className="mt-10 max-w-xl mx-auto space-y-4">
+              <motion.div key="s2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Où cela se passe ?</h1>
+                <p className="mt-2 text-center text-neutral-500 text-sm sm:text-base">Le lieu qui accueillera votre histoire.</p>
+                <div className="mt-8 sm:mt-10 max-w-xl mx-auto space-y-4">
                   <div>
-                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Lieu de réception</label>
+                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold mb-2 ml-1">Lieu de réception</label>
                     <input value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Château de Chantilly" autoFocus className={inputCls} />
                   </div>
                   <div>
-                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Ville</label>
+                    <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold mb-2 ml-1">Ville</label>
                     <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Chantilly, Oise" className={inputCls} />
                   </div>
                   {venue && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 p-5 rounded-2xl bg-white border border-black/10">
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 p-4 sm:p-5 rounded-2xl bg-white border border-black/10 shadow-sm">
                       <span className="w-10 h-10 rounded-full bg-[#8A6D4B]/10 text-[#8A6D4B] flex items-center justify-center shrink-0"><MapPin size={18} /></span>
-                      <div><div className="font-medium">{venue}</div><div className="text-sm text-neutral-400">{city || 'France'}</div></div>
+                      <div className="min-w-0"><div className="font-semibold truncate">{venue}</div><div className="text-sm text-neutral-400 truncate">{city || 'France'}</div></div>
                     </motion.div>
                   )}
                 </div>
               </motion.div>
             )}
             {step === 3 && (
-              <motion.div key="s3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Quel style vous ressemble ?</h1>
-                <p className="mt-3 text-center text-neutral-500">Huit directions artistiques. Une seule évidence.</p>
-                <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <motion.div key="s3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.35 }}>
+                <h1 className="text-center font-medium tracking-tight" style={{ fontFamily: neoFont, fontSize: 'clamp(1.9rem, 6vw, 3.2rem)' }}>Quel style vous ressemble ?</h1>
+                <p className="mt-2 text-center text-neutral-500 text-sm sm:text-base">Huit directions artistiques. Une seule évidence.</p>
+                <div className="mt-6 sm:mt-8 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
                   {WEDDING_STYLES.map((s) => (
-                    <button key={s.id} onClick={() => setStyle(s.id)} className={`relative aspect-[3/4] rounded-3xl overflow-hidden text-left transition ring-offset-4 ring-offset-[#FAF8F5] ${style === s.id ? 'ring-[3px] ring-neutral-900 scale-[1.02]' : 'hover:scale-[1.02]'}`}>
+                    <button key={s.id} onClick={() => setStyle(s.id)} className={`relative aspect-[3/4] rounded-2xl sm:rounded-3xl overflow-hidden text-left transition ring-offset-2 ring-offset-[#FAF8F5] ${style === s.id ? 'ring-[3px] ring-neutral-900 scale-[1.01]' : 'hover:scale-[1.01]'}`}>
                       <img src={s.image} alt={s.name} className="absolute inset-0 w-full h-full object-cover" />
-                      <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                      <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       {style === s.id && (
-                        <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white flex items-center justify-center"><Check size={16} className="text-neutral-900" /></span>
+                        <span className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center shadow"><Check size={16} className="text-neutral-900" /></span>
                       )}
-                      <span className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <span className="block text-lg font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{s.name}</span>
-                        <span className="block text-[11px] text-white/75 mt-0.5">{s.tagline}</span>
+                      <span className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 text-white">
+                        <span className="block text-base sm:text-lg font-medium tracking-tight" style={{ fontFamily: neoFont }}>{s.name}</span>
+                        <span className="block text-[11px] text-white/80 mt-0.5 line-clamp-1">{s.tagline}</span>
                       </span>
                     </button>
                   ))}
@@ -245,14 +247,14 @@ export default function Onboarding() {
 
           {error && <p className="mt-6 text-center text-sm text-red-500">{error}</p>}
 
-          <div className="mt-10 flex items-center justify-between gap-4">
+          <div className="mt-8 sm:mt-10 flex items-center justify-between gap-3">
             {step > 0 ? (
-              <button onClick={() => setStep(step - 1)} disabled={creating} className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-black/15 text-sm font-medium hover:border-black/40 transition disabled:opacity-50"><ArrowLeft size={16} /> Retour</button>
-            ) : <Link to="/" className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full border border-black/15 text-sm font-medium hover:border-black/40 transition"><ArrowLeft size={16} /> Accueil</Link>}
+              <button onClick={() => setStep(step - 1)} disabled={creating} className="inline-flex items-center gap-1.5 px-5 sm:px-6 py-3.5 rounded-full border border-black/15 text-sm font-medium hover:border-black/40 transition disabled:opacity-50"><ArrowLeft size={15} /> Retour</button>
+            ) : <Link to="/" className="inline-flex items-center gap-1.5 px-5 sm:px-6 py-3.5 rounded-full border border-black/15 text-sm font-medium hover:border-black/40 transition"><ArrowLeft size={15} /> Accueil</Link>}
             {step < 3 ? (
-              <button onClick={() => canNext() && setStep(step + 1)} disabled={!canNext()} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-700 transition disabled:opacity-30 disabled:cursor-not-allowed">Continuer <ArrowRight size={16} /></button>
+              <button onClick={() => canNext() && setStep(step + 1)} disabled={!canNext()} className="inline-flex items-center gap-1.5 px-6 sm:px-8 py-3.5 rounded-full bg-neutral-900 text-white text-sm font-medium hover:bg-neutral-700 transition disabled:opacity-30 disabled:cursor-not-allowed">Continuer <ArrowRight size={15} /></button>
             ) : (
-              <button onClick={create} disabled={!canNext() || creating} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#8A6D4B] text-white text-sm font-medium hover:bg-[#75593C] transition disabled:opacity-50 disabled:cursor-not-allowed">
+              <button onClick={create} disabled={!canNext() || creating} className="inline-flex items-center gap-2 px-6 sm:px-8 py-3.5 rounded-full bg-[#8A6D4B] text-white text-sm font-semibold hover:bg-[#75593C] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md">
                 {creating ? <><Loader2 size={16} className="animate-spin" /> Création…</> : <>Créer mon site <ArrowRight size={16} /></>}</button>
             )}
           </div>

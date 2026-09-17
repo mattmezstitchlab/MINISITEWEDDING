@@ -15,6 +15,7 @@ import AppearancePanel from '../components/AppearancePanel';
 import RsvpManager from '../components/RsvpManager';
 import SharePanel from '../components/SharePanel';
 
+const neoFont = '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif';
 type Drawer = null | 'appearance' | 'rsvp' | 'share' | 'structure';
 
 const fieldCls = 'w-full px-4 py-2.5 rounded-xl bg-white border border-black/10 text-[14px] outline-none focus:border-black/40 transition';
@@ -61,7 +62,7 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
     return (
       <div className="space-y-5">
         <PhotoField label="Photo du Hero" value={site.hero_photo} onPick={(url) => patchSite({ hero_photo: url })} openMedia={openMedia} />
-        <div><label className={labelCls}>Titre principal</label><input className={fieldCls} value={site.hero_title} onChange={(e) => patchSite({ hero_title: e.target.value })} style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.2rem' }} /></div>
+        <div><label className={labelCls}>Titre principal</label><input className={fieldCls} value={site.hero_title} onChange={(e) => patchSite({ hero_title: e.target.value })} style={{ fontFamily: neoFont, fontSize: '1.2rem' }} /></div>
         <div><label className={labelCls}>Sur-titre</label><input className={fieldCls} value={site.hero_subtitle} onChange={(e) => patchSite({ hero_subtitle: e.target.value })} /></div>
         <div><label className={labelCls}>Phrase d’accueil</label><input className={fieldCls} value={site.announcement} onChange={(e) => patchSite({ announcement: e.target.value })} /></div>
         <p className="text-[12px] text-neutral-400">La photo occupe tout l’écran, le compte à rebours se calcule seul depuis votre date.</p>
@@ -348,7 +349,7 @@ export default function Editor() {
     return (
       <div className="min-h-screen bg-[#F4F2EE] flex flex-col items-center justify-center gap-4">
         <Loader2 size={28} className="animate-spin text-neutral-400" />
-        <p className="text-neutral-500" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.3rem' }}>Ouverture de votre éditeur…</p>
+        <p className="text-neutral-500" style={{ fontFamily: neoFont, fontSize: '1.3rem' }}>Ouverture de votre éditeur…</p>
       </div>
     );
   }
@@ -356,7 +357,7 @@ export default function Editor() {
   if (error || !site) {
     return (
       <div className="min-h-screen bg-[#F4F2EE] flex flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="text-xl" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>Ce site est introuvable.</p>
+        <p className="text-xl" style={{ fontFamily: neoFont }}>Ce site est introuvable.</p>
         <p className="text-sm text-neutral-500">{error}</p>
         <Link to="/creer" className="px-6 py-3 rounded-full bg-neutral-900 text-white text-sm">Créer un site</Link>
       </div>
@@ -389,19 +390,19 @@ export default function Editor() {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-[#F4F2EE] text-[#1A1A1A]" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
+    <div className="h-screen flex flex-col bg-[#F4F2EE] text-[#1A1A1A]" style={{ fontFamily: neoFont }}>
       <header className="h-[60px] shrink-0 bg-white/85 backdrop-blur-xl border-b border-black/10 flex items-center gap-2 sm:gap-3 px-3 sm:px-5 z-30">
-        <Link to="/" className="w-9 h-9 rounded-full hover:bg-black/5 flex items-center justify-center transition" aria-label="Retour"><ArrowLeft size={18} /></Link>
-        <div className="min-w-0 hidden sm:block">
-          <div className="text-[14px] font-medium truncate" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.05rem' }}>{site.partner1} & {site.partner2}</div>
-          <div className="text-[11px] text-neutral-400 tabular-nums truncate">{site.slug}.byaime.fr {site.published && '· Publié'}</div>
+        <Link to="/" className="w-9 h-9 rounded-full hover:bg-black/5 flex items-center justify-center transition shrink-0" aria-label="Retour"><ArrowLeft size={18} /></Link>
+        <div className="min-w-0 flex-1 sm:flex-initial">
+          <div className="text-[13px] sm:text-[14px] font-semibold truncate" style={{ fontFamily: neoFont }}>{site.partner1} & {site.partner2}</div>
+          <div className="text-[10px] sm:text-[11px] text-neutral-400 tabular-nums truncate">{site.slug}.byaime.fr {site.published && '· Publié'}</div>
         </div>
-        <div className="flex-1" />
+        <div className="flex-1 hidden sm:block" />
         <div className="hidden md:flex items-center p-1 rounded-full bg-black/5">
           <button onClick={() => setDevice('desktop')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium transition ${device === 'desktop' ? 'bg-white shadow-sm' : 'text-neutral-500'}`}><Monitor size={14} /> Desktop</button>
           <button onClick={() => setDevice('mobile')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[12px] font-medium transition ${device === 'mobile' ? 'bg-white shadow-sm' : 'text-neutral-500'}`}><Smartphone size={14} /> Mobile</button>
         </div>
-        <button onClick={() => setDrawer('structure')} className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-black/5 text-[13px] font-medium"><LayoutList size={15} /> Sections</button>
+        <button onClick={() => setDrawer('structure')} className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/5 text-[12px] font-medium"><LayoutList size={14} /> Sections</button>
         <div className="hidden sm:flex items-center gap-1.5">
           <button onClick={() => setDrawer(drawer === 'appearance' ? null : 'appearance')} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition ${drawer === 'appearance' ? 'bg-neutral-900 text-white' : 'bg-black/5 hover:bg-black/10'}`}><Palette size={15} /> <span className="hidden xl:inline">Apparence</span></button>
           <button onClick={() => openMedia(() => { fetchAll(); }, 'Bibliothèque média')} className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium bg-black/5 hover:bg-black/10 transition"><Images size={15} /> <span className="hidden xl:inline">Médias</span></button>
@@ -409,21 +410,21 @@ export default function Editor() {
           <button onClick={() => setDrawer(drawer === 'share' ? null : 'share')} className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition ${drawer === 'share' ? 'bg-neutral-900 text-white' : 'bg-black/5 hover:bg-black/10'}`}><Share2 size={15} /> <span className="hidden xl:inline">Partager</span></button>
         </div>
         {site.published ? (
-          <Link to={`/p/${site.slug}`} target="_blank" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-600 text-white text-[13px] font-medium hover:bg-emerald-500 transition"><Globe size={15} /> Voir</Link>
+          <Link to={`/p/${site.slug}`} target="_blank" className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-emerald-600 text-white text-[12px] sm:text-[13px] font-medium hover:bg-emerald-500 transition shrink-0"><Globe size={14} /> Voir</Link>
         ) : (
-          <button onClick={publish} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#8A6D4B] text-white text-[13px] font-medium hover:bg-[#75593C] transition"><Rocket size={15} /> Publier</button>
+          <button onClick={publish} className="flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#8A6D4B] text-white text-[12px] sm:text-[13px] font-medium hover:bg-[#75593C] transition shrink-0"><Rocket size={14} /> Publier</button>
         )}
       </header>
 
       <div className="flex-1 flex min-h-0">
         <aside className="hidden lg:flex w-[264px] shrink-0 flex-col bg-white/60 backdrop-blur border-r border-black/10 p-4 overflow-y-auto">
-          <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-medium px-2 mb-2">Structure du site</div>
+          <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold px-2 mb-2">Structure du site</div>
           {structureList}
           <div className="mt-5 px-2">
-            <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-medium mb-2">Phase du mariage</div>
+            <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-semibold mb-2">Phase du mariage</div>
             <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-black/5">
               {PHASES.map((p) => (
-                <button key={p.id} onClick={() => { patchSite({ phase: p.id }); notify(`Phase : ${p.name}`); }} className={`py-2 rounded-xl text-[12px] font-medium transition ${site.phase === p.id ? 'bg-white shadow-sm' : 'text-neutral-500'}`}>{p.name}</button>
+                <button key={p.id} onClick={() => { patchSite({ phase: p.id }); notify(`Phase : ${p.name}`); }} className={`py-2 rounded-xl text-[12px] font-medium transition ${site.phase === p.id ? 'bg-white shadow-sm font-semibold' : 'text-neutral-500'}`}>{p.name}</button>
               ))}
             </div>
             <p className="mt-2 text-[11px] text-neutral-400 leading-relaxed">{PHASES.find((p) => p.id === site.phase)?.desc}</p>
@@ -431,19 +432,19 @@ export default function Editor() {
         </aside>
 
         <main className="flex-1 min-w-0 overflow-y-auto" onClick={() => setDrawer(null)}>
-          <div className={`mx-auto py-5 px-3 sm:px-6 transition-all duration-500 ${device === 'mobile' ? 'max-w-[400px]' : 'max-w-5xl'}`}>
-            <div className={`overflow-hidden bg-white shadow-[0_20px_70px_rgba(0,0,0,0.10)] border border-black/10 transition-all duration-500 ${device === 'mobile' ? 'rounded-[2.2rem] border-[6px] border-neutral-900' : 'rounded-2xl'}`}>
-              {device === 'mobile' && <div className="bg-neutral-900 pt-2.5 pb-1.5 flex justify-center"><div className="w-24 h-5 bg-black rounded-full" /></div>}
+          <div className={`mx-auto py-3 sm:py-5 px-2 sm:px-6 transition-all duration-300 ${device === 'mobile' ? 'w-full max-w-[420px]' : 'w-full max-w-5xl'}`}>
+            <div className={`overflow-hidden bg-white shadow-[0_20px_70px_rgba(0,0,0,0.10)] transition-all duration-300 ${device === 'mobile' ? 'rounded-2xl sm:rounded-[2.2rem] border sm:border-[6px] border-neutral-900' : 'rounded-2xl border border-black/10'}`}>
+              {device === 'mobile' && <div className="hidden sm:flex bg-neutral-900 pt-2.5 pb-1.5 justify-center"><div className="w-24 h-5 bg-black rounded-full" /></div>}
               <PublicSiteView data={data} preview selectedKey={selectedKey} onSelectSection={(k) => setSelectedKey(k)} />
             </div>
-            <p className="mt-4 text-center text-[12px] text-neutral-400">Cliquez sur une section du site pour la modifier — aperçu {device === 'mobile' ? 'mobile' : 'desktop'} en temps réel.</p>
+            <p className="mt-3 sm:mt-4 text-center text-[11px] sm:text-[12px] text-neutral-400">Cliquez sur une section pour la modifier.</p>
           </div>
         </main>
 
         <aside className="hidden lg:flex w-[320px] shrink-0 flex-col bg-white border-l border-black/10 min-h-0">
           <div className="px-5 pt-5 pb-3 border-b border-black/5 shrink-0">
             <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-medium">Sélection</div>
-            <div className="mt-1 text-lg font-light flex items-center gap-2" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>
+            <div className="mt-1 text-lg font-light flex items-center gap-2" style={{ fontFamily: neoFont }}>
               {selectedSection?.title || 'Section'}
               {selectedSection && !selectedSection.visible && <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/10 text-neutral-500 tracking-wide uppercase">Masquée</span>}
             </div>

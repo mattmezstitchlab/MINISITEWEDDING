@@ -15,8 +15,8 @@ export interface WeddingStyle {
 
 export const WEDDING_STYLES: WeddingStyle[] = [
   {
-    id: 'editorial', name: 'Editorial Vogue', tagline: 'Comme une couverture de magazine',
-    description: 'Titres majestueux, grille magazine, photographie grand format.',
+    id: 'editorial', name: 'Editorial Neo', tagline: 'Comme une couverture de magazine d’art',
+    description: 'Titres néo-grotesques affirmés, grille magazine, photographie grand format.',
     bg: '#FAF7F2', surface: '#FFFFFF', ink: '#1B1B1B', muted: '#8A857C', accent: '#1B1B1B', line: '#E8E2D6',
     dark: false, image: '/images/hero-wedding.jpg',
   },
@@ -28,13 +28,13 @@ export const WEDDING_STYLES: WeddingStyle[] = [
   },
   {
     id: 'romantique', name: 'Romance Poudrée', tagline: 'Douceur rose poudré & lumière naturelle',
-    description: 'Teintes délicates, typographie haute couture, atmosphère tendre.',
+    description: 'Teintes délicates, typographie néo-grotesque épurée, atmosphère tendre.',
     bg: '#FDF6F3', surface: '#FFFFFF', ink: '#3E2E2E', muted: '#A68F8A', accent: '#B76E79', line: '#F0DDD6',
     dark: false, image: '/images/couple-paris.jpg',
   },
   {
     id: 'nature', name: 'Garden Chic', tagline: 'Provence, sauge & matières nobles',
-    description: 'Verts sauge, pierres chaudes, esprit bohème aristocratique.',
+    description: 'Verts sauge, pierres chaudes, esprit contemporain et grand air.',
     bg: '#F5F6F0', surface: '#FFFFFF', ink: '#2C3325', muted: '#8B917F', accent: '#5B6E4E', line: '#DFE2D2',
     dark: false, image: '/images/garden.jpg',
   },
@@ -52,7 +52,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
   },
   {
     id: 'noir-blanc', name: 'Monochrome Intemporel', tagline: 'Photographie d’art contrastée',
-    description: 'Monochrome d’auteur, contraste franc, pureté cinématographique.',
+    description: 'Monochrome d’auteur, contraste franc, pureté architecturale.',
     bg: '#FFFFFF', surface: '#F4F4F4', ink: '#0A0A0A', muted: '#8B8B8B', accent: '#0A0A0A', line: '#E2E2E2',
     dark: false, image: '/images/noir-blanc.jpg',
   },
@@ -78,59 +78,59 @@ export interface TypoOption {
 
 export const TYPO_OPTIONS: TypoOption[] = [
   {
-    id: 'editorial',
-    name: 'Éditorial Vogue',
-    hint: 'Grandeur et raffinement haute couture',
-    heading: '"Playfair Display", "Cormorant Garamond", Georgia, serif',
-    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    id: 'neo-grotesk',
+    name: 'Neo Grotesk',
+    hint: 'Audacieux, architectural et suisse',
+    heading: '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif',
+    body: '"Hanken Grotesk", "Space Grotesk", system-ui, sans-serif',
   },
   {
-    id: 'modern',
-    name: 'Minimaliste Chic',
+    id: 'neo-minimal',
+    name: 'Neo Minimaliste',
     hint: 'Luxe contemporain, net et pur',
-    heading: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
-    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    heading: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
+    body: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
+  },
+  {
+    id: 'editorial',
+    name: 'Neo Éditorial',
+    hint: 'Titrages affirmés & lecture aérée',
+    heading: '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif',
+    body: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
   },
   {
     id: 'haute-couture',
     name: 'Haute Couture',
-    hint: 'Serif aérien, poétique et romantique',
-    heading: '"Italiana", "Playfair Display", "Cormorant Garamond", serif',
-    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
-  },
-  {
-    id: 'atelier',
-    name: 'Atelier Moderne',
-    hint: 'Géométrique, architectural et chaleureux',
-    heading: '"Outfit", "Plus Jakarta Sans", system-ui, sans-serif',
-    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    hint: 'Contraste serif aérien et touches néo',
+    heading: '"Italiana", "Space Grotesk", Georgia, serif',
+    body: '"Hanken Grotesk", "Space Grotesk", system-ui, sans-serif',
   },
 ];
 
 export function fontsFor(typoId: string): { heading: string; body: string } {
-  if (typoId === 'serif' || typoId === 'haute-couture') {
+  if (typoId === 'neo-grotesk') {
     return {
-      heading: '"Italiana", "Playfair Display", "Cormorant Garamond", serif',
-      body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+      heading: '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif',
+      body: '"Hanken Grotesk", "Space Grotesk", system-ui, sans-serif',
     };
   }
-  if (typoId === 'sans' || typoId === 'modern') {
+  if (typoId === 'neo-minimal' || typoId === 'modern' || typoId === 'sans') {
     return {
-      heading: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
-      body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+      heading: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
+      body: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
     };
   }
-  if (typoId === 'atelier') {
+  if (typoId === 'haute-couture' || typoId === 'serif') {
     return {
-      heading: '"Outfit", "Plus Jakarta Sans", system-ui, sans-serif',
-      body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+      heading: '"Italiana", "Space Grotesk", Georgia, serif',
+      body: '"Hanken Grotesk", "Space Grotesk", system-ui, sans-serif',
     };
   }
   const found = TYPO_OPTIONS.find((t) => t.id === typoId);
   if (found) return { heading: found.heading, body: found.body };
   return {
-    heading: '"Playfair Display", "Cormorant Garamond", Georgia, serif',
-    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    heading: '"Space Grotesk", "Hanken Grotesk", system-ui, sans-serif',
+    body: '"Hanken Grotesk", "Plus Jakarta Sans", system-ui, sans-serif',
   };
 }
 
