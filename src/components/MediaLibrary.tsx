@@ -79,7 +79,7 @@ export default function MediaLibrary({ open, onClose, onSelect, title }: Props) 
             <div className="px-6 sm:px-8 pt-6 pb-4 border-b border-black/10 bg-white/70 backdrop-blur">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-xl sm:text-2xl font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{title || 'Bibliothèque média'}</h3>
+                  <h3 className="text-xl sm:text-2xl font-light tracking-tight" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{title || 'Bibliothèque média'}</h3>
                   <p className="text-sm text-neutral-500 mt-0.5">{filtered.length} visuel{filtered.length > 1 ? 's' : ''} — cliquez pour insérer</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -96,12 +96,12 @@ export default function MediaLibrary({ open, onClose, onSelect, title }: Props) 
                 <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher : alliances, château, bouquet…" className="w-full pl-11 pr-4 py-3 rounded-full bg-white border border-black/10 text-[15px] outline-none focus:border-black/30 transition" />
               </div>
               <div className="mt-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                {['Tout', ...MEDIA_CATEGORIES].map((c) => (
+                {Array.from(new Set(MEDIA_CATEGORIES)).map((c) => (
                   <button key={c} onClick={() => setCategory(c)} className={`shrink-0 px-4 py-2 rounded-full text-[13px] transition ${category === c ? 'bg-neutral-900 text-white' : 'bg-white border border-black/10 text-neutral-600 hover:border-black/30'}`}>{c}</button>
                 ))}
               </div>
               <div className="mt-2 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                {['Toutes', ...MEDIA_COLLECTIONS].map((c) => (
+                {Array.from(new Set(MEDIA_COLLECTIONS)).map((c) => (
                   <button key={c} onClick={() => setCollection(c)} className={`shrink-0 px-4 py-1.5 rounded-full text-[12px] tracking-wide transition ${collection === c ? 'bg-[#8A6D4B] text-white' : 'bg-[#8A6D4B]/10 text-[#8A6D4B] hover:bg-[#8A6D4B]/20'}`}>{c}</button>
                 ))}
               </div>

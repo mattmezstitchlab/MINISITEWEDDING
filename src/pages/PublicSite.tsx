@@ -61,9 +61,9 @@ export default function PublicSite() {
 
   if (notFound || !site) {
     return (
-      <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center gap-4 px-6 text-center" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+      <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center gap-4 px-6 text-center" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
         <Heart size={36} strokeWidth={1.25} className="text-neutral-300" />
-        <h1 className="text-3xl font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>Ce site n’existe pas encore.</h1>
+        <h1 className="text-3xl font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>Ce site n’existe pas encore.</h1>
         <p className="text-neutral-500 max-w-sm">Le lien est peut-être incomplet — ou les mariés peaufinent encore leur histoire.</p>
         <Link to="/creer" className="mt-2 px-7 py-3.5 rounded-full bg-neutral-900 text-white text-sm font-medium">Créer mon propre site</Link>
       </div>

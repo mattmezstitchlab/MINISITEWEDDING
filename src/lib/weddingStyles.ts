@@ -15,50 +15,50 @@ export interface WeddingStyle {
 
 export const WEDDING_STYLES: WeddingStyle[] = [
   {
-    id: 'editorial', name: 'Editorial', tagline: 'Comme un magazine de mode',
+    id: 'editorial', name: 'Editorial Vogue', tagline: 'Comme une couverture de magazine',
     description: 'Titres majestueux, grille magazine, photographie grand format.',
     bg: '#FAF7F2', surface: '#FFFFFF', ink: '#1B1B1B', muted: '#8A857C', accent: '#1B1B1B', line: '#E8E2D6',
-    dark: false, image: '/images/couple-paris.jpg',
+    dark: false, image: '/images/hero-wedding.jpg',
   },
   {
-    id: 'minimal', name: 'Minimal', tagline: 'Le silence est un luxe',
-    description: 'Blanc absolu, beaucoup d’air, typographie discrète.',
+    id: 'minimal', name: 'Minimaliste Pur', tagline: 'Le silence est un luxe absolu',
+    description: 'Blanc minéral, respiration maximale, typographie discrète et contemporaine.',
     bg: '#FFFFFF', surface: '#F7F7F5', ink: '#111111', muted: '#9A9A98', accent: '#111111', line: '#ECECEA',
     dark: false, image: '/images/bouquet.jpg',
   },
   {
-    id: 'romantique', name: 'Romantique', tagline: 'Douceur rose poudré',
-    description: 'Teintes tendres, serif délicat, atmosphère délicate.',
+    id: 'romantique', name: 'Romance Poudrée', tagline: 'Douceur rose poudré & lumière naturelle',
+    description: 'Teintes délicates, typographie haute couture, atmosphère tendre.',
     bg: '#FDF6F3', surface: '#FFFFFF', ink: '#3E2E2E', muted: '#A68F8A', accent: '#B76E79', line: '#F0DDD6',
-    dark: false, image: '/images/bouquet.jpg',
+    dark: false, image: '/images/couple-paris.jpg',
   },
   {
-    id: 'nature', name: 'Nature', tagline: 'Garden wedding',
-    description: 'Verts sauge, matières brutes, esprit bohème chic.',
+    id: 'nature', name: 'Garden Chic', tagline: 'Provence, sauge & matières nobles',
+    description: 'Verts sauge, pierres chaudes, esprit bohème aristocratique.',
     bg: '#F5F6F0', surface: '#FFFFFF', ink: '#2C3325', muted: '#8B917F', accent: '#5B6E4E', line: '#DFE2D2',
     dark: false, image: '/images/garden.jpg',
   },
   {
-    id: 'chic', name: 'Chic', tagline: 'Black tie, bougies, doré',
-    description: 'Noir profond, doré discret, élégance nocturne.',
+    id: 'chic', name: 'Black Tie Nocturne', tagline: 'Bougies, smoking & or champagne',
+    description: 'Noir profond, doré discret, élégance nocturne envoûtante.',
     bg: '#121212', surface: '#1C1C1C', ink: '#F5F1E8', muted: '#9C958A', accent: '#C6A15B', line: '#2E2C28',
     dark: true, image: '/images/table-noir.jpg',
   },
   {
-    id: 'mediterraneen', name: 'Méditerranéen', tagline: 'Soleil, mer, terracotta',
-    description: 'Bleu profond, terre cuite, lumière du sud.',
+    id: 'mediterraneen', name: 'Riviera & Soleil', tagline: 'Amalfi, mer d’azur & terracotta',
+    description: 'Bleu marin, terre cuite, lumière dorée du sud.',
     bg: '#F7F3E9', surface: '#FFFFFF', ink: '#22333B', muted: '#93876F', accent: '#C1663E', line: '#E5DAC2',
     dark: false, image: '/images/terrasse.jpg',
   },
   {
-    id: 'noir-blanc', name: 'Noir & Blanc', tagline: 'Intemporel absolu',
-    description: 'Photographie monochrome, contraste franc, pur.',
+    id: 'noir-blanc', name: 'Monochrome Intemporel', tagline: 'Photographie d’art contrastée',
+    description: 'Monochrome d’auteur, contraste franc, pureté cinématographique.',
     bg: '#FFFFFF', surface: '#F4F4F4', ink: '#0A0A0A', muted: '#8B8B8B', accent: '#0A0A0A', line: '#E2E2E2',
     dark: false, image: '/images/noir-blanc.jpg',
   },
   {
-    id: 'modern-romance', name: 'Modern Romance', tagline: 'Audacieux et tendre',
-    description: 'Baie profonde, formes généreuses, esprit contemporain.',
+    id: 'modern-romance', name: 'Modern Romance', tagline: 'Audacieux, festif et contemporain',
+    description: 'Nuances framboise, fête jusqu’au matin, silhouettes contemporaines.',
     bg: '#FBF6F8', surface: '#FFFFFF', ink: '#331E28', muted: '#A78B96', accent: '#93354F', line: '#EEDDE3',
     dark: false, image: '/images/danse.jpg',
   },
@@ -68,19 +68,70 @@ export function styleById(id: string): WeddingStyle {
   return WEDDING_STYLES.find((s) => s.id === id) ?? WEDDING_STYLES[0];
 }
 
-export interface TypoOption { id: string; name: string; hint: string; heading: string; body: string; }
+export interface TypoOption {
+  id: string;
+  name: string;
+  hint: string;
+  heading: string;
+  body: string;
+}
 
 export const TYPO_OPTIONS: TypoOption[] = [
-  { id: 'serif', name: 'Serif', hint: 'Classique et littéraire', heading: '"Cormorant Garamond", Georgia, serif', body: 'Inter, system-ui, sans-serif' },
-  { id: 'sans', name: 'Sans Serif', hint: 'Net et contemporain', heading: 'Inter, system-ui, sans-serif', body: 'Inter, system-ui, sans-serif' },
-  { id: 'editorial', name: 'Editorial', hint: 'Magazine haut de gamme', heading: 'Fraunces, Georgia, serif', body: 'Inter, system-ui, sans-serif' },
-  { id: 'modern', name: 'Modern', hint: 'Géométrique et affirmé', heading: 'Manrope, system-ui, sans-serif', body: 'Manrope, system-ui, sans-serif' },
+  {
+    id: 'editorial',
+    name: 'Éditorial Vogue',
+    hint: 'Grandeur et raffinement haute couture',
+    heading: '"Playfair Display", "Cormorant Garamond", Georgia, serif',
+    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+  },
+  {
+    id: 'modern',
+    name: 'Minimaliste Chic',
+    hint: 'Luxe contemporain, net et pur',
+    heading: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+  },
+  {
+    id: 'haute-couture',
+    name: 'Haute Couture',
+    hint: 'Serif aérien, poétique et romantique',
+    heading: '"Italiana", "Playfair Display", "Cormorant Garamond", serif',
+    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+  },
+  {
+    id: 'atelier',
+    name: 'Atelier Moderne',
+    hint: 'Géométrique, architectural et chaleureux',
+    heading: '"Outfit", "Plus Jakarta Sans", system-ui, sans-serif',
+    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+  },
 ];
 
 export function fontsFor(typoId: string): { heading: string; body: string } {
+  if (typoId === 'serif' || typoId === 'haute-couture') {
+    return {
+      heading: '"Italiana", "Playfair Display", "Cormorant Garamond", serif',
+      body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    };
+  }
+  if (typoId === 'sans' || typoId === 'modern') {
+    return {
+      heading: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+      body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    };
+  }
+  if (typoId === 'atelier') {
+    return {
+      heading: '"Outfit", "Plus Jakarta Sans", system-ui, sans-serif',
+      body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+    };
+  }
   const found = TYPO_OPTIONS.find((t) => t.id === typoId);
   if (found) return { heading: found.heading, body: found.body };
-  return { heading: 'Fraunces, Georgia, serif', body: 'Inter, system-ui, sans-serif' };
+  return {
+    heading: '"Playfair Display", "Cormorant Garamond", Georgia, serif',
+    body: '"Plus Jakarta Sans", system-ui, -apple-system, sans-serif',
+  };
 }
 
 export const ACCENT_PRESETS = ['#1B1B1B', '#8A6D4B', '#B76E79', '#5B6E4E', '#C6A15B', '#2E6E8E', '#C1663E', '#93354F'];
@@ -110,9 +161,9 @@ export const ANIMATION_OPTIONS = [
   { id: 'spectaculaire', name: 'Spectaculaire', desc: 'Révélations amples' },
 ];
 
-export const MEDIA_CATEGORIES = ['Couple', 'Alliances', 'Cérémonie', 'Fleurs', 'Bouquet', 'Table', 'Décoration', 'Château', 'Architecture', 'Nature', 'Danse', 'Gâteau', 'Champagne', 'Voyage', 'Détails', 'Textures'];
+export const MEDIA_CATEGORIES = ['Tout', 'Couple', 'Alliances', 'Cérémonie', 'Fleurs', 'Bouquet', 'Table', 'Décoration', 'Château', 'Architecture', 'Nature', 'Danse', 'Gâteau', 'Champagne', 'Voyage', 'Détails', 'Textures', 'Importés'];
 
-export const MEDIA_COLLECTIONS = ['Editorial Paris', "Côte d'Azur", 'Château', 'Garden Wedding', 'Black Tie', 'Modern Romance'];
+export const MEDIA_COLLECTIONS = ['Toutes', 'Editorial Paris', "Côte d'Azur", 'Château', 'Garden Wedding', 'Black Tie', 'Modern Romance', 'Mes photos'];
 
 export const PHASES = [
   { id: 'avant', name: 'Avant', desc: 'RSVP, organisation, programme' },
@@ -127,7 +178,7 @@ export function buttonRadius(buttonStyle: string): string {
 }
 
 export function cardRadius(shape: string): string {
-  if (shape === 'sharp') return '2px';
+  if (shape === 'sharp') return '4px';
   if (shape === 'round') return '28px';
   return '16px';
 }

@@ -23,11 +23,11 @@ const fadeUp = { initial: { opacity: 0, y: 32 }, whileInView: { opacity: 1, y: 0
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A]" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAF8F5]/80 backdrop-blur-xl border-b border-black/5">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
-            <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px]" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>W</span>
+            <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px]" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>W</span>
             <span className="text-[13px] tracking-[0.3em] uppercase font-medium">Wedding Site</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 text-[13px] tracking-[0.12em] uppercase text-neutral-500">
@@ -51,7 +51,7 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[12px] tracking-[0.2em] uppercase">
             <Sparkles size={14} /> Une nouvelle catégorie — le Wedding Site
           </motion.div>
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9 }} className="mt-7 text-white font-light leading-[1.05]" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2.6rem, 8vw, 5.5rem)' }}>
+          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.9 }} className="mt-7 text-white font-light leading-[1.05]" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2.6rem, 8vw, 5.5rem)' }}>
             Votre mariage.<br />Votre histoire. <em className="font-light">Un seul endroit.</em>
           </motion.h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85 }} className="mt-6 text-white/80 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
@@ -71,13 +71,13 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="text-center max-w-2xl mx-auto">
             <div className="text-[11px] tracking-[0.3em] uppercase text-[#8A6D4B]">Compris en 10 secondes</div>
-            <h2 className="mt-4 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Quatre gestes. Zéro effort.</h2>
+            <h2 className="mt-4 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Quatre gestes. Zéro effort.</h2>
           </motion.div>
           <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {STEPS.map((s, i) => (
               <motion.div key={s.n} {...fadeUp} transition={{ duration: 0.6, delay: i * 0.1 }} className="p-8 rounded-3xl bg-white border border-black/5 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
-                <div className="text-[13px] tracking-[0.3em] text-[#8A6D4B]" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{s.n}</div>
-                <div className="mt-3 text-2xl font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{s.title}</div>
+                <div className="text-[13px] tracking-[0.3em] text-[#8A6D4B]" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{s.n}</div>
+                <div className="mt-3 text-2xl font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{s.title}</div>
                 <p className="mt-2 text-[14px] text-neutral-500 leading-relaxed">{s.text}</p>
               </motion.div>
             ))}
@@ -90,7 +90,7 @@ export default function Landing() {
           <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <div className="text-[11px] tracking-[0.3em] uppercase text-[#8A6D4B]">Huit directions artistiques</div>
-              <h2 className="mt-4 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Choisissez votre style.<br />Le reste est automatique.</h2>
+              <h2 className="mt-4 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Choisissez votre style.<br />Le reste est automatique.</h2>
             </div>
             <Link to="/creer" className="shrink-0 inline-flex items-center gap-1.5 text-sm text-neutral-600 hover:text-black transition">Essayer maintenant <ChevronRight size={16} /></Link>
           </motion.div>
@@ -102,7 +102,7 @@ export default function Landing() {
                 <img src={s.image} alt={s.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className="text-2xl font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{s.name}</div>
+                  <div className="text-2xl font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{s.name}</div>
                   <div className="mt-1 text-[13px] text-white/75">{s.tagline}</div>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <motion.div {...fadeUp} transition={{ duration: 0.7 }}>
             <div className="text-[11px] tracking-[0.3em] uppercase text-[#8A6D4B]">L’éditeur</div>
-            <h2 className="mt-4 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Choisir. Modifier.<br />Voir. Publier.</h2>
+            <h2 className="mt-4 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Choisir. Modifier.<br />Voir. Publier.</h2>
             <p className="mt-5 text-neutral-500 leading-relaxed max-w-md">Pas de panneau rempli de paramètres. Au centre, votre site en vrai. À gauche, sa structure. Un clic sur une photo ouvre vos images, un clic sur un texte ouvre la typographie. Simple comme Photos, beau comme Keynote.</p>
             <div className="mt-8 space-y-3">
               {['Sections réorganisables par glisser-déposer', 'Réglages contextuels, jamais de fouillis', 'Aperçu mobile et ordinateur instantané'].map((t) => (
@@ -129,7 +129,7 @@ export default function Landing() {
               <img src="/images/table-noir.jpg" alt="Éditeur" className="w-full aspect-[4/5] sm:aspect-square object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-white">
-                <div><div className="text-[11px] tracking-[0.3em] uppercase text-white/70">Matt & Marie</div><div className="text-2xl font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>18.07.2027</div></div>
+                <div><div className="text-[11px] tracking-[0.3em] uppercase text-white/70">Matt & Marie</div><div className="text-2xl font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>18.07.2027</div></div>
                 <Link to="/p/matt-marie" className="px-5 py-2.5 rounded-full bg-white text-neutral-900 text-[13px] font-medium">Voir</Link>
               </div>
             </div>
@@ -145,14 +145,14 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="text-center max-w-2xl mx-auto">
             <div className="text-[11px] tracking-[0.3em] uppercase text-[#C6A15B]">Tout est inclus</div>
-            <h2 className="mt-4 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Un objet éditorial complet</h2>
+            <h2 className="mt-4 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Un objet éditorial complet</h2>
             <p className="mt-4 text-white/60 leading-relaxed">RSVP, cagnotte, galerie, programme, FAQ — chaque module naît déjà rempli. Vous ajustez, c’est tout.</p>
           </motion.div>
           <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {MODULES.map((m, i) => (
               <motion.div key={m.title} {...fadeUp} transition={{ duration: 0.6, delay: (i % 3) * 0.1 }} className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 transition">
                 <div className="w-11 h-11 rounded-full bg-[#C6A15B]/15 text-[#C6A15B] flex items-center justify-center"><m.icon size={20} strokeWidth={1.5} /></div>
-                <div className="mt-4 text-xl" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{m.title}</div>
+                <div className="mt-4 text-xl" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{m.title}</div>
                 <p className="mt-2 text-[14px] text-white/55 leading-relaxed">{m.text}</p>
               </motion.div>
             ))}
@@ -164,19 +164,19 @@ export default function Landing() {
         <div className="max-w-5xl mx-auto">
           <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="text-center">
             <div className="text-[11px] tracking-[0.3em] uppercase text-[#8A6D4B]">Avant · Pendant · Après</div>
-            <h2 className="mt-4 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Un site qui vit avec vous</h2>
+            <h2 className="mt-4 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Un site qui vit avec vous</h2>
           </motion.div>
           <div className="mt-12 grid sm:grid-cols-3 gap-4">
             {PHASES.map((p, i) => (
               <motion.div key={p.id} {...fadeUp} transition={{ duration: 0.6, delay: i * 0.1 }} className="relative p-8 rounded-3xl bg-white border border-black/5 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-[#8A6D4B]" style={{ opacity: 0.25 + i * 0.25 }} />
                 <div className="text-[12px] tracking-[0.3em] uppercase text-neutral-400">Phase {i + 1}</div>
-                <div className="mt-2 text-3xl font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{p.name}</div>
+                <div className="mt-2 text-3xl font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{p.name}</div>
                 <p className="mt-2 text-[14px] text-neutral-500">{p.desc}</p>
               </motion.div>
             ))}
           </div>
-          <motion.p {...fadeUp} transition={{ duration: 0.7 }} className="mt-8 text-center text-neutral-500 italic" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.25rem' }}>« Après le mariage, il devient la mémoire numérique de votre jour. »</motion.p>
+          <motion.p {...fadeUp} transition={{ duration: 0.7 }} className="mt-8 text-center text-neutral-500 italic" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.25rem' }}>« Après le mariage, il devient la mémoire numérique de votre jour. »</motion.p>
         </div>
       </section>
 
@@ -186,7 +186,7 @@ export default function Landing() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
           <div className="relative p-8 sm:p-14 text-white max-w-xl">
             <div className="text-[11px] tracking-[0.3em] uppercase text-white/70">Un vrai mariage</div>
-            <div className="mt-3 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2.2rem, 5vw, 3.6rem)' }}>Matt & Marie<br />18.07.2027</div>
+            <div className="mt-3 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2.2rem, 5vw, 3.6rem)' }}>Matt & Marie<br />18.07.2027</div>
             <p className="mt-3 text-white/75">Château de Chantilly. Entrez, explorez, répondez au RSVP — comme un invité.</p>
             <Link to="/p/matt-marie" className="mt-6 inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-white text-neutral-900 text-sm font-medium hover:bg-neutral-100 transition">Voir l’exemple <ArrowRight size={16} /></Link>
           </div>
@@ -196,7 +196,7 @@ export default function Landing() {
       <section className="px-6 pb-24">
         <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="max-w-4xl mx-auto text-center py-16 sm:py-20 px-8 rounded-[2.5rem] bg-neutral-900 text-white">
           <Heart size={30} strokeWidth={1.25} className="mx-auto text-[#C6A15B]" />
-          <h2 className="mt-5 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Et si c’était vraiment<br />le site de votre mariage ?</h2>
+          <h2 className="mt-5 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 5vw, 3.2rem)' }}>Et si c’était vraiment<br />le site de votre mariage ?</h2>
           <p className="mt-4 text-white/60">Trente secondes pour commencer. Une émotion pour longtemps.</p>
           <Link to="/creer" className="mt-8 inline-flex items-center gap-2 px-10 py-4 rounded-full bg-white text-neutral-900 text-sm tracking-[0.12em] uppercase font-medium hover:bg-neutral-100 transition">Créer mon site <ArrowRight size={16} /></Link>
         </motion.div>
@@ -204,7 +204,7 @@ export default function Landing() {
 
       <footer className="border-t border-black/10 py-10 px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-[13px] text-neutral-400">
-          <div className="flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[11px]" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>W</span><span className="tracking-[0.25em] uppercase">Wedding Site</span></div>
+          <div className="flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[11px]" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>W</span><span className="tracking-[0.25em] uppercase">Wedding Site</span></div>
           <div>Votre mariage. Votre histoire. Un seul endroit.</div>
           <div className="flex items-center gap-5"><Link to="/creer" className="hover:text-black transition">Créer</Link><Link to="/p/matt-marie" className="hover:text-black transition">Exemple</Link></div>
         </div>

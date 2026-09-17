@@ -312,7 +312,7 @@ export default function PublicSiteView({ data, preview, selectedKey, onSelectSec
           {site.announcement || 'Nous avons hâte de vous retrouver.'}
         </motion.p>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.15 }} className="mt-8">
-          <Countdown target={site.wedding_date} accent={accent} light />
+          <Countdown target={site.wedding_date} accent={accent} light fontFamily={fonts.heading} />
         </motion.div>
         {!preview && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.35 }} className="mt-10 flex flex-col sm:flex-row items-center gap-3">

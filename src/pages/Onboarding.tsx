@@ -138,10 +138,10 @@ export default function Onboarding() {
   const inputCls = 'w-full px-6 py-4 rounded-2xl bg-white border border-black/10 text-lg outline-none focus:border-black/40 transition placeholder:text-neutral-300';
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A] flex flex-col" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A1A] flex flex-col" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
       <nav className="min-h-[68px] flex items-center justify-between gap-3 px-4 sm:px-8 py-3 border-b border-black/5 bg-[#FAF8F5]/80 backdrop-blur-xl sticky top-0 z-40 flex-wrap">
         <Link to="/" className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px]" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>W</span>
+          <span className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-[13px]" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>W</span>
           <span className="text-[13px] tracking-[0.3em] uppercase font-medium hidden sm:inline">Wedding Site</span>
         </Link>
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -163,35 +163,35 @@ export default function Onboarding() {
           <AnimatePresence mode="wait">
             {step === 0 && (
               <motion.div key="s0" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Qui se marie ?</h1>
+                <h1 className="text-center font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Qui se marie ?</h1>
                 <p className="mt-3 text-center text-neutral-500">Vos prénoms, tels que vous voulez les voir en grand.</p>
                 <div className="mt-10 grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Premier prénom</label>
-                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className={inputCls} style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.6rem' }} />
+                    <input value={partner1} onChange={(e) => setPartner1(e.target.value)} placeholder="Marie" autoFocus className={inputCls} style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.6rem' }} />
                   </div>
                   <div>
                     <label className="block text-[11px] tracking-[0.25em] uppercase text-neutral-400 mb-2.5 ml-1">Second prénom</label>
-                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className={inputCls} style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.6rem' }} />
+                    <input value={partner2} onChange={(e) => setPartner2(e.target.value)} placeholder="Matt" className={inputCls} style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.6rem' }} />
                   </div>
                 </div>
                 {(partner1 || partner2) && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 text-center">
                     <div className="text-[11px] tracking-[0.3em] uppercase text-neutral-400">Aperçu</div>
-                    <div className="mt-2 font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2.4rem, 7vw, 4rem)' }}>{partner1 || '…'} <span className="italic text-[#8A6D4B]">&</span> {partner2 || '…'}</div>
+                    <div className="mt-2 font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2.4rem, 7vw, 4rem)' }}>{partner1 || '…'} <span className="italic text-[#8A6D4B]">&</span> {partner2 || '…'}</div>
                   </motion.div>
                 )}
               </motion.div>
             )}
             {step === 1 && (
               <motion.div key="s1" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }} className="text-center">
-                <h1 className="font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Quelle est la date ?</h1>
+                <h1 className="font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Quelle est la date ?</h1>
                 <p className="mt-3 text-neutral-500">Le compte à rebours démarre dès aujourd’hui.</p>
                 <div className="mt-10 max-w-md mx-auto">
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-6 py-5 rounded-2xl bg-white border border-black/10 text-xl outline-none focus:border-black/40 transition text-center" style={{ fontFamily: 'Fraunces, Georgia, serif' }} />
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-6 py-5 rounded-2xl bg-white border border-black/10 text-xl outline-none focus:border-black/40 transition text-center" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }} />
                   {date && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6 p-6 rounded-3xl bg-white border border-black/10">
-                      <div className="capitalize text-xl" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{formatDateLong(date)}</div>
+                      <div className="capitalize text-xl" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{formatDateLong(date)}</div>
                       <div className="mt-1.5 inline-flex items-center gap-2 text-sm text-[#8A6D4B]"><CalendarDays size={15} /> J-{daysUntil(date)} avant le grand jour</div>
                     </motion.div>
                   )}
@@ -200,7 +200,7 @@ export default function Onboarding() {
             )}
             {step === 2 && (
               <motion.div key="s2" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Où cela se passe ?</h1>
+                <h1 className="text-center font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Où cela se passe ?</h1>
                 <p className="mt-3 text-center text-neutral-500">Le lieu qui accueillera votre histoire.</p>
                 <div className="mt-10 max-w-xl mx-auto space-y-4">
                   <div>
@@ -222,7 +222,7 @@ export default function Onboarding() {
             )}
             {step === 3 && (
               <motion.div key="s3" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }} transition={{ duration: 0.4 }}>
-                <h1 className="text-center font-light" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Quel style vous ressemble ?</h1>
+                <h1 className="text-center font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: 'clamp(2rem, 6vw, 3.4rem)' }}>Quel style vous ressemble ?</h1>
                 <p className="mt-3 text-center text-neutral-500">Huit directions artistiques. Une seule évidence.</p>
                 <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {WEDDING_STYLES.map((s) => (
@@ -233,7 +233,7 @@ export default function Onboarding() {
                         <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white flex items-center justify-center"><Check size={16} className="text-neutral-900" /></span>
                       )}
                       <span className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <span className="block text-lg font-light" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>{s.name}</span>
+                        <span className="block text-lg font-light" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>{s.name}</span>
                         <span className="block text-[11px] text-white/75 mt-0.5">{s.tagline}</span>
                       </span>
                     </button>

@@ -61,7 +61,7 @@ function SectionEditor({ sectionKey, ctx }: { sectionKey: string; ctx: Ctx }) {
     return (
       <div className="space-y-5">
         <PhotoField label="Photo du Hero" value={site.hero_photo} onPick={(url) => patchSite({ hero_photo: url })} openMedia={openMedia} />
-        <div><label className={labelCls}>Titre principal</label><input className={fieldCls} value={site.hero_title} onChange={(e) => patchSite({ hero_title: e.target.value })} style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.2rem' }} /></div>
+        <div><label className={labelCls}>Titre principal</label><input className={fieldCls} value={site.hero_title} onChange={(e) => patchSite({ hero_title: e.target.value })} style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.2rem' }} /></div>
         <div><label className={labelCls}>Sur-titre</label><input className={fieldCls} value={site.hero_subtitle} onChange={(e) => patchSite({ hero_subtitle: e.target.value })} /></div>
         <div><label className={labelCls}>Phrase d’accueil</label><input className={fieldCls} value={site.announcement} onChange={(e) => patchSite({ announcement: e.target.value })} /></div>
         <p className="text-[12px] text-neutral-400">La photo occupe tout l’écran, le compte à rebours se calcule seul depuis votre date.</p>
@@ -348,7 +348,7 @@ export default function Editor() {
     return (
       <div className="min-h-screen bg-[#F4F2EE] flex flex-col items-center justify-center gap-4">
         <Loader2 size={28} className="animate-spin text-neutral-400" />
-        <p className="text-neutral-500" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.3rem' }}>Ouverture de votre éditeur…</p>
+        <p className="text-neutral-500" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.3rem' }}>Ouverture de votre éditeur…</p>
       </div>
     );
   }
@@ -356,7 +356,7 @@ export default function Editor() {
   if (error || !site) {
     return (
       <div className="min-h-screen bg-[#F4F2EE] flex flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="text-xl" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>Ce site est introuvable.</p>
+        <p className="text-xl" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>Ce site est introuvable.</p>
         <p className="text-sm text-neutral-500">{error}</p>
         <Link to="/creer" className="px-6 py-3 rounded-full bg-neutral-900 text-white text-sm">Créer un site</Link>
       </div>
@@ -389,11 +389,11 @@ export default function Editor() {
   );
 
   return (
-    <div className="h-screen flex flex-col bg-[#F4F2EE] text-[#1A1A1A]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div className="h-screen flex flex-col bg-[#F4F2EE] text-[#1A1A1A]" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
       <header className="h-[60px] shrink-0 bg-white/85 backdrop-blur-xl border-b border-black/10 flex items-center gap-2 sm:gap-3 px-3 sm:px-5 z-30">
         <Link to="/" className="w-9 h-9 rounded-full hover:bg-black/5 flex items-center justify-center transition" aria-label="Retour"><ArrowLeft size={18} /></Link>
         <div className="min-w-0 hidden sm:block">
-          <div className="text-[14px] font-medium truncate" style={{ fontFamily: 'Fraunces, Georgia, serif', fontSize: '1.05rem' }}>{site.partner1} & {site.partner2}</div>
+          <div className="text-[14px] font-medium truncate" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif', fontSize: '1.05rem' }}>{site.partner1} & {site.partner2}</div>
           <div className="text-[11px] text-neutral-400 tabular-nums truncate">{site.slug}.byaime.fr {site.published && '· Publié'}</div>
         </div>
         <div className="flex-1" />
@@ -443,7 +443,7 @@ export default function Editor() {
         <aside className="hidden lg:flex w-[320px] shrink-0 flex-col bg-white border-l border-black/10 min-h-0">
           <div className="px-5 pt-5 pb-3 border-b border-black/5 shrink-0">
             <div className="text-[11px] tracking-[0.25em] uppercase text-neutral-400 font-medium">Sélection</div>
-            <div className="mt-1 text-lg font-light flex items-center gap-2" style={{ fontFamily: 'Fraunces, Georgia, serif' }}>
+            <div className="mt-1 text-lg font-light flex items-center gap-2" style={{ fontFamily: '"Playfair Display", "Cormorant Garamond", Georgia, serif' }}>
               {selectedSection?.title || 'Section'}
               {selectedSection && !selectedSection.visible && <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/10 text-neutral-500 tracking-wide uppercase">Masquée</span>}
             </div>
