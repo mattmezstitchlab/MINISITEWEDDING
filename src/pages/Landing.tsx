@@ -16,6 +16,7 @@ import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
 import ImmersiveThemes from '../components/ImmersiveThemes';
 import CommunityFeedHub from '../components/CommunityFeedHub';
 import PredictiveOrchestrationStudio from '../components/PredictiveOrchestrationStudio';
+import TalkieWalkieStudio from '../components/TalkieWalkieStudio';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const HERO_ROTATING_TITLES = [
@@ -141,11 +142,18 @@ export default function Landing() {
         )}
       </ErrorBoundary>
 
-      {/* INNOVATION BRÉVETABLE : MOTEUR D'ORCHESTRATION PRÉDICTIVE TEMPORELLE (EVENT OS) */}
-      <section className="px-4 py-12 sm:px-8 bg-[#07070B]">
-        <div className="mx-auto max-w-6xl">
+      {/* SECTION DUO EVENT OS :
+          1. Moteur d'Orchestration Prédictive Temporelle (Résolution en cascade des retards)
+          2. Talkie-Walkie WebRTC PTT par canal de métier
+      */}
+      <section className="px-4 py-12 sm:px-8 bg-[#07070B] space-y-10">
+        <div className="mx-auto max-w-6xl space-y-10">
           <ErrorBoundary>
             <PredictiveOrchestrationStudio />
+          </ErrorBoundary>
+
+          <ErrorBoundary>
+            <TalkieWalkieStudio />
           </ErrorBoundary>
         </div>
       </section>
