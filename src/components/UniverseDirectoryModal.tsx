@@ -5,14 +5,10 @@ import {
   Search,
   Grid,
   MapPin,
-  Layers,
   ArrowRight,
   Briefcase,
   Users,
   Compass,
-  Radio,
-  ExternalLink,
-  Sparkles,
 } from 'lucide-react';
 import { WEDDING_STYLES, THEME_CATEGORIES, type WeddingStyle } from '../lib/weddingStyles';
 
@@ -68,21 +64,6 @@ export default function UniverseDirectoryModal({
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeGeoNode, setActiveGeoNode] = useState<GeoNode | null>(null);
 
-  // Écoute de l'événement direct d'ouverture sur la carte
-  useEffect(() => {
-    const handleOpenMap = () => setViewMode('map');
-    window.addEventListener('open-map-mode', handleOpenMap);
-    return () => window.removeEventListener('open-map-mode', handleOpenMap);
-  }, []);
-
-  // Animation douce du live pulse
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    if (!isOpen) return;
-    const interval = setInterval(() => setTick((t) => t + 1), 2500);
-    return () => clearInterval(interval);
-  }, [isOpen]);
-
   // Filtrage combiné recherche + catégorie
   const filteredStyles = useMemo(() => {
     return WEDDING_STYLES.filter((style) => {
@@ -104,9 +85,9 @@ export default function UniverseDirectoryModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0A0B10] text-white">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0A0B10] text-white overflow-hidden">
       {/* Barre supérieure de contrôle & bascule Mosaïque / Carte */}
-      <div className="flex items-center justify-between border-b border-white/10 bg-[#0E0F16]/90 px-4 py-3.5 backdrop-blur-2xl sm:px-8">
+      <div className="shrink-0 flex items-center justify-between border-b border-white/10 bg-[#0E0F16]/95 px-4 py-3.5 backdrop-blur-2xl sm:px-8 z-30">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
@@ -143,7 +124,7 @@ export default function UniverseDirectoryModal({
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              <Radio size={13} className="animate-pulse text-emerald-950" />
+              <MapPin size={13} className="text-emerald-950" />
               <span>Carte Live</span>
             </button>
           </div>
@@ -160,7 +141,7 @@ export default function UniverseDirectoryModal({
       </div>
 
       {/* Barre de filtres et recherche */}
-      <div className="border-b border-white/5 bg-[#0A0B10] px-4 py-3 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="shrink-0 border-b border-white/5 bg-[#0A0B10] px-4 py-3 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-3 z-20">
         {/* Recherche rapide */}
         <div className="relative w-full md:w-80">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40" />
@@ -192,11 +173,11 @@ export default function UniverseDirectoryModal({
         </div>
       </div>
 
-      {/* CONTENU PRINCIPAL SELON LE MODE */}
-      <div className="flex-1 overflow-y-auto no-scrollbar relative">
+      {/* CONTENU PRINCIPAL PLEIN FORMAT DÉFILABLE SELON LE MODE */}
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar relative z-10">
         {viewMode === 'mosaic' ? (
           /* VUE MOSAÏQUE GRILLE DE CARTES COMPLÈTE */
-          <div className="p-4 sm:p-8 max-w-7xl mx-auto">
+          <div className="p-4 sm:p-8 max-w-7xl mx-auto pb-24">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filteredStyles.map((style) => {
                 const isSelected = selectedStyleId === style.id;
@@ -265,9 +246,9 @@ export default function UniverseDirectoryModal({
           </div>
         ) : (
           /* VUE CARTE LIVE GÉOLOCALISÉE INTERACTIVE EN TEMPS RÉEL (STYLE AIME NETWORK / OPENSTREETMAP CARTOGRAPHIQUE) */
-          <div className="relative h-full w-full min-h-[600px] flex items-center justify-center overflow-hidden bg-[#0A0D14]">
+          <div className="relative h-full w-full min-h-[580px] flex items-center justify-center overflow-hidden bg-[#0A0D14] p-4 sm:p-8">
             
-            {/* VRAI FOND DE CARTE GÉOGRAPHIQUE HAUTE DÉFINITION (Cartographie OpenStreetMap Dark Vector) */}
+            {/* VRAI FOND DE CARTE GÉOGRAPHIQUE HAUTE DÉFINITION */}
             <div 
               className="absolute inset-0 opacity-45 pointer-events-none bg-cover bg-center filter saturate-50 contrast-125"
               style={{
@@ -310,9 +291,6 @@ export default function UniverseDirectoryModal({
 
               {/* Nœuds géolocalisés en direct sur la carte */}
               {LIVE_GEO_NODES.map((node) => {
-                const targetStyle = WEDDING_STYLES.find((s) => s.id === node.styleId) || WEDDING_STYLES[0];
-                const isSelected = activeGeoNode?.id === node.id;
-
                 return (
                   <div
                     key={node.id}

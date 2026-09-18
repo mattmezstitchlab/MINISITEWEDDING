@@ -213,40 +213,25 @@ export default function UnifiedUniverseMenu({
                   })}
                 </div>
 
-                {/* BAS DU MENU : Boutons discrets type picto (Mosaïque / Carte) & Navigation */}
+                {/* BAS DU MENU : Bouton picto Mosaïque seul (ferme le panneau menu et ouvre la mosaïque plein écran) */}
                 <div className="mt-4 pt-3 border-t border-black/5 flex items-center justify-between px-2">
                   <div className="text-[11.5px] text-[#0B0C12]/60 hidden sm:flex items-center gap-2">
-                    <Radio size={12} className="text-emerald-500 animate-pulse" />
-                    <span>Synchronisation des flux géolocalisés et des métiers en temps réel</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Vue globale transversale des styles et des métiers</span>
                   </div>
 
-                  {/* Boutons pictos épurés : Bascule directe Mosaïque ou Carte */}
-                  <div className="ml-auto flex items-center gap-1.5 bg-neutral-100 p-1 rounded-full border border-black/5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsOpen(false);
-                        setIsDirectoryOpen(true);
-                      }}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black hover:bg-neutral-200 transition shadow-sm"
-                      title="Vue Mosaïque Globale"
-                    >
-                      <Grid size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsOpen(false);
-                        setIsDirectoryOpen(true);
-                        // Ouvre directement en mode Map
-                        window.dispatchEvent(new CustomEvent('open-map-mode'));
-                      }}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black hover:bg-neutral-200 transition shadow-sm"
-                      title="Vue Carte Géographique Live (AIME Network)"
-                    >
-                      <Radio size={14} className="text-emerald-600" />
-                    </button>
-                  </div>
+                  {/* Bouton picto mosaïque unique */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsDirectoryOpen(true);
+                    }}
+                    className="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-black text-white hover:bg-neutral-800 transition shadow-md"
+                    title="Ouvrir la Mosaïque Globale Plein Écran"
+                  >
+                    <Grid size={15} />
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -254,7 +239,7 @@ export default function UnifiedUniverseMenu({
         </AnimatePresence>
       </div>
 
-      {/* MODALE PLEIN ÉCRAN : MOSAÏQUE & CARTE GÉOLOCALISÉE LIVE */}
+      {/* MODALE PLEIN ÉCRAN : MOSAÏQUE & CARTE GÉOLOCALISÉE */}
       <UniverseDirectoryModal
         isOpen={isDirectoryOpen}
         onClose={() => setIsDirectoryOpen(false)}
