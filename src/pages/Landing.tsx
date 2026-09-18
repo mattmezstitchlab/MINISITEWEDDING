@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart } from 'lucide-react';
-import { PHASES } from '../lib/weddingStyles';
-import { TiltCard } from '../components/vision/VisionImage';
+import { ArrowRight, Heart } from 'lucide-react';
+import type { WeddingStyle } from '../lib/weddingStyles';
 import HeroCycle from '../components/HeroCycle';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import HeroAiPrompt from '../components/HeroAiPrompt';
 import RoleCockpitShowcase from '../components/RoleCockpitShowcase';
+import TimelineGesture from '../components/TimelineGesture';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const HERO_ROTATING_TITLES = [
@@ -17,14 +17,6 @@ const HERO_ROTATING_TITLES = [
   'Mariés, invités, prestataires.\nLe même instant, sans fausse note.',
 ];
 
-const MODULES = [
-  { icon: MailCheck, title: 'RSVP élégant', text: 'Présences, régimes, hébergement. Des statistiques limpides, jamais de tableaux austères.' },
-  { icon: Gift, title: 'Liste & cagnotte', text: 'Voyage de noces, cagnotte, liste de cadeaux. Objectifs, progression, bouton Participer.' },
-  { icon: Images, title: 'Bibliothèque média', text: 'Des collections cohérentes, vos propres images en un glisser-déposer.' },
-  { icon: MapPin, title: 'Infos pratiques', text: 'Adresses, parking, hébergements, dress code. Des cartes de verre, toujours claires.' },
-  { icon: CalendarDays, title: 'Programme Jour J', text: 'Une timeline spatiale : cérémonie, cocktail, dîner, bal. Heure, lieu, photo.' },
-  { icon: QrCode, title: 'Partage magique', text: 'Un lien à vos prénoms, un QR code à imprimer, partage WhatsApp, Messages, Email.' },
-];
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
 
@@ -37,6 +29,11 @@ const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0
 export default function Landing() {
   const navigate = useNavigate();
   const [titleIdx, setTitleIdx] = useState(0);
+  /**
+   * L'univers choisi dans le champ du hero : il devient une carte prête à
+   * glisser sur la timeline, tout de suite en dessous.
+   */
+  const [preloadedStyle, setPreloadedStyle] = useState<WeddingStyle | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -110,7 +107,12 @@ export default function Landing() {
             className="mt-4 w-full"
           >
             <ErrorBoundary>
-              <HeroAiPrompt />
+              <HeroAiPrompt
+                onProposalGenerated={(proposal) => {
+                  setPreloadedStyle(proposal.style);
+                  document.getElementById('geste')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              />
             </ErrorBoundary>
           </motion.div>
         </div>
@@ -121,56 +123,10 @@ export default function Landing() {
         <RoleCockpitShowcase />
       </ErrorBoundary>
 
-      {/* Modules — environnement clair */}
-      <section id="modules" className="relative mx-3 overflow-hidden rounded-[40px] border border-black/6 bg-white px-5 py-20 sm:mx-6 sm:px-8 sm:py-28">
-        <div className="relative mx-auto max-w-6xl">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-2xl text-center">
-            <div className="vp-eyebrow">Tout est inclus</div>
-            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Un objet complet, en couches</h2>
-            <p className="vp-body mt-4">RSVP, cagnotte, galerie, programme, FAQ — chaque module naît déjà rempli. Vous ajustez, c’est tout.</p>
-          </motion.div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {MODULES.map((m, i) => (
-              <motion.div key={m.title} {...fadeUp} transition={{ duration: 0.6, delay: (i % 3) * 0.09 }}>
-                <TiltCard className="h-full">
-                  <div className="vp-glass vp-spec vp-lift h-full rounded-[26px] p-7">
-                    <span className="vp-glyph h-11 w-11 rounded-[15px]">
-                      <m.icon size={19} strokeWidth={1.8} />
-                    </span>
-                    <div className="vp-h2 mt-5 text-[20px]">{m.title}</div>
-                    <p className="vp-caption mt-2 leading-relaxed">{m.text}</p>
-                  </div>
-                </TiltCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Phases */}
-      <section className="px-5 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto max-w-5xl">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="text-center">
-            <div className="vp-eyebrow">Avant · Pendant · Après</div>
-            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Un site qui vit avec vous</h2>
-          </motion.div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-3">
-            {PHASES.map((p, i) => (
-              <motion.div key={p.id} {...fadeUp} transition={{ duration: 0.6, delay: i * 0.09 }} className="h-full">
-                <div className="vp-glass vp-spec vp-lift relative h-full overflow-hidden rounded-[26px] p-7">
-                  <span className="absolute inset-x-0 top-0 h-[3px] bg-[var(--vp-ink)]" style={{ opacity: 0.1 + i * 0.14 }} />
-                  <div className="vp-eyebrow">Phase {i + 1}</div>
-                  <div className="vp-h2 mt-2 text-[26px]">{p.name}</div>
-                  <p className="vp-caption mt-2">{p.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          <motion.p {...fadeUp} transition={{ duration: 0.7 }} className="vp-body mx-auto mt-8 max-w-xl text-center !text-[var(--vp-muted)] italic">
-            « Après le mariage, il devient la mémoire numérique de votre jour. »
-          </motion.p>
-        </div>
-      </section>
+      {/* Le geste : la recherche, la carte, le glisser-déposer sur le Jour J */}
+      <ErrorBoundary>
+        <TimelineGesture preloaded={preloadedStyle} />
+      </ErrorBoundary>
 
       {/* Un seul parallax : le message de fond */}
       <ParallaxSection image="/images/zero-contrainte-wedding.jpg" overlayOpacity={0.65} heightClass="min-h-[70vh]">

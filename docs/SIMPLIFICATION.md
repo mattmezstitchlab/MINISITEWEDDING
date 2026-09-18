@@ -269,8 +269,16 @@ utile : la timeline.
   sélecteur de rôle, l'iPhone au centre, et **un seul écran** qui contient le
   visuel, le nom du rôle, les informations du rôle, la carte musicale (lecture
   réelle), la timeline en bas, et l'inspecteur au centre au clic.
-- `src/pages/Landing.tsx` — de 15 sections à 6 : hero + champ, l'écran par rôle,
-  les modules, les phases, un parallax, l'appel final.
+- `src/lib/gestureCatalog.ts` — 40 cartes (26 métiers + 14 moments) : la
+  taxonomie complète d'un mariage. Une recherche sans résultat produit malgré
+  tout une carte, avec un visuel d'univers et une durée à régler.
+- `src/components/TimelineGesture.tsx` — le geste : on cherche, la carte
+  apparaît, on la glisse sur la timeline du Jour J (ou on la touche puis on
+  touche l'heure, au doigt), on règle début et durée aux réglettes. Une carte
+  « métier » notifie la personne, qui doit confirmer son créneau.
+- `src/pages/Landing.tsx` — de 15 sections à 5 : hero + champ, l'écran par rôle,
+  le geste, un parallax, l'appel final. Le champ du hero ne se contente plus de
+  chercher : l'univers qu'on y choisit devient une carte prête à glisser.
 
 ### Mesuré
 
@@ -280,7 +288,7 @@ utile : la timeline.
 | Composants racine | 40 | 25 |
 | Pages | 7 | 6 |
 | Fichiers suivis | 213 | 192 |
-| Sections de l'accueil | 15 | 6 |
+| Sections de l'accueil | 15 | 5 |
 
 `npm test` : 166 contrôles, 0 échec. `tsc -b` et le lint passent sur les fichiers
 touchés.
