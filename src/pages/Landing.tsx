@@ -15,6 +15,7 @@ import HomeTriplePhoneShowcase from '../components/HomeTriplePhoneShowcase';
 import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
 import ImmersiveThemes from '../components/ImmersiveThemes';
 import CommunityFeedHub from '../components/CommunityFeedHub';
+import PredictiveOrchestrationStudio from '../components/PredictiveOrchestrationStudio';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const HERO_ROTATING_TITLES = [
@@ -139,6 +140,15 @@ export default function Landing() {
           />
         )}
       </ErrorBoundary>
+
+      {/* INNOVATION BRÉVETABLE : MOTEUR D'ORCHESTRATION PRÉDICTIVE TEMPORELLE (EVENT OS) */}
+      <section className="px-4 py-12 sm:px-8 bg-[#07070B]">
+        <div className="mx-auto max-w-6xl">
+          <ErrorBoundary>
+            <PredictiveOrchestrationStudio />
+          </ErrorBoundary>
+        </div>
+      </section>
 
       {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}
       <ParallaxSection
