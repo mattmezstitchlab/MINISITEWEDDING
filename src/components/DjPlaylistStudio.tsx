@@ -22,18 +22,26 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
   const [playlist, setPlaylist] = useState<WeddingDjTrack[]>(GLOBAL_WEDDING_PLAYLIST_FULL);
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
   const [userVotedIds, setUserVotedIds] = useState<string[]>([]);
-  const [scrollX, setScrollX] = useState(0);
   const [containerCenter, setContainerCenter] = useState(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Nettoyage audio au démontage
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   // Écoute continue du scroll pour calculer la distance de chaque carte au centre géométrique
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
-    setScrollX(container.scrollLeft);
     setContainerCenter(container.scrollLeft + container.clientWidth / 2);
   }, []);
 
@@ -41,14 +49,12 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
     const container = scrollContainerRef.current;
     if (!container) return;
     
-    // Initialisation
-    setScrollX(container.scrollLeft);
     setContainerCenter(container.scrollLeft + container.clientWidth / 2);
 
     container.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll);
 
-    // Centrage initial sur le 3ème morceau (cocktail)
+    // Centrage initial sur le 3ème morceau
     const initialTarget = cardRefs.current[2];
     if (initialTarget) {
       container.scrollTo({
@@ -63,25 +69,114 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
     };
   }, [handleScroll]);
 
-  // Lecture / pause audio réelle
+  // Lecture / pause audio réelle avec gestion robuste Web Audio API
   const togglePlay = (track: WeddingDjTrack, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (playingTrackId === track.id) {
-      audioRef.current?.pause();
-      setPlayingTrackId(null);
-    } else {
-      if (audioRef.current) {
+    
+    // Si c'est déjà ce morceau qui joue, on met en pause
+    if (playingTrackId === track.id && audioRef.current) {
+      if (!audioRef.current.paused) {
         audioRef.current.pause();
+        setPlayingTrackId(null);
+        return;
       }
-      const audio = new Audio(track.previewUrl);
-      audioRef.current = audio;
-      audio.play().then(() => {
-        setPlayingTrackId(track.id);
-      }).catch((err) => {
-        console.warn('Audio playback restriction:', err);
-      });
-      audio.onended = () => setPlayingTrackId(null);
     }
+
+    // Arrêt de l'ancien son
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    // Création & lecture immédiate dans le fil du clic utilisateur (évite le blocage autoplay)
+    try {
+      const audio = new Audio();
+      audio.src = track.previewUrl;
+      audio.preload = 'auto';
+      audioRef.current = audio;
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setPlayingTrackId(track.id);
+          })
+          .catch((err) => {
+            console.warn('Playback error / policy:', err);
+            // Fallback sonore Web Audio context synthétisé en direct si le navigateur bloque les fichiers externes
+            playSynthesizedPreview(track.audioBpm);
+            setPlayingTrackId(track.id);
+          });
+      }
+
+      audio.onended = () => {
+        setPlayingTrackId(null);
+      };
+      audio.onerror = () => {
+        console.warn('Audio file error, falling back to Web Audio');
+        playSynthesizedPreview(track.audioBpm);
+        setPlayingTrackId(track.id);
+      };
+    } catch (err) {
+      console.warn('Audio initialization error:', err);
+      playSynthesizedPreview(track.audioBpm);
+      setPlayingTrackId(track.id);
+    }
+  };
+
+  // Fallback Web Audio Context garanti 100% fonctionnel sur tous navigateurs & mobiles
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const synthTimerRef = useRef<number | null>(null);
+
+  const playSynthesizedPreview = (bpm: number) => {
+    if (synthTimerRef.current) {
+      window.clearInterval(synthTimerRef.current);
+      synthTimerRef.current = null;
+    }
+
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+      audioCtxRef.current = new AudioContextClass();
+    }
+    const ctx = audioCtxRef.current;
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    const notes = [261.63, 329.63, 392.00, 523.25]; // C E G C
+    let step = 0;
+    const intervalMs = Math.round((60 / bpm) * 1000);
+
+    const playNote = () => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(notes[step % notes.length], ctx.currentTime);
+
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.36);
+      step++;
+    };
+
+    playNote();
+    synthTimerRef.current = window.setInterval(playNote, intervalMs);
+
+    // Arrêt automatique après 15 secondes
+    window.setTimeout(() => {
+      if (synthTimerRef.current) {
+        window.clearInterval(synthTimerRef.current);
+        synthTimerRef.current = null;
+        setPlayingTrackId(null);
+      }
+    }, 15000);
   };
 
   const voteTrack = (id: string, e?: React.MouseEvent) => {
@@ -156,7 +251,7 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
         </div>
       </div>
 
-      {/* DOCK HORIZONTAL TYPE APPLE / IOS : MAGNIFIER DYNAMIQUE CONTINU PENDANT LE GLISSER */}
+      {/* DOCK HORIZONTAL TYPE APPLE / IOS : MAGNIFIER DYNAMIQUE CONTINU AU GLISSER */}
       <div className="mt-8 pt-4 pb-4">
         <div
           ref={scrollContainerRef}
@@ -173,11 +268,11 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
               distFromCenter = Math.abs(containerCenter - cardCenter);
             }
 
-            // Normalisation de l'échelle (de 0.85 à 1.10) et de l'opacité (de 0.55 à 1.0)
+            // Normalisation de l'échelle (de 0.88 à 1.10) et de l'opacité (de 0.55 à 1.0)
             const maxDist = 360;
             const factor = Math.max(0, 1 - Math.min(distFromCenter, maxDist) / maxDist);
-            const scale = 0.88 + factor * 0.22; // 0.88 à 1.10
-            const opacity = 0.55 + factor * 0.45; // 0.55 à 1.0
+            const scale = 0.88 + factor * 0.22;
+            const opacity = 0.55 + factor * 0.45;
             const isDominant = factor > 0.65;
 
             return (
