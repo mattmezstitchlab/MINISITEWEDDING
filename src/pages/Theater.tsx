@@ -200,57 +200,60 @@ export default function Theater() {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#FBFBFD] text-[#0B0C12] select-none font-sans">
       
-      {/* 1. BARRE SUPÉRIEURE DE NAVIGATION ET COMMANDES STUDIO UNIFIÉE */}
-      <header className="h-16 shrink-0 z-40 border-b border-black/8 bg-white/95 px-4 sm:px-6 flex items-center justify-between backdrop-blur-xl">
+      {/* 1. BARRE SUPÉRIEURE DE NAVIGATION ET COMMANDES STUDIO UNIFIÉE (Épurée & Responsive, 100% pictos) */}
+      <header className="h-14 sm:h-16 shrink-0 z-40 border-b border-black/8 bg-white/95 px-3 sm:px-6 flex items-center justify-between backdrop-blur-xl">
         
-        {/* Logo VOWS & Switcher de mode de timeline */}
-        <div className="flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
-            <span className="text-[10.5px] font-mono uppercase tracking-wider text-black/40 hidden sm:inline">
-              / Timeline Theater Studio
+        {/* Logo VOWS & Switcher de mode sous forme de pictos épurés avec tooltips */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link to="/" className="flex items-center gap-1.5 shrink-0" title="Retour à l'accueil">
+            <span className="vp-title text-[17px] sm:text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-black/40 hidden md:inline">
+              / Theater
             </span>
           </Link>
 
-          {/* Sélecteur de mode Studio */}
+          {/* Sélecteur de mode Studio 100% PICTOS */}
           <div className="flex items-center gap-1 p-1 rounded-full bg-neutral-100 border border-black/5">
             <button
               type="button"
               onClick={() => setMode('jour-j')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11.5px] font-semibold transition ${
+              className={`flex h-8 w-8 sm:h-8 sm:w-auto sm:px-3 items-center justify-center gap-1.5 rounded-full text-[11.5px] font-semibold transition ${
                 mode === 'jour-j' ? 'bg-white text-black shadow-sm font-bold' : 'text-black/50 hover:text-black'
               }`}
+              title="Jour J Live (06:00 → 04:00)"
             >
-              <Clock size={13} />
-              <span>Jour J Live</span>
+              <Clock size={15} />
+              <span className="hidden sm:inline">Jour J</span>
             </button>
             <button
               type="button"
               onClick={() => setMode('calendar')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11.5px] font-semibold transition ${
+              className={`flex h-8 w-8 sm:h-8 sm:w-auto sm:px-3 items-center justify-center gap-1.5 rounded-full text-[11.5px] font-semibold transition ${
                 mode === 'calendar' ? 'bg-white text-black shadow-sm font-bold' : 'text-black/50 hover:text-black'
               }`}
+              title="Calendrier & Futurs Événements"
             >
-              <Calendar size={13} />
-              <span>Futurs Events</span>
+              <Calendar size={15} />
+              <span className="hidden sm:inline">Calendrier</span>
             </button>
             <button
               type="button"
               onClick={() => setMode('archives')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11.5px] font-semibold transition ${
+              className={`flex h-8 w-8 sm:h-8 sm:w-auto sm:px-3 items-center justify-center gap-1.5 rounded-full text-[11.5px] font-semibold transition ${
                 mode === 'archives' ? 'bg-white text-black shadow-sm font-bold' : 'text-black/50 hover:text-black'
               }`}
+              title="Archives & Documents scellés"
             >
-              <Archive size={13} />
-              <span>Archives &amp; Docs</span>
+              <FileText size={15} />
+              <span className="hidden sm:inline">Archives</span>
             </button>
           </div>
         </div>
 
         {/* Contrôles de lecture & Menus de navigation */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           
-          {/* Zoom Ruler */}
+          {/* Zoom Ruler (Pictos seuls) */}
           <div className="flex items-center gap-0.5 bg-neutral-100 rounded-full p-1 border border-black/5">
             <button
               type="button"
@@ -258,40 +261,41 @@ export default function Theater() {
               className="p-1 text-black/60 hover:text-black transition"
               title="Dézoomer"
             >
-              <ZoomOut size={13} />
+              <ZoomOut size={14} />
             </button>
-            <span className="text-[10px] font-mono px-1.5 text-black/60 font-semibold">{zoomLevel.toFixed(1)}×</span>
+            <span className="text-[10px] font-mono px-1 text-black/60 font-semibold">{zoomLevel.toFixed(1)}×</span>
             <button
               type="button"
               onClick={() => setZoomLevel((z) => Math.min(2.5, z + 0.25))}
               className="p-1 text-black/60 hover:text-black transition"
               title="Zoomer"
             >
-              <ZoomIn size={13} />
+              <ZoomIn size={14} />
             </button>
           </div>
 
-          {/* Bouton Simulation Playhead */}
+          {/* Bouton Simulation Playhead (Picto rond compact) */}
           <button
             type="button"
             onClick={() => setIsPlaying(!isPlaying)}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11.5px] font-bold transition border ${
+            className={`flex h-8 w-8 sm:h-8 sm:w-auto sm:px-3 items-center justify-center gap-1.5 rounded-full text-[11.5px] font-bold transition border ${
               isPlaying
                 ? 'bg-black text-white border-black shadow-sm'
                 : 'bg-white text-black border-black/10 hover:border-black/30'
             }`}
+            title={isPlaying ? 'Mettre en pause' : 'Lancer la simulation en direct'}
           >
-            {isPlaying ? <Pause size={12} /> : <Play size={12} />}
-            <span className="hidden sm:inline">{isPlaying ? 'Pause' : 'Simulation Direct'}</span>
+            {isPlaying ? <Pause size={13} /> : <Play size={13} />}
+            <span className="hidden md:inline">{isPlaying ? 'Pause' : 'Direct'}</span>
           </button>
 
           {/* Indicateur Heure Tête de lecture */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/5 font-mono text-[11.5px] text-black font-bold">
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/5 font-mono text-[11px] sm:text-[11.5px] text-black font-bold">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>{minutesToTimeString(currentPlayheadMin)}</span>
           </div>
 
-          {/* Menus unifiés Event OS & Univers */}
+          {/* Menus unifiés Event OS & Univers (préservés proprement) */}
           <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-black/8">
             <UnifiedEventOsMenu />
             <UnifiedUniverseMenu
@@ -526,10 +530,30 @@ export default function Theater() {
 
                 </div>
 
-                {/* Pied du panneau : indication glisser-déposer */}
-                <div className="pt-4 border-t border-black/8 flex items-center justify-between text-[11px] text-black/40 font-mono">
-                  <span>💡 Glissez le bloc sur la règle pour déplacer</span>
-                  <span>↔ Poignée droite pour étirer</span>
+                {/* Pied du panneau : épuré sans texte verbeux */}
+                <div className="pt-3 border-t border-black/8 flex items-center justify-between text-[11px] text-black/40 font-mono">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <span>Synchronisation directe VOWS OS</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => togglePlayAudio(selectedItem.audioPreviewUrl, selectedItem.id)}
+                      className="p-1 hover:text-black transition"
+                      title="Audio preview"
+                    >
+                      <Headphones size={13} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsSaxModalOpen(true)}
+                      className="p-1 hover:text-black transition"
+                      title="Profil & Mini-Site"
+                    >
+                      <User size={13} />
+                    </button>
+                  </div>
                 </div>
 
               </div>
@@ -543,30 +567,29 @@ export default function Theater() {
       </main>
 
       {/* 3. SURFACE HORIZONTALE PLEINE LARGEUR EN BAS : LA TIMELINE RULER GLISSABLE */}
-      <footer className="shrink-0 h-48 border-t border-black/10 bg-white/95 px-4 sm:px-6 py-3 flex flex-col justify-between shadow-[0_-15px_40px_rgba(0,0,0,0.04)]">
+      <footer className="shrink-0 h-44 sm:h-48 border-t border-black/10 bg-white/95 px-3 sm:px-6 py-2.5 flex flex-col justify-between shadow-[0_-15px_40px_rgba(0,0,0,0.04)]">
         
-        {/* En-tête de la Timeline Ruler */}
+        {/* En-tête de la Timeline Ruler épurée (0 texte inutile, 100% repères utiles) */}
         <div className="flex items-center justify-between text-[11px] pb-1">
           <div className="flex items-center gap-2 font-mono text-black/60">
-            <SlidersHorizontal size={12} className="text-black" />
-            <span className="font-bold text-black uppercase tracking-wider">Surface de Montage Temporel</span>
-            <span>(06:00 → 04:00 J+1)</span>
-            <span className="text-[10px] bg-black/5 px-2 py-0.5 rounded-full">Aimantation 5 min</span>
+            <SlidersHorizontal size={13} className="text-black" />
+            <span className="font-bold text-black uppercase tracking-wider text-[10.5px] sm:text-[11px]">Timeline</span>
+            <span className="text-[10px] text-black/40 font-mono">06:00 → 04:00 (+1)</span>
           </div>
 
-          <div className="flex items-center gap-4 text-black/40 font-mono text-[10.5px]">
-            <span>Glisser = Déplacer heure</span>
-            <span>Poignée droite = Étirer durée</span>
+          <div className="flex items-center gap-2.5 text-black/40 font-mono text-[10.5px]">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 hidden sm:inline" />
+            <span className="text-[10px] bg-black/5 px-2 py-0.5 rounded-full hidden sm:inline">Snap 5m</span>
             <button
               type="button"
               onClick={() => {
                 setItems(INITIAL_TIMELINE_ITEMS);
                 setSelectedId('jj-3');
               }}
-              className="hover:text-black transition flex items-center gap-1"
+              className="hover:text-black transition flex items-center gap-1 p-1"
+              title="Réinitialiser l'alignement nominal"
             >
-              <RotateCcw size={11} />
-              <span>Réinitialiser</span>
+              <RotateCcw size={12} />
             </button>
           </div>
         </div>
