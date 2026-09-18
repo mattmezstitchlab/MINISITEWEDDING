@@ -1,31 +1,58 @@
 /**
- * Moteur temporel & structure de données universelle Timeline Theater
- * Déclinaison multi-mode : Jour J (Régie micro), Calendrier (Futurs events) et Archives (Mémoire & Docs)
+ * Moteur temporel & structure de données universelle de la Timeline Miroir
+ * Intègre les autorisations d'accès strictes (Invités / Mariés / Prestataires)
+ * et le coffre-fort documentaire scellé (devis, contrats, factures, fiches techniques).
  */
 
 export type TimelineMode = 'jour-j' | 'calendar' | 'archives';
+export type ViewerPerspective = 'guest' | 'couple' | 'vendor';
+
+export interface TimelineDocument {
+  id: string;
+  name: string;
+  type: 'devis' | 'facture' | 'contrat' | 'brief' | 'plan_technique' | 'menu';
+  fileSize: string;
+  status: 'signe_scelle' | 'en_attente' | 'regle';
+  accessLevels: ViewerPerspective[]; // Qui a le droit de voir ce document
+  uploadedBy: 'couple' | 'vendor';
+  timestamp: string;
+}
 
 export interface TimelineTrackItem {
   id: string;
   mode: TimelineMode;
-  chapter: string; // ex: 'Matin & Préparatifs', 'Cérémonie & Émotion', 'Festivités'
+  chapter: string;
   title: string;
   subtitle: string;
-  startTime: string; // '17:00' ou date ISO '2026-06-20'
-  durationMinutes: number; // Durée en minutes (ex: 90)
-  startMinuteOfDay: number; // Minutes depuis 06:00 (0 = 06:00, 60 = 07:00, etc.)
+  startTime: string; // '17:30'
+  durationMinutes: number;
+  startMinuteOfDay: number; // Minutes depuis 06:00
   colorAccent?: string;
   themeStyleId?: string;
   category: 'ceremony' | 'cocktail' | 'dinner' | 'party' | 'vendor' | 'doc' | 'milestone';
   
-  // Alignement & Mini-sites associés
+  // Alignement du rôle & Mini-site prestataire
   alignedRole?: string; // ex: 'Saxophoniste Live', 'Photographe Argentique'
   audioPreviewUrl?: string;
   mediaUrl?: string;
   mediaType?: 'image' | 'audio' | 'video' | 'doc';
-  docBadge?: string; // ex: 'Contrat signé', 'Plan de table v3', 'Brief sonore'
   description?: string;
   
+  // Autorisations d'accès (qui voit ce moment sur son écran)
+  visibility: ViewerPerspective[]; // ex: ['guest', 'couple', 'vendor'] ou seulement ['couple', 'vendor']
+  
+  // Données de coordination en miroir (Zéro réclamation / Vérité partagée)
+  coupleNote?: string; // Repère et exigences posés par les mariés
+  vendorConfirmation?: {
+    confirmed: boolean;
+    confirmedAt?: string;
+    technicalRequirements?: string;
+  };
+
+  // Coffre-fort documentaire scellé sur ce créneau horaire
+  attachedDocs: TimelineDocument[];
+  docBadge?: string; // Rétrocompatibilité d'affichage studio
+
   // Métriques studio
   targetBpm?: number;
   solarConstraint?: 'golden_hour' | 'sunset' | 'night';
@@ -34,16 +61,14 @@ export interface TimelineTrackItem {
 
 // 06:00 du matin à 04:00 le lendemain = 22 heures = 1320 minutes
 export const TIMELINE_START_HOUR = 6;
-export const TIMELINE_TOTAL_HOURS = 22; // de 06h à 04h J+1
-export const TIMELINE_TOTAL_MINUTES = TIMELINE_TOTAL_HOURS * 60; // 1320 min
+export const TIMELINE_TOTAL_HOURS = 22;
+export const TIMELINE_TOTAL_MINUTES = TIMELINE_TOTAL_HOURS * 60;
 
 export function timeToMinutesFromStart(timeStr: string): number {
   const parts = timeStr.replace('h', ':').split(':');
   const h = parseInt(parts[0], 10);
   const m = parseInt(parts[1] || '0', 10);
   
-  // Si h >= 6, c'est le jour J (6h à 23h59)
-  // Si h < 6, c'est le lendemain (00h à 04h)
   const normalizedHour = h >= TIMELINE_START_HOUR ? h - TIMELINE_START_HOUR : h + (24 - TIMELINE_START_HOUR);
   return normalizedHour * 60 + m;
 }
@@ -62,7 +87,7 @@ export const INITIAL_TIMELINE_ITEMS: TimelineTrackItem[] = [
     id: 'jj-1',
     mode: 'jour-j',
     chapter: 'Arrivée & Préparatifs',
-    title: 'Habillage & Clichés Intimes',
+    title: 'Arrivée Régie & Habillage Mariés',
     subtitle: 'Suite nuptiale & salon des témoins',
     startTime: '14:30',
     durationMinutes: 75,
@@ -71,9 +96,26 @@ export const INITIAL_TIMELINE_ITEMS: TimelineTrackItem[] = [
     alignedRole: 'Photographe Argentique',
     mediaUrl: '/images/mariage-chateau-contemporain.jpg',
     mediaType: 'image',
-    docBadge: 'Moodboard validé',
-    description: 'Capture des détails, parfums, boutonnières et sourires discrets avant la frénésie.',
-    targetBpm: 70,
+    description: 'Capture des détails, parfums, boutonnières et sourires discrets.',
+    visibility: ['couple', 'vendor'], // Masqué aux invités pour préserver l'intimité
+    coupleNote: 'Robe suspendue dans la chambre rose. Clichés avec les témoins à 15h15 pile.',
+    vendorConfirmation: {
+      confirmed: true,
+      confirmedAt: 'Validé il y a 2h',
+      technicalRequirements: '2 boîtiers Leica chargés, 8 pellicules 35mm prêtes',
+    },
+    attachedDocs: [
+      {
+        id: 'doc-1',
+        name: 'Contrat & Acompte Photographe.pdf',
+        type: 'contrat',
+        fileSize: '1.8 Mo',
+        status: 'signe_scelle',
+        accessLevels: ['couple', 'vendor'],
+        uploadedBy: 'vendor',
+        timestamp: 'Signé électroniquement',
+      },
+    ],
   },
   {
     id: 'jj-2',
@@ -88,15 +130,32 @@ export const INITIAL_TIMELINE_ITEMS: TimelineTrackItem[] = [
     alignedRole: 'Célébrant & Quatuor',
     mediaUrl: '/images/mariage-chapelle-brutaliste.jpg',
     mediaType: 'image',
-    docBadge: 'Texte des vœux secret',
-    description: 'Entrée des mariés, discours des témoins clés, échange des anneaux et sortie sous pétales.',
-    targetBpm: 68,
+    description: 'Entrée des mariés, discours des témoins clés, échange des anneaux et sortie.',
+    visibility: ['guest', 'couple', 'vendor'], // Visible de TOUS
+    coupleNote: 'Pas de téléphones pendant l’échange des alliances (mentionné par le célébrant).',
+    vendorConfirmation: {
+      confirmed: true,
+      confirmedAt: 'Calé',
+      technicalRequirements: 'Micro cravate sans fil + sonorisation acoustique prête',
+    },
+    attachedDocs: [
+      {
+        id: 'doc-2',
+        name: 'Livret de Cérémonie & Musiques.pdf',
+        type: 'brief',
+        fileSize: '840 Ko',
+        status: 'signe_scelle',
+        accessLevels: ['guest', 'couple', 'vendor'], // Même les invités y ont accès !
+        uploadedBy: 'couple',
+        timestamp: 'Mis à disposition',
+      },
+    ],
   },
   {
     id: 'jj-3',
     mode: 'jour-j',
     chapter: 'Cocktail & Golden Hour',
-    title: 'Set Saxophone & Dégustation Champagne',
+    title: 'Set Saxophone Live & Dégustation Champagne',
     subtitle: 'Terrasse haute face au couchant',
     startTime: '17:30',
     durationMinutes: 105,
@@ -106,16 +165,44 @@ export const INITIAL_TIMELINE_ITEMS: TimelineTrackItem[] = [
     audioPreviewUrl: 'https://cdn.freesound.org/previews/415/415511_5121236-lq.mp3',
     mediaUrl: '/images/mariage-black-tie-minimaliste.jpg',
     mediaType: 'audio',
-    docBadge: 'Pièces cocktail 12 passages',
     description: 'Accords acoustiques lounge et deep-house au coucher du soleil (Golden Hour à 18h45).',
     solarConstraint: 'golden_hour',
     targetBpm: 104,
+    visibility: ['guest', 'couple', 'vendor'],
+    coupleNote: 'Repère Mariés : Solo saxo précis au moment du lancer du bouquet à 18h30.',
+    vendorConfirmation: {
+      confirmed: true,
+      confirmedAt: 'Régie alignée',
+      technicalRequirements: 'Émetteur HF sans fil saxo testé, portée 80m terrasse',
+    },
+    attachedDocs: [
+      {
+        id: 'doc-3a',
+        name: 'Fiche Technique Régie Son Saxophone.pdf',
+        type: 'plan_technique',
+        fileSize: '620 Ko',
+        status: 'signe_scelle',
+        accessLevels: ['couple', 'vendor'],
+        uploadedBy: 'vendor',
+        timestamp: 'Validé par régisseur',
+      },
+      {
+        id: 'doc-3b',
+        name: 'Devis Signé & Facture Acompte.pdf',
+        type: 'facture',
+        fileSize: '1.2 Mo',
+        status: 'regle',
+        accessLevels: ['couple', 'vendor'],
+        uploadedBy: 'vendor',
+        timestamp: 'Réglé le 12/04/2026',
+      },
+    ],
   },
   {
     id: 'jj-4',
     mode: 'jour-j',
     chapter: 'Banquet & Toasts',
-    title: 'Dîner Gastronomique & Discours',
+    title: 'Dîner Gastronomique & Discours Témoins',
     subtitle: 'Grande nef lumineuse & chandeliers',
     startTime: '20:00',
     durationMinutes: 135,
@@ -124,9 +211,36 @@ export const INITIAL_TIMELINE_ITEMS: TimelineTrackItem[] = [
     alignedRole: 'Chef Traiteur Étoilé',
     mediaUrl: '/images/table-noir.jpg',
     mediaType: 'image',
-    docBadge: 'Plan de table dynamique v4',
     description: 'Service à l’assiette cadencé, interventions brèves et émotionnelles entre les plats.',
     targetBpm: 92,
+    visibility: ['guest', 'couple', 'vendor'],
+    coupleNote: 'Discours max 4 minutes chacun pour ne pas refroidir les plats chauds.',
+    vendorConfirmation: {
+      confirmed: true,
+      technicalRequirements: 'Envoi des plats chauds coordonné à la seconde avec le DJ',
+    },
+    attachedDocs: [
+      {
+        id: 'doc-4a',
+        name: 'Plan de Table & Régimes Invités.pdf',
+        type: 'plan_technique',
+        fileSize: '2.4 Mo',
+        status: 'signe_scelle',
+        accessLevels: ['couple', 'vendor'],
+        uploadedBy: 'couple',
+        timestamp: 'Scellé sans erreur',
+      },
+      {
+        id: 'doc-4b',
+        name: 'Menu & Accords Mets Vins.pdf',
+        type: 'menu',
+        fileSize: '950 Ko',
+        status: 'signe_scelle',
+        accessLevels: ['guest', 'couple', 'vendor'],
+        uploadedBy: 'vendor',
+        timestamp: 'Visible par les invités',
+      },
+    ],
   },
   {
     id: 'jj-5',
@@ -142,85 +256,25 @@ export const INITIAL_TIMELINE_ITEMS: TimelineTrackItem[] = [
     audioPreviewUrl: 'https://cdn.freesound.org/previews/612/612644_5674468-lq.mp3',
     mediaUrl: '/images/mariage-techno-berlinois.jpg',
     mediaType: 'audio',
-    docBadge: 'Rider technique son & light',
     description: 'Transition progressive du slow émotionnel vers la transe festive jusqu’au petit matin.',
     targetBpm: 128,
-  },
-
-  // --- MODE CALENDRIER / FUTURS EVENTS ---
-  {
-    id: 'cal-1',
-    mode: 'calendar',
-    chapter: 'J-180 · Définition Artistique',
-    title: 'Validation Scénographique & Choix du Thème',
-    subtitle: 'Direction artistique & typographie VOWS',
-    startTime: '10:00',
-    durationMinutes: 180,
-    startMinuteOfDay: timeToMinutesFromStart('10:00'),
-    category: 'milestone',
-    alignedRole: 'Directeur Artistique',
-    mediaUrl: '/images/mariage-white-editorial.jpg',
-    mediaType: 'image',
-    docBadge: 'Charte graphique validée',
-    description: 'Arrêt définitif de la palette, des faire-part numériques et de l’identité visuelle.',
-  },
-  {
-    id: 'cal-2',
-    mode: 'calendar',
-    chapter: 'J-90 · Dégustation & Sons',
-    title: 'Dégustation Traiteur & Répétition Sax',
-    subtitle: 'Session privée au domaine',
-    startTime: '13:00',
-    durationMinutes: 120,
-    startMinuteOfDay: timeToMinutesFromStart('13:00'),
-    category: 'vendor',
-    alignedRole: 'Chef Traiteur & Saxophoniste',
-    docBadge: 'Menu 5 temps arrêté',
-    description: 'Sélection des accords mets & vins, calage des transitions musicales de chaque moment.',
-  },
-  {
-    id: 'cal-3',
-    mode: 'calendar',
-    chapter: 'J-15 · Synchronisation Régie',
-    title: 'Répétition Générale & Brief Prestataires',
-    subtitle: 'Visioconférence Talkie-Walkie Event OS',
-    startTime: '19:00',
-    durationMinutes: 90,
-    startMinuteOfDay: timeToMinutesFromStart('19:00'),
-    category: 'milestone',
-    alignedRole: 'Orchestrateur VOWS',
-    docBadge: 'Conducteur d’antenne final',
-    description: 'Vérification des canaux audio chiffrés, des marges de repli pluie et des accès livraisons.',
-  },
-
-  // --- MODE ARCHIVES & MÉMOIRE DOC ---
-  {
-    id: 'arc-1',
-    mode: 'archives',
-    chapter: 'Documents Légaux & Administratifs',
-    title: 'Contrats Prestataires & Assurances Site',
-    subtitle: 'Fichiers certifiés scellés',
-    startTime: '09:00',
-    durationMinutes: 60,
-    startMinuteOfDay: timeToMinutesFromStart('09:00'),
-    category: 'doc',
-    alignedRole: 'Notaire & Régisseur',
-    docBadge: 'Coffre-fort numérique PDF',
-    description: 'Centralisation de l’ensemble des signatures électroniques, devis et autorisations préfectorales.',
-  },
-  {
-    id: 'arc-2',
-    mode: 'archives',
-    chapter: 'Rushes & Master Audio',
-    title: 'Master Enregistrement Live Station Radio',
-    subtitle: 'Flux WAV 24-bit 48kHz multipiste',
-    startTime: '12:00',
-    durationMinutes: 300,
-    startMinuteOfDay: timeToMinutesFromStart('12:00'),
-    category: 'doc',
-    alignedRole: 'Ingénieur du Son VOWS',
-    audioPreviewUrl: 'https://cdn.freesound.org/previews/415/415511_5121236-lq.mp3',
-    docBadge: 'Archive Master 8.4 Go',
-    description: 'Intégralité des vœux murmurés, discours des proches et captation live du saxo et du bal.',
+    visibility: ['guest', 'couple', 'vendor'],
+    coupleNote: 'Entrée dans la brume à 22h45 avec le saxophoniste live.',
+    vendorConfirmation: {
+      confirmed: true,
+      technicalRequirements: 'Machine à brouillard lourd & stroboscopes vérifiés',
+    },
+    attachedDocs: [
+      {
+        id: 'doc-5',
+        name: 'Contrat Clôture Nocturne 05h00.pdf',
+        type: 'contrat',
+        fileSize: '1.4 Mo',
+        status: 'signe_scelle',
+        accessLevels: ['couple', 'vendor'],
+        uploadedBy: 'vendor',
+        timestamp: 'Autorisation municipale jointe',
+      },
+    ],
   },
 ];
