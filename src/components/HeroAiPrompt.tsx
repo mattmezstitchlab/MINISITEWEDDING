@@ -1,18 +1,30 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Briefcase, Search } from 'lucide-react';
+import { ArrowRight, Briefcase } from 'lucide-react';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
-import { seedSite } from '../lib/defaults';
+
+/** Ce que l'agent transmet à l'appelant quand un univers est choisi. */
+export interface HeroProposal {
+  style: WeddingStyle;
+  partner1: string;
+  partner2: string;
+  wedding_date: string;
+  formattedDate: string;
+  venue: string;
+  city: string;
+  toneResponse: string;
+  accentColor: string;
+  suggestedModules: string[];
+  missingFields: { names: boolean; date: boolean; venue: boolean };
+}
 
 interface HeroAiPromptProps {
-  onProposalGenerated?: (proposal: any) => void;
-  externalMissionCategory?: any;
+  onProposalGenerated?: (proposal: HeroProposal) => void;
 }
 
 export default function HeroAiPrompt({ onProposalGenerated }: HeroAiPromptProps) {
   const [prompt, setPrompt] = useState('');
-  const [isCreatingSite, setIsCreatingSite] = useState(false);
 
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -137,32 +149,26 @@ export default function HeroAiPrompt({ onProposalGenerated }: HeroAiPromptProps)
       formattedDate: 'Date à définir',
       venue: 'Lieu de votre choix',
       city: 'Destination',
-      toneResponse: style.manifesto || style.synopsis,
+      toneResponse: style.manifesto || style.synopsis || '',
       accentColor: style.accent,
       suggestedModules: ['Programme Jour J', 'RSVP interactif', 'Lieux & Plans', 'Galerie'],
       missingFields: { names: false, date: false, venue: false },
     });
   };
 
-  const handleLaunch = async (styleToUse: WeddingStyle) => {
-    setIsCreatingSite(true);
+  /**
+   * Le champ ne crée plus de site fantôme rempli de faux noms (« Les Mariés »,
+   * « Lieu à définir »). Il emmène au questionnaire avec l'univers choisi :
+   * le couple y saisit ses vrais prénoms, sa date et son lieu, et le site est
+   * composé une seule fois, avec ses vraies données.
+   */
+  const handleLaunch = (styleToUse: WeddingStyle) => {
     handleSelectUniverse(styleToUse);
-
-    try {
-      const { site } = await seedSite({
-        partner1: 'Les Mariés',
-        partner2: '',
-        wedding_date: '2028-06-24',
-        venue: 'Lieu à définir',
-        city: 'France',
-        style: styleToUse.id.startsWith('custom') ? 'noir-blanc' : styleToUse.id,
-      });
-      navigate(`/generation?site=${site.id}`);
-    } catch (e) {
-      navigate('/generer');
-    } finally {
-      setIsCreatingSite(false);
-    }
+    navigate('/creer', {
+      state: {
+        preselectedStyle: styleToUse.id.startsWith('custom') ? 'noir-blanc' : styleToUse.id,
+      },
+    });
   };
 
   const hasTyped = prompt.trim().length > 0;

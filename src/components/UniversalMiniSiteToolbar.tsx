@@ -1,137 +1,48 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Radio,
-  Flame,
-  Compass,
-  ArrowUp,
-  User,
-  Sliders,
-  SlidersHorizontal,
-} from 'lucide-react';
-import WeddingLiveStoriesFeed from './WeddingLiveStoriesFeed';
-import UniverseDirectoryModal from './UniverseDirectoryModal';
-import SaxophonistProfileModal from './SaxophonistProfileModal';
+import { ArrowUp, SlidersHorizontal } from 'lucide-react';
 import FloatingTimelineDrawer from './FloatingTimelineDrawer';
-import type { WeddingStyle } from '../lib/weddingStyles';
 
-interface UniversalMiniSiteToolbarProps {
-  currentStyleId?: string | null;
-  onOpenStories?: () => void;
-  onSelectStyle?: (style: WeddingStyle) => void;
-}
-
-export default function UniversalMiniSiteToolbar({
-  currentStyleId,
-  onOpenStories,
-  onSelectStyle,
-}: UniversalMiniSiteToolbarProps) {
-  const [isStoriesOpen, setIsStoriesOpen] = useState(false);
-  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-  const [isSaxProfileOpen, setIsSaxProfileOpen] = useState(false);
-  const [isTimelineDrawerOpen, setIsTimelineDrawerOpen] = useState(false);
+/**
+ * Barre d'outils du mini-site.
+ *
+ * Réduite à l'essentiel : la timeline (le différenciant du produit) et le retour
+ * en haut de page. Les pictos Stories, Radar, Radio et Profil saxophoniste ont
+ * été retirés — sur le site d'un mariage, ils détournaient l'invité de ce qu'il
+ * venait chercher : le programme, le lieu, et sa réponse.
+ */
+export default function UniversalMiniSiteToolbar() {
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
 
   return (
     <>
-      {/* Barre d'outils tactile flottante fixée en bas d'écran (Uniquement avec des pictos ultra-épurés) */}
-      <div className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 pointer-events-none">
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-[#0A0B10]/95 px-3 py-1.5 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
-          
-          {/* 1. PICTO STORIES LIVE VERTICALES TIKTOK (Harmonisé sans rond blanc trompeur) */}
+      <div className="pointer-events-none fixed bottom-4 left-1/2 z-40 -translate-x-1/2">
+        <div className="pointer-events-auto flex items-center gap-1.5 rounded-full border border-white/15 bg-[#0A0B10]/95 px-2.5 py-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl">
           <button
             type="button"
-            onClick={() => setIsStoriesOpen(true)}
-            className="group relative flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition active:scale-95"
-            title="Stories Live"
-          >
-            <span className="relative flex h-2 w-2 absolute top-1 right-1">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-80" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
-            </span>
-            <Flame size={16} />
-          </button>
-
-          {/* 2. PICTO CARTE RADAR LIVE */}
-          <button
-            type="button"
-            onClick={() => setIsMapModalOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition"
-            title="Carte Radar & Plan B à proximité"
-          >
-            <Compass size={17} className="text-emerald-400" />
-          </button>
-
-          {/* 3. PICTO TIMELINE THEATER (Bandeau horizontal rétractable) */}
-          <button
-            type="button"
-            onClick={() => setIsTimelineDrawerOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition"
-            title="Timeline Theater · Bandeau Rétractable"
+            onClick={() => setIsTimelineOpen(true)}
+            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[11.5px] font-semibold text-white/85 transition hover:bg-white/10 hover:text-white"
+            title="Ouvrir la timeline du jour J"
           >
             <SlidersHorizontal size={15} />
+            <span>Timeline</span>
           </button>
 
-          {/* 4. PICTO MON PROFIL SAXOPHONISTE LIVE (Disponible pour tous les thèmes) */}
-          <button
-            type="button"
-            onClick={() => setIsSaxProfileOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition relative"
-            title="Mon Mini-Site · Saxophoniste Live (Tous univers)"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 absolute top-1 right-1" />
-            <User size={16} />
-          </button>
+          <span className="h-4 w-px bg-white/15" />
 
-          {/* 5. PICTO RADIO & FRÉQUENCES */}
-          <button
-            type="button"
-            onClick={() => setIsStoriesOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white transition"
-            title="Fréquences & Ondes"
-          >
-            <Radio size={16} />
-          </button>
-
-          {/* 6. PICTO HAUT DE PAGE */}
           <button
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white/50 hover:bg-white hover:text-black transition shrink-0 ml-1"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-white/60 transition hover:bg-white hover:text-black"
             title="Haut de page"
           >
             <ArrowUp size={14} />
           </button>
-
         </div>
       </div>
 
-      {/* MODALE STORIES TIKTOK-STYLE */}
-      <WeddingLiveStoriesFeed
-        isOpen={isStoriesOpen}
-        onClose={() => setIsStoriesOpen(false)}
-      />
-
-      {/* MODALE CARTE LIVE GÉOLOCALISÉE */}
-      <UniverseDirectoryModal
-        isOpen={isMapModalOpen}
-        onClose={() => setIsMapModalOpen(false)}
-        selectedStyleId={currentStyleId}
-        onSelectStyle={(style) => {
-          onSelectStyle?.(style);
-          setIsMapModalOpen(false);
-        }}
-      />
-
-      {/* MODALE PROFIL SAXOPHONISTE LIVE DU CRÉATEUR */}
-      <SaxophonistProfileModal
-        isOpen={isSaxProfileOpen}
-        onClose={() => setIsSaxProfileOpen(false)}
-      />
-
-      {/* BANDEAU RÉTRACTABLE TIMELINE THEATER EN BAS D'ÉCRAN */}
       <FloatingTimelineDrawer
-        isOpen={isTimelineDrawerOpen}
-        onClose={() => setIsTimelineDrawerOpen(false)}
+        isOpen={isTimelineOpen}
+        onClose={() => setIsTimelineOpen(false)}
       />
     </>
   );

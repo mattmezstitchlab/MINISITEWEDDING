@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { getEditToken, setActiveToken } from '../lib/auth';
 import { useSiteData } from '../lib/siteData';
-import { isRemote } from '../lib/dataSource';
 import PublicSiteView from '../components/PublicSiteView';
 import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
 
@@ -50,7 +49,7 @@ export default function PublicSite() {
       <PublicSiteView data={data} degraded={degraded} />
       
       {/* Barre d'outils interactive contextuelle sur le mini-site du couple */}
-      <UniversalMiniSiteToolbar currentStyleId={site?.style} />
+      <UniversalMiniSiteToolbar />
 
       {demo && (
         <div className="vp-glass-dark vp-spec-dark fixed bottom-20 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-1.5 text-[11px] font-medium text-white shadow-lg">
