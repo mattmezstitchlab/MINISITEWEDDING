@@ -5,17 +5,10 @@ import { getEditToken, setActiveToken } from '../lib/auth';
 import { useSiteData } from '../lib/siteData';
 import { isRemote } from '../lib/dataSource';
 import PublicSiteView from '../components/PublicSiteView';
+import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
 
 export default function PublicSite() {
   const { slug } = useParams();
-  // Si ce navigateur détient la clé du site (aperçu depuis l’éditeur, ou second
-  // membre du couple), elle est activée **pendant le rendu**, donc avant le
-  // chargement : c’est elle qui autorise la lecture d’un brouillon. Un visiteur
-  // n’a pas de clé et ne voit que les sites publiés — un brouillon renvoie 404.
-  //
-  // Aucune remise à zéro au démontage : les effets de l’ancienne page
-  // s’exécutent après le rendu de la nouvelle et effaceraient la clé fraîchement
-  // posée. Un en-tête périmé est sans effet, l’API compare la clé au site visé.
   const [token] = useState(() => getEditToken({ slug }));
   setActiveToken(token);
   const { data, demo, degraded, loading } = useSiteData({ slug });
@@ -55,25 +48,13 @@ export default function PublicSite() {
   return (
     <>
       <PublicSiteView data={data} degraded={degraded} />
+      
+      {/* Barre d'outils interactive contextuelle sur le mini-site du couple */}
+      <UniversalMiniSiteToolbar currentStyleId={site?.style} />
+
       {demo && (
-        <div className="vp-glass-dark vp-spec-dark fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-2 text-[12px] font-medium text-white">
+        <div className="vp-glass-dark vp-spec-dark fixed bottom-20 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-1.5 text-[11px] font-medium text-white shadow-lg">
           Aperçu local — données de démonstration
-        </div>
-      )}
-      {/* Le site vient du navigateur : seul cet appareil le voit tant qu’il
-          n’est pas publié dans `public/sites/`. */}
-      {!isRemote() && !demo && !degraded && (
-        <div className="vp-glass-dark vp-spec-dark fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-2 text-center text-[12px] font-medium text-white">
-          Aperçu sur cet appareil — publiez depuis l’éditeur pour le partager.
-        </div>
-      )}
-      {/* Une base distante était attendue et ne répond pas : le site est servi
-          depuis sa copie `public/sites/<slug>.json`. L’affichage reste complet,
-          seules les réponses RSVP sont suspendues. En mode autonome, servir ce
-          fichier est le fonctionnement normal — donc aucune bannière. */}
-      {isRemote() && degraded && !demo && (
-        <div className="vp-glass-dark vp-spec-dark fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-2 text-center text-[12px] font-medium text-white">
-          Site affiché depuis une copie — les réponses sont suspendues pour l’instant.
         </div>
       )}
     </>
