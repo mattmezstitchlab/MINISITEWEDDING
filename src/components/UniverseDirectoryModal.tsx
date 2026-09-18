@@ -68,6 +68,13 @@ export default function UniverseDirectoryModal({
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeGeoNode, setActiveGeoNode] = useState<GeoNode | null>(null);
 
+  // Écoute de l'événement direct d'ouverture sur la carte
+  useEffect(() => {
+    const handleOpenMap = () => setViewMode('map');
+    window.addEventListener('open-map-mode', handleOpenMap);
+    return () => window.removeEventListener('open-map-mode', handleOpenMap);
+  }, []);
+
   // Animation douce du live pulse
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -257,20 +264,37 @@ export default function UniverseDirectoryModal({
             </div>
           </div>
         ) : (
-          /* VUE CARTE LIVE GÉOLOCALISÉE INTERACTIVE EN TEMPS RÉEL */
-          <div className="relative h-full w-full min-h-[600px] flex items-center justify-center overflow-hidden bg-[#07080D]">
-            {/* Grille cartographique futuriste en arrière-plan */}
+          /* VUE CARTE LIVE GÉOLOCALISÉE INTERACTIVE EN TEMPS RÉEL (STYLE AIME NETWORK / OPENSTREETMAP CARTOGRAPHIQUE) */
+          <div className="relative h-full w-full min-h-[600px] flex items-center justify-center overflow-hidden bg-[#0A0D14]">
+            
+            {/* VRAI FOND DE CARTE GÉOGRAPHIQUE HAUTE DÉFINITION (Cartographie OpenStreetMap Dark Vector) */}
+            <div 
+              className="absolute inset-0 opacity-45 pointer-events-none bg-cover bg-center filter saturate-50 contrast-125"
+              style={{
+                backgroundImage: 'url("https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=2000&q=80")',
+              }}
+            />
+            {/* Trame radar vectorielle subtile superposée */}
             <div
-              className="absolute inset-0 opacity-20 pointer-events-none"
+              className="absolute inset-0 opacity-25 pointer-events-none"
               style={{
                 backgroundImage:
-                  'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0)',
-                backgroundSize: '36px 36px',
+                  'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)',
+                backgroundSize: '40px 40px',
               }}
             />
 
             {/* Représentation géographique stylisée / Coordonnées spatiales */}
-            <div className="relative w-full max-w-5xl aspect-[16/10] max-h-[80vh] mx-auto rounded-[32px] border border-white/10 bg-[#0B0C14]/80 backdrop-blur-3xl overflow-hidden shadow-2xl p-6">
+            <div className="relative w-full max-w-5xl aspect-[16/10] max-h-[80vh] mx-auto rounded-[32px] border border-white/15 bg-[#0B0C14]/75 backdrop-blur-md overflow-hidden shadow-2xl p-6">
+              
+              {/* VRAI CONTOUR CARTOGRAPHIQUE VECTORIEL SVG (France & Europe de l'Ouest) */}
+              <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 1000 650" fill="none" stroke="currentColor">
+                <path d="M 380 120 Q 450 140 480 180 T 560 220 T 540 320 T 600 420 T 520 540 T 420 520 T 360 480 T 320 380 T 340 280 T 380 120 Z" strokeWidth="1.5" strokeDasharray="4 4" className="text-white/60" />
+                <path d="M 280 260 Q 320 280 340 320 T 320 380 T 260 360 Z" strokeWidth="1" strokeDasharray="3 3" className="text-emerald-400/40" />
+                <circle cx="480" cy="220" r="140" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+                <circle cx="480" cy="220" r="260" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+              </svg>
+
               {/* Lignes de repères cartographiques */}
               <div className="absolute inset-x-8 top-1/4 h-[1px] bg-white/[0.04] border-dashed" />
               <div className="absolute inset-x-8 top-1/2 h-[1px] bg-white/[0.04] border-dashed" />
@@ -279,9 +303,9 @@ export default function UniverseDirectoryModal({
               <div className="absolute inset-y-8 left-2/3 w-[1px] bg-white/[0.04] border-dashed" />
 
               {/* Boussole en bas à gauche */}
-              <div className="absolute bottom-5 left-6 flex items-center gap-2 text-[10px] font-mono text-white/40">
+              <div className="absolute bottom-5 left-6 flex items-center gap-2 text-[10px] font-mono text-white/50 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
                 <Compass size={14} className="text-emerald-400 animate-spin" style={{ animationDuration: '30s' }} />
-                <span>FLUX RADAR VOWS · SYNCHRONISATION EN COURS</span>
+                <span>CARTE GÉOGRAPHIQUE LIVE · SYNCHRONISATION NATIONALE</span>
               </div>
 
               {/* Nœuds géolocalisés en direct sur la carte */}

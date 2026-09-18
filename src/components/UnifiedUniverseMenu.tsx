@@ -213,25 +213,40 @@ export default function UnifiedUniverseMenu({
                   })}
                 </div>
 
-                {/* BAS DU MENU : Bouton "Tout voir" (Mosaïque & Carte en direct) */}
+                {/* BAS DU MENU : Boutons discrets type picto (Mosaïque / Carte) & Navigation */}
                 <div className="mt-4 pt-3 border-t border-black/5 flex items-center justify-between px-2">
                   <div className="text-[11.5px] text-[#0B0C12]/60 hidden sm:flex items-center gap-2">
                     <Radio size={12} className="text-emerald-500 animate-pulse" />
                     <span>Synchronisation des flux géolocalisés et des métiers en temps réel</span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setIsDirectoryOpen(true);
-                    }}
-                    className="ml-auto flex items-center gap-2 rounded-full bg-[#0B0C12] px-5 py-2 text-[12.5px] font-bold text-white transition hover:bg-neutral-800 shadow-md"
-                  >
-                    <Grid size={13} />
-                    <span>Tout voir · Mosaïque &amp; Carte Live</span>
-                    <ArrowRight size={13} />
-                  </button>
+                  {/* Boutons pictos épurés : Bascule directe Mosaïque ou Carte */}
+                  <div className="ml-auto flex items-center gap-1.5 bg-neutral-100 p-1 rounded-full border border-black/5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsDirectoryOpen(true);
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black hover:bg-neutral-200 transition shadow-sm"
+                      title="Vue Mosaïque Globale"
+                    >
+                      <Grid size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setIsDirectoryOpen(true);
+                        // Ouvre directement en mode Map
+                        window.dispatchEvent(new CustomEvent('open-map-mode'));
+                      }}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-black hover:bg-neutral-200 transition shadow-sm"
+                      title="Vue Carte Géographique Live (AIME Network)"
+                    >
+                      <Radio size={14} className="text-emerald-600" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
