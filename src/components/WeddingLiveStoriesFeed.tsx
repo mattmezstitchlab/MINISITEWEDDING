@@ -154,6 +154,32 @@ const LIVE_STORIES: WeddingLiveStoryItem[] = [
       message: '« Jauge dancefloor à 100%. On enchaîne sur le live set 130 BPM jusqu’à l’aube. »',
     },
   },
+  {
+    id: 'story-5',
+    time: '21h00',
+    momentTitle: 'Découpe du Gâteau Noir & Toast Liberté',
+    couple: 'Hugo (Solo & Fier)',
+    styleName: 'Fête de Divorce',
+    location: 'Paris · Rooftop Montmartre',
+    frequencyChannel: 'Canal 66.6 MHz · Renaissance',
+    mediaUrl: '/images/table-noir.jpg',
+    quoteOrDialogue: '« On a sabré le champagne et découpé le wedding cake noir "Officiellement Célibataire". Tous mes vrais potes étaient là, zéro larme que de la joie ! »',
+    audioTrack: {
+      title: 'Get Lucky',
+      artist: 'Daft Punk',
+      url: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview115/v4/bf/1a/f3/bf1af3c0-388f-a9cb-c7fb-6ba6a053c155/mzaf_8461011505367676709.plus.aac.p.m4a',
+    },
+    cameraRole: 'Maître de Cérémonie Dé-Mariage',
+    likesCount: 5620,
+    commentsCount: 418,
+    liveBpm: 116,
+    delayOffsetMin: 0,
+    walkieSnippet: {
+      sender: 'Maître Cérémonie Rupture',
+      role: 'Officiant Satirique',
+      message: '« Bagues officiellement fondues en direct. On ouvre la cagnotte pour son voyage à Tokyo ! »',
+    },
+  },
 ];
 
 interface WeddingLiveStoriesFeedProps {

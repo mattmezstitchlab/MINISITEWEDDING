@@ -52,6 +52,7 @@ const LIVE_GEO_NODES: GeoNode[] = [
   { id: 'v1', styleId: 'desert', label: 'Studio Pellicule 8mm', sublabel: 'Cinéaste Nomade', type: 'vendor', roleOrStyle: 'Cinéaste Super 8', latRatio: 58, lngRatio: 32, liveStatus: 'En route vers le désert', isPulse: true },
   { id: 'v2', styleId: 'brutal', label: 'Atelier Béton & Métal', sublabel: 'Designer Scénographe', type: 'vendor', roleOrStyle: 'Light Designer', latRatio: 30, lngRatio: 55, liveStatus: 'Laser sodium prêt', isPulse: true },
   { id: 'v3', styleId: 'club', label: 'Klang Klub Soundsystem', sublabel: 'Ingénieur du son & DJ', type: 'vendor', roleOrStyle: 'DJ Résident', latRatio: 50, lngRatio: 60, liveStatus: 'Jauge 130 BPM synchronisée', isPulse: false },
+  { id: 'g11', styleId: 'divorce-party', label: 'Hugo · Dé-Mariage & Liberté', sublabel: 'Rooftop Montmartre · Paris', type: 'wedding', roleOrStyle: 'Fête de Divorce', latRatio: 34, lngRatio: 50, liveStatus: '🖤 Gâteau noir servi & bague recyclée', isPulse: true },
   { id: 'g10', styleId: 'last-minute', label: 'Mariage Éclair 48H · Plan B', sublabel: 'Bordeaux Centre · Place de la Bourse', type: 'wedding', roleOrStyle: 'Mariage Improvisé', latRatio: 58, lngRatio: 40, liveStatus: '⚡ SOS Plan B pluie : repli verrière activé', isPulse: true },
   { id: 'v4', styleId: 'last-minute', label: 'Régisseur Urgence 48H', sublabel: 'Dispatch Express', type: 'vendor', roleOrStyle: 'Régisseur Plan B', latRatio: 56, lngRatio: 42, liveStatus: '⚡ Disponible sous 2h à proximité', isPulse: true },
 ];
