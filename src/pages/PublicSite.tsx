@@ -4,7 +4,6 @@ import { Heart } from 'lucide-react';
 import { getEditToken, setActiveToken } from '../lib/auth';
 import { useSiteData } from '../lib/siteData';
 import PublicSiteView from '../components/PublicSiteView';
-import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
 
 export default function PublicSite() {
   const { slug } = useParams();
@@ -46,10 +45,8 @@ export default function PublicSite() {
 
   return (
     <>
-      <PublicSiteView data={data} degraded={degraded} />
-      
-      {/* Barre d'outils interactive contextuelle sur le mini-site du couple */}
-      <UniversalMiniSiteToolbar />
+      {/* Le site du couple, avec sa barre du bas : le Jour J et son calendrier. */}
+      <PublicSiteView data={data} degraded={degraded} dayBar />
 
       {demo && (
         <div className="vp-glass-dark vp-spec-dark fixed bottom-20 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-1.5 text-[11px] font-medium text-white shadow-lg">

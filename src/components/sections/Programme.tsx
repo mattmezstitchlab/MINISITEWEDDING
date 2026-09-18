@@ -1,12 +1,20 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import { useSiteView } from './context';
 import { Eyebrow, SectionTitle } from './primitives';
+import MusicCard from '../MusicCard';
+import { soundtrackOf } from '../../lib/weddingSoundtrack';
 
-/** Timeline du Jour J, en alternance gauche/droite sur grand écran. */
+/**
+ * Timeline du Jour J, en alternance gauche/droite sur grand écran.
+ * Chaque moment qui a un morceau porte sa carte musicale : le programme se
+ * raconte aussi au son.
+ */
 export default function Programme() {
   const { data, fonts, headWeight, accent, muted, ink, dark, glass, glassSpec } = useSiteView();
   const programme = data.programme;
+  const soundtrack = useMemo(() => soundtrackOf(programme), [programme]);
 
   return (
     <section className="px-5 py-20 sm:px-8 sm:py-28" style={{ color: ink }}>
@@ -33,6 +41,14 @@ export default function Programme() {
                     <div className="mt-2.5 inline-flex items-center gap-1.5 text-[13.5px]" style={{ color: muted }}>
                       <MapPin size={14} />{ev.place}
                     </div>
+                  )}
+                  {soundtrack.has(ev.id) && (
+                    <MusicCard
+                      track={soundtrack.get(ev.id)!}
+                      dark={dark}
+                      accent={accent}
+                      className="mt-3.5"
+                    />
                   )}
                 </div>
               </div>

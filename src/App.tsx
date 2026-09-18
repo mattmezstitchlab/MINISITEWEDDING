@@ -10,6 +10,8 @@ import Onboarding from './pages/Onboarding';
 import Generating from './pages/Generating';
 import Editor from './pages/Editor';
 import PublicSite from './pages/PublicSite';
+import Features from './pages/Features';
+import Theater from './pages/Theater';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -31,15 +33,10 @@ export default function App() {
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/" element={<Landing />} />
-            {/* Event OS retiré du parcours : /features, /modules, /theater et
-                /timeline redirigent vers l'accueil au lieu de mener à des
-                studios de démonstration. */}
-            <Route path="/modules" element={<Navigate to="/" replace />} />
-            <Route path="/features" element={<Navigate to="/" replace />} />
-            <Route path="/theater" element={<Navigate to="/" replace />} />
-            <Route path="/timeline" element={<Navigate to="/" replace />} />
-            {/* AIME reste accessible par URL directe, mais n'est plus lié depuis
-                l'accueil : sa place est derrière le moteur, pas devant le couple. */}
+            <Route path="/theater" element={<Theater />} />
+            <Route path="/timeline" element={<Theater />} />
+            <Route path="/modules" element={<Features />} />
+            <Route path="/features" element={<Features />} />
             <Route path="/aime" element={<Aime />} />
             <Route path="/taxonomie" element={<Aime />} />
             <Route path="/creer" element={<Onboarding />} />

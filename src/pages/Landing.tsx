@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Heart } from 'lucide-react';
-import type { WeddingStyle } from '../lib/weddingStyles';
+import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart } from 'lucide-react';
+import { WEDDING_STYLES, PHASES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
+import { TiltCard } from '../components/vision/VisionImage';
 import HeroCycle from '../components/HeroCycle';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
+import UnifiedEventOsMenu from '../components/UnifiedEventOsMenu';
 import ParallaxSection from '../components/ParallaxSection';
+import DjPlaylistStudio from '../components/DjPlaylistStudio';
+import ThemeManifestoWhite from '../components/ThemeManifestoWhite';
+import ComplementaryThemes from '../components/ComplementaryThemes';
 import HeroAiPrompt from '../components/HeroAiPrompt';
-import RoleCockpitShowcase from '../components/RoleCockpitShowcase';
-import TimelineGesture from '../components/TimelineGesture';
+import HomeTriplePhoneShowcase from '../components/HomeTriplePhoneShowcase';
+import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
+import CompactZeroScrollStudio from '../components/CompactZeroScrollStudio';
+import ImmersiveThemes from '../components/ImmersiveThemes';
+import CommunityFeedHub from '../components/CommunityFeedHub';
+import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const HERO_ROTATING_TITLES = [
@@ -17,30 +26,32 @@ const HERO_ROTATING_TITLES = [
   'Mariés, invités, prestataires.\nLe même instant, sans fausse note.',
 ];
 
+const MODULES = [
+  { icon: MailCheck, title: 'RSVP élégant', text: 'Présences, régimes, hébergement. Des statistiques limpides, jamais de tableaux austères.' },
+  { icon: Gift, title: 'Liste & cagnotte', text: 'Voyage de noces, cagnotte, liste de cadeaux. Objectifs, progression, bouton Participer.' },
+  { icon: Images, title: 'Bibliothèque média', text: 'Des collections cohérentes, vos propres images en un glisser-déposer.' },
+  { icon: MapPin, title: 'Infos pratiques', text: 'Adresses, parking, hébergements, dress code. Des cartes de verre, toujours claires.' },
+  { icon: CalendarDays, title: 'Programme Jour J', text: 'Une timeline spatiale : cérémonie, cocktail, dîner, bal. Heure, lieu, photo.' },
+  { icon: QrCode, title: 'Partage magique', text: 'Un lien à vos prénoms, un QR code à imprimer, partage WhatsApp, Messages, Email.' },
+];
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
 
-/**
- * Accueil : le visuel, le champ, un écran par rôle, ce qui est inclus.
- *
- * Tout le reste (Event OS, shows techniques, mosaïques de démonstration) a été
- * retiré du parcours : une page d'accueil doit tenir en six sections.
- */
 export default function Landing() {
-  const navigate = useNavigate();
+  // Par défaut : null = page principale générale d'atterrissage VOWS
+  const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(null);
   const [titleIdx, setTitleIdx] = useState(0);
-  /**
-   * L'univers choisi dans le champ du hero : il devient une carte prête à
-   * glisser sur la timeline, tout de suite en dessous.
-   */
-  const [preloadedStyle, setPreloadedStyle] = useState<WeddingStyle | null>(null);
 
+  const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
+
+  // Rotation douce des 3 phrases manifestes qui font comprendre le produit
   useEffect(() => {
+    if (selectedStyle) return;
     const interval = setInterval(() => {
       setTitleIdx((prev) => (prev + 1) % HERO_ROTATING_TITLES.length);
     }, 4800);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedStyle]);
 
   const scrollToHero = () => {
     const el = document.getElementById('hero-ai-container');
@@ -51,43 +62,42 @@ export default function Landing() {
     }
   };
 
-  /** Choisir un univers, c'est déjà créer : on va au questionnaire, il est pré-sélectionné. */
-  const startWithStyle = (styleId: string) => {
-    navigate('/creer', { state: { preselectedStyle: styleId } });
+  const handleSelectStyle = (style: WeddingStyle | null) => {
+    setSelectedStyle(style);
   };
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
-      {/* Barre de navigation : le logo, les univers, et l'unique bouton qui compte */}
+      {/* Barre de navigation unifiée : Logo à gauche, UNIVERS & MÉTIERS à droite */}
       <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
         <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
-          <Link to="/" className="flex items-center gap-2">
+          <Link
+            to="/"
+            onClick={() => setSelectedStyle(null)}
+            className="flex items-center gap-2"
+          >
             <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
           </Link>
 
+          {/* Accès discret aux modules techniques Event OS & menu univers */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <UnifiedEventOsMenu />
+
             <UnifiedUniverseMenu
-              selectedStyleId={null}
-              onSelectStyle={(style) => { if (style) startWithStyle(style.id); }}
+              selectedStyleId={selectedStyle?.id || null}
+              onSelectStyle={handleSelectStyle}
             />
-            <Link
-              to="/creer"
-              className="flex items-center gap-1.5 rounded-full bg-[#0B0C12] px-4 py-2 text-[12.5px] font-semibold text-white shadow-sm transition hover:bg-black/80"
-            >
-              Créer notre site
-              <ArrowRight size={13} />
-            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero plein écran : le grand visuel, et le champ au centre */}
-      <HeroCycle>
+      {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
+      <HeroCycle activeStyleId={selectedStyle?.id}>
         <div className="mx-auto flex flex-col items-center justify-center text-center">
           <div className="min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.h1
-                key={titleIdx}
+                key={selectedStyle ? selectedStyle.id : titleIdx}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -16 }}
@@ -95,11 +105,14 @@ export default function Landing() {
                 className="vp-title max-w-4xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] whitespace-pre-line"
                 style={{ fontSize: 'clamp(2.4rem, 6vw, 4.6rem)', lineHeight: 1.08 }}
               >
-                {HERO_ROTATING_TITLES[titleIdx]}
+                {selectedStyle
+                  ? `${selectedStyle.name} · ${selectedStyle.tagline}`
+                  : HERO_ROTATING_TITLES[titleIdx]}
               </motion.h1>
             </AnimatePresence>
           </div>
 
+          {/* Saisie de l'Agent IA connecté à tous les thèmes */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -109,8 +122,7 @@ export default function Landing() {
             <ErrorBoundary>
               <HeroAiPrompt
                 onProposalGenerated={(proposal) => {
-                  setPreloadedStyle(proposal.style);
-                  document.getElementById('geste')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  setSelectedStyle(proposal.style);
                 }}
               />
             </ErrorBoundary>
@@ -118,17 +130,206 @@ export default function Landing() {
         </div>
       </HeroCycle>
 
-      {/* L'écran : un cockpit par rôle, une seule timeline */}
+      {/* EXPÉRIENCE SUR SMARTPHONE HAUT DE GAMME :
+          - Sur l'accueil général : Le triptyque aéré des 3 iPhones sobres & éditoriaux
+          - Sur une page Thème précis : L'iPhone interactif permettant de faire défiler les vues (Invité, Marié, chaque missionnaire)
+      */}
       <ErrorBoundary>
-        <RoleCockpitShowcase />
+        {!selectedStyle ? (
+          <HomeTriplePhoneShowcase onExplore={scrollToHero} />
+        ) : (
+          <ThemePhoneShowcase
+            currentStyle={selectedStyle}
+            onOpenVendorApplication={() => scrollToHero()}
+          />
+        )}
       </ErrorBoundary>
 
-      {/* Le geste : la recherche, la carte, le glisser-déposer sur le Jour J */}
-      <ErrorBoundary>
-        <TimelineGesture preloaded={preloadedStyle} />
-      </ErrorBoundary>
+      {/* BANDE DISCRÈTE D'INTRODUCTION AUX TECHNOLOGIES EVENT OS (Fond clair, classe & épuré) */}
+      <section className="bg-white py-12 px-5 sm:px-8 border-b border-black/5">
+        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="space-y-1 text-center sm:text-left">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-black/40">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span>Système d'Exploitation Invisible</span>
+            </div>
+            <h3 className="vp-title text-[20px] sm:text-[22px] text-[#0B0C12]">
+              L'architecture Event OS : Orchestration, Talkie-Walkie &amp; Radio Live
+            </h3>
+            <p className="text-[13.5px] text-[#0B0C12]/60">
+              Résolution en cascade des aléas, coordination audio chiffrée et streaming continu.
+            </p>
+          </div>
 
-      {/* Un seul parallax : le message de fond */}
+          <div className="flex shrink-0 flex-wrap justify-center gap-2 sm:justify-end">
+            <Link
+              to="/features"
+              className="flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-[12.5px] font-semibold text-[#0B0C12] shadow-sm transition hover:bg-black hover:text-white"
+            >
+              <span>Découvrir Event OS</span>
+              <ArrowRight size={13} />
+            </Link>
+            <Link
+              to="/aime"
+              className="flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm transition hover:bg-black/80"
+            >
+              <span>Taxonomie mariage</span>
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* TAXONOMIE MARIAGE : LA VERSION AIME EST ACCESSIBLE DIRECTEMENT DEPUIS L'ACCUEIL */}
+      <section id="taxonomie" className="bg-[#070709] px-4 py-16 text-white sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <div className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-300">AIME · Taxonomie mariage</div>
+              <h2 className="mt-3 text-[clamp(2rem,5vw,4rem)] font-bold leading-[0.98] tracking-[-0.05em]">Chaque personne a son propre Jour J.</h2>
+              <p className="mt-4 text-[14px] leading-relaxed text-white/60 sm:text-[16px]">Mariés, témoins, traiteur, DJ, photographe, invités : une même timeline, des accès différents, aucun doublon d’identité.</p>
+            </div>
+            <Link to="/aime" className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-[11px] font-semibold text-white transition hover:bg-white hover:text-black sm:self-auto">
+              Ouvrir la taxonomie complète <ArrowRight size={14} />
+            </Link>
+          </div>
+          <ErrorBoundary>
+            <CompactZeroScrollStudio />
+          </ErrorBoundary>
+        </div>
+      </section>
+
+      {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}
+      <ParallaxSection
+        image={
+          selectedStyle
+            ? getDirectionArtistiqueImage(selectedStyle.id)
+            : '/images/table-noir.jpg'
+        }
+        overlayOpacity={0.62}
+        heightClass="min-h-[72vh]"
+      >
+        <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl text-center">
+          <span className="vp-eyebrow !text-white/70">
+            {selectedStyle
+              ? `Direction Artistique & Scénographie · ${selectedStyle.name}`
+              : 'Direction Artistique & Haute Scénographie'}
+          </span>
+          <h2
+            className="vp-title mt-4 text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)]"
+            style={{ fontSize: 'clamp(2.4rem, 5.5vw, 4.5rem)', lineHeight: 1.05 }}
+          >
+            {selectedStyle ? (
+              <>
+                L’émotion d’une esthétique pure.<br />
+                {selectedStyle.tagline}
+              </>
+            ) : (
+              <>
+                Des univers créés comme des pièces de mode.<br />
+                Jamais de templates génériques.
+              </>
+            )}
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-white/80">
+            {selectedStyle?.manifesto ||
+              "Chaque mariage possède son langage visuel, sa typographie et ses métiers dédiés. De la chapelle de béton au château contemporain, explorez des atmosphères sans concession."}
+          </p>
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={scrollToHero}
+              className="vp-btn vp-press !bg-white !text-black hover:!bg-white/90 !px-8 !py-3.5 shadow-2xl"
+            >
+              Donner vie à votre projet <ArrowRight size={16} />
+            </button>
+          </div>
+        </motion.div>
+      </ParallaxSection>
+
+      {/* SECTION ÉQUIPE HUMAINE ORCHESTRÉE */}
+      <ThemeManifestoWhite
+        style={selectedStyle}
+        onJoinClick={scrollToHero}
+      />
+
+      {/* STUDIO DJ & BANDE-SON CHRONOLOGIQUE */}
+      <section className="px-5 py-16 sm:px-8 bg-[#070709]">
+        <div className="mx-auto max-w-6xl">
+          <DjPlaylistStudio style={activeStyleOrFallback} />
+        </div>
+      </section>
+
+      {/* SI PAGE D'ACCUEIL GÉNÉRALE : HUB D'ACTUALITÉ, TÉMOIGNAGES DU RÉEL & DÉFILEMENT 2 RANGÉES BORD-À-BORD */}
+      {!selectedStyle ? (
+        <CommunityFeedHub />
+      ) : (
+        /* SI UN THÈME EST SÉLECTIONNÉ : LA CHRONOLOGIE SCÉNARISÉE SPÉCIFIQUE DE CE THÈME */
+        <ImmersiveThemes
+          currentStyle={selectedStyle}
+          onOpenVendorApplication={scrollToHero}
+          onSelectStyle={handleSelectStyle}
+        />
+      )}
+
+      {/* SECTION SUGGESTIONS COMPLÉMENTAIRES D'UNIVERS & MISSIONS */}
+      <ComplementaryThemes
+        currentStyle={activeStyleOrFallback}
+        onSelectStyle={handleSelectStyle}
+      />
+
+      {/* Modules — environnement clair */}
+      <section id="modules" className="relative mx-3 overflow-hidden rounded-[40px] border border-black/6 bg-white px-5 py-20 sm:mx-6 sm:px-8 sm:py-28">
+        <div className="relative mx-auto max-w-6xl">
+          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-2xl text-center">
+            <div className="vp-eyebrow">Tout est inclus</div>
+            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Un objet complet, en couches</h2>
+            <p className="vp-body mt-4">RSVP, cagnotte, galerie, programme, FAQ — chaque module naît déjà rempli. Vous ajustez, c’est tout.</p>
+          </motion.div>
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {MODULES.map((m, i) => (
+              <motion.div key={m.title} {...fadeUp} transition={{ duration: 0.6, delay: (i % 3) * 0.09 }}>
+                <TiltCard className="h-full">
+                  <div className="vp-glass vp-spec vp-lift h-full rounded-[26px] p-7">
+                    <span className="vp-glyph h-11 w-11 rounded-[15px]">
+                      <m.icon size={19} strokeWidth={1.8} />
+                    </span>
+                    <div className="vp-h2 mt-5 text-[20px]">{m.title}</div>
+                    <p className="vp-caption mt-2 leading-relaxed">{m.text}</p>
+                  </div>
+                </TiltCard>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Phases */}
+      <section className="px-5 py-20 sm:px-8 sm:py-28">
+        <div className="mx-auto max-w-5xl">
+          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="text-center">
+            <div className="vp-eyebrow">Avant · Pendant · Après</div>
+            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Un site qui vit avec vous</h2>
+          </motion.div>
+          <div className="mt-12 grid gap-4 sm:grid-cols-3">
+            {PHASES.map((p, i) => (
+              <motion.div key={p.id} {...fadeUp} transition={{ duration: 0.6, delay: i * 0.09 }} className="h-full">
+                <div className="vp-glass vp-spec vp-lift relative h-full overflow-hidden rounded-[26px] p-7">
+                  <span className="absolute inset-x-0 top-0 h-[3px] bg-[var(--vp-ink)]" style={{ opacity: 0.1 + i * 0.14 }} />
+                  <div className="vp-eyebrow">Phase {i + 1}</div>
+                  <div className="vp-h2 mt-2 text-[26px]">{p.name}</div>
+                  <p className="vp-caption mt-2">{p.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <motion.p {...fadeUp} transition={{ duration: 0.7 }} className="vp-body mx-auto mt-8 max-w-xl text-center !text-[var(--vp-muted)] italic">
+            « Après le mariage, il devient la mémoire numérique de votre jour. »
+          </motion.p>
+        </div>
+      </section>
+
+      {/* SECTION PARALLAX 2 : Zéro contrainte */}
       <ParallaxSection image="/images/zero-contrainte-wedding.jpg" overlayOpacity={0.65} heightClass="min-h-[70vh]">
         <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl">
           <span className="vp-eyebrow !text-white/70">Zéro contrainte</span>
@@ -159,12 +360,19 @@ export default function Landing() {
               le site de votre mariage ?
             </h2>
             <p className="vp-body mx-auto mt-4 max-w-md">Trente secondes pour commencer. Une émotion pour longtemps.</p>
-            <Link to="/creer" className="vp-btn vp-press mt-8 !px-9 !py-4">
+            <button
+              type="button"
+              onClick={scrollToHero}
+              className="vp-btn vp-press mt-8 !px-9 !py-4"
+            >
               Générer notre projet <ArrowRight size={16} />
-            </Link>
+            </button>
           </div>
         </motion.div>
       </section>
+
+      {/* TOOLBAR TACTILE DISCRÈTE (Stories Live & Event OS) */}
+      <UniversalMiniSiteToolbar />
 
       <footer className="px-5 pb-10">
         <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
@@ -173,16 +381,15 @@ export default function Landing() {
           </div>
           <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
           <div className="flex items-center gap-4">
+            <Link to="/features" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Event OS</Link>
+            <Link to="/aime" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Taxonomie</Link>
             <button
               type="button"
               onClick={scrollToHero}
               className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]"
             >
-              Décrire notre mariage
-            </button>
-            <Link to="/creer" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">
               Créer
-            </Link>
+            </button>
           </div>
         </div>
       </footer>

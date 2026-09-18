@@ -5,7 +5,10 @@ Le mini-site d’un mariage, composé automatiquement à partir de quatre répon
 visuel, et partageable par lien ou QR code.
 
 - **Page publique** `/p/:slug` — hero et compte à rebours, histoire, programme,
-  lieux, infos pratiques, RSVP, cagnotte, galerie, FAQ, contact.
+  lieux, infos pratiques, RSVP, cagnotte, galerie, FAQ, contact. Une **barre du
+  bas** la suit sur toute la hauteur : vue *Jour J* (l’axe des heures du
+  mariage, les moments posés à leur heure, leur détail et leur morceau) et vue
+  *Calendrier* (le mois du mariage, le jour entouré, le compte à rebours).
 - **Éditeur** `/editeur/:id` — aperçu cliquable du site (desktop/mobile),
   structure réordonnable par glisser-déposer, apparence, bibliothèque média,
   suivi des RSVP, publication et partage. Protégé par une clé d’édition propre au
@@ -142,6 +145,8 @@ public/sites/           copies statiques des mini-sites, servies sans Supabase
 src/
   components/
     PublicSiteView.tsx  coquille du rendu : thème, ordre des sections, aperçu
+    WeddingDayBar.tsx   barre du bas : Jour J (timeline) et Calendrier
+    MusicCard.tsx       carte musicale : visuel, titre, lecture réelle du morceau
     sections/           une section par fichier + contexte partagé (useSiteView)
     editor/             panneaux d’édition (SectionEditor, Row, draft, NoAccess)
   lib/
@@ -156,6 +161,7 @@ src/
     weddingStyles.ts    environnements, typographies, options d’apparence
     defaults.ts         contenu par défaut + amorçage d’un nouveau site
     demo.ts             jeu de démonstration (composé depuis defaults.ts)
+    weddingSoundtrack.ts  le morceau de chaque moment (fichiers de public/audio/)
     staticSite.ts       lecture des copies statiques (repli quand la base est coupée)
     siteData.ts         loadSiteData() + useSiteData() (page publique et éditeur)
   pages/                Landing, Onboarding, Generating, Editor, PublicSite
