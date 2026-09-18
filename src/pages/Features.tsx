@@ -17,6 +17,7 @@ import PredictiveOrchestrationStudio from '../components/PredictiveOrchestration
 import TalkieWalkieStudio from '../components/TalkieWalkieStudio';
 import VowsLiveRadioStudio from '../components/VowsLiveRadioStudio';
 import UnifiedEventOsMenu from '../components/UnifiedEventOsMenu';
+import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
 
 interface ModuleSection {
   id: string;
@@ -88,24 +89,27 @@ export default function Features() {
   return (
     <div className="relative min-h-screen bg-[#FBFBFD] text-[#0B0C12] selection:bg-black selection:text-white pb-32">
       
-      {/* Barre de navigation supérieure nette et blanche (identique à l'accueil) */}
-      <nav className="sticky top-0 z-50 border-b border-black/5 bg-white/90 backdrop-blur-xl px-5 py-3.5 sm:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
+      {/* Barre de navigation unifiée : Logo à gauche, EVENT OS et UNIVERS & MÉTIERS à droite (identique sur tout le site) */}
+      <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
+        <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
           <Link
             to="/"
-            className="flex items-center gap-2 text-[13px] font-semibold text-[#0B0C12]/70 hover:text-black transition"
+            className="flex items-center gap-2"
           >
-            <ArrowLeft size={14} />
-            <span>Accueil</span>
+            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
           </Link>
 
-          <div className="flex items-center gap-2">
-            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
-            <span className="text-[11px] font-mono uppercase tracking-wider text-black/40">/ Event OS Suite</span>
-          </div>
-
-          <div className="flex items-center gap-2">
+          {/* Accès discret aux modules techniques Event OS & menu univers */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <UnifiedEventOsMenu />
+
+            <UnifiedUniverseMenu
+              selectedStyleId={null}
+              onSelectStyle={(_style) => {
+                // Si l'utilisateur choisit un style depuis la page Features, il revient sur l'accueil avec ce style
+                window.location.href = '/';
+              }}
+            />
           </div>
         </div>
       </nav>
