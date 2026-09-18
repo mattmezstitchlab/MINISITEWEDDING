@@ -14,6 +14,7 @@ export interface WeddingDjTrack {
     | 'closing';
   phaseLabel: string;
   suggestedTime: string;
+  spotifyTrackId: string;
   previewUrl: string;
   artwork: string;
   votes: number;
@@ -24,8 +25,8 @@ export interface WeddingDjTrack {
 }
 
 /**
- * Grille musicale avec de véritables extraits audio officiels iTunes / Apple Music (30s)
- * pour chaque univers et moment de mariage.
+ * Grille musicale officielle avec identifiants Spotify originaux
+ * permettant l'écoute directe du VRAI morceau officiel enregistré en studio.
  */
 export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
   // 1. CÉRÉMONIE (Elvis Presley - Can't Help Falling in Love)
@@ -36,6 +37,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'prelude_ceremonie',
     phaseLabel: 'Cérémonie & Entrée de l’Allée',
     suggestedTime: '16h00',
+    spotifyTrackId: '44AyOl4qVkzS48vBsbNXaC',
     previewUrl: '/audio/ceremonie-elvis.wav',
     artwork: '/images/alliances.jpg',
     votes: 98,
@@ -51,6 +53,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'prelude_ceremonie',
     phaseLabel: 'Signature Registres & Sortie',
     suggestedTime: '16h40',
+    spotifyTrackId: '4Hhv2vrOTy89HFRcjU3QOx',
     previewUrl: '/audio/soul-at-last.wav',
     artwork: '/images/bouquet.jpg',
     votes: 74,
@@ -66,6 +69,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'cocktail',
     phaseLabel: 'Cocktail & Vin d’Honneur',
     suggestedTime: '17h45',
+    spotifyTrackId: '1nq7ur1hao0HqUS6ZqsqCK',
     previewUrl: '/audio/cocktail-kungs.wav',
     artwork: '/images/champagne.jpg',
     votes: 62,
@@ -81,6 +85,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'cocktail',
     phaseLabel: 'Cocktail & Vin d’Honneur',
     suggestedTime: '19h15',
+    spotifyTrackId: '5A19oyqXhG0mOAgcohrOOu',
     previewUrl: '/audio/cocktail-valerie.wav',
     artwork: '/images/garden.jpg',
     votes: 85,
@@ -96,6 +101,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'entree_maries',
     phaseLabel: 'Entrée des Mariés en Salle',
     suggestedTime: '20h05',
+    spotifyTrackId: '1WkMMavIMc4JZ8cfMmxHkI',
     previewUrl: '/audio/entree-cant-stop.wav',
     artwork: '/images/couple-paris.jpg',
     votes: 112,
@@ -112,6 +118,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'diner_toasts',
     phaseLabel: 'Dîner Gastronomique & Ambiance Feutrée',
     suggestedTime: '21h00',
+    spotifyTrackId: '2dR5WkrpwylTuT3jRWNufa',
     previewUrl: '/audio/diner-sinatra.wav',
     artwork: '/images/table-noir.jpg',
     votes: 38,
@@ -127,6 +134,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'gateau',
     phaseLabel: 'Arrivée Gâteau & Feux de Bengale',
     suggestedTime: '23h15',
+    spotifyTrackId: '0WZVGXO8FYpK8v1IDxlOyE',
     previewUrl: '/audio/gateau-coldplay.wav',
     artwork: '/images/danse.jpg',
     votes: 124,
@@ -143,6 +151,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'premiere_danse',
     phaseLabel: 'Première Danse Officielle',
     suggestedTime: '23h30',
+    spotifyTrackId: '0tgVpDi06FyKpA1z0VMD4v',
     previewUrl: '/audio/danse-perfect.wav',
     artwork: '/images/hero-wedding.jpg',
     votes: 140,
@@ -159,6 +168,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'dancefloor_classics',
     phaseLabel: 'Lancement Piste de Danse (Toutes générations)',
     suggestedTime: '23h45',
+    spotifyTrackId: '2FcHtmyEm34mtFklxVZGxR',
     previewUrl: '/audio/dancefloor-whitney.wav',
     artwork: '/images/danse.jpg',
     votes: 185,
@@ -174,6 +184,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'dancefloor_peak',
     phaseLabel: 'Peak Energy Clubbing',
     suggestedTime: '01h20',
+    spotifyTrackId: '1d5Boghxz1bEFFXQVbE2XO',
     previewUrl: '/audio/club-daftpunk.wav',
     artwork: '/images/club-amour.jpg',
     votes: 165,
@@ -190,6 +201,7 @@ export const GLOBAL_WEDDING_PLAYLIST_FULL: WeddingDjTrack[] = [
     phase: 'closing',
     phaseLabel: 'Closing Épique & After 02h17',
     suggestedTime: '02h17',
+    spotifyTrackId: '6GyFP1nfCDB8lbD2bG0Hq9',
     previewUrl: '/audio/closing-m83.wav',
     artwork: '/images/desert-motel.jpg',
     votes: 119,

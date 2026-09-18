@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play,
   Pause,
@@ -7,6 +7,8 @@ import {
   Volume2,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
+  Disc,
 } from 'lucide-react';
 import {
   GLOBAL_WEDDING_PLAYLIST_FULL,
@@ -20,25 +22,14 @@ interface DjPlaylistStudioProps {
 
 export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
   const [playlist, setPlaylist] = useState<WeddingDjTrack[]>(GLOBAL_WEDDING_PLAYLIST_FULL);
-  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
+  const [activeSpotifyTrack, setActiveSpotifyTrack] = useState<WeddingDjTrack | null>(null);
   const [userVotedIds, setUserVotedIds] = useState<string[]>([]);
   const [containerCenter, setContainerCenter] = useState(0);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Nettoyage audio au démontage
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  // Écoute continue du scroll pour calculer la distance de chaque carte au centre géométrique
+  // Écoute continue du scroll pour calculer la distance au centre
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
@@ -50,7 +41,6 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
     if (!container) return;
     
     setContainerCenter(container.scrollLeft + container.clientWidth / 2);
-
     container.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll);
 
@@ -69,114 +59,15 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
     };
   }, [handleScroll]);
 
-  // Lecture / pause audio réelle avec gestion robuste Web Audio API
-  const togglePlay = (track: WeddingDjTrack, e?: React.MouseEvent) => {
+  // Clic Play pour activer le VRAI morceau officiel via le player Spotify intégré
+  const handlePlayOfficial = (track: WeddingDjTrack, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    
-    // Si c'est déjà ce morceau qui joue, on met en pause
-    if (playingTrackId === track.id && audioRef.current) {
-      if (!audioRef.current.paused) {
-        audioRef.current.pause();
-        setPlayingTrackId(null);
-        return;
-      }
+    if (activeSpotifyTrack?.id === track.id) {
+      // Toggle off si déjà actif
+      setActiveSpotifyTrack(null);
+    } else {
+      setActiveSpotifyTrack(track);
     }
-
-    // Arrêt de l'ancien son
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
-    // Création & lecture immédiate dans le fil du clic utilisateur (évite le blocage autoplay)
-    try {
-      const audio = new Audio();
-      audio.src = track.previewUrl;
-      audio.preload = 'auto';
-      audioRef.current = audio;
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setPlayingTrackId(track.id);
-          })
-          .catch((err) => {
-            console.warn('Playback error / policy:', err);
-            // Fallback sonore Web Audio context synthétisé en direct si le navigateur bloque les fichiers externes
-            playSynthesizedPreview(track.audioBpm);
-            setPlayingTrackId(track.id);
-          });
-      }
-
-      audio.onended = () => {
-        setPlayingTrackId(null);
-      };
-      audio.onerror = () => {
-        console.warn('Audio file error, falling back to Web Audio');
-        playSynthesizedPreview(track.audioBpm);
-        setPlayingTrackId(track.id);
-      };
-    } catch (err) {
-      console.warn('Audio initialization error:', err);
-      playSynthesizedPreview(track.audioBpm);
-      setPlayingTrackId(track.id);
-    }
-  };
-
-  // Fallback Web Audio Context garanti 100% fonctionnel sur tous navigateurs & mobiles
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const synthTimerRef = useRef<number | null>(null);
-
-  const playSynthesizedPreview = (bpm: number) => {
-    if (synthTimerRef.current) {
-      window.clearInterval(synthTimerRef.current);
-      synthTimerRef.current = null;
-    }
-
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
-
-    if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
-      audioCtxRef.current = new AudioContextClass();
-    }
-    const ctx = audioCtxRef.current;
-    if (ctx.state === 'suspended') {
-      ctx.resume();
-    }
-
-    const notes = [261.63, 329.63, 392.00, 523.25]; // C E G C
-    let step = 0;
-    const intervalMs = Math.round((60 / bpm) * 1000);
-
-    const playNote = () => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(notes[step % notes.length], ctx.currentTime);
-
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
-      osc.stop(ctx.currentTime + 0.36);
-      step++;
-    };
-
-    playNote();
-    synthTimerRef.current = window.setInterval(playNote, intervalMs);
-
-    // Arrêt automatique après 15 secondes
-    window.setTimeout(() => {
-      if (synthTimerRef.current) {
-        window.clearInterval(synthTimerRef.current);
-        synthTimerRef.current = null;
-        setPlayingTrackId(null);
-      }
-    }, 15000);
   };
 
   const voteTrack = (id: string, e?: React.MouseEvent) => {
@@ -225,8 +116,8 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
             Bande-Son Scénarisée · {style.name}
           </span>
           <h3 className="vp-title text-[26px] sm:text-[36px] text-white leading-tight">
-            Chaque instant a sa musique.<br />
-            <span className="text-white/40 text-[20px] sm:text-[24px]">Faites glisser le dock pour voyager dans la soirée.</span>
+            Les Vrais Morceaux du Jour J.<br />
+            <span className="text-white/40 text-[20px] sm:text-[24px]">Lecteur officiel direct sans contrefaçon.</span>
           </h3>
         </div>
 
@@ -251,6 +142,49 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
         </div>
       </div>
 
+      {/* BANDEAU DU LECTEUR OFFICIEL ACTIF (Quand on clique sur Play) */}
+      <AnimatePresence>
+        {activeSpotifyTrack && (
+          <motion.div
+            initial={{ opacity: 0, y: -16, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -16, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-6 overflow-hidden rounded-[24px] bg-black/60 border border-emerald-500/30 p-4 shadow-2xl"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
+              <div className="flex items-center gap-2.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[12px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                  Lecture Officielle : {activeSpotifyTrack.title} — {activeSpotifyTrack.artist}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveSpotifyTrack(null)}
+                className="text-[11px] font-mono text-white/50 hover:text-white underline"
+              >
+                Fermer le lecteur
+              </button>
+            </div>
+
+            {/* IFRAME OFFICIELLE SPOTIFY : Le vrai master audio original garanti */}
+            <div className="w-full rounded-[16px] overflow-hidden bg-black shadow-inner">
+              <iframe
+                title={`Spotify player ${activeSpotifyTrack.title}`}
+                src={`https://open.spotify.com/embed/track/${activeSpotifyTrack.spotifyTrackId}?utm_source=generator&theme=0`}
+                width="100%"
+                height="80"
+                frameBorder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+                className="rounded-[16px]"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* DOCK HORIZONTAL TYPE APPLE / IOS : MAGNIFIER DYNAMIQUE CONTINU AU GLISSER */}
       <div className="mt-8 pt-4 pb-4">
         <div
@@ -258,7 +192,7 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
           className="no-scrollbar flex items-center gap-6 overflow-x-auto px-12 sm:px-32 py-10 scroll-smooth"
         >
           {playlist.map((track, idx) => {
-            const isPlaying = playingTrackId === track.id;
+            const isPlayingThis = activeSpotifyTrack?.id === track.id;
 
             // Calcul dynamique de la distance au centre du viewport pendant le scroll
             const cardEl = cardRefs.current[idx];
@@ -285,7 +219,9 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                   opacity,
                 }}
                 className={`cursor-pointer group relative shrink-0 w-[260px] sm:w-[290px] rounded-[30px] p-4 text-left select-none transition-transform duration-150 ease-out ${
-                  isDominant
+                  isPlayingThis
+                    ? 'bg-emerald-500/[0.12] border-2 border-emerald-400 shadow-[0_25px_60px_rgba(16,185,129,0.3)] z-30'
+                    : isDominant
                     ? 'bg-white/[0.14] backdrop-blur-2xl border border-white/30 shadow-[0_25px_60px_rgba(0,0,0,0.8)] z-20'
                     : 'bg-white/[0.04] border border-white/5 z-10'
                 }`}
@@ -299,7 +235,7 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                       (e.currentTarget as HTMLImageElement).src = '/images/danse.jpg';
                     }}
                     className={`h-full w-full object-cover transition duration-700 ${
-                      isPlaying ? 'scale-105 filter brightness-90' : 'group-hover:scale-105'
+                      isPlayingThis ? 'scale-105 filter brightness-90' : 'group-hover:scale-105'
                     }`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
@@ -314,21 +250,21 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                     </span>
                   </div>
 
-                  {/* BOUTON PLAY/PAUSE SUR LA CARTE AVEC VRAIE ÉCOUTE AUDIO */}
+                  {/* BOUTON PLAY/PAUSE SUR LA CARTE (Lance le vrai morceau original) */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button
                       type="button"
-                      onClick={(e) => togglePlay(track, e)}
+                      onClick={(e) => handlePlayOfficial(track, e)}
                       className={`flex items-center justify-center rounded-full transition-transform duration-300 shadow-2xl ${
                         isDominant ? 'h-14 w-14 hover:scale-110' : 'h-11 w-11 hover:scale-110'
                       } ${
-                        isPlaying
-                          ? 'bg-emerald-400 text-black shadow-emerald-500/50'
+                        isPlayingThis
+                          ? 'bg-emerald-400 text-black shadow-emerald-500/50 ring-4 ring-emerald-400/30'
                           : 'bg-white text-black hover:bg-neutral-100'
                       }`}
-                      title={isPlaying ? 'Pause' : 'Écouter'}
+                      title={isPlayingThis ? 'Pause' : 'Écouter le vrai morceau'}
                     >
-                      {isPlaying ? (
+                      {isPlayingThis ? (
                         <Pause size={isDominant ? 22 : 18} className="fill-black" />
                       ) : (
                         <Play size={isDominant ? 22 : 18} className="fill-black ml-0.5" />
@@ -350,7 +286,7 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                     <h4 className="font-bold text-white text-[15px] sm:text-[16px] truncate leading-tight">
                       {track.title}
                     </h4>
-                    {isPlaying && (
+                    {isPlayingThis && (
                       <Volume2 size={14} className="text-emerald-400 animate-pulse shrink-0 ml-1" />
                     )}
                   </div>
