@@ -4,32 +4,21 @@ import { Link } from 'react-router-dom';
 import {
   Clock,
   Calendar,
-  Archive,
+  FileText,
   ZoomIn,
   ZoomOut,
   Play,
   Pause,
   RotateCcw,
-  Volume2,
-  Sparkles,
   Sun,
-  Shield,
-  Layers,
-  FileText,
   Music,
   User,
-  ChevronRight,
-  Maximize2,
-  Minimize2,
   SlidersHorizontal,
-  FolderOpen,
+  Headphones,
   Eye,
   CheckCircle2,
-  Headphones,
-  Compass,
-  ArrowRight,
-  Radio,
-  Share2,
+  Sparkles,
+  Layers,
 } from 'lucide-react';
 import {
   type TimelineTrackItem,
@@ -48,19 +37,19 @@ export default function Theater() {
   const [mode, setMode] = useState<TimelineMode>('jour-j');
   const [items, setItems] = useState<TimelineTrackItem[]>(INITIAL_TIMELINE_ITEMS);
   const [selectedId, setSelectedId] = useState<string>('jj-3');
-  const [zoomLevel, setZoomLevel] = useState<number>(1.2); // zoom 0.8x à 2.5x
+  const [zoomLevel, setZoomLevel] = useState<number>(1.2);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentPlayheadMin, setCurrentPlayheadMin] = useState<number>(690); // 17:30
   const [audioPlaying, setAudioPlaying] = useState<string | null>(null);
   const [isSaxModalOpen, setIsSaxModalOpen] = useState(false);
-  const [activeTabMedia, setActiveTabMedia] = useState<'visual' | 'doc' | 'audio'>('visual');
+  const [activeMediaTab, setActiveMediaTab] = useState<'visual' | 'doc' | 'audio'>('visual');
 
   const rulerScrollRef = useRef<HTMLDivElement>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
   const isDraggingRef = useRef<{ id: string; startX: number; origMin: number } | null>(null);
   const isResizingRef = useRef<{ id: string; startX: number; origDur: number } | null>(null);
 
-  // Filtrage selon le mode (Jour J, Calendrier futur, Archives doc)
+  // Filtrage selon le mode
   const currentItems = useMemo(() => {
     return items.filter((it) => it.mode === mode);
   }, [items, mode]);
@@ -69,12 +58,12 @@ export default function Theater() {
     return items.find((it) => it.id === selectedId) || currentItems[0] || items[0];
   }, [items, selectedId, currentItems]);
 
-  // Largeur de base de la ruler en pixels
+  // Échelle de largeur en pixels
   const pxPerHour = 140 * zoomLevel;
   const totalRulerWidth = TIMELINE_TOTAL_HOURS * pxPerHour;
   const pxPerMinute = pxPerHour / 60;
 
-  // Animation Playhead en lecture simulée
+  // Lecture playhead simulation
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => {
@@ -89,7 +78,7 @@ export default function Theater() {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  // Auto-scroll vers le moment sélectionné lors du clic
+  // Centrage auto sur le moment
   useEffect(() => {
     if (selectedItem && rulerScrollRef.current) {
       const momentLeft = selectedItem.startMinuteOfDay * pxPerMinute;
@@ -101,7 +90,7 @@ export default function Theater() {
     }
   }, [selectedId, zoomLevel]);
 
-  // Écoute audio preview
+  // Audio preview
   const togglePlayAudio = (url?: string, itemId?: string) => {
     if (!url) return;
     if (audioPlaying === itemId) {
@@ -134,7 +123,6 @@ export default function Theater() {
       const deltaX = moveEvt.clientX - isDraggingRef.current.startX;
       const deltaMin = Math.round(deltaX / pxPerMinute);
       const rawMin = isDraggingRef.current.origMin + deltaMin;
-      // Snapping 5 min
       const snappedMin = Math.max(0, Math.min(TIMELINE_TOTAL_MINUTES - item.durationMinutes, Math.round(rawMin / 5) * 5));
 
       setItems((prev) =>
@@ -173,7 +161,6 @@ export default function Theater() {
       const deltaX = moveEvt.clientX - isResizingRef.current.startX;
       const deltaMin = Math.round(deltaX / pxPerMinute);
       const rawDur = isResizingRef.current.origDur + deltaMin;
-      // Snapping 5 min avec min 15m et max 360m
       const snappedDur = Math.max(15, Math.min(360, Math.round(rawDur / 5) * 5));
 
       setItems((prev) =>
@@ -198,406 +185,315 @@ export default function Theater() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#FBFBFD] text-[#0B0C12] select-none font-sans">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-black text-[#0B0C12] select-none font-sans">
       
-      {/* 1. BARRE SUPÉRIEURE DE NAVIGATION ET COMMANDES STUDIO UNIFIÉE (Épurée & Responsive, 100% pictos) */}
-      <header className="h-14 sm:h-16 shrink-0 z-40 border-b border-black/8 bg-white/95 px-3 sm:px-6 flex items-center justify-between backdrop-blur-xl">
-        
-        {/* Logo VOWS & Switcher de mode sous forme de pictos épurés avec tooltips */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Link to="/" className="flex items-center gap-1.5 shrink-0" title="Retour à l'accueil">
-            <span className="vp-title text-[17px] sm:text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-black/40 hidden md:inline">
-              / Theater
-            </span>
-          </Link>
-
-          {/* Sélecteur de mode Studio 100% PICTOS */}
-          <div className="flex items-center gap-1 p-1 rounded-full bg-neutral-100 border border-black/5">
-            <button
-              type="button"
-              onClick={() => setMode('jour-j')}
-              className={`flex h-8 w-8 sm:h-8 sm:w-auto sm:px-3 items-center justify-center gap-1.5 rounded-full text-[11.5px] font-semibold transition ${
-                mode === 'jour-j' ? 'bg-white text-black shadow-sm font-bold' : 'text-black/50 hover:text-black'
-              }`}
-              title="Jour J Live (06:00 → 04:00)"
-            >
-              <Clock size={15} />
-              <span className="hidden sm:inline">Jour J</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('calendar')}
-              className={`flex h-8 w-8 sm:h-8 sm:w-auto sm:px-3 items-center justify-center gap-1.5 rounded-full text-[11.5px] font-semibold transition ${
-                mode === 'calendar' ? 'bg-white text-black shadow-sm font-bold' : 'text-black/50 hover:text-black'
-              }`}
-              title="Calendrier & Futurs Événements"
-            >
-              <Calendar size={15} />
-              <span className="hidden sm:inline">Calendrier</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('archives')}
-              className={`flex h-8 w-8 sm:h-8 sm:w-auto sm:px-3 items-center justify-center gap-1.5 rounded-full text-[11.5px] font-semibold transition ${
-                mode === 'archives' ? 'bg-white text-black shadow-sm font-bold' : 'text-black/50 hover:text-black'
-              }`}
-              title="Archives & Documents scellés"
-            >
-              <FileText size={15} />
-              <span className="hidden sm:inline">Archives</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Contrôles de lecture & Menus de navigation */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+      {/* 1. BARRE FLOTTANTE DISCRÈTE EN HAUT : CAPSULE GLASS VOWS & PICTOS */}
+      <header className="absolute top-3 inset-x-0 z-40 px-3 sm:px-6 pointer-events-none">
+        <div className="mx-auto max-w-7xl flex items-center justify-between">
           
-          {/* Zoom Ruler (Pictos seuls) */}
-          <div className="flex items-center gap-0.5 bg-neutral-100 rounded-full p-1 border border-black/5">
-            <button
-              type="button"
-              onClick={() => setZoomLevel((z) => Math.max(0.7, z - 0.25))}
-              className="p-1 text-black/60 hover:text-black transition"
-              title="Dézoomer"
-            >
-              <ZoomOut size={14} />
-            </button>
-            <span className="text-[10px] font-mono px-1 text-black/60 font-semibold">{zoomLevel.toFixed(1)}×</span>
-            <button
-              type="button"
-              onClick={() => setZoomLevel((z) => Math.min(2.5, z + 0.25))}
-              className="p-1 text-black/60 hover:text-black transition"
-              title="Zoomer"
-            >
-              <ZoomIn size={14} />
-            </button>
+          {/* Logo & Modes (100% pictos) */}
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-xl px-3 py-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-black/5">
+            <Link to="/" className="flex items-center gap-1.5 pr-2 border-r border-black/10" title="Retour à l'accueil">
+              <span className="vp-title text-[17px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+            </Link>
+
+            {/* Pictos des 3 Modes */}
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setMode('jour-j')}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
+                  mode === 'jour-j' ? 'bg-black text-white shadow-sm' : 'text-black/50 hover:bg-black/5 hover:text-black'
+                }`}
+                title="Jour J Live (06:00 → 04:00)"
+              >
+                <Clock size={15} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('calendar')}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
+                  mode === 'calendar' ? 'bg-black text-white shadow-sm' : 'text-black/50 hover:bg-black/5 hover:text-black'
+                }`}
+                title="Calendrier & Futurs Événements"
+              >
+                <Calendar size={15} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode('archives')}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
+                  mode === 'archives' ? 'bg-black text-white shadow-sm' : 'text-black/50 hover:bg-black/5 hover:text-black'
+                }`}
+                title="Archives & Documents scellés"
+              >
+                <FileText size={15} />
+              </button>
+            </div>
           </div>
 
-          {/* Bouton Simulation Playhead (Picto rond compact) */}
-          <button
-            type="button"
-            onClick={() => setIsPlaying(!isPlaying)}
-            className={`flex h-8 w-8 sm:h-8 sm:w-auto sm:px-3 items-center justify-center gap-1.5 rounded-full text-[11.5px] font-bold transition border ${
-              isPlaying
-                ? 'bg-black text-white border-black shadow-sm'
-                : 'bg-white text-black border-black/10 hover:border-black/30'
-            }`}
-            title={isPlaying ? 'Mettre en pause' : 'Lancer la simulation en direct'}
-          >
-            {isPlaying ? <Pause size={13} /> : <Play size={13} />}
-            <span className="hidden md:inline">{isPlaying ? 'Pause' : 'Direct'}</span>
-          </button>
+          {/* Outils & Commandes droite */}
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-xl px-3 py-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-black/5">
+            
+            {/* Zoom */}
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => setZoomLevel((z) => Math.max(0.7, z - 0.25))}
+                className="p-1 text-black/60 hover:text-black transition"
+                title="Dézoomer"
+              >
+                <ZoomOut size={13} />
+              </button>
+              <span className="text-[10px] font-mono px-1 text-black/60 font-semibold">{zoomLevel.toFixed(1)}×</span>
+              <button
+                type="button"
+                onClick={() => setZoomLevel((z) => Math.min(2.5, z + 0.25))}
+                className="p-1 text-black/60 hover:text-black transition"
+                title="Zoomer"
+              >
+                <ZoomIn size={13} />
+              </button>
+            </div>
 
-          {/* Indicateur Heure Tête de lecture */}
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/5 font-mono text-[11px] sm:text-[11.5px] text-black font-bold">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>{minutesToTimeString(currentPlayheadMin)}</span>
-          </div>
+            {/* Playhead Direct */}
+            <button
+              type="button"
+              onClick={() => setIsPlaying(!isPlaying)}
+              className={`flex h-7 w-7 items-center justify-center rounded-full transition ${
+                isPlaying ? 'bg-black text-white shadow-sm' : 'bg-black/5 text-black hover:bg-black/10'
+              }`}
+              title={isPlaying ? 'Pause simulation' : 'Simulation en direct'}
+            >
+              {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+            </button>
 
-          {/* Menus unifiés Event OS & Univers (préservés proprement) */}
-          <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-black/8">
-            <UnifiedEventOsMenu />
-            <UnifiedUniverseMenu
-              selectedStyleId={null}
-              onSelectStyle={() => {
-                window.location.href = '/';
-              }}
-            />
+            {/* Horloge Tête */}
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/5 font-mono text-[11px] text-black font-bold">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{minutesToTimeString(currentPlayheadMin)}</span>
+            </div>
+
+            {/* Menus unifiés Event OS & Univers */}
+            <div className="hidden md:flex items-center gap-1.5 pl-2 border-l border-black/10">
+              <UnifiedEventOsMenu />
+              <UnifiedUniverseMenu
+                selectedStyleId={null}
+                onSelectStyle={() => {
+                  window.location.href = '/';
+                }}
+              />
+            </div>
+
           </div>
 
         </div>
-
       </header>
 
-      {/* 2. ESPACE CENTRAL FULLSCREEN : APERÇU MÉDIA, DOCUMENT & ALIGNEMENT AU CENTRE */}
-      <main className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 bg-[#FBFBFD] flex items-center justify-center">
-        <div className="w-full max-w-6xl h-full flex flex-col justify-center">
-          
-          {selectedItem ? (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch h-full max-h-[580px]">
-              
-              {/* GRAND ÉCRAN MÉDIA / VISUEL DU MOMENT AU CENTRE (7 colonnes) */}
-              <div className="lg:col-span-7 flex flex-col rounded-[32px] bg-white border border-black/8 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.04)]">
-                
-                {/* Barre supérieure de l'écran média */}
-                <div className="px-5 py-3.5 border-b border-black/8 flex items-center justify-between bg-neutral-50/50">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-black" />
-                    <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-black/50">
-                      {selectedItem.chapter}
-                    </span>
+      {/* 2. ESPACE CENTRAL BORD-À-BORD IMMERSIF (FAÇON HERO MINI-SITE) */}
+      <main className="flex-1 min-h-0 relative w-full overflow-hidden flex items-end">
+        
+        {/* FOND CINÉMATOGRAPHIQUE PLEIN ÉCRAN DU THÈME / MOMENT */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedItem?.id || 'empty'}
+            initial={{ opacity: 0, scale: 1.03 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 z-0 bg-neutral-900"
+          >
+            {activeMediaTab === 'visual' && (
+              <>
+                {selectedItem?.mediaUrl ? (
+                  <img
+                    src={selectedItem.mediaUrl}
+                    alt={selectedItem.title}
+                    className="h-full w-full object-cover object-center"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-white/30 font-mono text-[13px]">
+                    <Eye size={20} className="mr-2" />
+                    <span>Visuel haute scénographie</span>
                   </div>
+                )}
+                {/* Dégradé doux vers le bas pour faire ressortir la timeline et les textes */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
+              </>
+            )}
 
-                  {/* Onglets de visualisation */}
-                  <div className="flex items-center gap-1 bg-white rounded-full p-1 border border-black/5">
+            {/* ÉCRAN DOCUMENT SCELLÉ */}
+            {activeMediaTab === 'doc' && (
+              <div className="h-full w-full bg-[#111218] p-8 sm:p-14 flex items-center justify-center text-white">
+                <div className="max-w-xl space-y-4 text-center">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3.5 py-1 text-[11px] font-mono font-bold uppercase">
+                    <CheckCircle2 size={13} />
+                    <span>Document Scellé Registre VOWS</span>
+                  </div>
+                  <h2 className="text-[28px] sm:text-[34px] font-bold text-white">{selectedItem?.docBadge}</h2>
+                  <p className="text-[14px] text-white/70 leading-relaxed">
+                    Certifié intègre et non altérable. Version opposable pour l'ensemble des missionnaires et intervenants du Jour J.
+                  </p>
+                  <div className="pt-3">
                     <button
                       type="button"
-                      onClick={() => setActiveTabMedia('visual')}
-                      className={`px-2.5 py-1 rounded-full text-[10.5px] font-semibold transition ${
-                        activeTabMedia === 'visual' ? 'bg-black text-white' : 'text-black/50 hover:text-black'
-                      }`}
+                      className="px-5 py-2.5 rounded-full bg-white text-black text-[12px] font-bold hover:bg-neutral-200 transition shadow-lg"
                     >
-                      Visuel &amp; Scène
+                      Consulter le PDF sécurisé
                     </button>
-                    {selectedItem.docBadge && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveTabMedia('doc')}
-                        className={`px-2.5 py-1 rounded-full text-[10.5px] font-semibold transition ${
-                          activeTabMedia === 'doc' ? 'bg-black text-white' : 'text-black/50 hover:text-black'
-                        }`}
-                      >
-                        Document
-                      </button>
-                    )}
-                    {selectedItem.audioPreviewUrl && (
-                      <button
-                        type="button"
-                        onClick={() => setActiveTabMedia('audio')}
-                        className={`px-2.5 py-1 rounded-full text-[10.5px] font-semibold transition ${
-                          activeTabMedia === 'audio' ? 'bg-black text-white' : 'text-black/50 hover:text-black'
-                        }`}
-                      >
-                        Audio Master
-                      </button>
-                    )}
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Contenu visuel / lecteur */}
-                <div className="flex-1 relative overflow-hidden bg-neutral-900 flex items-center justify-center min-h-[260px]">
-                  {activeTabMedia === 'visual' && (
-                    <>
-                      {selectedItem.mediaUrl ? (
-                        <img
-                          src={selectedItem.mediaUrl}
-                          alt={selectedItem.title}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="text-white/40 font-mono text-[13px] flex items-center gap-2">
-                          <Eye size={16} />
-                          <span>Aperçu de scène généré en direct</span>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-                      
-                      <div className="absolute bottom-4 left-5 right-5 text-white pointer-events-none">
-                        <div className="text-[11px] font-mono uppercase tracking-wider text-white/70">
-                          {selectedItem.startTime} · Durée {selectedItem.durationMinutes} min
-                        </div>
-                        <h2 className="text-[20px] sm:text-[24px] font-bold leading-tight mt-0.5">
-                          {selectedItem.title}
-                        </h2>
-                        <p className="text-[12.5px] text-white/80 line-clamp-1 mt-1">
-                          {selectedItem.subtitle}
-                        </p>
-                      </div>
-                    </>
+            {/* ÉCRAN AUDIO DIRECT */}
+            {activeMediaTab === 'audio' && (
+              <div className="h-full w-full bg-[#090A0F] p-8 sm:p-14 flex items-center justify-center text-white">
+                <div className="max-w-md text-center space-y-5">
+                  <div className="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
+                    FLUX MASTER LIVE 320 KBPS
+                  </div>
+                  <h2 className="text-[26px] sm:text-[32px] font-bold">Bande sonore calibrée</h2>
+                  <p className="text-[13px] text-white/60">
+                    Cadence synchronisée : {selectedItem?.targetBpm || 105} BPM pour ce moment.
+                  </p>
+                  <div className="pt-2 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => togglePlayAudio(selectedItem?.audioPreviewUrl, selectedItem?.id)}
+                      className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-black transition hover:scale-105 shadow-2xl"
+                    >
+                      {audioPlaying === selectedItem?.id ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* BANDEAU FLOTTANT EN BAS DU HERO (TITRE & RÔLE ALIGNÉ DU MOMENT) */}
+        {selectedItem && (
+          <div className="relative z-10 w-full px-4 sm:px-8 pb-4 pointer-events-none">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
+              
+              {/* Informations du moment (hiérarchie pure sans répétition inutile) */}
+              <div className="text-white space-y-1 drop-shadow-md">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-white/70 bg-white/10 px-2 py-0.5 rounded-full backdrop-blur-md">
+                    {selectedItem.chapter}
+                  </span>
+                  {selectedItem.solarConstraint && (
+                    <span className="flex items-center gap-1 text-[10.5px] font-mono text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full backdrop-blur-md">
+                      <Sun size={11} />
+                      <span>Golden Hour</span>
+                    </span>
                   )}
-
-                  {activeTabMedia === 'doc' && (
-                    <div className="p-8 w-full h-full bg-neutral-50 flex flex-col justify-between text-[#0B0C12]">
-                      <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-[11px] font-mono font-bold">
-                          <CheckCircle2 size={13} />
-                          <span>DOCUMENT OFFICIEL SCELLÉ VOWS</span>
-                        </div>
-                        <h3 className="text-[22px] font-bold text-black">{selectedItem.docBadge}</h3>
-                        <p className="text-[13px] text-black/70 leading-relaxed max-w-lg">
-                          Ce livrable a été validé et horodaté sur le registre de l'événement.
-                          Toutes les parties prenantes (mariés, coordinateurs, prestataires) disposent de la même version sans désynchronisation.
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 pt-4 border-t border-black/10">
-                        <button
-                          type="button"
-                          className="px-4 py-2 rounded-full bg-black text-white text-[12px] font-bold hover:bg-neutral-800 transition"
-                        >
-                          Télécharger la copie PDF certifiée
-                        </button>
-                        <span className="text-[11px] font-mono text-black/40">SHA-256 : e7b92...8fa1</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {activeTabMedia === 'audio' && (
-                    <div className="p-8 w-full h-full bg-neutral-950 text-white flex flex-col justify-between">
-                      <div className="space-y-2">
-                        <div className="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
-                          FLUX AUDIO HAUTE FIDÉLITÉ 320 KBPS
-                        </div>
-                        <h3 className="text-[20px] font-bold">Bande-son du moment calibrée</h3>
-                        <p className="text-[12.5px] text-white/60">
-                          Tempo cible synchronisé avec le rythme de la journée : {selectedItem.targetBpm || 105} BPM.
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-4 py-4">
-                        <button
-                          type="button"
-                          onClick={() => togglePlayAudio(selectedItem.audioPreviewUrl, selectedItem.id)}
-                          className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition hover:scale-105 shadow-xl"
-                        >
-                          {audioPlaying === selectedItem.id ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
-                        </button>
-                        <div className="space-y-1">
-                          <div className="text-[13px] font-bold text-white">
-                            {audioPlaying === selectedItem.id ? 'Lecture en cours sur les retours...' : 'Prêt pour l’écoute'}
-                          </div>
-                          <div className="text-[11px] font-mono text-white/50">Flux station direct VOWS</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                 </div>
 
+                <h1 className="text-[26px] sm:text-[38px] font-bold tracking-tight text-white leading-tight">
+                  {selectedItem.title}
+                </h1>
+                
+                <p className="text-[13px] sm:text-[14px] text-white/80 max-w-2xl line-clamp-1">
+                  {selectedItem.description}
+                </p>
               </div>
 
-              {/* PANNEAU LATÉRAL : ALIGNEMENT MÉTIERS, PRESTATAIRES & MINI-SITES (5 colonnes) */}
-              <div className="lg:col-span-5 rounded-[32px] bg-white border border-black/8 p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.04)] flex flex-col justify-between overflow-y-auto">
+              {/* Rôle aligné & commutateur de vue média */}
+              <div className="pointer-events-auto flex items-center gap-2 shrink-0">
                 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between pb-3 border-b border-black/8">
-                    <span className="text-[11px] font-mono uppercase tracking-wider text-black/40 font-bold">
-                      Alignement &amp; Fiche Spatiale
-                    </span>
-                    <span className="rounded-full bg-black/5 text-black px-2.5 py-0.5 text-[10px] font-mono font-bold">
-                      ID: {selectedItem.id}
-                    </span>
-                  </div>
-
-                  {/* Titre & Description détaillée */}
-                  <div>
-                    <h3 className="text-[18px] font-bold text-black">{selectedItem.title}</h3>
-                    <p className="text-[13px] text-black/60 mt-1.5 leading-relaxed">
-                      {selectedItem.description}
-                    </p>
-                  </div>
-
-                  {/* Horodatage & Durée avec boutons +/- direct */}
-                  <div className="grid grid-cols-2 gap-2.5 pt-1">
-                    <div className="p-3 rounded-[18px] bg-[#F7F7F8] border border-black/5">
-                      <div className="text-[9.5px] font-mono text-black/40 uppercase">Début Nominale</div>
-                      <div className="text-[16px] font-bold font-mono text-black mt-0.5">
-                        {selectedItem.startTime}
-                      </div>
-                    </div>
-                    <div className="p-3 rounded-[18px] bg-[#F7F7F8] border border-black/5">
-                      <div className="text-[9.5px] font-mono text-black/40 uppercase">Durée Allouée</div>
-                      <div className="text-[16px] font-bold font-mono text-black mt-0.5">
-                        {selectedItem.durationMinutes} min
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Carte Métier Aligné / Déclinaison vers le Mini-site */}
-                  {selectedItem.alignedRole && (
-                    <div className="p-4 rounded-[22px] border border-black/10 bg-neutral-50/70 space-y-2.5">
-                      <div className="flex items-center justify-between text-[10.5px] font-mono text-black/50">
-                        <span className="font-bold">MISSIONNAIRE ASSIGNÉ :</span>
-                        <User size={13} />
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-[14px] font-bold text-black">{selectedItem.alignedRole}</div>
-                          <div className="text-[11px] text-black/50 mt-0.5">Mini-site synchronisé avec le conducteur</div>
-                        </div>
-
-                        {/* Si rôle saxophoniste, bouton d'ouverture directe de sa modale */}
-                        {selectedItem.alignedRole.toLowerCase().includes('sax') && (
-                          <button
-                            type="button"
-                            onClick={() => setIsSaxModalOpen(true)}
-                            className="px-3 py-1.5 rounded-full bg-black text-white text-[11px] font-bold hover:bg-neutral-800 transition shadow-sm"
-                          >
-                            Voir Mini-Site
-                          </button>
-                        )}
-                      </div>
-
-                      {selectedItem.solarConstraint && (
-                        <div className="flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 border border-amber-200/60 rounded-xl p-2 font-mono">
-                          <Sun size={12} className="text-amber-500 shrink-0" />
-                          <span>Contrainte Golden Hour impérative (coucher du soleil)</span>
-                        </div>
-                      )}
-                    </div>
+                {/* Sélecteur de type d'aperçu au centre */}
+                <div className="flex items-center gap-1 bg-white/15 backdrop-blur-xl rounded-full p-1 border border-white/20 text-white">
+                  <button
+                    type="button"
+                    onClick={() => setActiveMediaTab('visual')}
+                    className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
+                      activeMediaTab === 'visual' ? 'bg-white text-black shadow-md' : 'text-white/70 hover:text-white'
+                    }`}
+                  >
+                    Visuel
+                  </button>
+                  {selectedItem.docBadge && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveMediaTab('doc')}
+                      className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
+                        activeMediaTab === 'doc' ? 'bg-white text-black shadow-md' : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      Doc
+                    </button>
                   )}
-
-                </div>
-
-                {/* Pied du panneau : épuré sans texte verbeux */}
-                <div className="pt-3 border-t border-black/8 flex items-center justify-between text-[11px] text-black/40 font-mono">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span>Synchronisation directe VOWS OS</span>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  {selectedItem.audioPreviewUrl && (
                     <button
                       type="button"
-                      onClick={() => togglePlayAudio(selectedItem.audioPreviewUrl, selectedItem.id)}
-                      className="p-1 hover:text-black transition"
-                      title="Audio preview"
+                      onClick={() => setActiveMediaTab('audio')}
+                      className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${
+                        activeMediaTab === 'audio' ? 'bg-white text-black shadow-md' : 'text-white/70 hover:text-white'
+                      }`}
                     >
-                      <Headphones size={13} />
+                      Audio
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsSaxModalOpen(true)}
-                      className="p-1 hover:text-black transition"
-                      title="Profil & Mini-Site"
-                    >
-                      <User size={13} />
-                    </button>
-                  </div>
+                  )}
                 </div>
+
+                {/* Si rôle assigné, badge interactif */}
+                {selectedItem.alignedRole && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedItem.alignedRole?.toLowerCase().includes('sax')) {
+                        setIsSaxModalOpen(true);
+                      }
+                    }}
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white text-black text-[12px] font-bold shadow-lg hover:bg-neutral-200 transition"
+                  >
+                    <User size={13} />
+                    <span>{selectedItem.alignedRole}</span>
+                  </button>
+                )}
 
               </div>
 
             </div>
-          ) : (
-            <div className="text-center py-20 text-black/40">Sélectionnez un moment</div>
-          )}
+          </div>
+        )}
 
-        </div>
       </main>
 
-      {/* 3. SURFACE HORIZONTALE PLEINE LARGEUR EN BAS : LA TIMELINE RULER GLISSABLE */}
-      <footer className="shrink-0 h-44 sm:h-48 border-t border-black/10 bg-white/95 px-3 sm:px-6 py-2.5 flex flex-col justify-between shadow-[0_-15px_40px_rgba(0,0,0,0.04)]">
+      {/* 3. SURFACE HORIZONTALE PLEINE LARGEUR BORD-À-BORD EN BAS (TIMELINE RULER) */}
+      <footer className="shrink-0 h-44 sm:h-48 bg-white border-t border-black/10 px-3 sm:px-6 py-2.5 flex flex-col justify-between shadow-[0_-15px_40px_rgba(0,0,0,0.15)] z-30">
         
-        {/* En-tête de la Timeline Ruler épurée (0 texte inutile, 100% repères utiles) */}
+        {/* Barre de contrôle fine de la Timeline */}
         <div className="flex items-center justify-between text-[11px] pb-1">
           <div className="flex items-center gap-2 font-mono text-black/60">
             <SlidersHorizontal size={13} className="text-black" />
-            <span className="font-bold text-black uppercase tracking-wider text-[10.5px] sm:text-[11px]">Timeline</span>
+            <span className="font-bold text-black uppercase tracking-wider text-[11px]">Timeline</span>
             <span className="text-[10px] text-black/40 font-mono">06:00 → 04:00 (+1)</span>
           </div>
 
-          <div className="flex items-center gap-2.5 text-black/40 font-mono text-[10.5px]">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 hidden sm:inline" />
-            <span className="text-[10px] bg-black/5 px-2 py-0.5 rounded-full hidden sm:inline">Snap 5m</span>
+          <div className="flex items-center gap-2 text-black/40 font-mono text-[10.5px]">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="text-[10px] bg-black/5 px-2 py-0.5 rounded-full">Snap 5m</span>
             <button
               type="button"
               onClick={() => {
                 setItems(INITIAL_TIMELINE_ITEMS);
                 setSelectedId('jj-3');
               }}
-              className="hover:text-black transition flex items-center gap-1 p-1"
-              title="Réinitialiser l'alignement nominal"
+              className="hover:text-black transition p-1"
+              title="Réinitialiser"
             >
               <RotateCcw size={12} />
             </button>
           </div>
         </div>
 
-        {/* CONTENEUR DE LA RÈGLE DÉFILABLE HORIZONTALEMENT */}
+        {/* SURFACE DE LA RÈGLE DÉFILABLE BORD-À-BORD */}
         <div
           ref={rulerScrollRef}
-          className="relative flex-1 overflow-x-auto rounded-[20px] bg-[#F7F7F8] border border-black/8 p-2 custom-scrollbar shadow-inner"
+          className="relative flex-1 overflow-x-auto rounded-[18px] bg-[#F7F7F8] border border-black/8 p-2 custom-scrollbar shadow-inner"
         >
           <div
             className="relative h-28 select-none"
@@ -653,7 +549,7 @@ export default function Theater() {
               </div>
             </div>
 
-            {/* BLOCS TEMPORELS MANIPULABLES PAR DRAG & RESIZE */}
+            {/* BLOCS TEMPORELS MANIPULABLES */}
             <div className="absolute inset-x-0 top-9 bottom-1">
               {currentItems.map((item) => {
                 const isSelected = selectedItem?.id === item.id;
@@ -664,7 +560,7 @@ export default function Theater() {
                   <div
                     key={item.id}
                     onMouseDown={(e) => handleMouseDownMoment(e, item)}
-                    className={`absolute top-1 rounded-[16px] p-2.5 text-left cursor-grab active:cursor-grabbing transition-shadow select-none group ${
+                    className={`absolute top-1 rounded-[16px] p-2.5 text-left cursor-grab active:cursor-grabbing transition-all select-none group ${
                       isSelected
                         ? 'bg-black text-white shadow-xl ring-2 ring-black/20 z-20 scale-[1.01]'
                         : 'bg-white text-black border border-black/10 hover:border-black/30 shadow-sm z-10'
@@ -693,7 +589,7 @@ export default function Theater() {
                       {item.alignedRole || item.subtitle}
                     </div>
 
-                    {/* POIGNÉE DE REDIMENSIONNEMENT DROITE */}
+                    {/* Poignée de redimensionnement droite */}
                     <div
                       onMouseDown={(e) => handleMouseDownResize(e, item)}
                       className="absolute right-0 top-0 bottom-0 w-2.5 cursor-ew-resize hover:bg-neutral-400/40 rounded-r-[16px] transition flex items-center justify-center opacity-0 group-hover:opacity-100"
@@ -711,7 +607,7 @@ export default function Theater() {
 
       </footer>
 
-      {/* MODALE SAXOPHONISTE DU CRÉATEUR SI SOUHAITÉ */}
+      {/* MODALE SAXOPHONISTE DU CRÉATEUR */}
       <SaxophonistProfileModal
         isOpen={isSaxModalOpen}
         onClose={() => setIsSaxModalOpen(false)}
