@@ -38,6 +38,7 @@ export interface ThemeCategory {
 
 export const THEME_CATEGORIES: ThemeCategory[] = [
   { id: 'all', label: 'Tous les univers & missions', description: 'Explorez tous les styles et leurs équipes humaines' },
+  { id: 'imprevu', label: '⚡ Last Minute & Plan B', description: 'Mariages spontanés, alertes secours et plans B héroïques' },
   { id: 'minimal', label: 'Minimal & Haute Couture', description: 'Noir & blanc, géométrie pure et élégance spatiale' },
   { id: 'nature', label: 'Grands Domaines & Végétal', description: 'Châteaux revisités, forêts sacrées et banquets sous les arbres' },
   { id: 'urbain', label: 'Nocturne & Fête 02h17', description: 'Rooftops, clubs secrets, néons et sound system' },
@@ -494,6 +495,31 @@ export const WEDDING_STYLES: WeddingStyle[] = [
       title: 'Météo Houle & Marées Astronomiques',
       description: 'Calcul temps réel du coefficient de marée et créneau météo de passage de la vedette.',
       badge: 'Bout du Monde',
+    },
+  },
+  {
+    id: 'last-minute',
+    name: 'Mariage Improvisé · 48H',
+    tagline: 'Coup de tête. 48h chrono. Plan B héroïque.',
+    category: 'concept',
+    manifesto: 'Pourquoi attendre deux ans ? Deux billets de train, une place publique, des potes prévenus par SMS à 14h, des fleurs chopées au vol et un banquet improvisé sur le pouce.',
+    synopsis: 'L’amour spontané radical. Mariage éclair ou sauvetage de plan B en 48h. L’écosystème VOWS mobilise instantanément les prestataires disponibles à proximité.',
+    ink: '#0F172A',
+    muted: '#64748B',
+    accent: '#F59E0B',
+    dark: false,
+    image: '/images/couple-paris.jpg',
+    aura: ['#FEF3C7', '#FDE68A', '#F59E0B'],
+    humanMissions: [
+      { role: 'Régisseur Urgence Plan B / 48H', mission: 'Dégoter un spot d’exception disponible le soir-même et régler les assurances', essentialSkill: 'Réseau d’accès instantané' },
+      { role: 'Photographe Sniper Spontané', mission: 'Reportage live sans poses figées, lumière disponible et argentique rapide', essentialSkill: 'Prise de vue instinctive' },
+      { role: 'Traiteur Pop-Up / Chef Guérilla', mission: 'Banquets de rue, pizzas napolitaines au four mobile ou bar à huîtres express', essentialSkill: 'Cuisine mobile zéro délai' },
+    ],
+    complementaryStyleIds: ['punk', 'supermarche', 'rooftop-paris'],
+    vendorToolkit: {
+      title: 'Radar de Secours & Dispatch Express',
+      description: 'Alerte instantanée sur le réseau des prestataires locaux géolocalisés disponibles sous 48h.',
+      badge: 'Urgence & Coup d’Éclat',
     },
   },
 ];
