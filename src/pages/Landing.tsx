@@ -18,6 +18,7 @@ import CommunityFeedHub from '../components/CommunityFeedHub';
 import PredictiveOrchestrationStudio from '../components/PredictiveOrchestrationStudio';
 import TalkieWalkieStudio from '../components/TalkieWalkieStudio';
 import VowsLiveRadioStudio from '../components/VowsLiveRadioStudio';
+import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 const HERO_ROTATING_TITLES = [
@@ -67,7 +68,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12]">
+    <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
       {/* Barre de navigation unifiée : Logo à gauche, UNIVERS & MÉTIERS à droite */}
       <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
         <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
@@ -150,17 +151,23 @@ export default function Landing() {
       */}
       <section className="px-4 py-12 sm:px-8 bg-[#07070B] space-y-10">
         <div className="mx-auto max-w-6xl space-y-10">
-          <ErrorBoundary>
-            <PredictiveOrchestrationStudio />
-          </ErrorBoundary>
+          <div id="orchestration-engine">
+            <ErrorBoundary>
+              <PredictiveOrchestrationStudio />
+            </ErrorBoundary>
+          </div>
 
-          <ErrorBoundary>
-            <TalkieWalkieStudio />
-          </ErrorBoundary>
+          <div id="talkie-studio">
+            <ErrorBoundary>
+              <TalkieWalkieStudio />
+            </ErrorBoundary>
+          </div>
 
-          <ErrorBoundary>
-            <VowsLiveRadioStudio />
-          </ErrorBoundary>
+          <div id="radio-studio">
+            <ErrorBoundary>
+              <VowsLiveRadioStudio />
+            </ErrorBoundary>
+          </div>
         </div>
       </section>
 
@@ -335,6 +342,9 @@ export default function Landing() {
           </div>
         </motion.div>
       </section>
+
+      {/* TOOLBAR FLOTTANTE VISIONOS AU BAS DE L'ÉCRAN (Stories, Radio, Talkie, Event OS) */}
+      <UniversalMiniSiteToolbar />
 
       <footer className="px-5 pb-10">
         <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
