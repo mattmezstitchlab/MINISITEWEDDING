@@ -1,16 +1,15 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
 
 /**
- * Chaque page est chargée à la demande : un invité qui ouvre un site de mariage
- * ne télécharge ni l’éditeur, ni l’onboarding (le bundle faisait 590 kB en un
- * seul morceau).
+ * Chaque page est chargée avec gestion propre des routes.
  */
-const Landing = lazy(() => import('./pages/Landing'));
-const Onboarding = lazy(() => import('./pages/Onboarding'));
-const Generating = lazy(() => import('./pages/Generating'));
-const Editor = lazy(() => import('./pages/Editor'));
-const PublicSite = lazy(() => import('./pages/PublicSite'));
+import Landing from './pages/Landing';
+import Onboarding from './pages/Onboarding';
+import Generating from './pages/Generating';
+import Editor from './pages/Editor';
+import PublicSite from './pages/PublicSite';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -26,16 +25,19 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Suspense fallback={<PageFallback />}>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/creer" element={<Onboarding />} />
-          <Route path="/generer" element={<Generating />} />
-          <Route path="/editeur/:id" element={<Editor />} />
-          <Route path="/p/:slug" element={<PublicSite />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/creer" element={<Onboarding />} />
+            <Route path="/generer" element={<Generating />} />
+            <Route path="/generation" element={<Generating />} />
+            <Route path="/editeur/:id" element={<Editor />} />
+            <Route path="/p/:slug" element={<PublicSite />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

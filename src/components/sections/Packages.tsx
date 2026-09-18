@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Check, Star } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useSiteView } from './context';
 import { Eyebrow, SectionTitle } from './primitives';
 import { getThemePackages, type ThemePackage } from '../../lib/themeConfigs';
@@ -49,8 +49,8 @@ export default function Packages() {
               }`}
             >
               {pkg.popular && (
-                <span className="absolute -top-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-white">
-                  <Star size={12} /> Le plus demandé
+                <span className="absolute -top-3 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-black px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-white shadow-md">
+                  Le plus demandé
                 </span>
               )}
               <div className="flex items-start justify-between gap-3">

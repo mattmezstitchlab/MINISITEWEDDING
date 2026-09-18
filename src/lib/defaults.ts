@@ -3,6 +3,7 @@ import { saveEditToken, setActiveToken } from './auth';
 import { slugify } from './format';
 import { styleById } from './weddingStyles';
 import { getThemeConfig } from './themeConfigs';
+import { getScenesForStyle } from './themeTimelineScenarios';
 import type { WeddingSite } from './types';
 
 /**
@@ -207,7 +208,19 @@ export async function seedSite(input: NewSiteInput): Promise<CreatedSite> {
 
   // Sections : titres thématisés si config existe
   const sections = config?.sections || SECTION_DEFAULTS;
-  const programme = config?.programme || PROGRAMME_DEFAULTS;
+
+  // SYNCHRONISATION TRANSVERSALE MIROIR :
+  // Le programme réel hérite directement des scènes scénarisées du thème (THEME_TIMELINE_SCENARIOS)
+  const themeScenes = getScenesForStyle(input.style);
+  const programme = themeScenes && themeScenes.length > 0
+    ? themeScenes.map(sc => ({
+        time: sc.time,
+        title: sc.title,
+        description: sc.narrativeScript,
+        place: input.venue.trim() || 'Lieu de réception',
+      }))
+    : (config?.programme || PROGRAMME_DEFAULTS);
+
   const infos = config ? config.infos : infoDefaults(input.venue, input.city);
   const faq = config?.faq || FAQ_DEFAULTS;
   const rsvpEvents = config?.rsvpEvents || RSVP_EVENT_DEFAULTS;
