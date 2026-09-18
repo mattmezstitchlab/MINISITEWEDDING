@@ -40,6 +40,267 @@ export interface ThemeModuleConfig {
  * qui ont du sens dans l'univers.
  */
 export const THEME_CONFIGS: Record<string, ThemeModuleConfig> = {
+  'noir-blanc': {
+    editorial: {
+      hero_subtitle: 'HAUTE COUTURE. NOIR & BLANC.',
+      story_title: 'L’élégance d’une ligne pure',
+      story_text: (p1, p2) => `${p1} et ${p2} ont choisi l’essentiel. Pas d’artifice ni de couleurs fugaces : la puissance du noir et blanc, l’éclat de la lumière naturelle et la beauté brute de leurs proches réunis.`,
+      announcement: 'Dress code : Black Tie ou Monochrome chic. Smoking noir ou blanc.',
+      typography: 'editorial',
+      button_style: 'square',
+      shape: 'sharp',
+      layout: 'magazine',
+      animation_level: 'calme',
+    },
+    sections: [
+      { key: 'hero', title: 'BLACK & WHITE', visible: true },
+      { key: 'histoire', title: 'Édito', visible: true },
+      { key: 'programme', title: 'Programme', visible: true },
+      { key: 'lieux', title: 'Lieux', visible: true },
+      { key: 'infos', title: 'Infos', visible: true },
+      { key: 'rsvp', title: 'Réponse', visible: true },
+      { key: 'packages', title: 'Packages', visible: true },
+      { key: 'cagnotte', title: 'Voyage', visible: true },
+      { key: 'galerie', title: 'Portfolio N&B', visible: true },
+      { key: 'faq', title: 'Questions', visible: true },
+      { key: 'contact', title: 'Contact', visible: true },
+      { key: 'footer', title: '', visible: true },
+    ],
+    programme: [
+      { time: '15:30', title: 'Arrivée des invités', description: 'Accueil au salon avec coupe de champagne.', place: 'Salon d’honneur', icon: 'glass' },
+      { time: '16:30', title: 'Cérémonie solennelle', description: 'Échange des vœux et alliances dans la lumière de fin de journée.', place: 'Galerie principale', icon: 'heart' },
+      { time: '18:00', title: 'Cocktail & Portraits', description: 'Séance photo argentique noir et blanc pour chaque invité.', place: 'Cour intérieure', icon: 'camera' },
+      { time: '20:00', title: 'Dîner de gala', description: 'Table linéaire, vaisselle noire et bougies blanches.', place: 'Grande salle', icon: 'table' },
+      { time: '23:00', title: 'Soirée dansante', description: 'Première danse sous projecteur zénithal puis fête.', place: 'Piste de bal', icon: 'music' },
+    ],
+    infos: [
+      { category: 'Dress code', title: 'Black & White strict', detail: 'Noir profond, blanc pur ou ivoire. Silhouette moderne et sobre.', event_time: '', link_label: '' },
+      { category: 'Photographie', title: 'Portraits offerts', detail: 'Un photographe argentique tire le portrait de chaque couple invité.', event_time: '', link_label: '' },
+      { category: 'Accès', title: 'Valet à l’entrée', detail: 'Service voiturier disponible dès 15h00.', event_time: '', link_label: 'Itinéraire' },
+      { category: 'Enfants', title: 'Soirée adultes', detail: 'Nous souhaitons offrir à chacun une soirée de détente absolue.', event_time: '', link_label: '' },
+    ],
+    rsvpEvents: [
+      { name: 'Cérémonie & Cocktail', description: 'Dès 15h30' },
+      { name: 'Dîner de gala', description: '20h00' },
+      { name: 'Brunch du lendemain', description: '12h00 le dimanche' },
+    ],
+    gifts: [
+      { gift_type: 'Voyage', title: 'Lune de miel à Kyoto', description: 'Architecture épurée, jardins zen et sérénité.', goal_amount: 5000 },
+      { gift_type: 'Art', title: 'Tirage argentique grand format', description: 'Une œuvre pour notre intérieur.', goal_amount: 1500 },
+    ],
+    packages: [
+      { id: 'bw-minimal', name: 'Édition Solo', price: '2 400€', description: 'Le site complet en noir et blanc haute couture', features: ['Mini-site responsive', 'RSVP & gestion des invités', 'Galerie photo HD', 'Export QR code'], cta: 'Sélectionner' },
+      { id: 'bw-signature', name: 'Signature Éditoriale', price: '4 800€', priceNote: 'Recommandé', description: 'Design sur-mesure et typographie personnalisée', features: ['Domaine personnalisé', 'Envoi d’invitations SMS/Email', 'Tirage papier du livre d’or', 'Support dédié J-7'], cta: 'Sélectionner', popular: true },
+    ],
+    faq: [
+      { question: 'Pourquoi un thème Noir & Blanc ?', answer: 'C’est l’assurance d’une élégance indémodable, qui sublime toutes les photos sans saturer l’œil.' },
+      { question: 'Peut-on ajouter une pointe de couleur ?', answer: 'Absolument, vous pourrez définir une nuance dorée ou argentée si vous le souhaitez.' },
+    ],
+  },
+
+  'chateau-moderne': {
+    editorial: {
+      hero_subtitle: 'PIERRE BLONDE. ÉLÉGANCE FRANÇAISE.',
+      story_title: 'Un domaine à notre image',
+      story_text: (p1, p2) => `Sous les voûtes de pierre et les tilleuls centenaires, ${p1} et ${p2} célèbrent leur amour. Le charme de l’architecture historique revisité avec l’épure et la lumière d’aujourd’hui.`,
+      announcement: 'Nous vous donnons rendez-vous au Domaine pour deux jours de célébration.',
+      typography: 'serif',
+      button_style: 'soft',
+      shape: 'round',
+      layout: 'magazine',
+      animation_level: 'fluide',
+    },
+    sections: [
+      { key: 'hero', title: 'CHÂTEAU MODERNE', visible: true },
+      { key: 'histoire', title: 'Notre histoire', visible: true },
+      { key: 'programme', title: 'Programme Jour J', visible: true },
+      { key: 'lieux', title: 'Le Domaine', visible: true },
+      { key: 'infos', title: 'Infos pratiques', visible: true },
+      { key: 'rsvp', title: 'RSVP', visible: true },
+      { key: 'packages', title: 'Formules', visible: true },
+      { key: 'cagnotte', title: 'Cagnotte des mariés', visible: true },
+      { key: 'galerie', title: 'Galerie', visible: true },
+      { key: 'faq', title: 'FAQ', visible: true },
+      { key: 'contact', title: 'Nous contacter', visible: true },
+      { key: 'footer', title: '', visible: true },
+    ],
+    programme: [
+      { time: '14:30', title: 'Accueil des invités', description: 'Rafraîchissements sous les tilleuls.', place: 'L’Orangerie', icon: 'sun' },
+      { time: '15:30', title: 'Cérémonie laïque', description: 'Au cœur du parc historique.', place: 'Parc du Château', icon: 'heart' },
+      { time: '17:30', title: 'Cocktail & Champagne', description: 'Musique live et ateliers gastronomiques.', place: 'Terrasse haute', icon: 'glass' },
+      { time: '20:00', title: 'Dîner sous la verrière', description: 'Menu de saison orchestré par le chef du domaine.', place: 'Grande Verrière', icon: 'table' },
+      { time: '23:30', title: 'Ouverture du bal', description: 'Célébration jusqu’au bout de la nuit.', place: 'Salle des gardes', icon: 'music' },
+    ],
+    infos: [
+      { category: 'Hébergement', title: 'Chambres sur place', detail: 'Chambres d’hôtes et gîtes partenaires à 5 minutes avec navettes.', event_time: '', link_label: 'Voir la liste' },
+      { category: 'Dress code', title: 'Élégant & Champêtre', detail: 'Matières fluides, teintes poudrées ou naturelles. Talons épais conseillés pour la pelouse.', event_time: '', link_label: '' },
+      { category: 'Parking', title: 'Parking sécurisé', detail: '100 places gratuites surveillées à l’entrée du domaine.', event_time: '', link_label: 'Plan d’accès' },
+    ],
+    rsvpEvents: [
+      { name: 'Cérémonie & Soirée', description: 'Samedi dès 14h30' },
+      { name: 'Brunch du dimanche', description: 'Dimanche de 11h30 à 16h' },
+    ],
+    gifts: [
+      { gift_type: 'Voyage', title: 'Périple en Italie', description: 'Florence, la côte amalfitaine et Capri.', goal_amount: 4500 },
+      { gift_type: 'Maison', title: 'Cave à vins de garde', description: 'Pour marquer les grandes dates à venir.', goal_amount: 1800 },
+    ],
+    packages: [
+      { id: 'chateau-essentiel', name: 'Domaine Pur', price: '2 800€', description: 'Le mini-site sublimant votre château', features: ['Carte interactive du domaine', 'Module hébergements', 'RSVP enrichi', 'Programme détaillé'], cta: 'Choisir' },
+      { id: 'chateau-prestige', name: 'Grand Cru', price: '5 200€', priceNote: 'Le favori', description: 'Expérience complète incluant le brunch', features: ['Navettes & coordination temps réel', 'Livre d’or numérique avec audio', 'SMS récapitulatif invités', 'Galerie photo post-mariage'], cta: 'Choisir', popular: true },
+    ],
+    faq: [
+      { question: 'Le domaine est-il accessible aux personnes à mobilité réduite ?', answer: 'Oui, des rampes et accès de plain-pied sont prévus pour toutes les salles principales.' },
+    ],
+  },
+
+  'minimalist-warm': {
+    editorial: {
+      hero_subtitle: 'LIN NATUREL. DOUCEUR SABLE.',
+      story_title: 'La beauté des choses simples',
+      story_text: (p1, p2) => `Quelques mots doux, un horizon chaleureux et l’essentiel auprès de ceux qu’on aime. ${p1} et ${p2} vous accueillent dans une parenthèse lumineuse et feutrée.`,
+      announcement: 'Rendez-vous sous la douce lumière de fin d’été pour sceller nos vœux.',
+      typography: 'sans',
+      button_style: 'pill',
+      shape: 'round',
+      layout: 'minimal',
+      animation_level: 'calme',
+    },
+    sections: [
+      { key: 'hero', title: 'MINIMAL LIN', visible: true },
+      { key: 'histoire', title: 'Mots doux', visible: true },
+      { key: 'programme', title: 'Déroulé', visible: true },
+      { key: 'lieux', title: 'Le Lieu', visible: true },
+      { key: 'infos', title: 'Détails', visible: true },
+      { key: 'rsvp', title: 'Confirmer', visible: true },
+      { key: 'packages', title: 'Formules', visible: true },
+      { key: 'cagnotte', title: 'Projet à deux', visible: true },
+      { key: 'galerie', title: 'Instants', visible: true },
+      { key: 'faq', title: 'Questions', visible: true },
+      { key: 'contact', title: 'Écrire', visible: true },
+      { key: 'footer', title: '', visible: true },
+    ],
+    programme: [
+      { time: '16:00', title: 'Retrouvailles', description: 'Boissons fraîches et embrassades sous la tonnelle.', place: 'La cour', icon: 'sun' },
+      { time: '17:00', title: 'L’union', description: 'Quelques vœux écrits à la main et nos alliances échangées.', place: 'L’arche de lin', icon: 'heart' },
+      { time: '18:30', title: 'Dîner partagé', description: 'Plats gourmands de saison à partager en toute simplicité.', place: 'La grande table', icon: 'table' },
+    ],
+    infos: [
+      { category: 'Ambiance', title: 'Matières douces', detail: 'Lin, coton, teintes terre cuite et beige chaud.', event_time: '', link_label: '' },
+    ],
+    rsvpEvents: [
+      { name: 'La journée entière', description: 'Dès 16h00' },
+    ],
+    gifts: [
+      { gift_type: 'Maison', title: 'Rénovation de notre atelier', description: 'Créer notre nid chaleureux.', goal_amount: 3000 },
+    ],
+    packages: [
+      { id: 'lin-essentiel', name: 'Épure', price: '1 900€', description: 'Simplicité et chaleur', features: ['Site épuré', 'RSVP simplifié', 'Galerie souvenir'], cta: 'Choisir' },
+    ],
+    faq: [
+      { question: 'Quel est l’esprit de ce thème ?', answer: 'Une atmosphère calme, chaleureuse et lumineuse, idéale pour des mariages intimes ou champêtres chics.' },
+    ],
+  },
+
+  'rooftop-paris': {
+    editorial: {
+      hero_subtitle: 'SKYLINE. COCKTAILS. MINUIT.',
+      story_title: 'Prendre de la hauteur',
+      story_text: (p1, p2) => `Paris à leurs pieds, la lumière dorée sur les zincs des toits et le son d’un saxophone au crépuscule. ${p1} et ${p2} vous convient à une fête moderne, perchée au-dessus de la ville.`,
+      announcement: 'Coucher de soleil, cocktails signatures et vue à 360°.',
+      typography: 'modern',
+      button_style: 'pill',
+      shape: 'round',
+      layout: 'immersif',
+      animation_level: 'fluide',
+    },
+    sections: [
+      { key: 'hero', title: 'ROOFTOP CHIC', visible: true },
+      { key: 'histoire', title: 'Notre rencontre', visible: true },
+      { key: 'programme', title: 'Timing', visible: true },
+      { key: 'lieux', title: 'Le Rooftop', visible: true },
+      { key: 'infos', title: 'Infos pratiques', visible: true },
+      { key: 'rsvp', title: 'Guestlist', visible: true },
+      { key: 'packages', title: 'Formules', visible: true },
+      { key: 'cagnotte', title: 'Cagnotte', visible: true },
+      { key: 'galerie', title: 'Galerie', visible: true },
+      { key: 'faq', title: 'FAQ', visible: true },
+      { key: 'contact', title: 'Contact', visible: true },
+      { key: 'footer', title: '', visible: true },
+    ],
+    programme: [
+      { time: '18:00', title: 'Ascension & Accueil', description: 'Verre de bienvenue et découverte de la vue panoramique.', place: 'Terrasse Sud', icon: 'glass' },
+      { time: '19:00', title: 'Vœux au soleil couchant', description: 'Golden hour sur la skyline.', place: 'L’Oasis', icon: 'sunset' },
+      { time: '20:30', title: 'Cocktail dînatoire', description: 'Bouchées raffinées, bars à thèmes et live band.', place: 'Lounge intérieur & extérieur', icon: 'table' },
+      { time: '23:00', title: 'Club au sommet', description: 'DJ set et fête sous les étoiles jusqu’à 04h00.', place: 'Club room', icon: 'music' },
+    ],
+    infos: [
+      { category: 'Dress code', title: 'Cocktail Chic', detail: 'Costumes bien coupés, robes de cocktail, touches métallisées ou satin.', event_time: '', link_label: '' },
+      { category: 'Accès', title: 'Ascenseur privé', detail: 'Hôte d’accueil au rez-de-chaussée pour vous guider.', event_time: '', link_label: '' },
+    ],
+    rsvpEvents: [
+      { name: 'Sunset & Cocktail dînatoire', description: '18h00' },
+      { name: 'After clubbing', description: 'Dès 23h00' },
+    ],
+    gifts: [
+      { gift_type: 'Voyage', title: 'Road trip en Californie', description: 'De San Francisco à Big Sur.', goal_amount: 4000 },
+    ],
+    packages: [
+      { id: 'rooftop-signature', name: 'Skyline', price: '3 200€', description: 'L’élégance urbaine', features: ['Design immersif', 'Compte à rebours coucher de soleil', 'Gestion des entrées guestlist'], cta: 'Choisir' },
+    ],
+    faq: [
+      { question: 'En cas de pluie ?', answer: 'Le rooftop dispose d’une verrière couverte chauffée panoramique.' },
+    ],
+  },
+
+  'garden-party': {
+    editorial: {
+      hero_subtitle: 'SOUS LES FEUILLAGES. BOTANIQUE.',
+      story_title: 'Un jardin d’été',
+      story_text: (p1, p2) => `Entre les rosiers anciens, les herbes folles et le murmure de la fontaine, ${p1} et ${p2} réunissent ceux qu’ils aiment pour une fête bucolique et vibrante de vie.`,
+      announcement: 'Chapeaux de paille, sourires et verres tintants sous le grand chêne.',
+      typography: 'serif',
+      button_style: 'soft',
+      shape: 'round',
+      layout: 'galerie',
+      animation_level: 'fluide',
+    },
+    sections: [
+      { key: 'hero', title: 'GARDEN BOTANICA', visible: true },
+      { key: 'histoire', title: 'Notre jardin', visible: true },
+      { key: 'programme', title: 'La journée', visible: true },
+      { key: 'lieux', title: 'Le Jardin', visible: true },
+      { key: 'infos', title: 'Détails pratiques', visible: true },
+      { key: 'rsvp', title: 'Je viens', visible: true },
+      { key: 'packages', title: 'Packages', visible: true },
+      { key: 'cagnotte', title: 'Cagnotte', visible: true },
+      { key: 'galerie', title: 'Photos', visible: true },
+      { key: 'faq', title: 'FAQ', visible: true },
+      { key: 'contact', title: 'Contact', visible: true },
+      { key: 'footer', title: '', visible: true },
+    ],
+    programme: [
+      { time: '14:00', title: 'Rendez-vous au verger', description: 'Limonade maison et ombre fraîche.', place: 'Le verger', icon: 'sun' },
+      { time: '15:00', title: 'Cérémonie sous le grand chêne', description: 'Vœux bercés par le vent dans les feuilles.', place: 'Le grand chêne', icon: 'heart' },
+      { time: '17:00', title: 'Jeux champêtres & Apéritif', description: 'Pétanque, croquet et dégustations locales.', place: 'Pelouse centrale', icon: 'glass' },
+      { time: '19:30', title: 'Banquet champêtre', description: 'Grande tablée guinguette éclairée de lampions.', place: 'Allée des rosiers', icon: 'table' },
+    ],
+    infos: [
+      { category: 'Dress code', title: 'Romantique champêtre', detail: 'Robes à motifs floraux, costumes en lin pastel, souliers confortables pour l’herbe.', event_time: '', link_label: '' },
+    ],
+    rsvpEvents: [
+      { name: 'Cérémonie & Banquet', description: 'Dès 14h00' },
+    ],
+    gifts: [
+      { gift_type: 'Projet', title: 'Création de notre jardin', description: 'Arbres fruitiers et plantes vivaces.', goal_amount: 2200 },
+    ],
+    packages: [
+      { id: 'garden-charm', name: 'Bucolique', price: '2 100€', description: 'Le mini-site champêtre chic', features: ['Palette végétale personnalisée', 'Programme avec météo en direct', 'Module hébergements ruraux'], cta: 'Choisir' },
+    ],
+    faq: [
+      { question: 'Peut-on prévoir des jeux pour enfants ?', answer: 'Oui, une grande zone de jeux en bois sécurisée est aménagée dans le pré attenant.' },
+    ],
+  },
+
   brutal: {
     editorial: {
       hero_subtitle: 'BÉTON. LUMIÈRE. OUI.',

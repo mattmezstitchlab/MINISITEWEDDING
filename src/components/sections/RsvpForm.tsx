@@ -5,6 +5,7 @@ import { Check, Copy, Mail, MessageCircle } from 'lucide-react';
 import { apiSend } from '../../lib/http';
 import { isRemote } from '../../lib/dataSource';
 import { useSiteView } from './context';
+import { AimeKernelBridge } from '../../lib/aimeKernelBridge';
 
 const FIELD = 'vp-field vp-field-dark !px-5 !py-3.5 !text-[15px]';
 
@@ -45,6 +46,16 @@ export default function RsvpForm() {
     if (degraded && !local) { setError('Les réponses sont suspendues pour le moment — réessayez un peu plus tard, ou écrivez-nous directement.'); return; }
     setSending(true);
     try {
+      // 1. Enregistrement direct dans le Kernel AIME (Zéro duplication, création relation/identité)
+      AimeKernelBridge.recordRsvpToKernel({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+        attending,
+        allergies: allergies.trim(),
+      });
+
+      // 2. Appel réseau legacy pour compatibilité base externe
       await apiSend('/api/rsvp', 'POST', {
         site_id: site.id, first_name: firstName.trim(), last_name: lastName.trim(), email: email.trim(),
         attending, guests_count: guests, children_count: children, diet, allergies, housing, transport,

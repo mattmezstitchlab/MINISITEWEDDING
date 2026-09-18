@@ -1,24 +1,28 @@
-import { Suspense, lazy } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, Palette, Images, MailCheck, Gift, MapPin, CalendarDays, QrCode, ChevronRight, Heart } from 'lucide-react';
-import { WEDDING_STYLES, PHASES } from '../lib/weddingStyles';
-import VisionImage, { TiltCard, VisionFrame } from '../components/vision/VisionImage';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart, Sparkles, Radio } from 'lucide-react';
+import { WEDDING_STYLES, PHASES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
+import { TiltCard } from '../components/vision/VisionImage';
 import HeroCycle from '../components/HeroCycle';
-
-/**
- * Les aperçus dans le téléphone lisent le contenu réel des thèmes
- * (`themeConfigs.ts`) : ce module est chargé à part, pour que le hero
- * s’affiche sans l’attendre.
- */
-const PhoneShowcase = lazy(() => import('../components/PhoneShowcase'));
+import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
+import UnifiedEventOsMenu from '../components/UnifiedEventOsMenu';
+import ParallaxSection from '../components/ParallaxSection';
+import DjPlaylistStudio from '../components/DjPlaylistStudio';
+import ThemeManifestoWhite from '../components/ThemeManifestoWhite';
+import ComplementaryThemes from '../components/ComplementaryThemes';
+import HeroAiPrompt from '../components/HeroAiPrompt';
+import HomeTriplePhoneShowcase from '../components/HomeTriplePhoneShowcase';
+import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
 import ImmersiveThemes from '../components/ImmersiveThemes';
+import CommunityFeedHub from '../components/CommunityFeedHub';
+import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
+import ErrorBoundary from '../components/ErrorBoundary';
 
-const STEPS = [
-  { n: '01', title: 'Je crée', text: 'Prénoms, date, lieu. Trois réponses, trente secondes.' },
-  { n: '02', title: 'Je choisis', text: 'Un environnement spatial parmi dix directions qui cassent les codes.' },
-  { n: '03', title: 'J’ajoute', text: 'Photos, programme, infos — le site se compose seul.' },
-  { n: '04', title: 'Je partage', text: 'Un lien, un QR code. Vos invités sont conquis.' },
+const HERO_ROTATING_TITLES = [
+  'Votre mariage. Votre histoire.\nUn seul endroit.',
+  'Une vision. Des missionnaires.\nL’impossible devient réel.',
+  'Mariés, invités, prestataires.\nLe même instant, sans fausse note.',
 ];
 
 const MODULES = [
@@ -32,206 +36,220 @@ const MODULES = [
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
 
-function BrandMark({ className = 'w-9 h-9 text-[14px]' }: { className?: string }) {
-  return (
-    <span className={`vp-glyph shrink-0 rounded-full font-semibold ${className}`}>W</span>
-  );
-}
-
 export default function Landing() {
+  // Par défaut : null = page principale générale d'atterrissage VOWS
+  const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(null);
+  const [titleIdx, setTitleIdx] = useState(0);
+
+  const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
+
+  // Rotation douce des 3 phrases manifestes qui font comprendre le produit
+  useEffect(() => {
+    if (selectedStyle) return;
+    const interval = setInterval(() => {
+      setTitleIdx((prev) => (prev + 1) % HERO_ROTATING_TITLES.length);
+    }, 4800);
+    return () => clearInterval(interval);
+  }, [selectedStyle]);
+
+  const scrollToHero = () => {
+    const el = document.getElementById('hero-ai-container');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const input = el.querySelector('input');
+      input?.focus();
+    }
+  };
+
+  const handleSelectStyle = (style: WeddingStyle | null) => {
+    setSelectedStyle(style);
+  };
+
   return (
-    <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12]">
-      {/* Barre de navigation : capsule de verre flottante */}
+    <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
+      {/* Barre de navigation unifiée : Logo à gauche, UNIVERS & MÉTIERS à droite */}
       <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
-        <div className="vp-glass vp-spec flex items-center justify-between gap-3 rounded-[26px] px-4 py-2.5 sm:px-5">
-          <Link to="/" className="flex items-center gap-2.5">
-            <BrandMark />
-            <span className="vp-title text-[15px]">Wedding Site</span>
+        <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
+          <Link
+            to="/"
+            onClick={() => setSelectedStyle(null)}
+            className="flex items-center gap-2"
+          >
+            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
           </Link>
-          <div className="hidden items-center gap-1 md:flex">
-            {[{ href: '#styles', label: 'Environnements' }, { href: '#styles-immersive', label: 'Manifeste' }, { href: '#experience', label: 'Éditeur' }, { href: '#modules', label: 'Modules' }].map((l) => (
-              <a key={l.href} href={l.href} className="vp-press rounded-full px-3.5 py-2 text-[13.5px] font-medium text-[var(--vp-ink-soft)] transition hover:bg-black/[0.055] hover:text-[var(--vp-ink)]">
-                {l.label}
-              </a>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <Link to="/creer" className="vp-btn vp-press !px-4.5 !py-2 !text-[13.5px]">
-              Créer mon site <ArrowRight size={15} />
-            </Link>
+
+          {/* Accès discret aux modules techniques Event OS & menu univers */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <UnifiedEventOsMenu />
+
+            <UnifiedUniverseMenu
+              selectedStyleId={selectedStyle?.id || null}
+              onSelectStyle={handleSelectStyle}
+            />
           </div>
         </div>
       </nav>
 
-      {/* Hero plein écran : les dix environnements en fond, pitch en haut */}
-      <HeroCycle>
-        <motion.h1
-          initial={{ opacity: 0, y: 26 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="vp-title max-w-3xl text-white"
-          style={{ fontSize: 'clamp(2.1rem, 4.6vw, 3.6rem)' }}
-        >
-          Votre mariage. Votre histoire.
-          <br />
-          Un seul endroit.
-        </motion.h1>
+      {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
+      <HeroCycle activeStyleId={selectedStyle?.id}>
+        <div className="mx-auto flex flex-col items-center justify-center text-center">
+          <div className="min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={selectedStyle ? selectedStyle.id : titleIdx}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="vp-title max-w-4xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] whitespace-pre-line"
+                style={{ fontSize: 'clamp(2.4rem, 6vw, 4.6rem)', lineHeight: 1.08 }}
+              >
+                {selectedStyle
+                  ? `${selectedStyle.name} · ${selectedStyle.tagline}`
+                  : HERO_ROTATING_TITLES[titleIdx]}
+              </motion.h1>
+            </AnimatePresence>
+          </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="vp-body mt-5 max-w-lg !text-[16.5px] !text-white/70"
-        >
-          Le mini-site de votre mariage, composé automatiquement à partir de quelques réponses.
-          Aucun outil à apprendre. Juste de l’émotion, en verre et en lumière.
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.75 }}
-          className="mt-8 flex flex-col gap-3 sm:flex-row"
-        >
-          <Link to="/creer" className="vp-btn vp-press w-full !px-8 !py-4 sm:w-auto">
-            Créer mon site <ArrowRight size={16} />
-          </Link>
-          <a
-            href="#apercus"
-            className="vp-press inline-flex w-full items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-8 py-4 text-[15px] font-medium text-white backdrop-blur-md transition hover:bg-white/20 sm:w-auto"
+          {/* Saisie de l'Agent IA connecté à tous les thèmes */}
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.8 }}
+            className="mt-4 w-full"
           >
-            Voir les dix mini-sites
-          </a>
-        </motion.div>
+            <ErrorBoundary>
+              <HeroAiPrompt
+                onProposalGenerated={(proposal) => {
+                  setSelectedStyle(proposal.style);
+                }}
+              />
+            </ErrorBoundary>
+          </motion.div>
+        </div>
       </HeroCycle>
 
-      <Suspense
-        fallback={<div aria-hidden="true" className="mx-auto my-20 h-[620px] max-w-[320px] animate-pulse rounded-[46px] bg-black/[0.04]" />}
-      >
-        <PhoneShowcase />
-      </Suspense>
+      {/* EXPÉRIENCE SUR SMARTPHONE HAUT DE GAMME :
+          - Sur l'accueil général : Le triptyque aéré des 3 iPhones sobres & éditoriaux
+          - Sur une page Thème précis : L'iPhone interactif permettant de faire défiler les vues (Invité, Marié, chaque missionnaire)
+      */}
+      <ErrorBoundary>
+        {!selectedStyle ? (
+          <HomeTriplePhoneShowcase onExplore={scrollToHero} />
+        ) : (
+          <ThemePhoneShowcase
+            currentStyle={selectedStyle}
+            onOpenVendorApplication={(role) => scrollToHero()}
+          />
+        )}
+      </ErrorBoundary>
 
-      {/* Quatre gestes */}
-      <section className="px-5 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto max-w-6xl">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-2xl text-center">
-            <div className="vp-eyebrow">Compris en 10 secondes</div>
-            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Quatre gestes. Zéro effort.</h2>
-          </motion.div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((s, i) => (
-              <motion.div key={s.n} {...fadeUp} transition={{ duration: 0.6, delay: i * 0.08 }}>
-                <TiltCard className="h-full">
-                  <div className="vp-glass vp-spec vp-lift h-full rounded-[26px] p-7">
-                    <span className="vp-glyph h-11 w-11 rounded-[15px]">
-                      <span className="vp-num text-[13px] font-semibold">{s.n}</span>
-                    </span>
-                    <div className="vp-h2 mt-5 text-[22px]">{s.title}</div>
-                    <p className="vp-caption mt-2 leading-relaxed">{s.text}</p>
-                  </div>
-                </TiltCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Environnements */}
-      <section id="styles" className="overflow-hidden py-20 sm:py-28">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-              <div className="vp-eyebrow">Dix environnements</div>
-              <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>
-                Choisissez votre espace.
-                <br />
-                Le reste est automatique.
-              </h2>
-              <p className="vp-caption mt-3 max-w-md">Un bunker de béton, un club à 2h17, un motel du désert. Chaque environnement emporte ses couleurs, ses textes et ses modules.</p>
+      {/* BANDE DISCRÈTE D'INTRODUCTION AUX TECHNOLOGIES EVENT OS (Fond clair, classe & épuré) */}
+      <section className="bg-white py-12 px-5 sm:px-8 border-b border-black/5">
+        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="space-y-1 text-center sm:text-left">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-black/40">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span>Système d'Exploitation Invisible</span>
             </div>
-            <Link to="#styles-immersive" className="vp-chip vp-press shrink-0 bg-black text-white hover:bg-black/80">
-              Voir la verticale immersive <ChevronRight size={16} />
-            </Link>
-          </motion.div>
-        </div>
-        <div className="no-scrollbar mt-10 flex gap-4 overflow-x-auto px-5 pb-4 sm:px-8">
-          {WEDDING_STYLES.map((s, i) => (
-            <motion.div key={s.id} {...fadeUp} transition={{ duration: 0.6, delay: (i % 4) * 0.07 }} className="w-[230px] shrink-0 sm:w-[266px]">
-              <TiltCard max={6} className="h-full">
-                <div className="vp-lift group h-full">
-                  <div className="overflow-hidden rounded-[24px]">
-                    <VisionImage
-                      src={s.image}
-                      alt={s.name}
-                      fallbackLabel={s.name}
-                      aura={s.aura}
-                      className="aspect-[3/4] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                    />
-                  </div>
-                  <div className="px-1 pt-3">
-                    <div className="vp-title text-[18px]">{s.name}</div>
-                    <div className="vp-caption mt-0.5">{s.tagline}</div>
-                  </div>
-                </div>
-              </TiltCard>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* GRANDE VERTICALITÉ IMMERSIVE - PARALLAX */}
-      <ImmersiveThemes />
-
-      {/* Éditeur */}
-      <section id="experience" className="px-5 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }}>
-            <div className="vp-eyebrow">L’éditeur</div>
-            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>
-              Choisir. Modifier.
-              <br />
-              Voir. Publier.
-            </h2>
-            <p className="vp-body mt-5 max-w-md">
-              Pas de panneau rempli de paramètres. Au centre, votre site en vrai. Autour, des panneaux de verre qui apparaissent quand vous en avez besoin. Un clic sur une photo ouvre vos images, un clic sur un texte ouvre la typographie.
+            <h3 className="vp-title text-[20px] sm:text-[22px] text-[#0B0C12]">
+              L'architecture Event OS : Orchestration, Talkie-Walkie &amp; Radio Live
+            </h3>
+            <p className="text-[13.5px] text-[#0B0C12]/60">
+              Résolution en cascade des aléas, coordination audio chiffrée et streaming continu.
             </p>
-            <div className="mt-8 space-y-2.5">
-              {['Sections réorganisables par glisser-déposer', 'Réglages contextuels, jamais de fouillis', 'Aperçu mobile et ordinateur instantané'].map((t) => (
-                <div key={t} className="flex items-center gap-3 text-[15px] font-medium">
-                  <span className="vp-glyph h-6 w-6 rounded-full text-[11px]">✓</span>
-                  {t}
-                </div>
-              ))}
-            </div>
-            <Link to="/creer" className="vp-btn vp-press mt-8 !px-7">
-              <Palette size={16} /> Personnaliser mon mariage
-            </Link>
-          </motion.div>
+          </div>
 
-          <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="vp-perspective relative">
-            <TiltCard max={4}>
-              <div className="vp-glass rounded-[34px] p-2.5">
-                <VisionFrame radius={26}>
-                  <VisionImage src="/images/table-noir.jpg" alt="Aperçu de l’éditeur" fallbackLabel="Réception" className="aspect-[4/5] w-full object-cover sm:aspect-square" />
-                </VisionFrame>
-                <div className="flex items-center justify-between gap-4 px-3 pb-1.5 pt-4">
-                  <div>
-                    <div className="vp-eyebrow">Section : Programme</div>
-                    <div className="vp-title mt-0.5 text-[19px]">Glisser pour réordonner</div>
-                  </div>
-                  <Link to="/creer" className="vp-btn vp-btn-glass vp-press !px-4 !py-2 !text-[13px]">Essayer</Link>
-                </div>
-              </div>
-            </TiltCard>
-            <div className="vp-glass vp-spec absolute -top-5 right-0 flex items-center gap-2.5 rounded-[20px] px-4 py-3 sm:-right-4">
-              <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--vp-green)]" />
-              <span className="text-[13px] font-semibold">Aperçu en direct</span>
-            </div>
-          </motion.div>
+          <Link
+            to="/features"
+            className="shrink-0 flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-[12.5px] font-semibold text-[#0B0C12] hover:bg-black hover:text-white transition shadow-sm"
+          >
+            <span>Découvrir la suite Event OS</span>
+            <ArrowRight size={13} />
+          </Link>
         </div>
       </section>
 
-      {/* Modules — environnement sombre */}
+      {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}
+      <ParallaxSection
+        image={
+          selectedStyle
+            ? getDirectionArtistiqueImage(selectedStyle.id)
+            : '/images/table-noir.jpg'
+        }
+        overlayOpacity={0.62}
+        heightClass="min-h-[72vh]"
+      >
+        <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl text-center">
+          <span className="vp-eyebrow !text-white/70">
+            {selectedStyle
+              ? `Direction Artistique & Scénographie · ${selectedStyle.name}`
+              : 'Direction Artistique & Haute Scénographie'}
+          </span>
+          <h2
+            className="vp-title mt-4 text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)]"
+            style={{ fontSize: 'clamp(2.4rem, 5.5vw, 4.5rem)', lineHeight: 1.05 }}
+          >
+            {selectedStyle ? (
+              <>
+                L’émotion d’une esthétique pure.<br />
+                {selectedStyle.tagline}
+              </>
+            ) : (
+              <>
+                Des univers créés comme des pièces de mode.<br />
+                Jamais de templates génériques.
+              </>
+            )}
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-white/80">
+            {selectedStyle?.manifesto ||
+              "Chaque mariage possède son langage visuel, sa typographie et ses métiers dédiés. De la chapelle de béton au château contemporain, explorez des atmosphères sans concession."}
+          </p>
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={scrollToHero}
+              className="vp-btn vp-press !bg-white !text-black hover:!bg-white/90 !px-8 !py-3.5 shadow-2xl"
+            >
+              Donner vie à votre projet <ArrowRight size={16} />
+            </button>
+          </div>
+        </motion.div>
+      </ParallaxSection>
+
+      {/* SECTION ÉQUIPE HUMAINE ORCHESTRÉE */}
+      <ThemeManifestoWhite
+        style={selectedStyle}
+        onJoinClick={scrollToHero}
+      />
+
+      {/* STUDIO DJ & BANDE-SON CHRONOLOGIQUE */}
+      <section className="px-5 py-16 sm:px-8 bg-[#070709]">
+        <div className="mx-auto max-w-6xl">
+          <DjPlaylistStudio style={activeStyleOrFallback} />
+        </div>
+      </section>
+
+      {/* SI PAGE D'ACCUEIL GÉNÉRALE : HUB D'ACTUALITÉ, TÉMOIGNAGES DU RÉEL & DÉFILEMENT 2 RANGÉES BORD-À-BORD */}
+      {!selectedStyle ? (
+        <CommunityFeedHub />
+      ) : (
+        /* SI UN THÈME EST SÉLECTIONNÉ : LA CHRONOLOGIE SCÉNARISÉE SPÉCIFIQUE DE CE THÈME */
+        <ImmersiveThemes
+          currentStyle={selectedStyle}
+          onOpenVendorApplication={scrollToHero}
+          onSelectStyle={handleSelectStyle}
+        />
+      )}
+
+      {/* SECTION SUGGESTIONS COMPLÉMENTAIRES D'UNIVERS & MISSIONS */}
+      <ComplementaryThemes
+        currentStyle={activeStyleOrFallback}
+        onSelectStyle={handleSelectStyle}
+      />
+
+      {/* Modules — environnement clair */}
       <section id="modules" className="relative mx-3 overflow-hidden rounded-[40px] border border-black/6 bg-white px-5 py-20 sm:mx-6 sm:px-8 sm:py-28">
         <div className="relative mx-auto max-w-6xl">
           <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-2xl text-center">
@@ -282,6 +300,24 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* SECTION PARALLAX 2 : Zéro contrainte */}
+      <ParallaxSection image="/images/zero-contrainte-wedding.jpg" overlayOpacity={0.65} heightClass="min-h-[70vh]">
+        <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl">
+          <span className="vp-eyebrow !text-white/70">Zéro contrainte</span>
+          <h2
+            className="vp-title mt-4 text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)]"
+            style={{ fontSize: 'clamp(2.4rem, 5.5vw, 4.2rem)', lineHeight: 1.1 }}
+          >
+            Le plus beau jour se vit.<br />
+            Il ne s’administre pas.
+          </h2>
+          <p className="mx-auto mt-6 max-w-lg text-[16.5px] leading-relaxed text-white/80">
+            Fini les tableaux Excel et les messages perdus. Tout converge naturellement au même endroit,
+            avec une élégance qui impressionne vos invités dès la première seconde.
+          </p>
+        </motion.div>
+      </ParallaxSection>
+
       {/* Appel final */}
       <section className="px-5 pb-24 sm:px-8">
         <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="vp-glass vp-spec mx-auto max-w-4xl overflow-hidden rounded-[38px] px-8 py-16 text-center sm:py-20">
@@ -295,23 +331,35 @@ export default function Landing() {
               le site de votre mariage ?
             </h2>
             <p className="vp-body mx-auto mt-4 max-w-md">Trente secondes pour commencer. Une émotion pour longtemps.</p>
-            <Link to="/creer" className="vp-btn vp-press mt-8 !px-9 !py-4">
-              Créer mon site <ArrowRight size={16} />
-            </Link>
+            <button
+              type="button"
+              onClick={scrollToHero}
+              className="vp-btn vp-press mt-8 !px-9 !py-4"
+            >
+              Générer notre projet <ArrowRight size={16} />
+            </button>
           </div>
         </motion.div>
       </section>
 
+      {/* TOOLBAR TACTILE DISCRÈTE (Stories Live & Event OS) */}
+      <UniversalMiniSiteToolbar />
+
       <footer className="px-5 pb-10">
         <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
-          <div className="flex items-center gap-2.5">
-            <BrandMark className="h-7 w-7 text-[11px]" />
-            <span className="vp-title text-[14px] text-[var(--vp-ink)]">Wedding Site</span>
+          <div className="flex items-center gap-2">
+            <span className="vp-title text-[17px] font-bold italic tracking-wider text-[var(--vp-ink)]">VOWS</span>
           </div>
           <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
           <div className="flex items-center gap-4">
-            <a href="#apercus" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Aperçus</a>
-            <Link to="/creer" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Créer</Link>
+            <Link to="/features" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Event OS</Link>
+            <button
+              type="button"
+              onClick={scrollToHero}
+              className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]"
+            >
+              Créer
+            </button>
           </div>
         </div>
       </footer>

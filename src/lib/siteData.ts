@@ -6,9 +6,10 @@ import type {
 import { apiGet, ApiError } from './http';
 import { DEMO_DATA, DEMO_ENABLED } from './demo';
 import { STATIC_SITES, loadStaticSite } from './staticSite';
+import { AimeKernelBridge } from './aimeKernelBridge';
 
 /**
- * Chargement d’un site complet.
+ * Chargement d’un site complet raccordé au Kernel AIME.
  *
  * L’autorisation est transparente : `http.ts` ajoute l’en-tête `x-site-token`
  * quand une clé d’édition est active, ce qui débloque l’éditeur et l’aperçu
@@ -121,7 +122,15 @@ export function useSiteData(target: SiteTarget): SiteDataState & SiteDataActions
   const reload = useCallback(() => {
     const gen = ++generation.current;
     const commit = (next: SiteDataState) => {
-      if (gen === generation.current) setState(next);
+      if (gen === generation.current) {
+        // GRAND RACCORDEMENT : Projection immédiate depuis le Kernel AIME
+        if (next.data) {
+          const unifiedData = AimeKernelBridge.projectWorldProjectToSiteData(next.data);
+          setState({ ...next, data: unifiedData });
+        } else {
+          setState(next);
+        }
+      }
     };
     return loadSiteData(target)
       .then(({ data, degraded }) => commit({ data, demo: false, degraded, loading: false, error: '', status: null }))

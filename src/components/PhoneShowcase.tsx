@@ -176,106 +176,239 @@ function MiniSite({ style }: { style: WeddingStyle }) {
       </Block>
 
       <div className="px-4 pb-7 pt-6 text-center text-[8px] uppercase tracking-[0.2em]" style={{ color: p.muted }}>
-        {COUPLE.p1} &amp; {COUPLE.p2} · Wedding Site
+        {COUPLE.p1} &amp; {COUPLE.p2} · VOWS
       </div>
     </div>
   );
 }
 
-export default function PhoneShowcase() {
-  const [index, setIndex] = useState(0);
+interface PhoneShowcaseProps {
+  selectedStyleId?: string;
+  onStyleChange?: (style: WeddingStyle) => void;
+}
+
+export default function PhoneShowcase({ selectedStyleId, onStyleChange }: PhoneShowcaseProps) {
+  const [index, setIndex] = useState(() => {
+    if (selectedStyleId) {
+      const foundIndex = WEDDING_STYLES.findIndex((s) => s.id === selectedStyleId);
+      return foundIndex !== -1 ? foundIndex : 0;
+    }
+    return 0;
+  });
   const [hovered, setHovered] = useState(false);
   const reduced = usePrefersReducedMotion();
   const tabVisible = useTabVisible();
 
+  // Synchronisation si le style sélectionné change depuis le parent / header / agent
+  useEffect(() => {
+    if (selectedStyleId) {
+      const foundIndex = WEDDING_STYLES.findIndex((s) => s.id === selectedStyleId);
+      if (foundIndex !== -1 && foundIndex !== index) {
+        setIndex(foundIndex);
+      }
+    }
+  }, [selectedStyleId, index]);
+
   const running = !hovered && !reduced && tabVisible;
-  const style = WEDDING_STYLES[index];
+  const style = WEDDING_STYLES[index] || WEDDING_STYLES[0];
   const config = getThemeConfig(style.id);
 
+  // Défilement automatique périodique du téléphone
   useEffect(() => {
     if (!running) return;
-    const timer = setTimeout(() => setIndex((i) => (i + 1) % WEDDING_STYLES.length), STEP_MS);
+    const timer = setTimeout(() => {
+      setIndex((i) => {
+        const next = (i + 1) % WEDDING_STYLES.length;
+        return next;
+      });
+    }, STEP_MS);
     return () => clearTimeout(timer);
   }, [index, running]);
 
-  const go = (next: number) => setIndex(((next % WEDDING_STYLES.length) + WEDDING_STYLES.length) % WEDDING_STYLES.length);
+  const go = (next: number) => {
+    const targetIndex = ((next % WEDDING_STYLES.length) + WEDDING_STYLES.length) % WEDDING_STYLES.length;
+    setIndex(targetIndex);
+    onStyleChange?.(WEDDING_STYLES[targetIndex]);
+  };
+
+  // Séparation des styles pour le ruban de gauche et le ruban de droite
+  const leftStyles = WEDDING_STYLES.filter((_, i) => i % 2 === 0);
+  const rightStyles = WEDDING_STYLES.filter((_, i) => i % 2 === 1);
+
+  // Duplication pour défilement infini fluide
+  const leftStream = [...leftStyles, ...leftStyles, ...leftStyles];
+  const rightStream = [...rightStyles, ...rightStyles, ...rightStyles];
 
   return (
-    <section id="apercus" className="px-5 pb-20 pt-6 sm:px-8 sm:pb-28">
+    <section id="apercus" className="relative overflow-hidden px-5 pb-20 pt-6 sm:px-8 sm:pb-28">
       <div className="mx-auto max-w-6xl">
         <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-2xl text-center">
-          <div className="vp-eyebrow">Dix mini-sites</div>
+          <div className="vp-eyebrow">Aperçu en direct</div>
           <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>
             Ce que vos invités
             <br />
             ouvriront sur leur téléphone.
           </h2>
           <p className="vp-body mx-auto mt-4 max-w-lg">
-            Chaque environnement compose un mini-site complet : histoire, programme, lieux, RSVP, cagnotte, galerie, FAQ.
-            Faites-les défiler.
+            Chaque univers compose un mini-site complet : histoire, programme, lieux, RSVP, cagnotte, galerie, FAQ.
           </p>
         </motion.div>
 
-        {/* Téléphone au centre, largement aéré */}
-        <motion.div
-          {...fadeUp}
-          transition={{ duration: 0.8 }}
-          className="relative mt-16 flex justify-center sm:mt-20"
+        {/* Espace central avec l'iPhone au premier plan et les rubans qui défilent de chaque côté en arrière-plan */}
+        <div
+          className="relative mt-12 flex items-center justify-center sm:mt-16"
           onPointerEnter={() => setHovered(true)}
           onPointerLeave={() => setHovered(false)}
         >
-          <button
-            type="button"
-            onClick={() => go(index - 1)}
-            aria-label="Mini-site précédent"
-            className="vp-press vp-glass vp-spec absolute -left-2 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full lg:flex"
+          {/* Ruban flottant GAUCHE défilant lentement */}
+          <div
+            className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 hidden h-[680px] w-[260px] overflow-hidden opacity-40 transition-opacity duration-500 hover:opacity-100 lg:block [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_82%,transparent)]"
+            style={{ zIndex: 1 }}
           >
-            <ChevronLeft size={18} />
-          </button>
-
-          <div className="relative">
-            {/* Lueur posée sous l’appareil */}
-            <div
-              aria-hidden="true"
-              className="absolute -inset-x-10 -bottom-8 h-24 rounded-[50%] opacity-60 blur-2xl transition-colors duration-700"
-              style={{ background: `radial-gradient(closest-side, ${style.accent}55, transparent)` }}
-            />
-            <div className="vp-perspective relative w-[286px] rounded-[46px] bg-[#0B0C12] p-[9px] shadow-[0_44px_90px_-38px_rgba(11,12,18,0.72)] ring-1 ring-black/10 sm:w-[318px]">
-              <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[38px] bg-white">
-                {/* Îlot dynamique */}
-                <div className="absolute left-1/2 top-2 z-20 h-[22px] w-[86px] -translate-x-1/2 rounded-full bg-[#0B0C12]" />
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={style.id}
-                    initial={{ opacity: 0, y: reduced ? 0 : 18 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: reduced ? 0 : -12 }}
-                    transition={{ duration: reduced ? 0.01 : 0.45, ease: [0.22, 1, 0.36, 1] }}
-                    className="no-scrollbar absolute inset-0 overflow-y-auto pt-8"
+            <motion.div
+              className="flex flex-col gap-4 pointer-events-auto"
+              animate={reduced ? {} : { y: ['0%', '-33.333%'] }}
+              transition={{ duration: 32, ease: 'linear', repeat: Infinity }}
+            >
+              {leftStream.map((s, idx) => {
+                const isSelected = s.id === style.id;
+                return (
+                  <button
+                    key={`l-${s.id}-${idx}`}
+                    type="button"
+                    onClick={() => {
+                      const realIndex = WEDDING_STYLES.findIndex((item) => item.id === s.id);
+                      if (realIndex !== -1) {
+                        setIndex(realIndex);
+                        onStyleChange?.(WEDDING_STYLES[realIndex]);
+                      }
+                    }}
+                    className={`group relative flex items-center gap-3 rounded-[20px] border p-2 text-left backdrop-blur-md transition-all duration-300 ${
+                      isSelected
+                        ? 'border-black/30 bg-white shadow-xl scale-[1.03] ring-2 ring-black/10'
+                        : 'border-black/10 bg-white/70 hover:bg-white hover:shadow-md'
+                    }`}
                   >
-                    <MiniSite style={style} />
-                  </motion.div>
-                </AnimatePresence>
-                {/* Barre d’accueil */}
-                <div className="pointer-events-none absolute inset-x-0 bottom-1.5 z-20 flex justify-center">
-                  <span className="h-1 w-24 rounded-full bg-black/25" />
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px]">
+                      <VisionImage src={s.image} alt="" fallbackLabel={s.name} aura={s.aura} className="h-full w-full object-cover group-hover:scale-105 transition duration-500" />
+                    </div>
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ background: s.accent }} />
+                        <span className="truncate text-[13px] font-semibold text-[#0B0C12]">{s.name}</span>
+                      </div>
+                      <div className="truncate text-[11px] text-[var(--vp-muted)] mt-0.5">{s.tagline}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </motion.div>
+          </div>
+
+          {/* Ruban flottant DROITE défilant lentement en sens inverse */}
+          <div
+            className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 hidden h-[680px] w-[260px] overflow-hidden opacity-40 transition-opacity duration-500 hover:opacity-100 lg:block [mask-image:linear-gradient(to_bottom,transparent,black_18%,black_82%,transparent)]"
+            style={{ zIndex: 1 }}
+          >
+            <motion.div
+              className="flex flex-col gap-4 pointer-events-auto"
+              animate={reduced ? {} : { y: ['-33.333%', '0%'] }}
+              transition={{ duration: 32, ease: 'linear', repeat: Infinity }}
+            >
+              {rightStream.map((s, idx) => {
+                const isSelected = s.id === style.id;
+                return (
+                  <button
+                    key={`r-${s.id}-${idx}`}
+                    type="button"
+                    onClick={() => {
+                      const realIndex = WEDDING_STYLES.findIndex((item) => item.id === s.id);
+                      if (realIndex !== -1) {
+                        setIndex(realIndex);
+                        onStyleChange?.(WEDDING_STYLES[realIndex]);
+                      }
+                    }}
+                    className={`group relative flex items-center gap-3 rounded-[20px] border p-2 text-left backdrop-blur-md transition-all duration-300 ${
+                      isSelected
+                        ? 'border-black/30 bg-white shadow-xl scale-[1.03] ring-2 ring-black/10'
+                        : 'border-black/10 bg-white/70 hover:bg-white hover:shadow-md'
+                    }`}
+                  >
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[14px]">
+                      <VisionImage src={s.image} alt="" fallbackLabel={s.name} aura={s.aura} className="h-full w-full object-cover group-hover:scale-105 transition duration-500" />
+                    </div>
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ background: s.accent }} />
+                        <span className="truncate text-[13px] font-semibold text-[#0B0C12]">{s.name}</span>
+                      </div>
+                      <div className="truncate text-[11px] text-[var(--vp-muted)] mt-0.5">{s.tagline}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </motion.div>
+          </div>
+
+          {/* Téléphone au centre */}
+          <motion.div
+            {...fadeUp}
+            transition={{ duration: 0.8 }}
+            className="relative z-10 flex items-center justify-center"
+          >
+            <button
+              type="button"
+              onClick={() => go(index - 1)}
+              aria-label="Mini-site précédent"
+              className="vp-press vp-glass vp-spec absolute -left-14 top-1/2 z-30 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full sm:flex shadow-lg"
+            >
+              <ChevronLeft size={18} />
+            </button>
+
+            <div className="relative">
+              {/* Lueur posée sous l’appareil */}
+              <div
+                aria-hidden="true"
+                className="absolute -inset-x-12 -bottom-8 h-28 rounded-[50%] opacity-70 blur-3xl transition-colors duration-700"
+                style={{ background: `radial-gradient(closest-side, ${style.accent}66, transparent)` }}
+              />
+              <div className="vp-perspective relative w-[295px] rounded-[48px] bg-[#0B0C12] p-[9.5px] shadow-[0_48px_100px_-32px_rgba(11,12,18,0.78)] ring-1 ring-black/20 sm:w-[325px]">
+                <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[39px] bg-white">
+                  {/* Îlot dynamique */}
+                  <div className="absolute left-1/2 top-2 z-20 h-[22px] w-[86px] -translate-x-1/2 rounded-full bg-[#0B0C12]" />
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={style.id}
+                      initial={{ opacity: 0, y: reduced ? 0 : 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: reduced ? 0 : -12 }}
+                      transition={{ duration: reduced ? 0.01 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+                      className="no-scrollbar absolute inset-0 overflow-y-auto pt-8"
+                    >
+                      <MiniSite style={style} />
+                    </motion.div>
+                  </AnimatePresence>
+                  {/* Barre d’accueil */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-1.5 z-20 flex justify-center">
+                    <span className="h-1 w-24 rounded-full bg-black/25" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={() => go(index + 1)}
-            aria-label="Mini-site suivant"
-            className="vp-press vp-glass vp-spec absolute -right-2 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full lg:flex"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </motion.div>
+            <button
+              type="button"
+              onClick={() => go(index + 1)}
+              aria-label="Mini-site suivant"
+              className="vp-press vp-glass vp-spec absolute -right-14 top-1/2 z-30 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full sm:flex shadow-lg"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </motion.div>
+        </div>
 
-        {/* Légende : l’univers, et ce que contient son mini-site */}
-        <div className="mx-auto mt-14 max-w-xl text-center">
+        {/* Légende : l’univers (juste le titre au centre) */}
+        <div className="mx-auto mt-10 max-w-xl text-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={style.id}
@@ -284,41 +417,9 @@ export default function PhoneShowcase() {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: reduced ? 0.01 : 0.35 }}
             >
-              <div className="vp-title text-[26px]">{style.name}</div>
-              <p className="vp-body mt-1.5 !text-[15px]">{style.tagline}</p>
-              <div className="mt-5 flex flex-wrap justify-center gap-1.5">
-                {(config?.sections ?? []).filter((s) => s.visible).map((s) => (
-                  <span key={s.key} className="vp-chip !text-[11.5px] text-[var(--vp-muted)]">{s.title}</span>
-                ))}
-              </div>
+              <div className="vp-title text-[28px]">{style.name}</div>
             </motion.div>
           </AnimatePresence>
-          <Link to="/creer" state={{ preselectedStyle: style.id }} className="vp-btn vp-press mt-7 !px-7 !py-3.5">
-            Créer mon site dans cet univers <ChevronRight size={16} />
-          </Link>
-        </div>
-
-        {/* Les dix, accessibles directement */}
-        <div className="mt-16 flex flex-wrap justify-center gap-3 sm:gap-4">
-          {WEDDING_STYLES.map((s, i) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-label={`Aperçu du mini-site ${s.name}`}
-              aria-current={i === index}
-              className={`vp-press group w-[86px] shrink-0 text-left transition sm:w-[104px] ${i === index ? '' : 'opacity-70 hover:opacity-100'}`}
-            >
-              <span
-                className={`block overflow-hidden rounded-[14px] ring-2 transition ${i === index ? 'ring-[var(--vp-ink)]' : 'ring-transparent group-hover:ring-black/15'}`}
-              >
-                <VisionImage src={s.image} alt="" fallbackLabel={s.name} aura={s.aura} className="aspect-[3/4] w-full object-cover" />
-              </span>
-              <span className={`mt-1.5 block truncate text-[11px] font-semibold ${i === index ? 'text-[var(--vp-ink)]' : 'text-[var(--vp-muted)]'}`}>
-                {s.name}
-              </span>
-            </button>
-          ))}
         </div>
       </div>
     </section>
