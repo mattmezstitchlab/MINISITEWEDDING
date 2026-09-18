@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import PredictiveOrchestrationStudio from '../components/PredictiveOrchestrationStudio';
 import TalkieWalkieStudio from '../components/TalkieWalkieStudio';
 import VowsLiveRadioStudio from '../components/VowsLiveRadioStudio';
+import UnifiedEventOsMenu from '../components/UnifiedEventOsMenu';
 
 interface ModuleSection {
   id: string;
@@ -87,7 +88,7 @@ export default function Features() {
   return (
     <div className="relative min-h-screen bg-[#FBFBFD] text-[#0B0C12] selection:bg-black selection:text-white pb-32">
       
-      {/* Barre de navigation supérieure nette et blanche */}
+      {/* Barre de navigation supérieure nette et blanche (identique à l'accueil) */}
       <nav className="sticky top-0 z-50 border-b border-black/5 bg-white/90 backdrop-blur-xl px-5 py-3.5 sm:px-8">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <Link
@@ -95,7 +96,7 @@ export default function Features() {
             className="flex items-center gap-2 text-[13px] font-semibold text-[#0B0C12]/70 hover:text-black transition"
           >
             <ArrowLeft size={14} />
-            <span>Retour à l'accueil</span>
+            <span>Accueil</span>
           </Link>
 
           <div className="flex items-center gap-2">
@@ -103,12 +104,9 @@ export default function Features() {
             <span className="text-[11px] font-mono uppercase tracking-wider text-black/40">/ Event OS Suite</span>
           </div>
 
-          <Link
-            to="/creer"
-            className="hidden sm:inline-flex rounded-full bg-black px-4 py-1.5 text-[12px] font-semibold text-white hover:bg-neutral-800 transition"
-          >
-            Créer un mariage
-          </Link>
+          <div className="flex items-center gap-2">
+            <UnifiedEventOsMenu />
+          </div>
         </div>
       </nav>
 

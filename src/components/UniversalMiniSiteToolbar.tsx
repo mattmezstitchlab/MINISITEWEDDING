@@ -2,18 +2,16 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio,
-  Sparkles,
-  PhoneCall,
-  Sliders,
-  ArrowUp,
   Flame,
   Compass,
-  MapPin,
+  ArrowUp,
+  User,
+  Sliders,
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
 import WeddingLiveStoriesFeed from './WeddingLiveStoriesFeed';
 import UniverseDirectoryModal from './UniverseDirectoryModal';
-import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
+import SaxophonistProfileModal from './SaxophonistProfileModal';
+import type { WeddingStyle } from '../lib/weddingStyles';
 
 interface UniversalMiniSiteToolbarProps {
   currentStyleId?: string | null;
@@ -28,89 +26,79 @@ export default function UniversalMiniSiteToolbar({
 }: UniversalMiniSiteToolbarProps) {
   const [isStoriesOpen, setIsStoriesOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-  const location = useLocation();
-
-  const handleOpenStoriesModal = () => {
-    setIsStoriesOpen(true);
-    onOpenStories?.();
-  };
-
-  const handleOpenMap = () => {
-    setIsMapModalOpen(true);
-  };
+  const [isSaxProfileOpen, setIsSaxProfileOpen] = useState(false);
 
   return (
     <>
-      {/* Barre d'outils tactile flottante fixée en bas d'écran (Floating Dock visionOS) */}
-      <div className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-md pointer-events-none">
-        <div className="pointer-events-auto mx-auto flex items-center justify-between gap-1.5 rounded-full bg-[#0A0B10]/95 p-1.5 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+      {/* Barre d'outils tactile flottante fixée en bas d'écran (Uniquement avec des pictos ultra-épurés) */}
+      <div className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 pointer-events-none">
+        <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-[#0A0B10]/95 px-3 py-1.5 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
           
-          {/* 1. BOUTON STORY LIVE IMMERSIVE AVEC OUTILS INTÉGRÉS */}
+          {/* 1. PICTO STORIES LIVE VERTICALES TIKTOK */}
           <button
             type="button"
-            onClick={handleOpenStoriesModal}
-            className="group relative flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[11.5px] font-mono font-bold uppercase tracking-wider text-black shadow-lg transition hover:bg-neutral-200 active:scale-95"
+            onClick={() => setIsStoriesOpen(true)}
+            className="group relative flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-md transition hover:bg-neutral-200 active:scale-95"
+            title="Stories Live"
           >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-90" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            <span className="relative flex h-2 w-2 absolute -top-0.5 -right-0.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-90" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
             </span>
-            <span>Stories</span>
-            <Flame size={12} className="fill-black" />
+            <Flame size={16} className="fill-black" />
           </button>
 
-          {/* 2. BOUTON CARTE RADAR LIVE & DÉTECTION PLAN B À PROXIMITÉ */}
+          {/* 2. PICTO CARTE RADAR LIVE */}
           <button
             type="button"
-            onClick={handleOpenMap}
-            className="flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-mono text-white/80 hover:bg-white/10 hover:text-white transition"
-            title="Radar Carte Live & Plan B à proximité"
+            onClick={() => setIsMapModalOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition"
+            title="Carte Radar & Plan B à proximité"
           >
-            <Compass size={13} className="text-emerald-400 animate-spin" style={{ animationDuration: '24s' }} />
-            <span className="hidden sm:inline">Carte Live</span>
+            <Compass size={17} className="text-emerald-400" />
           </button>
 
-          {/* 3. ACCÈS DIRECT AUX FRÉQUENCES RADIO & TALKIE */}
+          {/* 3. PICTO MON PROFIL SAXOPHONISTE LIVE (Disponible pour tous les thèmes) */}
           <button
             type="button"
-            onClick={handleOpenStoriesModal}
-            className="flex items-center gap-1.5 rounded-full px-2.5 py-2 text-[11px] font-mono text-white/70 hover:bg-white/10 hover:text-white transition"
+            onClick={() => setIsSaxProfileOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition relative"
+            title="Mon Mini-Site · Saxophoniste Live (Tous univers)"
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 absolute top-1 right-1" />
+            <User size={16} />
+          </button>
+
+          {/* 4. PICTO RADIO & FRÉQUENCES */}
+          <button
+            type="button"
+            onClick={() => setIsStoriesOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10 hover:text-white transition"
             title="Fréquences & Ondes"
           >
-            <Radio size={12} className="text-white/60" />
-            <span className="hidden sm:inline">Ondes</span>
+            <Radio size={16} />
           </button>
 
-          {/* 4. COCKPIT / FEATURES SUITE */}
-          <Link
-            to="/features"
-            className="flex items-center gap-1.5 rounded-full px-2.5 py-2 text-[11px] font-mono text-white/70 hover:bg-white/10 hover:text-white transition"
-            title="Architecture Event OS"
-          >
-            <Sliders size={12} className="text-white/60" />
-            <span className="hidden sm:inline">OS</span>
-          </Link>
-
-          {/* 5. REMONTER EN HAUT RAPIDEMENT */}
+          {/* 5. PICTO HAUT DE PAGE */}
           <button
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/60 hover:bg-white hover:text-black transition shrink-0"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-white/50 hover:bg-white hover:text-black transition shrink-0 ml-1"
             title="Haut de page"
           >
-            <ArrowUp size={13} />
+            <ArrowUp size={14} />
           </button>
 
         </div>
       </div>
 
-      {/* MODALE FULLSCREEN DES STORIES TIKTOK-STYLE AVEC LES OUTILS INTÉGRÉS */}
+      {/* MODALE STORIES TIKTOK-STYLE */}
       <WeddingLiveStoriesFeed
         isOpen={isStoriesOpen}
         onClose={() => setIsStoriesOpen(false)}
       />
 
-      {/* MODALE DE LA CARTE GÉOLOCALISÉE LIVE AVEC RADAR PROXIMITÉ & PLAN B */}
+      {/* MODALE CARTE LIVE GÉOLOCALISÉE */}
       <UniverseDirectoryModal
         isOpen={isMapModalOpen}
         onClose={() => setIsMapModalOpen(false)}
@@ -119,6 +107,12 @@ export default function UniversalMiniSiteToolbar({
           onSelectStyle?.(style);
           setIsMapModalOpen(false);
         }}
+      />
+
+      {/* MODALE PROFIL SAXOPHONISTE LIVE DU CRÉATEUR */}
+      <SaxophonistProfileModal
+        isOpen={isSaxProfileOpen}
+        onClose={() => setIsSaxProfileOpen(false)}
       />
     </>
   );

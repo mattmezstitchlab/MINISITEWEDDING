@@ -6,6 +6,7 @@ import { WEDDING_STYLES, PHASES, getDirectionArtistiqueImage, type WeddingStyle 
 import { TiltCard } from '../components/vision/VisionImage';
 import HeroCycle from '../components/HeroCycle';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
+import UnifiedEventOsMenu from '../components/UnifiedEventOsMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import ThemeManifestoWhite from '../components/ThemeManifestoWhite';
@@ -78,14 +79,8 @@ export default function Landing() {
           </Link>
 
           {/* Accès discret aux modules techniques Event OS & menu univers */}
-          <div className="flex items-center gap-3">
-            <Link
-              to="/features"
-              className="hidden sm:flex items-center gap-1.5 text-[12px] font-mono font-medium text-[#0B0C12]/60 hover:text-black transition"
-            >
-              <span>Event OS</span>
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <UnifiedEventOsMenu />
 
             <UnifiedUniverseMenu
               selectedStyleId={selectedStyle?.id || null}

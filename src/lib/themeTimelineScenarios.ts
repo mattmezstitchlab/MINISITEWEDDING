@@ -258,17 +258,63 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
     },
   ],
 
-  // 10. LE PHARE ISOLÉ
-  'phare-atlantique': [
+  // 11. FÊTE DE DIVORCE & DÉ-MARIAGE (La Renaissance Joyeuse)
+  'divorce-party': [
     {
-      time: '17h45',
-      title: 'Vœux au Sommet de la Lanterne',
-      narrativeScript: 'Cinquante mètres au-dessus de l’océan en furie. Le faisceau lumineux commence sa rotation alors que le soleil rougeoyant s’enfonce dans les vagues.',
-      ambianceDetail: 'Vent du large vivifiant, sel sur les lèvres, amour farouche et sublime solitude.',
-      image: '/images/phare-vows.jpg',
+      time: '18h30',
+      title: 'L’Entrée Triomphale & Clôture du Bail',
+      narrativeScript: 'Arrivée solo en smoking impeccable ou tailleur blanc. Pas de marche nuptiale : un quatuor joue Daft Punk en acoustique pendant que les clés de l’ancien appartement sont remises à l’avocat.',
+      ambianceDetail: 'Coupes de champagne blanc de noirs, livre d’or des vœux de liberté et sourires sans rancœur.',
+      image: '/images/couple-paris.jpg',
       vendorRoles: [
-        { role: 'Pilote Canot Tout Temps & Accostage', mission: 'Transfert par mer formée et amarrage rocher', status: 'filled' },
-        { role: 'Photographe Grand Vent & Embruns', mission: 'Captation argentique sous boîtier étanche tropicalisé', status: 'open', compensationHint: 'Reportage insulaire sauvage' },
+        { role: 'Maître de Cérémonie de Rupture', mission: 'Discours libérateur avec autodérision et rituel d’extinction des alliances', status: 'filled' },
+        { role: 'Photographe Lookbook Solo', mission: 'Portraits individuels rayonnants et photos de groupe avec les vrais amis', status: 'filled' },
+      ],
+    },
+    {
+      time: '20h30',
+      title: 'Le Banquet de Dé-Mariage & Pièce Noire',
+      narrativeScript: 'Banquets généreux sur table épurée sans fleurs niaises. Arrivée du gâteau inversé monochrome noir surmonté de la figurine victorieuse.',
+      ambianceDetail: 'Chandeliers métalliques, toasts à la renaissance personnelle et rires décomplexés.',
+      image: '/images/table-noir.jpg',
+      vendorRoles: [
+        { role: 'Pâtissier Gâteau Noir Dé-Mariage', mission: 'Sculpture pâtissière satirique monochrome chocolat noir fumé', status: 'filled' },
+        { role: 'Traiteur Banquet Convivial', mission: 'Plats généreux de partage et accords mets-vins de célébration', status: 'filled' },
+      ],
+    },
+    {
+      time: '23h00',
+      title: 'Le Feu de Joie des Alliances & Danse Renaissance',
+      narrativeScript: 'Un brasero extérieur crépite. Les alliances sont symboliquement fondues ou recyclées, ouvrant un dancefloor d’hymnes d’indépendance jusqu’à l’aube.',
+      ambianceDetail: 'Basses chaleureuses, liberté retrouvée, nuit de fête pure.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'DJ Set "Liberté & Renaissance"', mission: 'Mix house/funk survolté hymnes d’émancipation sans temps mort', status: 'open', compensationHint: 'Set festif 23h-04h' },
+        { role: 'Brasero & Régie Flamme', mission: 'Sécurisation du feu rituel de libération', status: 'filled' },
+      ],
+    },
+  ],
+
+  // 12. MARIAGE IMPROVISÉ · 48H (Plan B héroïque)
+  'last-minute': [
+    {
+      time: '14h00',
+      title: 'L’Alerte 48H & Appel Général',
+      narrativeScript: 'Décision prise un jeudi matin. Deux billets, SMS groupé envoyé aux proches, lieu d’exception dégoté par le régisseur d’urgence.',
+      ambianceDetail: 'Énergie brute, spontanéité absolue, zéro protocole compassé.',
+      image: '/images/couple-paris.jpg',
+      vendorRoles: [
+        { role: 'Régisseur Urgence Plan B / 48H', mission: 'Négociation du lieu minute et couverture logistique express', status: 'filled' },
+      ],
+    },
+    {
+      time: '18h00',
+      title: 'Vœux Spontanés sur le Pouce',
+      narrativeScript: 'Pas d’arche de fleurs : un banc public en pierre, une verrière ou un bar privatisé à la volée. Le oui le plus vibrant et imprévu de leur vie.',
+      ambianceDetail: 'Fleurs glanées le matin au marché, rires complices et champagne frais.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Photographe Sniper Spontané', mission: 'Reportage live argentique instinctif sans poses', status: 'open', compensationHint: 'Mission express 4h' },
       ],
     },
   ],
