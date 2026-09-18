@@ -14,9 +14,6 @@ import ComplementaryThemes from '../components/ComplementaryThemes';
 import HeroAiPrompt from '../components/HeroAiPrompt';
 import HomeTriplePhoneShowcase from '../components/HomeTriplePhoneShowcase';
 import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
-import CompactZeroScrollStudio from '../components/CompactZeroScrollStudio';
-import ImmersiveThemes from '../components/ImmersiveThemes';
-import CommunityFeedHub from '../components/CommunityFeedHub';
 import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -145,60 +142,6 @@ export default function Landing() {
         )}
       </ErrorBoundary>
 
-      {/* BANDE DISCRÈTE D'INTRODUCTION AUX TECHNOLOGIES EVENT OS (Fond clair, classe & épuré) */}
-      <section className="bg-white py-12 px-5 sm:px-8 border-b border-black/5">
-        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-black/40">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span>Système d'Exploitation Invisible</span>
-            </div>
-            <h3 className="vp-title text-[20px] sm:text-[22px] text-[#0B0C12]">
-              L'architecture Event OS : Orchestration, Talkie-Walkie &amp; Radio Live
-            </h3>
-            <p className="text-[13.5px] text-[#0B0C12]/60">
-              Résolution en cascade des aléas, coordination audio chiffrée et streaming continu.
-            </p>
-          </div>
-
-          <div className="flex shrink-0 flex-wrap justify-center gap-2 sm:justify-end">
-            <Link
-              to="/features"
-              className="flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-[12.5px] font-semibold text-[#0B0C12] shadow-sm transition hover:bg-black hover:text-white"
-            >
-              <span>Découvrir Event OS</span>
-              <ArrowRight size={13} />
-            </Link>
-            <Link
-              to="/aime"
-              className="flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm transition hover:bg-black/80"
-            >
-              <span>Taxonomie mariage</span>
-              <ArrowRight size={13} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* TAXONOMIE MARIAGE : LA VERSION AIME EST ACCESSIBLE DIRECTEMENT DEPUIS L'ACCUEIL */}
-      <section id="taxonomie" className="bg-[#070709] px-4 py-16 text-white sm:px-8 sm:py-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
-            <div className="max-w-2xl">
-              <div className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-300">AIME · Taxonomie mariage</div>
-              <h2 className="mt-3 text-[clamp(2rem,5vw,4rem)] font-bold leading-[0.98] tracking-[-0.05em]">Chaque personne a son propre Jour J.</h2>
-              <p className="mt-4 text-[14px] leading-relaxed text-white/60 sm:text-[16px]">Mariés, témoins, traiteur, DJ, photographe, invités : une même timeline, des accès différents, aucun doublon d’identité.</p>
-            </div>
-            <Link to="/aime" className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-[11px] font-semibold text-white transition hover:bg-white hover:text-black sm:self-auto">
-              Ouvrir la taxonomie complète <ArrowRight size={14} />
-            </Link>
-          </div>
-          <ErrorBoundary>
-            <CompactZeroScrollStudio />
-          </ErrorBoundary>
-        </div>
-      </section>
-
       {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}
       <ParallaxSection
         image={
@@ -259,18 +202,6 @@ export default function Landing() {
           <DjPlaylistStudio style={activeStyleOrFallback} />
         </div>
       </section>
-
-      {/* SI PAGE D'ACCUEIL GÉNÉRALE : HUB D'ACTUALITÉ, TÉMOIGNAGES DU RÉEL & DÉFILEMENT 2 RANGÉES BORD-À-BORD */}
-      {!selectedStyle ? (
-        <CommunityFeedHub />
-      ) : (
-        /* SI UN THÈME EST SÉLECTIONNÉ : LA CHRONOLOGIE SCÉNARISÉE SPÉCIFIQUE DE CE THÈME */
-        <ImmersiveThemes
-          currentStyle={selectedStyle}
-          onOpenVendorApplication={scrollToHero}
-          onSelectStyle={handleSelectStyle}
-        />
-      )}
 
       {/* SECTION SUGGESTIONS COMPLÉMENTAIRES D'UNIVERS & MISSIONS */}
       <ComplementaryThemes
