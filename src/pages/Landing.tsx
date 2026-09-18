@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart, Sparkles, Radio } from 'lucide-react';
+import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart } from 'lucide-react';
 import { WEDDING_STYLES, PHASES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
 import { TiltCard } from '../components/vision/VisionImage';
 import HeroCycle from '../components/HeroCycle';
@@ -14,6 +14,7 @@ import ComplementaryThemes from '../components/ComplementaryThemes';
 import HeroAiPrompt from '../components/HeroAiPrompt';
 import HomeTriplePhoneShowcase from '../components/HomeTriplePhoneShowcase';
 import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
+import CompactZeroScrollStudio from '../components/CompactZeroScrollStudio';
 import ImmersiveThemes from '../components/ImmersiveThemes';
 import CommunityFeedHub from '../components/CommunityFeedHub';
 import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
@@ -139,7 +140,7 @@ export default function Landing() {
         ) : (
           <ThemePhoneShowcase
             currentStyle={selectedStyle}
-            onOpenVendorApplication={(role) => scrollToHero()}
+            onOpenVendorApplication={() => scrollToHero()}
           />
         )}
       </ErrorBoundary>
@@ -160,13 +161,41 @@ export default function Landing() {
             </p>
           </div>
 
-          <Link
-            to="/features"
-            className="shrink-0 flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-[12.5px] font-semibold text-[#0B0C12] hover:bg-black hover:text-white transition shadow-sm"
-          >
-            <span>Découvrir la suite Event OS</span>
-            <ArrowRight size={13} />
-          </Link>
+          <div className="flex shrink-0 flex-wrap justify-center gap-2 sm:justify-end">
+            <Link
+              to="/features"
+              className="flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-[12.5px] font-semibold text-[#0B0C12] shadow-sm transition hover:bg-black hover:text-white"
+            >
+              <span>Découvrir Event OS</span>
+              <ArrowRight size={13} />
+            </Link>
+            <Link
+              to="/aime"
+              className="flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm transition hover:bg-black/80"
+            >
+              <span>Taxonomie mariage</span>
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* TAXONOMIE MARIAGE : LA VERSION AIME EST ACCESSIBLE DIRECTEMENT DEPUIS L'ACCUEIL */}
+      <section id="taxonomie" className="bg-[#070709] px-4 py-16 text-white sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <div className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-300">AIME · Taxonomie mariage</div>
+              <h2 className="mt-3 text-[clamp(2rem,5vw,4rem)] font-bold leading-[0.98] tracking-[-0.05em]">Chaque personne a son propre Jour J.</h2>
+              <p className="mt-4 text-[14px] leading-relaxed text-white/60 sm:text-[16px]">Mariés, témoins, traiteur, DJ, photographe, invités : une même timeline, des accès différents, aucun doublon d’identité.</p>
+            </div>
+            <Link to="/aime" className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-[11px] font-semibold text-white transition hover:bg-white hover:text-black sm:self-auto">
+              Ouvrir la taxonomie complète <ArrowRight size={14} />
+            </Link>
+          </div>
+          <ErrorBoundary>
+            <CompactZeroScrollStudio />
+          </ErrorBoundary>
         </div>
       </section>
 
@@ -353,6 +382,7 @@ export default function Landing() {
           <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
           <div className="flex items-center gap-4">
             <Link to="/features" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Event OS</Link>
+            <Link to="/aime" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Taxonomie</Link>
             <button
               type="button"
               onClick={scrollToHero}

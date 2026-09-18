@@ -35,7 +35,7 @@ export const CANONICAL_MATTMEZ: UniversalIdentity = {
   id: 'usr-mattmez',
   canonicalName: 'Matt Mez',
   email: 'contact@mattmez-sax.com',
-  avatar: '/images/mariage-black-tie-minimaliste.jpg',
+  avatar: '/images/noir-blanc.jpg',
   bio: 'Saxophoniste Live international. Sets Deep House & Acoustique pour réceptions d’exception.',
   homeCity: 'Bordeaux / Paris',
   country: 'France',
@@ -48,7 +48,7 @@ export const CANONICAL_MATTMEZ: UniversalIdentity = {
     proPhone: '+33 6 99 88 77 66',
     riderAcoustique: 'Système micro sans fil Shure HF (portée 80m). Retour oreillettes IEM stéréo.',
     tarifBase: '1 800 € net',
-    portfolioMedias: ['/images/mariage-black-tie-minimaliste.jpg'],
+    portfolioMedias: ['/images/noir-blanc.jpg'],
   },
   settings: {
     notifications: true,
@@ -63,7 +63,7 @@ export const CANONICAL_LUCAS: UniversalIdentity = {
   id: 'usr-lucas',
   canonicalName: 'Lucas Bernard',
   email: 'lucas.b@example.com',
-  avatar: '/images/mariage-white-editorial.jpg',
+  avatar: '/images/noir-blanc.jpg',
   bio: 'Ami proche d’enfance, photographe voyage & passionné de design.',
   homeCity: 'Lyon',
   country: 'France',
@@ -123,7 +123,7 @@ export const PROJECT_MARIAGE_SARAH: WorldProject = {
       projectTitle: 'Mariage Sarah & Gabriel',
       identityId: 'usr-mattmez',
       identityName: 'Matt Mez',
-      identityAvatar: '/images/mariage-black-tie-minimaliste.jpg',
+      identityAvatar: '/images/noir-blanc.jpg',
       contextualRole: 'Saxophoniste Live (Sunset Cocktail)',
       roleCategory: 'prestataire',
       permissions: {
@@ -146,7 +146,7 @@ export const PROJECT_MARIAGE_SARAH: WorldProject = {
       projectTitle: 'Mariage Sarah & Gabriel',
       identityId: 'usr-lucas',
       identityName: 'Lucas Bernard',
-      identityAvatar: '/images/mariage-white-editorial.jpg',
+      identityAvatar: '/images/noir-blanc.jpg',
       contextualRole: 'Témoin d’Honneur & Maître des Surprises',
       roleCategory: 'invite',
       permissions: {
@@ -221,7 +221,7 @@ export const PROJECT_MARIAGE_SARAH: WorldProject = {
       projectId: 'prj-mariage-sarah-2026',
       authorIdentityId: 'usr-mattmez',
       authorName: 'Matt Mez',
-      authorAvatar: '/images/mariage-black-tie-minimaliste.jpg',
+      authorAvatar: '/images/noir-blanc.jpg',
       targetFieldKey: 'timelineNodes.node-2.time',
       targetFieldLabel: 'Heure de balance acoustique & arrivée',
       oldValue: '17:30 (Live direct)',
@@ -242,7 +242,7 @@ export const PROJECT_VOYAGE_JAPON: WorldProject = {
   universe: 'VOYAGE',
   title: 'Immersion Kyoto & Mont Fuji 2027',
   tagline: 'Jardins zen moussus, rituel du thé, architecture wabi-sabi',
-  coverImage: '/images/mariage-white-editorial.jpg',
+  coverImage: '/images/noir-blanc.jpg',
   ownerIdentityId: 'usr-sarah',
   date: '2027-04-12',
   locationName: 'Ryokan Gion & Mont Fuji',
@@ -280,7 +280,7 @@ export const PROJECT_VOYAGE_JAPON: WorldProject = {
       projectTitle: 'Immersion Kyoto 2027',
       identityId: 'usr-lucas', // MÊME IDENTITÉ CANONIQUE QUE LE TÉMOIN DU MARIAGE !
       identityName: 'Lucas Bernard',
-      identityAvatar: '/images/mariage-white-editorial.jpg',
+      identityAvatar: '/images/noir-blanc.jpg',
       contextualRole: 'Co-voyageur & Reporter Photo', // Rôle complètement différent !
       roleCategory: 'collaborateur',
       permissions: {

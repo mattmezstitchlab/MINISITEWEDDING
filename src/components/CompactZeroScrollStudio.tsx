@@ -4,7 +4,6 @@ import {
   ArrowRight,
   SlidersHorizontal,
   FileCheck,
-  ChevronDown,
 } from 'lucide-react';
 import {
   WEDDING_TAXONOMY,
@@ -13,16 +12,15 @@ import {
 } from '../lib/weddingTaxonomy';
 import {
   INITIAL_TIMELINE_ITEMS,
-  type TimelineTrackItem,
   type ViewerPerspective,
 } from '../lib/timelineTheaterEngine';
 
 // Fonds d'écran immersifs commutable façon Apple Wallpapers
 const WALLPAPERS = [
-  { id: 'black-white', name: 'Éditorial Black & White', url: '/images/mariage-black-tie-minimaliste.jpg' },
-  { id: 'chateau', name: 'Château & Verrière', url: '/images/mariage-chateau-contemporain.jpg' },
+  { id: 'black-white', name: 'Éditorial Black & White', url: '/images/noir-blanc.jpg' },
+  { id: 'chateau', name: 'Château & Verrière', url: '/images/chateau.jpg' },
   { id: 'brutal', name: 'Chapelle Contemporaine', url: '/images/brutal-bunker-vows.jpg' },
-  { id: 'club', name: 'Nuit & Club Amour', url: '/images/mariage-techno-berlinois.jpg' },
+  { id: 'club', name: 'Nuit & Club Amour', url: '/images/club-amour.jpg' },
   { id: 'desert', name: 'Desert Sunset & Motel', url: '/images/desert-pool-vows.jpg' },
   { id: 'phare', name: 'Horizon & Côte Sauvage', url: '/images/phare-vows.jpg' },
 ];
@@ -31,8 +29,8 @@ export default function CompactZeroScrollStudio() {
   const [activeRoleKey, setActiveRoleKey] = useState<WeddingTaxonomyRole>('maries');
   const [activeWallpaper, setActiveWallpaper] = useState(WALLPAPERS[0]);
   const [selectedMomentId, setSelectedMomentId] = useState<string>('jj-3');
-  const [coupleNames, setCoupleNames] = useState('Sarah & Gabriel');
-  const [eventDate, setEventDate] = useState('Samedi 19 Septembre 2026');
+  const coupleNames = 'Sarah & Gabriel';
+  const eventDate = 'Samedi 19 Septembre 2026';
 
   // Entité active de la taxonomie
   const activeEntity: TaxonomyEntity = WEDDING_TAXONOMY[activeRoleKey] || WEDDING_TAXONOMY.maries;
