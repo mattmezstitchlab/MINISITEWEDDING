@@ -7,10 +7,12 @@ import {
   ArrowUp,
   User,
   Sliders,
+  SlidersHorizontal,
 } from 'lucide-react';
 import WeddingLiveStoriesFeed from './WeddingLiveStoriesFeed';
 import UniverseDirectoryModal from './UniverseDirectoryModal';
 import SaxophonistProfileModal from './SaxophonistProfileModal';
+import FloatingTimelineDrawer from './FloatingTimelineDrawer';
 import type { WeddingStyle } from '../lib/weddingStyles';
 
 interface UniversalMiniSiteToolbarProps {
@@ -27,6 +29,7 @@ export default function UniversalMiniSiteToolbar({
   const [isStoriesOpen, setIsStoriesOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [isSaxProfileOpen, setIsSaxProfileOpen] = useState(false);
+  const [isTimelineDrawerOpen, setIsTimelineDrawerOpen] = useState(false);
 
   return (
     <>
@@ -58,7 +61,17 @@ export default function UniversalMiniSiteToolbar({
             <Compass size={17} className="text-emerald-400" />
           </button>
 
-          {/* 3. PICTO MON PROFIL SAXOPHONISTE LIVE (Disponible pour tous les thèmes) */}
+          {/* 3. PICTO TIMELINE THEATER (Bandeau horizontal rétractable) */}
+          <button
+            type="button"
+            onClick={() => setIsTimelineDrawerOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition"
+            title="Timeline Theater · Bandeau Rétractable"
+          >
+            <SlidersHorizontal size={15} />
+          </button>
+
+          {/* 4. PICTO MON PROFIL SAXOPHONISTE LIVE (Disponible pour tous les thèmes) */}
           <button
             type="button"
             onClick={() => setIsSaxProfileOpen(true)}
@@ -69,7 +82,7 @@ export default function UniversalMiniSiteToolbar({
             <User size={16} />
           </button>
 
-          {/* 4. PICTO RADIO & FRÉQUENCES */}
+          {/* 5. PICTO RADIO & FRÉQUENCES */}
           <button
             type="button"
             onClick={() => setIsStoriesOpen(true)}
@@ -79,7 +92,7 @@ export default function UniversalMiniSiteToolbar({
             <Radio size={16} />
           </button>
 
-          {/* 5. PICTO HAUT DE PAGE */}
+          {/* 6. PICTO HAUT DE PAGE */}
           <button
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -113,6 +126,12 @@ export default function UniversalMiniSiteToolbar({
       <SaxophonistProfileModal
         isOpen={isSaxProfileOpen}
         onClose={() => setIsSaxProfileOpen(false)}
+      />
+
+      {/* BANDEAU RÉTRACTABLE TIMELINE THEATER EN BAS D'ÉCRAN */}
+      <FloatingTimelineDrawer
+        isOpen={isTimelineDrawerOpen}
+        onClose={() => setIsTimelineDrawerOpen(false)}
       />
     </>
   );

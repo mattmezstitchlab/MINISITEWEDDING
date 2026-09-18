@@ -11,6 +11,7 @@ import Generating from './pages/Generating';
 import Editor from './pages/Editor';
 import PublicSite from './pages/PublicSite';
 import Features from './pages/Features';
+import Theater from './pages/Theater';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -30,6 +31,8 @@ export default function App() {
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/theater" element={<Theater />} />
+            <Route path="/timeline" element={<Theater />} />
             <Route path="/modules" element={<Features />} />
             <Route path="/features" element={<Features />} />
             <Route path="/creer" element={<Onboarding />} />

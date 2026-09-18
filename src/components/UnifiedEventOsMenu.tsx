@@ -1,9 +1,20 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, X, ArrowRight, Layers, Sliders, Radio, PhoneCall, Shield } from 'lucide-react';
+import { ChevronDown, X, ArrowRight, Layers, Sliders, Radio, PhoneCall, Shield, SlidersHorizontal } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const EVENT_OS_MODULES = [
+  {
+    id: 'theater',
+    isDirectRoute: true,
+    route: '/theater',
+    number: '00',
+    name: 'Timeline Theater Studio',
+    tagline: 'Montage spatialisé, régie temporelle, calendrier & archives',
+    icon: SlidersHorizontal,
+    badge: 'Nouveau Studio',
+    color: '#000000',
+  },
   {
     id: 'module-orchestration',
     number: '01',
@@ -37,11 +48,15 @@ export default function UnifiedEventOsMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleOpenModule = (moduleId: string) => {
+  const handleOpenModule = (mod: typeof EVENT_OS_MODULES[number]) => {
     setIsOpen(false);
+    if ('isDirectRoute' in mod && mod.isDirectRoute) {
+      navigate(mod.route);
+      return;
+    }
     navigate('/features');
     setTimeout(() => {
-      const el = document.getElementById(moduleId);
+      const el = document.getElementById(mod.id);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -96,15 +111,15 @@ export default function UnifiedEventOsMenu() {
                 </button>
               </div>
 
-              {/* Grille des 3 modules présentés en cartes blanches épurées */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Grille des 4 modules présentés en cartes blanches épurées */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 {EVENT_OS_MODULES.map((mod) => {
                   const Icon = mod.icon;
 
                   return (
                     <div
                       key={mod.id}
-                      onClick={() => handleOpenModule(mod.id)}
+                      onClick={() => handleOpenModule(mod)}
                       className="cursor-pointer group relative rounded-[22px] bg-[#FAFAFC] border border-black/8 p-4 text-left transition-all hover:bg-white hover:border-black/20 hover:shadow-lg hover:scale-[1.01]"
                     >
                       <div className="flex items-center justify-between pb-3">
