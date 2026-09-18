@@ -324,17 +324,17 @@ export default function Theater() {
 
             {/* ÉCRAN DOCUMENT SCELLÉ */}
             {activeMediaTab === 'doc' && (
-              <div className="h-full w-full bg-[#111218] p-8 sm:p-14 flex items-center justify-center text-white">
-                <div className="max-w-xl space-y-4 text-center">
+              <div className="h-full w-full bg-[#111218] p-8 sm:p-14 flex items-center justify-center text-white pb-24">
+                <div className="max-w-xl space-y-3 text-center">
                   <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3.5 py-1 text-[11px] font-mono font-bold uppercase">
                     <CheckCircle2 size={13} />
                     <span>Document Scellé Registre VOWS</span>
                   </div>
-                  <h2 className="text-[28px] sm:text-[34px] font-bold text-white">{selectedItem?.docBadge}</h2>
-                  <p className="text-[14px] text-white/70 leading-relaxed">
+                  <h2 className="text-[26px] sm:text-[32px] font-bold text-white">{selectedItem?.docBadge}</h2>
+                  <p className="text-[13.5px] text-white/70 leading-relaxed">
                     Certifié intègre et non altérable. Version opposable pour l'ensemble des missionnaires et intervenants du Jour J.
                   </p>
-                  <div className="pt-3">
+                  <div className="pt-2">
                     <button
                       type="button"
                       className="px-5 py-2.5 rounded-full bg-white text-black text-[12px] font-bold hover:bg-neutral-200 transition shadow-lg"
@@ -348,12 +348,12 @@ export default function Theater() {
 
             {/* ÉCRAN AUDIO DIRECT */}
             {activeMediaTab === 'audio' && (
-              <div className="h-full w-full bg-[#090A0F] p-8 sm:p-14 flex items-center justify-center text-white">
-                <div className="max-w-md text-center space-y-5">
+              <div className="h-full w-full bg-[#090A0F] p-8 sm:p-14 flex items-center justify-center text-white pb-24">
+                <div className="max-w-md text-center space-y-4">
                   <div className="text-[11px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
                     FLUX MASTER LIVE 320 KBPS
                   </div>
-                  <h2 className="text-[26px] sm:text-[32px] font-bold">Bande sonore calibrée</h2>
+                  <h2 className="text-[24px] sm:text-[30px] font-bold">Bande sonore calibrée</h2>
                   <p className="text-[13px] text-white/60">
                     Cadence synchronisée : {selectedItem?.targetBpm || 105} BPM pour ce moment.
                   </p>
@@ -361,9 +361,9 @@ export default function Theater() {
                     <button
                       type="button"
                       onClick={() => togglePlayAudio(selectedItem?.audioPreviewUrl, selectedItem?.id)}
-                      className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-black transition hover:scale-105 shadow-2xl"
+                      className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black transition hover:scale-105 shadow-2xl"
                     >
-                      {audioPlaying === selectedItem?.id ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+                      {audioPlaying === selectedItem?.id ? <Pause size={22} /> : <Play size={22} className="ml-0.5" />}
                     </button>
                   </div>
                 </div>
