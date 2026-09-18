@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart } from 'lucide-react';
+import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart, Sparkles, Radio } from 'lucide-react';
 import { WEDDING_STYLES, PHASES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
 import { TiltCard } from '../components/vision/VisionImage';
 import HeroCycle from '../components/HeroCycle';
@@ -15,9 +15,6 @@ import HomeTriplePhoneShowcase from '../components/HomeTriplePhoneShowcase';
 import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
 import ImmersiveThemes from '../components/ImmersiveThemes';
 import CommunityFeedHub from '../components/CommunityFeedHub';
-import PredictiveOrchestrationStudio from '../components/PredictiveOrchestrationStudio';
-import TalkieWalkieStudio from '../components/TalkieWalkieStudio';
-import VowsLiveRadioStudio from '../components/VowsLiveRadioStudio';
 import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
 import ErrorBoundary from '../components/ErrorBoundary';
 
@@ -80,8 +77,16 @@ export default function Landing() {
             <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
           </Link>
 
-          {/* Menu unique univers & métiers positionné à droite */}
-          <div className="flex items-center">
+          {/* Accès discret aux modules techniques Event OS & menu univers */}
+          <div className="flex items-center gap-3">
+            <Link
+              to="/features"
+              className="hidden sm:flex items-center gap-1.5 text-[12px] font-mono font-medium text-[#0B0C12]/60 hover:text-black transition"
+            >
+              <span>Event OS</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            </Link>
+
             <UnifiedUniverseMenu
               selectedStyleId={selectedStyle?.id || null}
               onSelectStyle={handleSelectStyle}
@@ -129,8 +134,8 @@ export default function Landing() {
         </div>
       </HeroCycle>
 
-      {/* EXPÉRIENCE SUR SMARTPHONE :
-          - Sur l'accueil général : Le triptyque aéré des 3 iPhones (Invités / Mariés / Missionnaires)
+      {/* EXPÉRIENCE SUR SMARTPHONE HAUT DE GAMME :
+          - Sur l'accueil général : Le triptyque aéré des 3 iPhones sobres & éditoriaux
           - Sur une page Thème précis : L'iPhone interactif permettant de faire défiler les vues (Invité, Marié, chaque missionnaire)
       */}
       <ErrorBoundary>
@@ -144,30 +149,29 @@ export default function Landing() {
         )}
       </ErrorBoundary>
 
-      {/* TRIPTYQUE EVENT OS :
-          1. Moteur d'Orchestration Prédictive Temporelle (Résolution en cascade des retards)
-          2. Talkie-Walkie WebRTC PTT par canal de métier
-          3. VOWS ON AIR : La Station Radio Live du Jour J en Streaming HD
-      */}
-      <section className="px-4 py-12 sm:px-8 bg-[#07070B] space-y-10">
-        <div className="mx-auto max-w-6xl space-y-10">
-          <div id="orchestration-engine">
-            <ErrorBoundary>
-              <PredictiveOrchestrationStudio />
-            </ErrorBoundary>
+      {/* BANDE DISCRÈTE D'INTRODUCTION AUX TECHNOLOGIES EVENT OS (Fond clair, classe & épuré) */}
+      <section className="bg-white py-12 px-5 sm:px-8 border-b border-black/5">
+        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="space-y-1 text-center sm:text-left">
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-black/40">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span>Système d'Exploitation Invisible</span>
+            </div>
+            <h3 className="vp-title text-[20px] sm:text-[22px] text-[#0B0C12]">
+              L'architecture Event OS : Orchestration, Talkie-Walkie &amp; Radio Live
+            </h3>
+            <p className="text-[13.5px] text-[#0B0C12]/60">
+              Résolution en cascade des aléas, coordination audio chiffrée et streaming continu.
+            </p>
           </div>
 
-          <div id="talkie-studio">
-            <ErrorBoundary>
-              <TalkieWalkieStudio />
-            </ErrorBoundary>
-          </div>
-
-          <div id="radio-studio">
-            <ErrorBoundary>
-              <VowsLiveRadioStudio />
-            </ErrorBoundary>
-          </div>
+          <Link
+            to="/features"
+            className="shrink-0 flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-[12.5px] font-semibold text-[#0B0C12] hover:bg-black hover:text-white transition shadow-sm"
+          >
+            <span>Découvrir la suite Event OS</span>
+            <ArrowRight size={13} />
+          </Link>
         </div>
       </section>
 
@@ -343,7 +347,7 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* TOOLBAR FLOTTANTE VISIONOS AU BAS DE L'ÉCRAN (Stories, Radio, Talkie, Event OS) */}
+      {/* TOOLBAR TACTILE DISCRÈTE (Stories Live & Event OS) */}
       <UniversalMiniSiteToolbar />
 
       <footer className="px-5 pb-10">
@@ -353,7 +357,7 @@ export default function Landing() {
           </div>
           <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
           <div className="flex items-center gap-4">
-            <a href="#apercus" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Aperçus</a>
+            <Link to="/features" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Event OS</Link>
             <button
               type="button"
               onClick={scrollToHero}

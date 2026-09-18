@@ -1,195 +1,271 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Heart, Briefcase, Sparkles, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
+import { getThemeConfig } from '../lib/themeConfigs';
+import { formatDateLong, daysUntil } from '../lib/format';
 import VisionImage from './vision/VisionImage';
 
 const fadeUp = {
-  initial: { opacity: 0, y: 26 },
+  initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: '-60px' },
 };
 
-export default function HomeTriplePhoneShowcase({ onExplore }: { onExplore?: () => void }) {
-  // Sélection de 3 univers contrastés pour illustrer la déclinaison infinie
-  const demoStyle1 = WEDDING_STYLES.find((s) => s.id === 'desert') || WEDDING_STYLES[4]; // Desert Motel
-  const demoStyle2 = WEDDING_STYLES.find((s) => s.id === 'club') || WEDDING_STYLES[3]; // Club Amour
-  const demoStyle3 = WEDDING_STYLES.find((s) => s.id === 'brutal') || WEDDING_STYLES[2]; // Béton Brut
+/**
+ * Rendu épuré, haute couture & monochrome d'un mini-site à l'intérieur du téléphone.
+ * Respect strict du design system blanc, noir profond et typographies éditoriales,
+ * avec photo hero correspondant fidèlement à l'univers.
+ */
+function ElegantMiniSiteScreen({
+  style,
+  roleLabel,
+  viewType,
+}: {
+  style: any;
+  roleLabel: string;
+  viewType: 'guest' | 'couple' | 'vendor';
+}) {
+  const config = getThemeConfig(style.id);
 
   return (
-    <section className="relative overflow-hidden bg-[#07080D] px-4 py-20 sm:px-8 sm:py-32 text-white">
-      {/* Halo de fond subtil */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[500px] w-[900px] rounded-full bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-indigo-500/10 blur-[150px]" />
+    <div className="h-full w-full bg-white text-[#111116] flex flex-col justify-between overflow-hidden text-left">
+      {/* Hero photo cinématique plein écran correspondant au thème */}
+      <div className="relative h-[48%] w-full overflow-hidden shrink-0">
+        <VisionImage
+          src={style.image}
+          alt={style.name}
+          className="h-full w-full object-cover"
+        />
+        {/* Dégradé monochrome subtil */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
+        {/* Badge discret blanc pur en haut à gauche */}
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
+          <span
+            className="h-2 w-2 rounded-full shadow-sm"
+            style={{ background: style.accent }}
+          />
+          <span className="rounded-full bg-white/95 px-2 py-0.5 text-[8.5px] font-mono font-bold uppercase tracking-wider text-[#111116] shadow-sm">
+            {roleLabel}
+          </span>
+        </div>
+
+        {/* Titre & Couple */}
+        <div className="absolute bottom-3 left-3.5 right-3.5 text-white">
+          <div className="text-[8px] font-mono uppercase tracking-[0.2em] text-white/70">
+            {style.name}
+          </div>
+          <div className="vp-title text-[20px] sm:text-[22px] leading-none mt-1">
+            Sarah &amp; Gabriel
+          </div>
+          <div className="text-[9.5px] font-mono text-white/80 mt-1 flex items-center justify-between">
+            <span>{formatDateLong('2027-06-12')}</span>
+            <span className="font-semibold text-white/90">J-267</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Corps intérieur sobre et aéré */}
+      <div className="flex-1 p-3.5 space-y-2.5 overflow-hidden flex flex-col justify-center bg-[#FAFAFC]">
+        {viewType === 'guest' && (
+          <>
+            <div className="rounded-[12px] bg-white p-2.5 border border-black/5 shadow-sm space-y-1">
+              <div className="text-[8.5px] font-mono uppercase tracking-wider text-black/40">Programme Jour J</div>
+              <div className="text-[10px] font-semibold text-black flex items-center justify-between">
+                <span>16h30 · Cérémonie &amp; Vœux</span>
+                <span className="font-mono text-[9px] text-black/50">Lieu d'exception</span>
+              </div>
+              <div className="text-[10px] font-semibold text-black flex items-center justify-between">
+                <span>18h30 · Cocktail &amp; Toasts</span>
+                <span className="font-mono text-[9px] text-black/50">Coucher de soleil</span>
+              </div>
+            </div>
+
+            <div className="rounded-[12px] bg-[#111116] text-white p-2 text-center text-[9.5px] font-bold shadow-sm">
+              Confirmer ma présence (RSVP)
+            </div>
+          </>
+        )}
+
+        {viewType === 'couple' && (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-[12px] bg-white p-2 border border-black/5 shadow-sm text-center">
+                <div className="text-[14px] font-bold text-black">84 / 92</div>
+                <div className="text-[8px] font-mono uppercase text-black/40">RSVP reçus</div>
+              </div>
+              <div className="rounded-[12px] bg-white p-2 border border-black/5 shadow-sm text-center">
+                <div className="text-[14px] font-bold text-black">100%</div>
+                <div className="text-[8px] font-mono uppercase text-black/40">Équipe prête</div>
+              </div>
+            </div>
+
+            <div className="rounded-[12px] bg-white p-2 border border-black/5 shadow-sm">
+              <div className="text-[8px] font-mono uppercase text-black/40">Alerte Timing</div>
+              <div className="text-[9.5px] font-bold text-black mt-0.5 truncate">
+                Photographe argentique en place
+              </div>
+            </div>
+          </>
+        )}
+
+        {viewType === 'vendor' && (
+          <>
+            <div className="rounded-[12px] bg-white p-2.5 border border-black/5 shadow-sm space-y-1">
+              <div className="text-[8.5px] font-mono uppercase tracking-wider text-black/40">Fiche Mission</div>
+              <div className="text-[10px] font-bold text-black truncate">
+                {style.humanMissions[0]?.role || 'Missionnaire Dédié'}
+              </div>
+              <div className="text-[9px] text-black/60 line-clamp-2 leading-tight">
+                {style.vendorToolkit.description}
+              </div>
+            </div>
+
+            <div className="rounded-[12px] bg-white p-2 border border-black/5 shadow-sm flex items-center justify-between">
+              <span className="text-[8.5px] font-mono text-black/50">Conducteur technique</span>
+              <span className="text-[9px] font-bold text-black">Prêt pour régie</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Signature minimale en bas */}
+      <div className="p-2 text-center text-[8px] font-mono tracking-widest text-black/30 border-t border-black/5 uppercase">
+        VOWS · ARCHITECTURE ÉVÉNEMENTIELLE
+      </div>
+    </div>
+  );
+}
+
+export default function HomeTriplePhoneShowcase({ onExplore }: { onExplore?: () => void }) {
+  // Sélection de 3 univers singuliers du catalogue
+  const styleGuest = WEDDING_STYLES.find((s) => s.id === 'noir-blanc') || WEDDING_STYLES[0];
+  const styleCouple = WEDDING_STYLES.find((s) => s.id === 'chateau-moderne') || WEDDING_STYLES[1];
+  const styleVendor = WEDDING_STYLES.find((s) => s.id === 'desert') || WEDDING_STYLES[4];
+
+  return (
+    <section className="relative overflow-hidden bg-[#FAFAFC] px-5 py-20 sm:px-8 sm:py-32 border-b border-black/5">
       <div className="relative mx-auto max-w-6xl">
-        {/* En-tête aéré et contemporain */}
+        {/* En-tête aéré, haut de gamme et noble */}
         <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-3xl text-center space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[12px] font-bold uppercase tracking-[0.2em] text-white/60 backdrop-blur-md">
-            Un écosystème · Décliné à l’infini
+          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-1.5 text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-[#0B0C12] shadow-sm">
+            <span>Décliné à l'infini · VisionOS Studio</span>
           </div>
 
-          <h2 className="vp-title text-white" style={{ fontSize: 'clamp(2.4rem, 5.2vw, 4.2rem)', lineHeight: 1.05 }}>
-            Trois regards synchronisés.<br />
-            <span className="text-white/40">Zéro friction le Jour J.</span>
+          <h2 className="vp-title text-[#0B0C12]" style={{ fontSize: 'clamp(2.4rem, 5.2vw, 4.2rem)', lineHeight: 1.05 }}>
+            Ce que chacun ouvre<br />
+            <span className="text-[#0B0C12]/40">sur son propre écran.</span>
           </h2>
 
-          <p className="text-[16px] sm:text-[18px] text-white/70 max-w-2xl mx-auto leading-relaxed">
-            Chaque mariage génère son mini-site complet avec 3 interfaces vivantes :
-            l'émotion pour les invités, le cockpit pour les mariés, et les outils techniques pour chaque corps de métier.
+          <p className="text-[16px] sm:text-[17.5px] text-[#0B0C12]/60 max-w-2xl mx-auto leading-relaxed">
+            Un seul lien. Trois interfaces contemporaines et coordonnées. L’invitation pour vos proches,
+            le cockpit de bord pour les mariés, et la fiche mission pour chaque talent.
           </p>
         </motion.div>
 
-        {/* TRIPTYQUE DES 3 IPHONES AÉRÉS */}
-        <div className="mt-14 sm:mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-6 lg:gap-8 items-center">
+        {/* TRIPTYQUE DES 3 IPHONES LUXUEUX & AÉRÉS (Châssis sombres ciselés, écrans blancs contrastés) */}
+        <div className="mt-14 sm:mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-6 lg:gap-10 items-center">
           
-          {/* IPHONE 1 : CÔTÉ INVITÉS (Exemple Desert Motel) */}
+          {/* IPHONE 1 : CÔTÉ INVITÉS */}
           <motion.div
             {...fadeUp}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex flex-col items-center"
           >
             <div className="mb-4 text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-300 border border-white/10">
-                <Users size={12} />
-                <span>01. Côté Invités</span>
+              <span className="inline-block rounded-full bg-white border border-black/10 px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-black shadow-sm">
+                01. Côté Invités
               </span>
-              <h3 className="text-[18px] font-bold text-white mt-1.5">L’Émotion &amp; le RSVP</h3>
-              <p className="text-[12px] text-white/50">Programme poétique, carte d’accès, cagnotte</p>
+              <h3 className="text-[18px] font-bold text-[#0B0C12] mt-2">L’Émotion &amp; le RSVP</h3>
+              <p className="text-[12px] text-[#0B0C12]/50">Histoire, programme, hébergements</p>
             </div>
 
-            {/* Mockup iPhone */}
-            <div className="relative w-[260px] sm:w-[275px] rounded-[44px] bg-[#14151C] p-[8px] shadow-[0_30px_70px_rgba(0,0,0,0.8)] ring-1 ring-white/15 transition-transform duration-500 hover:scale-[1.02]">
-              <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[36px] bg-[#0E0F16] text-white text-left p-3.5 pt-7">
-                {/* Dynamic Island */}
-                <div className="absolute left-1/2 top-2 h-[18px] w-[75px] -translate-x-1/2 rounded-full bg-black" />
+            {/* Châssis iPhone studio noir pur */}
+            <div className="relative w-[265px] sm:w-[285px] rounded-[48px] bg-[#0E0F14] p-[9px] shadow-[0_35px_80px_rgba(0,0,0,0.18)] ring-1 ring-black/10 transition-transform duration-500 hover:scale-[1.02]">
+              <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[40px] bg-white">
+                {/* Dynamic Island Apple */}
+                <div className="absolute left-1/2 top-2.5 z-20 h-[19px] w-[80px] -translate-x-1/2 rounded-full bg-black" />
+                
+                <ElegantMiniSiteScreen
+                  style={styleGuest}
+                  roleLabel="Invité · Célébration"
+                  viewType="guest"
+                />
 
-                <div className="relative aspect-[16/11] rounded-[18px] overflow-hidden mb-3">
-                  <img src={demoStyle1.image} alt="Desert" className="h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                  <div className="absolute bottom-2 left-2 right-2 text-white">
-                    <div className="text-[7.5px] uppercase tracking-wider text-amber-300 font-bold">Desert Motel</div>
-                    <div className="text-[14px] font-bold">Léa &amp; Maxime</div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-[10px]">
-                  <div className="rounded-[12px] bg-white/5 p-2 border border-white/10">
-                    <div className="text-white/50 text-[8px] uppercase tracking-wider">Programme Jour J</div>
-                    <div className="mt-1 font-semibold text-white">17h30 · Vœux dans la piscine vide</div>
-                    <div className="text-white/60 text-[9px]">20h00 · Tacos &amp; Bières au néon</div>
-                  </div>
-
-                  <div className="rounded-[12px] bg-amber-400 p-2 text-center text-black font-bold">
-                    Confirmer ma présence (RSVP)
-                  </div>
-
-                  <div className="rounded-[12px] bg-white/5 p-2 border border-white/10 text-white/70 text-[9px]">
-                    📍 Joshua Tree, Motel 70s · Piscine privatisée
-                  </div>
+                {/* Home bar Apple */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-1.5 z-20 flex justify-center">
+                  <span className="h-1 w-24 rounded-full bg-black/20" />
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* IPHONE 2 : CÔTÉ MARIÉS (Cockpit de contrôle en direct) */}
+          {/* IPHONE 2 : CÔTÉ MARIÉS */}
           <motion.div
             {...fadeUp}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex flex-col items-center"
           >
             <div className="mb-4 text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-rose-300 border border-rose-500/30">
-                <Heart size={12} />
-                <span>02. Côté Mariés</span>
+              <span className="inline-block rounded-full bg-black px-3.5 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-white shadow-md">
+                02. Côté Mariés
               </span>
-              <h3 className="text-[18px] font-bold text-white mt-1.5">Le Cockpit en Direct</h3>
-              <p className="text-[12px] text-white/50">Flux temps réel, alertes régie, présence</p>
+              <h3 className="text-[18px] font-bold text-[#0B0C12] mt-2">Le Cockpit en Direct</h3>
+              <p className="text-[12px] text-[#0B0C12]/50">Flux temps réel &amp; suivi des talents</p>
             </div>
 
-            {/* Mockup iPhone central légèrement mis en avant */}
-            <div className="relative w-[275px] sm:w-[290px] rounded-[46px] bg-[#181922] p-[8.5px] shadow-[0_35px_80px_rgba(244,63,94,0.2)] ring-1 ring-white/20 transition-transform duration-500 hover:scale-[1.03]">
-              <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[38px] bg-[#0C0D14] text-white text-left p-4 pt-8">
-                {/* Dynamic Island */}
-                <div className="absolute left-1/2 top-2 h-[20px] w-[82px] -translate-x-1/2 rounded-full bg-black flex items-center justify-center">
-                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+            {/* Châssis iPhone central */}
+            <div className="relative w-[275px] sm:w-[295px] rounded-[50px] bg-[#0A0B10] p-[9.5px] shadow-[0_45px_100px_rgba(0,0,0,0.22)] ring-1 ring-black/15 transition-transform duration-500 hover:scale-[1.03]">
+              <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[41px] bg-white">
+                {/* Dynamic Island Apple avec micro point de repère */}
+                <div className="absolute left-1/2 top-2.5 z-20 h-[20px] w-[84px] -translate-x-1/2 rounded-full bg-black flex items-center justify-between px-2.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
                 </div>
 
-                <div className="border-b border-white/10 pb-2 mb-3">
-                  <div className="text-[9px] uppercase tracking-wider text-rose-400 font-bold">Cockpit Jour J</div>
-                  <div className="text-[15px] font-bold text-white">Camille &amp; Antoine</div>
-                </div>
+                <ElegantMiniSiteScreen
+                  style={styleCouple}
+                  roleLabel="Cockpit · Mariés"
+                  viewType="couple"
+                />
 
-                <div className="grid grid-cols-2 gap-1.5 mb-2.5">
-                  <div className="rounded-[10px] bg-white/5 p-2 text-center border border-white/5">
-                    <div className="text-[14px] font-bold text-white">96 / 100</div>
-                    <div className="text-[7.5px] text-white/50 uppercase">Présents</div>
-                  </div>
-                  <div className="rounded-[10px] bg-emerald-500/10 p-2 text-center border border-emerald-500/20">
-                    <div className="text-[14px] font-bold text-emerald-400">100%</div>
-                    <div className="text-[7.5px] text-emerald-300 uppercase">Prestataires</div>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 text-[9.5px]">
-                  <div className="rounded-[10px] bg-white/5 p-2 border border-white/10">
-                    <div className="text-white/40 text-[7.5px] uppercase">Alerte minute</div>
-                    <div className="font-medium text-white">DJ Sound System prêt (02h17)</div>
-                  </div>
-                  <div className="rounded-[10px] bg-white/5 p-2 border border-white/10">
-                    <div className="text-white/40 text-[7.5px] uppercase">Régie Bar &amp; Nuit</div>
-                    <div className="font-medium text-white">Barista nocturne opérationnel</div>
-                  </div>
-                </div>
-
-                <div className="mt-3 rounded-full bg-white/10 py-1.5 text-center text-[9px] font-bold text-white">
-                  Contacter le régisseur
+                {/* Home bar Apple */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-1.5 z-20 flex justify-center">
+                  <span className="h-1 w-24 rounded-full bg-black/20" />
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* IPHONE 3 : CÔTÉ MÉTIERS & MISSIONNAIRES (Fiche technique & Toolkit) */}
+          {/* IPHONE 3 : CÔTÉ MÉTIERS & TALENTS */}
           <motion.div
             {...fadeUp}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col items-center"
           >
             <div className="mb-4 text-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-indigo-300 border border-indigo-500/30">
-                <Briefcase size={12} />
-                <span>03. Côté Métiers &amp; Talents</span>
+              <span className="inline-block rounded-full bg-white border border-black/10 px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-black shadow-sm">
+                03. Côté Métiers
               </span>
-              <h3 className="text-[18px] font-bold text-white mt-1.5">La Fiche Mission Dédiée</h3>
-              <p className="text-[12px] text-white/50">Implantation, horaires, outils spécialisés</p>
+              <h3 className="text-[18px] font-bold text-[#0B0C12] mt-2">La Fiche Technique</h3>
+              <p className="text-[12px] text-[#0B0C12]/50">Régie, conducteurs &amp; logistique</p>
             </div>
 
-            {/* Mockup iPhone */}
-            <div className="relative w-[260px] sm:w-[275px] rounded-[44px] bg-[#14151C] p-[8px] shadow-[0_30px_70px_rgba(0,0,0,0.8)] ring-1 ring-white/15 transition-transform duration-500 hover:scale-[1.02]">
-              <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[36px] bg-[#0E0F16] text-white text-left p-3.5 pt-7">
-                {/* Dynamic Island */}
-                <div className="absolute left-1/2 top-2 h-[18px] w-[75px] -translate-x-1/2 rounded-full bg-black" />
+            {/* Châssis iPhone studio noir pur */}
+            <div className="relative w-[265px] sm:w-[285px] rounded-[48px] bg-[#0E0F14] p-[9px] shadow-[0_35px_80px_rgba(0,0,0,0.18)] ring-1 ring-black/10 transition-transform duration-500 hover:scale-[1.02]">
+              <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[40px] bg-white">
+                {/* Dynamic Island Apple */}
+                <div className="absolute left-1/2 top-2.5 z-20 h-[19px] w-[80px] -translate-x-1/2 rounded-full bg-black" />
 
-                <div className="rounded-[14px] bg-indigo-950/40 border border-indigo-500/30 p-2.5 mb-2.5">
-                  <div className="text-[8px] uppercase tracking-wider text-indigo-400 font-bold">Mission Spécialiste</div>
-                  <div className="text-[13px] font-bold text-white">Light Designer Architectural</div>
-                  <div className="text-[8.5px] text-white/60 mt-0.5">Béton Brut · Bunker 16h30</div>
-                </div>
+                <ElegantMiniSiteScreen
+                  style={styleVendor}
+                  roleLabel="Fiche Mission · Régie"
+                  viewType="vendor"
+                />
 
-                <div className="space-y-2 text-[9.5px]">
-                  <div className="rounded-[10px] bg-white/5 p-2 border border-white/10">
-                    <div className="text-white/40 text-[7.5px] uppercase">Règle Scénographique</div>
-                    <div className="font-medium text-amber-300">« Faisceaux rasants sodium sans pivoine »</div>
-                  </div>
-
-                  <div className="rounded-[10px] bg-white/5 p-2 border border-white/10">
-                    <div className="text-white/40 text-[7.5px] uppercase">Toolkit Synchronisé</div>
-                    <div className="font-semibold text-white">Console Régie &amp; Chantier</div>
-                    <div className="text-white/60 text-[8.5px]">Plan électrique &amp; décibels</div>
-                  </div>
-
-                  <div className="rounded-full bg-white py-1.5 text-center text-[9px] font-bold text-black">
-                    Valider le top départ
-                  </div>
+                {/* Home bar Apple */}
+                <div className="pointer-events-none absolute inset-x-0 bottom-1.5 z-20 flex justify-center">
+                  <span className="h-1 w-24 rounded-full bg-black/20" />
                 </div>
               </div>
             </div>
@@ -197,21 +273,15 @@ export default function HomeTriplePhoneShowcase({ onExplore }: { onExplore?: () 
 
         </div>
 
-        {/* LIGNE DE CONCLUSION & CTA RECTIFIÉ */}
+        {/* LIGNE DE CONCLUSION MINIMALISTE SANS BLOCS SURCHARGÉS */}
         <motion.div {...fadeUp} transition={{ duration: 0.6 }} className="mt-14 text-center">
-          <div className="inline-flex flex-col sm:flex-row items-center gap-4">
-            <button
-              type="button"
-              onClick={onExplore}
-              className="vp-btn vp-press !bg-white !text-black hover:!bg-neutral-200 !px-8 !py-3.5 !text-[14px] rounded-full shadow-2xl flex items-center gap-2"
-            >
-              <span>Générer votre mariage ou explorer une mission</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
-          <div className="mt-3 text-[12px] text-white/40">
-            Déclinable à l'infini pour tous les lieux insolites, châteaux, bunkers, déserts ou festivals.
-          </div>
+          <button
+            type="button"
+            onClick={onExplore}
+            className="vp-btn vp-press !bg-black !text-white hover:!bg-neutral-800 !px-8 !py-3.5 !text-[13.5px] rounded-full shadow-lg"
+          >
+            Explorer tous les univers et fiches métiers
+          </button>
         </motion.div>
       </div>
     </section>
