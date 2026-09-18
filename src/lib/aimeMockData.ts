@@ -36,7 +36,7 @@ export const INITIAL_USER_MATTMEZ: UniversalIdentity = {
   id: 'user-mattmez',
   canonicalName: 'Matt Mez',
   email: 'contact@mattmez-sax.com',
-  avatar: '/images/mariage-black-tie-minimaliste.jpg',
+  avatar: '/images/noir-blanc.jpg',
   isProfessional: true,
   phonePersonal: '+33 6 88 99 00 11',
   bio: 'Saxophoniste Live international. Sets Deep House & Acoustique pour réceptions d’exception.',
@@ -51,7 +51,7 @@ export const INITIAL_USER_MATTMEZ: UniversalIdentity = {
     riderAcoustique: 'Système micro sans fil Shure HF (portée 80m). Retour oreillettes IEM stéréo.',
     tarifBase: '1 800 € net',
     disponibilites: ['2026-10-18 (Confirmé)', '2026-10-24 (Libre)'],
-    portfolioMedias: ['/images/mariage-black-tie-minimaliste.jpg'],
+    portfolioMedias: ['/images/noir-blanc.jpg'],
   },
   settings: {
     notifications: true,
@@ -66,7 +66,7 @@ export const INITIAL_USER_GABRIEL: UniversalIdentity = {
   id: 'user-gabriel',
   canonicalName: 'Gabriel Vaneck',
   email: 'gabriel.vaneck@example.com',
-  avatar: '/images/mariage-chateau-contemporain.jpg',
+  avatar: '/images/chateau.jpg',
   isProfessional: false,
   phonePersonal: '+33 6 22 33 44 55',
   bio: 'Designer mobilier & co-fondateur studio.',
@@ -85,7 +85,7 @@ export const INITIAL_USER_LUCAS_TEMOIN: UniversalIdentity = {
   id: 'user-lucas',
   canonicalName: 'Lucas Bernard (Témoin)',
   email: 'lucas.b@example.com',
-  avatar: '/images/mariage-white-editorial.jpg',
+  avatar: '/images/noir-blanc.jpg',
   isProfessional: false,
   phonePersonal: '+33 6 55 44 33 22',
   bio: 'Ami d’enfance de Sarah. Responsable du canal secret des témoins.',
@@ -187,7 +187,7 @@ export const INITIAL_MARIAGE_PROJECT: WorldProject = {
       accessLevel: 'PUBLIC',
       secretToMaries: false,
       status: 'SYNCHRONISE',
-      thumbnail: '/images/mariage-chapelle-brutaliste.jpg',
+      thumbnail: '/images/brutal.jpg',
     },
     {
       id: 'evt-2',
@@ -200,7 +200,7 @@ export const INITIAL_MARIAGE_PROJECT: WorldProject = {
       accessLevel: 'PUBLIC',
       secretToMaries: false,
       status: 'SYNCHRONISE',
-      thumbnail: '/images/mariage-black-tie-minimaliste.jpg',
+      thumbnail: '/images/noir-blanc.jpg',
     },
     {
       id: 'evt-3',
@@ -224,7 +224,7 @@ export const INITIAL_MARIAGE_PROJECT: WorldProject = {
       accessLevel: 'EQUIPE',
       secretToMaries: true, // MASQUÉ AUX MARIÉS DANS LE SYSTÈME IMMUNITAIRE
       status: 'SYNCHRONISE',
-      thumbnail: '/images/mariage-white-editorial.jpg',
+      thumbnail: '/images/noir-blanc.jpg',
     },
   ],
 };

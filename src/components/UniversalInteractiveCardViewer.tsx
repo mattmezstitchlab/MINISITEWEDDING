@@ -50,8 +50,8 @@ export default function UniversalInteractiveCardViewer({
   const [currentGalleryIdx, setCurrentGalleryIdx] = useState(0);
 
   const galleryImages = [
-    item.mediaUrl || '/images/mariage-black-tie-minimaliste.jpg',
-    '/images/mariage-chateau-contemporain.jpg',
+    item.mediaUrl || '/images/noir-blanc.jpg',
+    '/images/chateau.jpg',
     '/images/table-noir.jpg',
   ];
 
@@ -204,7 +204,7 @@ export default function UniversalInteractiveCardViewer({
         {/* Affichage du média selon le mode */}
         {activeMediaTab === 'photo' && (
           <img
-            src={item.mediaUrl || '/images/mariage-black-tie-minimaliste.jpg'}
+            src={item.mediaUrl || '/images/noir-blanc.jpg'}
             alt={item.title}
             className="h-full w-full object-cover"
           />
@@ -213,7 +213,7 @@ export default function UniversalInteractiveCardViewer({
         {activeMediaTab === 'video' && (
           <div className="relative h-full w-full flex items-center justify-center bg-neutral-900">
             <img
-              src={item.mediaUrl || '/images/mariage-black-tie-minimaliste.jpg'}
+              src={item.mediaUrl || '/images/noir-blanc.jpg'}
               alt={item.title}
               className="h-full w-full object-cover opacity-60"
             />

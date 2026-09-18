@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -12,6 +12,8 @@ import Editor from './pages/Editor';
 import PublicSite from './pages/PublicSite';
 import Features from './pages/Features';
 import Theater from './pages/Theater';
+
+const Aime = lazy(() => import('./pages/Aime'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -35,6 +37,8 @@ export default function App() {
             <Route path="/timeline" element={<Theater />} />
             <Route path="/modules" element={<Features />} />
             <Route path="/features" element={<Features />} />
+            <Route path="/aime" element={<Aime />} />
+            <Route path="/taxonomie" element={<Aime />} />
             <Route path="/creer" element={<Onboarding />} />
             <Route path="/generer" element={<Generating />} />
             <Route path="/generation" element={<Generating />} />

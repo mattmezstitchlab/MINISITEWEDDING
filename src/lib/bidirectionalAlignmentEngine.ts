@@ -108,7 +108,7 @@ export function analyzeBidirectionalPrompt(promptText: string): BidirectionalAli
 
   let detectedRole: UniversalRoleType = 'couple';
   let themeStyleId = 'noir-blanc';
-  let wallpaperUrl = '/images/mariage-black-tie-minimaliste.jpg';
+  let wallpaperUrl = '/images/noir-blanc.jpg';
   let momentFocusId = 'jj-3'; // 17:30 Cocktail par défaut
 
   // 1. Détection du rôle
@@ -135,7 +135,7 @@ export function analyzeBidirectionalPrompt(promptText: string): BidirectionalAli
   // 2. Détection de l'ambiance visuelle (Wallpaper haute couture)
   if (p.includes('chateau') || p.includes('château') || p.includes('domaine') || p.includes('parc')) {
     themeStyleId = 'chateau-moderne';
-    wallpaperUrl = '/images/mariage-chateau-contemporain.jpg';
+    wallpaperUrl = '/images/chateau.jpg';
   } else if (p.includes('mer') || p.includes('plage') || p.includes('côte') || p.includes('sud') || p.includes('phare')) {
     themeStyleId = 'phare-atlantique';
     wallpaperUrl = '/images/phare-vows.jpg';
@@ -144,7 +144,7 @@ export function analyzeBidirectionalPrompt(promptText: string): BidirectionalAli
     wallpaperUrl = '/images/brutal-bunker-vows.jpg';
   } else if (p.includes('fête') || p.includes('club') || p.includes('nuit') || p.includes('techno') || p.includes('dancefloor')) {
     themeStyleId = 'club';
-    wallpaperUrl = '/images/mariage-techno-berlinois.jpg';
+    wallpaperUrl = '/images/club-amour.jpg';
   } else if (p.includes('desert') || p.includes('motel') || p.includes('piscine') || p.includes('vintage')) {
     themeStyleId = 'desert';
     wallpaperUrl = '/images/desert-pool-vows.jpg';
