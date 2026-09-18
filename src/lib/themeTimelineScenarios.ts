@@ -1,0 +1,279 @@
+export interface VendorRoleCandidate {
+  role: string;
+  mission: string;
+  status: 'filled' | 'open';
+  compensationHint?: string;
+}
+
+export interface ThemeTimelineScene {
+  time: string;
+  title: string;
+  narrativeScript: string;
+  ambianceDetail: string;
+  image: string;
+  vendorRoles?: VendorRoleCandidate[];
+}
+
+export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
+  // 1. BLACK & WHITE (Éditorial, pur, haute couture)
+  'noir-blanc': [
+    {
+      time: '16h00',
+      title: 'L’Entrée Géométrique & Cérémonie',
+      narrativeScript: 'Silence cathédrale. Sol laqué miroitant sous une verrière pure. Aucune fleur superflue : le couple avance au son d’un violoncelle dépouillé.',
+      ambianceDetail: 'Smoking architectural, robe graphique sans dentelle, noir profond et blanc pur.',
+      image: '/images/noir-blanc-entree.jpg',
+      vendorRoles: [
+        { role: 'Officiant Auteur', mission: 'Lecture minimaliste des vœux, sans protocole convenu', status: 'filled' },
+        { role: 'Photographe Mode B&W', mission: 'Portraits posés au flash parapluie & architecture', status: 'filled' },
+        { role: 'Violoncelliste Solo', mission: 'Prélude épuré Bach revisité en réverbération cathédrale', status: 'open', compensationHint: 'Prestation 2h' },
+      ],
+    },
+    {
+      time: '18h30',
+      title: 'Cocktail & Tirages Argentiques Directs',
+      narrativeScript: 'Pendant le service de champagne blanc de blancs, le photographe réalise le portrait argentique grand format de chaque couple d’invités.',
+      ambianceDetail: 'Tirages séchés sur fil d’acier en direct, coupes en cristal taillé.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Tireur Argentique Live', mission: 'Révélation et séchage des portraits sur fil tendu en direct', status: 'open', compensationHint: 'Atelier mobile 3h' },
+        { role: 'Chef Sommelier Blanc de Blancs', mission: 'Service millésimé exclusif & verrerie cristalline', status: 'filled' },
+      ],
+    },
+    {
+      time: '20h30',
+      title: 'Le Dîner Monochrome & Toasts',
+      narrativeScript: 'Table continue de quarante mètres sans nappe, chandeliers laqués noirs et bougies blanches. Le service s’exécute avec une précision chorégraphiée.',
+      ambianceDetail: 'Vaisselle céramique mate, accords mets-vins de prestige sans coupure.',
+      image: '/images/table-noir.jpg',
+      vendorRoles: [
+        { role: 'Traiteur Haute Gastronomie', mission: '4 temps monochromes, vaisselle mate sans nappe', status: 'filled' },
+        { role: 'Scénographe de Table', mission: 'Alignement au millimètre des 40 chandeliers', status: 'filled' },
+      ],
+    },
+    {
+      time: '23h30',
+      title: 'Première Danse & Fête Zénithale',
+      narrativeScript: 'Un projecteur unique découpe le cercle au centre de la salle obscure. Les mariés ouvrent le bal dans une intimité cinématographique pure.',
+      ambianceDetail: 'Beats profonds, élégance nocturne et liberté absolue.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'DJ Sound Designer Minimal', mission: 'Set house feutrée puis techno mélodique pointue', status: 'filled' },
+        { role: 'Régisseur Faisceau Zénithal', mission: 'Poursuite découpe faisceau 4000K sans bavure', status: 'open', compensationHint: 'Régie nuit 23h-04h' },
+      ],
+    },
+  ],
+
+  // 2. DESERT MOTEL (Vegas rétro, piscine vide turquoise, Joshua Tree)
+  'desert': [
+    {
+      time: '17h30',
+      title: 'Vœux dans la Piscine Vide',
+      narrativeScript: '38°C à Joshua Tree. Un vieux motel abandonné, deux chaises en rotin au fond d’une piscine carrelée turquoise. Un oui réverbéré au cœur du désert.',
+      ambianceDetail: 'Chaleur qui tremble à l’horizon, robe vintage et bottes en cuir.',
+      image: '/images/desert-pool-vows.jpg',
+      vendorRoles: [
+        { role: 'Cinéaste Super 8mm Réel', mission: 'Captation argentique pellicule Kodak 50D & projecteur vintage', status: 'open', compensationHint: 'Reportage journée + numérisation 4K' },
+        { role: 'Guide Elopement Parc Désert', mission: 'Autorisations de tournage et accès piscine privatisée', status: 'filled' },
+        { role: 'Chineur Fauteuils Rotin 70s', mission: 'Mobilier mid-century résistant aux fortes chaleurs', status: 'filled' },
+      ],
+    },
+    {
+      time: '20h00',
+      title: 'Tacos & Bières sous le Néon Ambré',
+      narrativeScript: 'L’enseigne MOTEL s’allume en jaune ambré. Pas de protocole : des glacières remplies de bières fraîches et des tacos croustillants servis sur le capot.',
+      ambianceDetail: 'Coucher de soleil pourpre sur les cactus et son blues rétro crépitant.',
+      image: '/images/desert-tacos-neon.jpg',
+      vendorRoles: [
+        { role: 'Food Truck Tacos Artisanal', mission: 'Al pastor au feu de bois, tortillas fraîches pressées minute', status: 'open', compensationHint: 'Service 60 personnes · Food truck vintage' },
+        { role: 'Mixologue Bar Mezcal', mission: 'Cocktails fumés piment d’Espelette et agrumes sauvages', status: 'filled' },
+      ],
+    },
+    {
+      time: '22h30',
+      title: 'Danse Rétro sous la Voûte Étoilée',
+      narrativeScript: 'Un tourne-disque vintage branché sur batterie nomade, éclairé par les phares de la décapotable. Première danse solitaire sous la Voie Lactée.',
+      ambianceDetail: 'Vent tiède du désert, ciel noir d’encre constellé d’étoiles.',
+      image: '/images/desert-star-dance.jpg',
+      vendorRoles: [
+        { role: 'DJ Vinyle Nomade', mission: 'Platines vintage alimentées sur batterie, sélection funk/soul 70s', status: 'open', compensationHint: 'Set nocturne désert 22h-02h' },
+        { role: 'Loueur Décapotable Vintage', mission: 'Fourniture Ford Mustang ou Cadillac convertible 1968', status: 'filled' },
+      ],
+    },
+  ],
+
+  // 3. BÉTON BRUT (Bunker, chapelle de béton, radical)
+  'brutal': [
+    {
+      time: '16h30',
+      title: 'Le Oui dans le Béton',
+      narrativeScript: 'Pas d’arche de fleurs. Un cercle tracé à la craie sur la dalle d’un bunker industriel. Les pas résonnent contre le béton brut.',
+      ambianceDetail: 'Lumière rasante qui coupe les arêtes du béton, zéro pivoine.',
+      image: '/images/brutal-bunker-vows.jpg',
+      vendorRoles: [
+        { role: 'Light Designer Architectural', mission: 'Faisceaux rasants découpe béton et lasers sodium', status: 'open', compensationHint: 'Scénographie complète lieu brut' },
+        { role: 'Céramiste Mobilier Béton', mission: 'Bancs monolithes coulés sur mesure', status: 'filled' },
+      ],
+    },
+    {
+      time: '19h00',
+      title: 'Bouchées Brutes & Feu Vif',
+      narrativeScript: 'Pas de petits fours sous cloche. Cuisson primitive au chalumeau et feu vif, servie directement sur des plateaux minéraux.',
+      ambianceDetail: 'Textures fumées, verres droits sans pied, bières artisanales locales.',
+      image: '/images/terrasse.jpg',
+      vendorRoles: [
+        { role: 'Chef Brasero / Chalumeau', mission: 'Cuisson live textures fumées et braises sans nappage', status: 'open', compensationHint: 'Animation culinaire live' },
+      ],
+    },
+    {
+      time: '22h00',
+      title: 'Néons Sodium & Stroboscope',
+      narrativeScript: 'Le bunker bascule dans la pénombre. Les lasers découpent la fumée lourde et la fête devient clubbing berlinois sans compromis.',
+      ambianceDetail: 'Basses telluriques, tenues sombres et liberté absolue.',
+      image: '/images/club-amour.jpg',
+      vendorRoles: [
+        { role: 'DJ Clubbing Berlinois', mission: 'Set 130 BPM progressif sur sound system Funktion-One', status: 'open', compensationHint: 'Set clubbing 22h-04h' },
+      ],
+    },
+  ],
+
+  // 4. CLUB AMOUR (Néons roses, rave, stroboscope 02h17)
+  'club': [
+    {
+      time: '23h00',
+      title: 'Ouverture des Portes à Minuit',
+      narrativeScript: 'On se rassemble quand le monde s’endort : fumée, néon magenta et guestlist exclusive à l’entrée.',
+      ambianceDetail: 'Dress code club kid, paillettes, cuir et vestiaire vintage.',
+      image: '/images/club-amour.jpg',
+      vendorRoles: [
+        { role: 'Physionomiste Club', mission: 'Accueil personnalisé au tampon encreur ultraviolet', status: 'open', compensationHint: 'Accueil soirée 23h-01h' },
+      ],
+    },
+    {
+      time: '00h30',
+      title: 'Échange des Vœux sous Stroboscope',
+      narrativeScript: 'Deux minutes de silence total sur le dancefloor. Un baiser sous les flashs roses. Le oui le plus vibrant de la nuit.',
+      ambianceDetail: 'Machine à fumée lourde et acclamations de rave.',
+      image: '/images/club-strobe-kiss.jpg',
+      vendorRoles: [
+        { role: 'Régisseur Machine à Fumée Lourde', mission: 'Nappe de brouillard ras du sol à la seconde exacte', status: 'filled' },
+      ],
+    },
+    {
+      time: '02h17',
+      title: 'Le Pic de Nuit 02h17',
+      narrativeScript: 'L’heure symbolique où ils se sont rencontrés. Le track culte démarre, les confettis métallisés inondent la salle jusqu’au jour.',
+      ambianceDetail: 'Énergie pure, shots signatures et after jusqu’au petit matin.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'DJ Résident Nuit Blanche', mission: 'Transition hymne 02h17 et closing matinal', status: 'filled' },
+      ],
+    },
+  ],
+
+  // 5. CHÂTEAU MODERNE (Pierre blonde, élégance française)
+  'chateau-moderne': [
+    {
+      time: '15h00',
+      title: 'L’Allée des Tilleuls & Cérémonie en Cour d’Honneur',
+      narrativeScript: 'Arrivée sous la pierre blonde du domaine. La clarté du design contemporain habille le classicisme à la française sans lourdeur.',
+      ambianceDetail: 'Voilages blancs légers, parfum d’écorce et dorures feutrées.',
+      image: '/images/chateau-tilleuls.jpg',
+      vendorRoles: [
+        { role: 'Quatuor à Cordes Contemporain', mission: 'Reprises réarrangées pop/classique sous les tilleuls', status: 'open', compensationHint: 'Cérémonie & accueil 2h' },
+        { role: 'Régisseur Domaine Historique', mission: 'Gestion des flux cour pavée et tentes cristal', status: 'filled' },
+      ],
+    },
+    {
+      time: '18h00',
+      title: 'Champagne en Terrasse Haute',
+      narrativeScript: 'Coupes de champagne taillées en cristal sur la cour pavée pendant que les musiciens distillent un jazz feutré au coucher du soleil.',
+      ambianceDetail: 'Ateliers de découpe et gougères tièdes au crépuscule.',
+      image: '/images/chateau-terrasse-champagne.jpg',
+      vendorRoles: [
+        { role: 'Chef Traiteur Étoilé', mission: 'Bouchées haute gastronomie et service au plateau d’argent', status: 'filled' },
+        { role: 'Trio Jazz Feutré', mission: 'Standard bebop et bossa nova au coucher du soleil', status: 'open', compensationHint: 'Cocktail 18h-20h' },
+      ],
+    },
+    {
+      time: '23h15',
+      title: 'La Pièce Montée Spectaculaire & Bal',
+      narrativeScript: 'Les feux de bengale crépitent sur les remparts à la seconde où le refrain musical explose, ouvrant la nuit dans le grand salon.',
+      ambianceDetail: 'Chariot doré éclairé aux torches, champagne sabré et fête jusqu’à l’aube.',
+      image: '/images/chateau-bengale-bal.jpg',
+      vendorRoles: [
+        { role: 'Artificier Pyrotechnique Certifié', mission: 'Cascades de bengale dorées synchronisées sur le refrain DJ', status: 'open', compensationHint: 'Tir pyrotechnique 23h15' },
+        { role: 'Chef Pâtissier Haute Couture', mission: 'Pièce architecturale croquembouche moderne au chocolat fumé', status: 'filled' },
+      ],
+    },
+  ],
+
+  // 8. DÔME ABYSSAL
+  'abyssal': [
+    {
+      time: '17h00',
+      title: 'L’Immersion & Vœux Subaquatiques',
+      narrativeScript: 'Descente silencieuse dans la coupole vitrée à 15 mètres de fond. L’océan s’obscurcit alors que les vœux sont prononcés au milieu des bancs de poissons argentés.',
+      ambianceDetail: 'Lumière bleutée naturelle, réverbération caustique pure et tenues épurées.',
+      image: '/images/submarine-vows.jpg',
+      vendorRoles: [
+        { role: 'Ingénieur Sécurité Subaquatique', mission: 'Coordination descente et pressurisation dôme', status: 'filled' },
+        { role: 'Vidéaste Haute Sensibilité Abyssale', mission: 'Captation lumière naturelle sans projecteur violent', status: 'open', compensationHint: 'Reportage sous-marin spécialisé' },
+      ],
+    },
+    {
+      time: '20h30',
+      title: 'Le Dîner Sous-Marin aux Chandelles d’Algues',
+      narrativeScript: 'Table circulaire face aux grands fonds marins illuminés de douce bioluminescence. Champagne minéral et mets iodés rares.',
+      ambianceDetail: 'Ambiance céleste sous-marine, calme souverain.',
+      image: '/images/table-noir.jpg',
+      vendorRoles: [
+        { role: 'Chef Haute Cuisine Marine', mission: 'Menu 5 temps algues fraîches et ormeaux sauvages', status: 'open', compensationHint: 'Service d’exception 20 couverts' },
+      ],
+    },
+  ],
+
+  // 9. TRAIN DE NUIT IMPÉRIAL
+  'orient-express': [
+    {
+      time: '18h30',
+      title: 'Le Départ en Gare & Vœux en Mouvement',
+      narrativeScript: 'Sifflet du train, la rame d’époque s’élance dans la nuit. Les mariés échangent leurs alliances dans la voiture-salon au rythme régulier des rails.',
+      ambianceDetail: 'Boiseries acajou, reflets de laiton et paysages alpins qui défilent à 100 km/h.',
+      image: '/images/train-vows.jpg',
+      vendorRoles: [
+        { role: 'Affréteur Ligne Ferroviaire Prestige', mission: 'Créneau circulation et privatisation rame complète', status: 'filled' },
+        { role: 'Pianiste Voie Étroite', mission: 'Piano quart de queue dans la voiture-bar en mouvement', status: 'open', compensationHint: 'Prestation nuit complète' },
+      ],
+    },
+    {
+      time: '21h00',
+      title: 'Dîner Étoilé au Rythme du Rail',
+      narrativeScript: 'Argenterie scintillante, verres en cristal qui tintent doucement avec le dévers des virages. Toasts sous les lustres Art Déco.',
+      ambianceDetail: 'Élégance suprême des grands voyages, velours et champagne millésimé.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Chef Gastronome Rame Étoilée', mission: 'Menu gastronomique en cuisine étroite embarquée', status: 'filled' },
+      ],
+    },
+  ],
+
+  // 10. LE PHARE ISOLÉ
+  'phare-atlantique': [
+    {
+      time: '17h45',
+      title: 'Vœux au Sommet de la Lanterne',
+      narrativeScript: 'Cinquante mètres au-dessus de l’océan en furie. Le faisceau lumineux commence sa rotation alors que le soleil rougeoyant s’enfonce dans les vagues.',
+      ambianceDetail: 'Vent du large vivifiant, sel sur les lèvres, amour farouche et sublime solitude.',
+      image: '/images/phare-vows.jpg',
+      vendorRoles: [
+        { role: 'Pilote Canot Tout Temps & Accostage', mission: 'Transfert par mer formée et amarrage rocher', status: 'filled' },
+        { role: 'Photographe Grand Vent & Embruns', mission: 'Captation argentique sous boîtier étanche tropicalisé', status: 'open', compensationHint: 'Reportage insulaire sauvage' },
+      ],
+    },
+  ],
+};
+
+export function getScenesForStyle(styleId: string): ThemeTimelineScene[] {
+  return THEME_TIMELINE_SCENARIOS[styleId] || THEME_TIMELINE_SCENARIOS['noir-blanc'];
+}
