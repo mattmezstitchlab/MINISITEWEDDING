@@ -37,18 +37,18 @@ export default function UniversalMiniSiteToolbar({
       <div className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-[#0A0B10]/95 px-3 py-1.5 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
           
-          {/* 1. PICTO STORIES LIVE VERTICALES TIKTOK */}
+          {/* 1. PICTO STORIES LIVE VERTICALES TIKTOK (Harmonisé sans rond blanc trompeur) */}
           <button
             type="button"
             onClick={() => setIsStoriesOpen(true)}
-            className="group relative flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-md transition hover:bg-neutral-200 active:scale-95"
+            className="group relative flex h-9 w-9 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white transition active:scale-95"
             title="Stories Live"
           >
-            <span className="relative flex h-2 w-2 absolute -top-0.5 -right-0.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-90" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+            <span className="relative flex h-2 w-2 absolute top-1 right-1">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-80" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500" />
             </span>
-            <Flame size={16} className="fill-black" />
+            <Flame size={16} />
           </button>
 
           {/* 2. PICTO CARTE RADAR LIVE */}
