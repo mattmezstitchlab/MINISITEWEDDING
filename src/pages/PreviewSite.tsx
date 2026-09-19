@@ -20,9 +20,11 @@ export default function PreviewSite() {
     () =>
       buildPreviewSite({
         styleId,
-        typography: params.get('typo') ?? undefined,
-        accent: params.get('accent') ? `#${params.get('accent')}` : undefined,
-        buttonStyle: params.get('bouton') ?? undefined,
+        heroPhoto: params.get('photo') ?? undefined,
+        heroTitle: params.get('titre') ?? undefined,
+        heroSubtitle: params.get('sous-titre') ?? undefined,
+        announcement: params.get('annonce') ?? undefined,
+        hiddenSections: params.get('sans') ? params.get('sans')!.split(',').filter(Boolean) : undefined,
       }),
     [styleId, params],
   );

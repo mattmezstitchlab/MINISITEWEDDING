@@ -219,7 +219,7 @@ export default function Landing() {
 
       {/* LE MINI-SITE COMPLET : l'éditeur, ses sections, et ce qu'il contient */}
       <div id="site">
-        <EditorShowcase styleId={activeStyleOrFallback.id} />
+        <EditorShowcase key={activeStyleOrFallback.id} styleId={activeStyleOrFallback.id} />
       </div>
 
       {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}

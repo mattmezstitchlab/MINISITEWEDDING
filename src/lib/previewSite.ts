@@ -18,13 +18,13 @@ import { contentFor } from './universeContent';
 
 export interface PreviewSiteOptions {
   styleId: string;
-  typography?: string;
-  accent?: string;
-  buttonStyle?: string;
-  shape?: string;
-  layout?: string;
+  /** Le visuel du hero — l'un des visuels de la bibliothèque. */
+  heroPhoto?: string;
   heroTitle?: string;
   heroSubtitle?: string;
+  announcement?: string;
+  /** Les sections retirées : elles n'apparaissent pas dans l'aperçu. */
+  hiddenSections?: string[];
 }
 
 const SITE_ID = 0;
@@ -33,6 +33,7 @@ export function buildPreviewSite(options: PreviewSiteOptions): PublicSiteData {
   const theme = styleById(options.styleId);
   const content = contentFor(theme);
   const scenes = getScenesForStyle(theme.id);
+  const cachees = new Set(options.hiddenSections ?? []);
 
   const site: WeddingSite = {
     id: SITE_ID,
@@ -44,26 +45,29 @@ export function buildPreviewSite(options: PreviewSiteOptions): PublicSiteData {
     city: 'Chantilly, Oise',
     style: theme.id,
     phase: 'avant',
-    typography: options.typography ?? 'spatial',
-    accent_color: options.accent ?? theme.accent,
-    button_style: options.buttonStyle ?? 'pill',
-    shape: options.shape ?? 'soft',
-    layout: options.layout ?? 'magazine',
+    // La typographie et la couleur viennent de l'univers : elles ne se règlent
+    // pas à la main, c'est le choix du thème qui les décide.
+    typography: theme.id === 'noir-blanc' || theme.id === 'abyssal' ? 'editorial' : 'spatial',
+    accent_color: theme.accent,
+    // Les formes et la mise en page appartiennent aussi au thème.
+    button_style: 'pill',
+    shape: 'soft',
+    layout: 'magazine',
     animation_level: 'fluide',
-    hero_photo: theme.image,
+    hero_photo: options.heroPhoto ?? theme.image,
     hero_title: options.heroTitle ?? 'Sarah & Gabriel',
     hero_subtitle: options.heroSubtitle ?? content.hero.kicker,
     story_title: content.hero.title,
     story_text: storyText('Sarah', 'Gabriel'),
-    story_photo: theme.image,
-    announcement: content.hero.subtitle,
+    story_photo: options.heroPhoto ?? theme.image,
+    announcement: options.announcement ?? content.hero.subtitle,
     contact_email: 'sarah.et.gabriel@vows.fr',
     contact_phone: '+33 6 12 34 56 78',
     published: false,
   };
 
   const sections = SECTION_DEFAULTS.map((s, i) => ({
-    id: i + 1, site_id: SITE_ID, section_key: s.key, title: s.title, visible: true, position: i,
+    id: i + 1, site_id: SITE_ID, section_key: s.key, title: s.title, visible: !cachees.has(s.key), position: i,
   }));
 
   const programme = scenes.map((scene, i) => ({
@@ -83,8 +87,9 @@ export function buildPreviewSite(options: PreviewSiteOptions): PublicSiteData {
     ...GENERIC_INFO_DEFAULTS,
   ].map((row, i) => ({ id: i + 1, site_id: SITE_ID, position: i, ...row }));
 
+  // La galerie part du visuel choisi, puis des images de l'univers.
   const gallery = [
-    theme.image,
+    options.heroPhoto ?? theme.image,
     '/images/alliances.jpg',
     '/images/champagne.jpg',
     '/images/table-noir.jpg',
@@ -103,12 +108,14 @@ export function buildPreviewSite(options: PreviewSiteOptions): PublicSiteData {
   return { site, sections, programme, infos, gallery, faqs, rsvpEvents, gifts };
 }
 
-/** Le chemin de l'aperçu, avec tout ce qui se règle dans l'éditeur. */
+/** Le chemin de l'aperçu : ce qu'on règle dans l'éditeur se transmet par l'adresse. */
 export function previewPath(options: PreviewSiteOptions): string {
   const params = new URLSearchParams();
   params.set('style', options.styleId);
-  if (options.typography) params.set('typo', options.typography);
-  if (options.accent) params.set('accent', options.accent.replace('#', ''));
-  if (options.buttonStyle) params.set('bouton', options.buttonStyle);
+  if (options.heroPhoto) params.set('photo', options.heroPhoto);
+  if (options.heroTitle) params.set('titre', options.heroTitle);
+  if (options.heroSubtitle) params.set('sous-titre', options.heroSubtitle);
+  if (options.announcement) params.set('annonce', options.announcement);
+  if (options.hiddenSections?.length) params.set('sans', options.hiddenSections.join(','));
   return `/apercu?${params.toString()}`;
 }
