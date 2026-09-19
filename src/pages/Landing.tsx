@@ -7,7 +7,6 @@ import HeroCycle from '../components/HeroCycle';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
-import ThemeManifestoWhite from '../components/ThemeManifestoWhite';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 import HeroAiPrompt from '../components/HeroAiPrompt';
 
@@ -120,7 +119,7 @@ export default function Landing() {
           Sur un univers précis, l'iPhone interactif permet de faire défiler les vues. */}
       <ErrorBoundary>
         {!selectedStyle ? (
-          <HomePhoneShowcase onExplore={scrollToHero} />
+          <HomePhoneShowcase />
         ) : (
           <ThemePhoneShowcase
             currentStyle={selectedStyle}
@@ -176,12 +175,6 @@ export default function Landing() {
           </div>
         </motion.div>
       </ParallaxSection>
-
-      {/* SECTION ÉQUIPE HUMAINE ORCHESTRÉE */}
-      <ThemeManifestoWhite
-        style={selectedStyle}
-        onJoinClick={scrollToHero}
-      />
 
       {/* STUDIO DJ & BANDE-SON CHRONOLOGIQUE */}
       <section className="px-5 py-16 sm:px-8 bg-[#070709]">

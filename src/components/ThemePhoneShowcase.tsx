@@ -1,20 +1,8 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Heart,
-  Users,
-  Briefcase,
-  Clock,
-  MapPin,
-  CheckCircle2,
-  Send,
-  Sparkles,
-} from 'lucide-react';
-import { WEDDING_STYLES, type WeddingStyle, type HumanMissionRequirement } from '../lib/weddingStyles';
-import { getThemeConfig } from '../lib/themeConfigs';
-import { getScenesForStyle, type ThemeTimelineScene } from '../lib/themeTimelineScenarios';
+import type { WeddingStyle, HumanMissionRequirement } from '../lib/weddingStyles';
+import { getScenesForStyle } from '../lib/themeTimelineScenarios';
 import { formatDateLong } from '../lib/format';
-import VisionImage from './vision/VisionImage';
 
 export type MiniSiteViewMode = 'guests' | 'couples' | 'missionnaire';
 
@@ -27,14 +15,16 @@ export default function ThemePhoneShowcase({
   currentStyle,
   onOpenVendorApplication,
 }: ThemePhoneShowcaseProps) {
-  const [viewMode, setViewMode] = useState<MiniSiteViewMode>('guests');
-  const [selectedMissionIdx, setSelectedMissionIdx] = useState(0);
+  // Les boutons qui surplombaient le téléphone ont été retirés : l'écran ouvre
+  // la vue invité, et rien ne le domine. Les deux autres écrans restent écrits
+  // ci-dessous, prêts à revenir si un jour un sélecteur reprend sa place.
+  const [viewMode] = useState<MiniSiteViewMode>('guests');
+  const [selectedMissionIdx] = useState(0);
 
   const isDivorce = currentStyle.id === 'divorce-party';
   const missions = currentStyle.humanMissions || [];
   const currentMission: HumanMissionRequirement | undefined = missions[selectedMissionIdx] || missions[0];
   const scenes = useMemo(() => getScenesForStyle(currentStyle.id), [currentStyle.id]);
-  const config = useMemo(() => getThemeConfig(currentStyle.id), [currentStyle.id]);
 
   return (
     <section className="relative overflow-hidden px-4 py-16 sm:px-8 sm:py-24 bg-[#FBFBFD] text-[#0B0C12] border-b border-black/5">
@@ -60,74 +50,10 @@ export default function ThemePhoneShowcase({
               : "Faites défiler le mini-site pour découvrir l'expérience exacte des invités, le cockpit des mariés, ou la feuille de route d'un métier missionné."}
           </p>
 
-          {/* Onglets sélecteurs de points de vue sobres sur fond blanc */}
-          <div className="pt-2 flex justify-center">
-            <div className="inline-flex rounded-full bg-neutral-200/60 p-1 border border-black/5 shadow-inner">
-              <button
-                type="button"
-                onClick={() => setViewMode('guests')}
-                className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${
-                  viewMode === 'guests'
-                    ? 'bg-white text-black shadow-sm font-bold'
-                    : 'text-neutral-600 hover:text-black'
-                }`}
-              >
-                <Users size={13} />
-                <span>{isDivorce ? 'Amis Conviés' : 'Invités'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode('couples')}
-                className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${
-                  viewMode === 'couples'
-                    ? 'bg-white text-black shadow-sm font-bold'
-                    : 'text-neutral-600 hover:text-black'
-                }`}
-              >
-                <Heart size={13} />
-                <span>{isDivorce ? 'Cockpit Solo' : 'Mariés'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setViewMode('missionnaire')}
-                className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${
-                  viewMode === 'missionnaire'
-                    ? 'bg-white text-black shadow-sm font-bold'
-                    : 'text-neutral-600 hover:text-black'
-                }`}
-              >
-                <Briefcase size={13} />
-                <span>Métiers ({missions.length})</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* CONTENEUR DE L'IPHONE SUR FOND BLANC NOBLE */}
-        <div className="mt-12 flex flex-col items-center justify-center">
-          {/* Si mode missionnaire : Sélecteur du métier spécifique parmi les rôles du thème */}
-          {viewMode === 'missionnaire' && missions.length > 0 && (
-            <div className="mb-6 flex flex-wrap items-center justify-center gap-2 max-w-2xl">
-              {missions.map((m, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setSelectedMissionIdx(idx)}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11.5px] font-medium transition ${
-                    selectedMissionIdx === idx
-                      ? 'bg-black text-white shadow-md font-semibold'
-                      : 'bg-white text-black/70 hover:bg-neutral-100 hover:text-black border border-black/10'
-                  }`}
-                >
-                  <Briefcase size={11} />
-                  <span>{m.role}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
+        <div className="mt-12 flex items-center justify-center">
           {/* MOCKUP IPHONE STUDIO NOIR SUR FOND BLANC PUR */}
           <div className="relative">
             {/* Châssis iPhone Apple en noir pur ciselé */}

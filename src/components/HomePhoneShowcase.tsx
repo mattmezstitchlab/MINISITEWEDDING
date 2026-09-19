@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, CalendarDays, MailCheck, Music2, Sparkles } from 'lucide-react';
+import { CalendarDays, MailCheck, Music2 } from 'lucide-react';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 import { formatDateLong } from '../lib/format';
 import VisionImage from './vision/VisionImage';
@@ -7,10 +7,9 @@ import VisionImage from './vision/VisionImage';
 /**
  * L'ÉCRAN DU COUPLE
  *
- * Un seul téléphone, qui remonte sur le bas du hero : son premier tiers se pose
- * sur le visuel plein écran, le reste ouvre la page. Il montre ce que les mariés
- * ont sous les yeux — leur site, leur compte à rebours, leur journée — et la
- * bande du bas, qui est le même objet que sur la page.
+ * Un seul téléphone, posé sous le hero. Il montre ce que les mariés ont sous
+ * les yeux : leur site, leur compte à rebours, leurs réponses, leur programme,
+ * leurs morceaux, et le partage du lien.
  */
 
 const fadeUp = {
@@ -19,20 +18,19 @@ const fadeUp = {
   viewport: { once: true, margin: '-60px' },
 };
 
-export default function HomePhoneShowcase({ onExplore }: { onExplore?: () => void }) {
+export default function HomePhoneShowcase() {
   const style = WEDDING_STYLES.find((s) => s.id === 'chateau-moderne') || WEDDING_STYLES[0];
   const weddingDate = '2027-06-12';
 
   return (
     <section className="relative z-20 bg-[#FAFAFC] px-5 pb-20 sm:px-8 sm:pb-28">
       <div className="relative mx-auto max-w-6xl">
-        {/* Le téléphone remonte d'un tiers sur le bas du hero. */}
-        <div className="flex justify-center">
+        <div className="flex justify-center pt-16 sm:pt-20">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-            className="-mt-[180px] w-[265px] shrink-0 sm:-mt-[194px] sm:w-[285px]"
+            className="w-[265px] shrink-0 sm:w-[285px]"
           >
             <div className="relative w-full rounded-[48px] bg-[#0E0F14] p-[9px] shadow-[0_45px_100px_rgba(0,0,0,0.32)] ring-1 ring-black/10">
               <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[40px] bg-white">
@@ -105,32 +103,6 @@ export default function HomePhoneShowcase({ onExplore }: { onExplore?: () => voi
                     </div>
                   </div>
 
-                  {/* La bande du bas, comme sur la page */}
-                  <div className="shrink-0 border-t border-black/5 bg-white px-3 pb-3 pt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[7.5px] font-mono uppercase tracking-[0.16em] text-black/40">
-                        Timeline du Jour J
-                      </span>
-                      <span className="text-[7.5px] font-mono text-black/30">06h → 04h</span>
-                    </div>
-                    <div className="relative mt-2 h-6">
-                      <span className="absolute left-0 right-0 top-1/2 h-px bg-black/10" />
-                      {[
-                        { at: '14%', label: '14:30' },
-                        { at: '38%', label: '16:00' },
-                        { at: '58%', label: '18:30' },
-                        { at: '78%', label: '21:00' },
-                        { at: '93%', label: '23:30' },
-                      ].map((m) => (
-                        <span key={m.label} className="absolute top-1/2 -translate-y-1/2" style={{ left: m.at }}>
-                          <span className="block h-[6px] w-[6px] rounded-full bg-black/70" />
-                          <span className="mt-1.5 block -translate-x-1/2 text-[6.5px] font-mono text-black/45">
-                            {m.label}
-                          </span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                 </div>
 
                 {/* Home bar */}
@@ -144,30 +116,17 @@ export default function HomePhoneShowcase({ onExplore }: { onExplore?: () => voi
 
         {/* Le texte, sous le téléphone */}
         <motion.div {...fadeUp} transition={{ duration: 0.7, delay: 0.25 }} className="mx-auto mt-12 max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-1.5 text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-[#0B0C12] shadow-sm">
-            <Sparkles size={12} />
-            Un seul écran, pour tout le mariage
-          </div>
-
-          <h2 className="vp-title mt-5 text-[#0B0C12]" style={{ fontSize: 'clamp(2.4rem, 5.2vw, 4.2rem)', lineHeight: 1.05 }}>
+          <h2 className="vp-title text-[#0B0C12]" style={{ fontSize: 'clamp(2.4rem, 5.2vw, 4.2rem)', lineHeight: 1.05 }}>
             Votre mariage,
             <br />
             <span className="text-[#0B0C12]/40">tenu d’une main.</span>
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-[16px] leading-relaxed text-[#0B0C12]/60 sm:text-[17.5px]">
-            Le site, les réponses des invités, le programme, les morceaux, les métiers
-            qui confirment leur créneau. Et la timeline du Jour J, toujours là, en bas :
-            la même pour tout le monde, chacun y voyant ce qui le concerne.
+            Le site, les réponses des invités, le programme, les morceaux, et chaque
+            métier qui confirme son créneau. Tout tient dans un seul écran — le vôtre.
           </p>
 
-          <button
-            type="button"
-            onClick={onExplore}
-            className="vp-btn vp-press mt-8 !rounded-full !bg-black !px-8 !py-3.5 !text-[13.5px] !text-white shadow-lg hover:!bg-neutral-800"
-          >
-            Décrire notre mariage <ArrowRight size={15} />
-          </button>
         </motion.div>
       </div>
     </section>
