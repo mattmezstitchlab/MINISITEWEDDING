@@ -31,11 +31,6 @@ export default function ThemePhoneShowcase({
       <div className="relative mx-auto max-w-5xl">
         {/* Titre et sélecteur de persona / vue épuré sur fond blanc noble */}
         <div className="mx-auto max-w-2xl text-center space-y-3.5">
-          <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3.5 py-1 text-[11px] font-mono font-bold text-black uppercase tracking-widest shadow-sm">
-            <span className="h-2 w-2 rounded-full shadow-sm" style={{ background: currentStyle.accent }} />
-            {isDivorce ? 'Dé-Mariage & Liberté' : `Univers ${currentStyle.name}`} · 3 Regards Synchronisés
-          </div>
-
           <h2 className="vp-title text-[#0B0C12]" style={{ fontSize: 'clamp(2rem, 4.4vw, 3.4rem)', lineHeight: 1.1 }}>
             {isDivorce ? (
               <>Célébrer la fin avec élégance.<br /><span className="text-black/40">Zéro rancœur, pure fête.</span></>

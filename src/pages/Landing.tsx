@@ -12,6 +12,7 @@ import HeroAiPrompt from '../components/HeroAiPrompt';
 
 import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
 import ErrorBoundary from '../components/ErrorBoundary';
+import BottomCapsuleNav from '../components/BottomCapsuleNav';
 import HomePhoneShowcase from '../components/HomePhoneShowcase';
 
 const HERO_ROTATING_TITLES = [
@@ -77,6 +78,7 @@ export default function Landing() {
       </nav>
 
       {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
+      <div id="hero">
       <HeroCycle activeStyleId={selectedStyle?.id}>
         <div className="mx-auto flex flex-col items-center justify-center text-center">
           <div className="min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
@@ -114,10 +116,12 @@ export default function Landing() {
           </motion.div>
         </div>
       </HeroCycle>
+      </div>
 
       {/* L'ÉCRAN DU COUPLE : un seul téléphone, qui remonte d'un tiers sur le hero.
           Sur un univers précis, l'iPhone interactif permet de faire défiler les vues. */}
       <ErrorBoundary>
+        <div id="ecran">
         {!selectedStyle ? (
           <HomePhoneShowcase />
         ) : (
@@ -126,9 +130,11 @@ export default function Landing() {
             onOpenVendorApplication={() => scrollToHero()}
           />
         )}
+        </div>
       </ErrorBoundary>
 
       {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}
+      <div id="direction">
       <ParallaxSection
         image={
           selectedStyle
@@ -175,21 +181,25 @@ export default function Landing() {
           </div>
         </motion.div>
       </ParallaxSection>
+      </div>
 
       {/* STUDIO DJ & BANDE-SON CHRONOLOGIQUE */}
-      <section className="px-5 py-16 sm:px-8 bg-[#070709]">
+      <section id="bande-son" className="bg-white px-5 py-16 sm:px-8">
         <div className="mx-auto max-w-6xl">
           <DjPlaylistStudio style={activeStyleOrFallback} />
         </div>
       </section>
 
       {/* SECTION SUGGESTIONS COMPLÉMENTAIRES D'UNIVERS & MISSIONS */}
-      <ComplementaryThemes
-        currentStyle={activeStyleOrFallback}
-        onSelectStyle={handleSelectStyle}
-      />
+      <div id="univers">
+        <ComplementaryThemes
+          currentStyle={activeStyleOrFallback}
+          onSelectStyle={handleSelectStyle}
+        />
+      </div>
 
       {/* SECTION PARALLAX 2 : Zéro contrainte */}
+      <div id="contrainte">
       <ParallaxSection image="/images/zero-contrainte-wedding.jpg" overlayOpacity={0.65} heightClass="min-h-[70vh]">
         <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl">
           <span className="vp-eyebrow !text-white/70">Zéro contrainte</span>
@@ -206,8 +216,12 @@ export default function Landing() {
           </p>
         </motion.div>
       </ParallaxSection>
+      </div>
 
-      <footer className="px-5 pb-10">
+      {/* LA CAPSULE DU BAS : les sections de l'accueil, à l'horizontale */}
+      <BottomCapsuleNav />
+
+      <footer className="px-5 pb-24">
         <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
           <div className="flex items-center gap-2">
             <span className="vp-title text-[17px] font-bold italic tracking-wider text-[var(--vp-ink)]">VOWS</span>

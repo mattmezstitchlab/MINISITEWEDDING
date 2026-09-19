@@ -1,15 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Play,
-  Pause,
-  ThumbsUp,
-  Volume2,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Disc,
-} from 'lucide-react';
+import { Play, Pause, ThumbsUp, Volume2, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   GLOBAL_WEDDING_PLAYLIST_FULL,
   type WeddingDjTrack,
@@ -102,22 +93,22 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[38px] border border-black/5 bg-[#0A0B10] text-white p-6 sm:p-10 lg:p-12 shadow-2xl">
+    <div className="relative overflow-hidden rounded-[38px] border border-black/6 bg-white p-6 text-[#0B0C12] sm:p-9 lg:p-10 shadow-[0_18px_50px_-30px_rgba(0,0,0,0.25)]">
       {/* Halo chromatique doux */}
       <div
-        className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full opacity-20 blur-[130px]"
+        className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full opacity-[0.13] blur-[130px]"
         style={{ background: style.accent }}
       />
 
       {/* En-tête épuré */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-black/8 pb-5">
         <div>
-          <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-white/40 block mb-1.5">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-black/40 block mb-1.5">
             Bande-Son Scénarisée · {style.name}
           </span>
-          <h3 className="vp-title text-[26px] sm:text-[36px] text-white leading-tight">
+          <h3 className="vp-title text-[24px] sm:text-[32px] text-[#0B0C12] leading-tight">
             Les Vrais Morceaux du Jour J.<br />
-            <span className="text-white/40 text-[20px] sm:text-[24px]">Lecteur officiel direct sans contrefaçon.</span>
+            <span className="text-black/35 text-[18px] sm:text-[21px]">Lecteur officiel direct sans contrefaçon.</span>
           </h3>
         </div>
 
@@ -126,18 +117,18 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
           <button
             type="button"
             onClick={() => scrollStep('left')}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white hover:text-black shadow-md"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/5 text-[#0B0C12] transition hover:bg-black hover:text-white shadow-sm"
             title="Précédent"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={16} />
           </button>
           <button
             type="button"
             onClick={() => scrollStep('right')}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white hover:text-black shadow-md"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/5 text-[#0B0C12] transition hover:bg-black hover:text-white shadow-sm"
             title="Suivant"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={16} />
           </button>
         </div>
       </div>
@@ -150,26 +141,26 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -16, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="mt-6 overflow-hidden rounded-[24px] bg-black/60 border border-emerald-500/30 p-4 shadow-2xl"
+            className="mt-5 overflow-hidden rounded-[20px] bg-black/[0.03] border border-emerald-600/25 p-3.5"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
               <div className="flex items-center gap-2.5">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[12px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                <span className="text-[11.5px] font-mono uppercase tracking-wider text-emerald-700 font-bold">
                   Lecture Officielle : {activeSpotifyTrack.title} — {activeSpotifyTrack.artist}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveSpotifyTrack(null)}
-                className="text-[11px] font-mono text-white/50 hover:text-white underline"
+                className="text-[11px] font-mono text-black/45 hover:text-black underline"
               >
                 Fermer le lecteur
               </button>
             </div>
 
             {/* IFRAME OFFICIELLE SPOTIFY : Le vrai master audio original garanti */}
-            <div className="w-full rounded-[16px] overflow-hidden bg-black shadow-inner">
+            <div className="w-full rounded-[14px] overflow-hidden bg-white shadow-inner">
               <iframe
                 title={`Spotify player ${activeSpotifyTrack.title}`}
                 src={`https://open.spotify.com/embed/track/${activeSpotifyTrack.spotifyTrackId}?utm_source=generator&theme=0`}
@@ -186,10 +177,10 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
       </AnimatePresence>
 
       {/* DOCK HORIZONTAL TYPE APPLE / IOS : MAGNIFIER DYNAMIQUE CONTINU AU GLISSER */}
-      <div className="mt-8 pt-4 pb-4">
+      <div className="mt-5 pt-2 pb-1">
         <div
           ref={scrollContainerRef}
-          className="no-scrollbar flex items-center gap-6 overflow-x-auto px-12 sm:px-32 py-10 scroll-smooth"
+          className="no-scrollbar flex items-center gap-4 overflow-x-auto px-8 sm:px-20 py-6 scroll-smooth"
         >
           {playlist.map((track, idx) => {
             const isPlayingThis = activeSpotifyTrack?.id === track.id;
@@ -218,16 +209,16 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                   transform: `scale(${scale})`,
                   opacity,
                 }}
-                className={`cursor-pointer group relative shrink-0 w-[260px] sm:w-[290px] rounded-[30px] p-4 text-left select-none transition-transform duration-150 ease-out ${
+                className={`cursor-pointer group relative shrink-0 w-[172px] sm:w-[188px] rounded-[20px] p-2.5 text-left select-none transition-transform duration-150 ease-out ${
                   isPlayingThis
-                    ? 'bg-emerald-500/[0.12] border-2 border-emerald-400 shadow-[0_25px_60px_rgba(16,185,129,0.3)] z-30'
+                    ? 'bg-emerald-50 border border-emerald-500 shadow-[0_16px_36px_-14px_rgba(16,185,129,0.45)] z-30'
                     : isDominant
-                    ? 'bg-white/[0.14] backdrop-blur-2xl border border-white/30 shadow-[0_25px_60px_rgba(0,0,0,0.8)] z-20'
-                    : 'bg-white/[0.04] border border-white/5 z-10'
+                    ? 'bg-white border border-black/10 shadow-[0_16px_40px_-16px_rgba(0,0,0,0.28)] z-20'
+                    : 'bg-white border border-black/6 z-10'
                 }`}
               >
                 {/* Pochette avec bouton Play/Pause intégré DIRECTEMENT dessus */}
-                <div className="relative aspect-square w-full overflow-hidden rounded-[22px] bg-black/40 shadow-inner">
+                <div className="relative aspect-square w-full overflow-hidden rounded-[15px] bg-black/5 shadow-inner">
                   <img
                     src={track.artwork}
                     alt={track.title}
@@ -242,10 +233,10 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
 
                   {/* Heure & BPM */}
                   <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                    <span className="rounded-full bg-black/75 backdrop-blur-md px-2.5 py-1 font-mono text-[10px] font-bold text-white border border-white/10">
+                    <span className="rounded-full bg-black/75 backdrop-blur-md px-2 py-0.5 font-mono text-[9px] font-bold text-white border border-white/10">
                       {track.suggestedTime}
                     </span>
-                    <span className="rounded-full bg-white/20 backdrop-blur-md px-2 py-0.5 font-mono text-[10px] text-white/90">
+                    <span className="rounded-full bg-white/25 backdrop-blur-md px-1.5 py-0.5 font-mono text-[9px] text-white">
                       {track.audioBpm} BPM
                     </span>
                   </div>
@@ -256,66 +247,66 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                       type="button"
                       onClick={(e) => handlePlayOfficial(track, e)}
                       className={`flex items-center justify-center rounded-full transition-transform duration-300 shadow-2xl ${
-                        isDominant ? 'h-14 w-14 hover:scale-110' : 'h-11 w-11 hover:scale-110'
+                        isDominant ? 'h-10 w-10 hover:scale-110' : 'h-8 w-8 hover:scale-110'
                       } ${
                         isPlayingThis
-                          ? 'bg-emerald-400 text-black shadow-emerald-500/50 ring-4 ring-emerald-400/30'
+                          ? 'bg-emerald-400 text-black shadow-emerald-500/50 ring-2 ring-emerald-400/30'
                           : 'bg-white text-black hover:bg-neutral-100'
                       }`}
                       title={isPlayingThis ? 'Pause' : 'Écouter le vrai morceau'}
                     >
                       {isPlayingThis ? (
-                        <Pause size={isDominant ? 22 : 18} className="fill-black" />
+                        <Pause size={isDominant ? 16 : 13} className="fill-black" />
                       ) : (
-                        <Play size={isDominant ? 22 : 18} className="fill-black ml-0.5" />
+                        <Play size={isDominant ? 16 : 13} className="fill-black ml-0.5" />
                       )}
                     </button>
                   </div>
 
                   {/* Label Phase (Cocktail, Cérémonie, Dîner, Bal, Closing) */}
                   <div className="absolute bottom-2.5 left-3 right-3">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-white/70 block truncate">
+                    <span className="text-[9px] font-mono uppercase tracking-wider text-white/80 block truncate">
                       {track.phaseLabel}
                     </span>
                   </div>
                 </div>
 
                 {/* Contenu textuel de la carte */}
-                <div className="mt-3.5 space-y-1">
+                <div className="mt-2.5 space-y-0.5">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-white text-[15px] sm:text-[16px] truncate leading-tight">
+                    <h4 className="font-bold text-[#0B0C12] text-[13px] truncate leading-tight">
                       {track.title}
                     </h4>
                     {isPlayingThis && (
-                      <Volume2 size={14} className="text-emerald-400 animate-pulse shrink-0 ml-1" />
+                      <Volume2 size={12} className="text-emerald-600 animate-pulse shrink-0 ml-1" />
                     )}
                   </div>
                   
-                  <div className="text-[12px] text-white/60 truncate">
+                  <div className="text-[10.5px] text-black/55 truncate">
                     {track.artist}
                   </div>
 
                   {/* Note statistique ou d'ambiance */}
-                  <div className="pt-2 border-t border-white/10 text-[11px] text-white/70 leading-snug line-clamp-2 min-h-[32px]">
+                  <div className="pt-1.5 border-t border-black/8 text-[9.5px] text-black/60 leading-snug line-clamp-2 min-h-[26px]">
                     {track.globalStat}
                   </div>
 
                   {/* Vote invité & index */}
-                  <div className="pt-2 flex items-center justify-between">
+                  <div className="pt-1.5 flex items-center justify-between">
                     <button
                       type="button"
                       onClick={(e) => voteTrack(track.id, e)}
-                      className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition ${
+                      className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold transition ${
                         userVotedIds.includes(track.id)
                           ? 'bg-emerald-500 text-black'
-                          : 'bg-white/10 text-white/80 hover:bg-white/20 hover:text-white'
+                          : 'bg-black/5 text-black/70 hover:bg-black/10 hover:text-black'
                       }`}
                     >
-                      <ThumbsUp size={11} className={userVotedIds.includes(track.id) ? 'fill-black' : ''} />
+                      <ThumbsUp size={10} className={userVotedIds.includes(track.id) ? 'fill-black' : ''} />
                       <span>{track.votes}</span>
                     </button>
 
-                    <span className="text-[10px] font-mono text-white/40">
+                    <span className="text-[9px] font-mono text-black/35">
                       {idx + 1} / {playlist.length}
                     </span>
                   </div>
