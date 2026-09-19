@@ -400,6 +400,36 @@ function canReadSiteHere(db: LocalDb, viewer: Viewer, siteId: number | null, sit
   return ownerSiteId(db, siteToken) === Number(siteId);
 }
 
+/**
+ * Les mariages publiés d'une personne — la même règle que `publicMembershipsOf`
+ * côté serveur : un mariage non publié ne sort jamais.
+ */
+function publicMembershipsOf(db: LocalDb, personId: number) {
+  return db.members
+    .filter((m) => Number(m.person_id) === personId)
+    .map((member) => {
+      const site = db.sites.find((s) => Number(s.id) === Number(member.site_id));
+      if (!site || !site.published) return null;
+      return {
+        id: Number(member.id),
+        site_id: Number(member.site_id),
+        role_id: String(member.role_id ?? ''),
+        joined_at: member.joined_at ?? null,
+        site: {
+          id: Number(site.id),
+          slug: site.slug || '',
+          partner1: site.partner1 || '',
+          partner2: site.partner2 || '',
+          wedding_date: site.wedding_date ?? '',
+          venue: site.venue || '',
+          city: site.city || '',
+          style: site.style || '',
+        },
+      };
+    })
+    .filter(Boolean);
+}
+
 function peopleRoutes(
   method: string,
   query: Record<string, string>,
@@ -471,7 +501,9 @@ function peopleRoutes(
   if (id) {
     const person = db.people.find((p) => Number(p.id) === Number(id));
     if (!person) return fail(404, 'Introuvable');
-    return ok({ person: redactPerson(person as PersonRow, viewer, siteId) });
+    // Lue seule, la carte porte ses mariages publiés : c'est la page de profil.
+    const memberships = siteId ? [] : publicMembershipsOf(db, Number(id));
+    return ok({ person: redactPerson(person as PersonRow, viewer, siteId), memberships });
   }
 
   if (!siteId) return fail(404, 'Introuvable');

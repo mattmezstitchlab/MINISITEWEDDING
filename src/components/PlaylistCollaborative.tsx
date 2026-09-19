@@ -119,9 +119,11 @@ export default function PlaylistCollaborative({
               {requete ? `${resultats.length} résultat${resultats.length > 1 ? 's' : ''}` : 'Tout le catalogue'}
             </div>
 
-            <div className="mt-4 space-y-2.5">
+            {/* Le catalogue en cartes musicales : le visuel, l'écoute, et les
+                deux gestes — demander au DJ, ou ajouter à la playlist. */}
+            <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
               {resultats.length === 0 && (
-                <p className="rounded-[16px] border border-dashed border-black/15 px-4 py-6 text-center text-[13px] text-black/45">
+                <p className="rounded-[16px] border border-dashed border-black/15 px-4 py-6 text-center text-[13px] text-black/45 sm:col-span-2">
                   Rien pour « {requete} ». Proposez-le juste en dessous : il ira sur le ticket.
                 </p>
               )}
@@ -131,47 +133,50 @@ export default function PlaylistCollaborative({
                 const demandeurs = demandeursDe(terminal, morceau.id);
                 const jeLaiDemande = demandeurs.includes(nom.trim());
                 return (
-                  <div key={morceau.id} className="flex items-center gap-3.5 rounded-[16px] border border-black/10 bg-white p-2.5">
-                    <img src={morceau.cover} alt="" className="h-12 w-12 shrink-0 rounded-[12px] object-cover" />
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-[13.5px] font-semibold">{morceau.title}</div>
-                      <div className="truncate text-[11.5px] text-black/55">
-                        {morceau.artiste} · {morceau.moment}
+                  <MusicCard
+                    key={morceau.id}
+                    track={morceau}
+                    accent={style.accent}
+                    sousTitre={`${morceau.artiste} · ${morceau.moment}`}
+                    actions={
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => demanderMorceau(morceau)}
+                          disabled={!signe}
+                          title={signe ? 'Mettre ce morceau sur le ticket du DJ' : 'Mettez d’abord votre nom, plus haut'}
+                          className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition disabled:opacity-40 ${
+                            jeLaiDemande
+                              ? 'bg-black text-white hover:bg-neutral-800'
+                              : 'border border-black/15 text-black/70 hover:border-black hover:text-black'
+                          }`}
+                        >
+                          {jeLaiDemande ? <Check size={13} /> : <Music2 size={13} />}
+                          {jeLaiDemande ? 'Sur le ticket' : 'Demander'}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => basculerMorceau(morceau.id)}
+                          aria-label={dedans ? `Retirer ${morceau.title} de la playlist` : `Ajouter ${morceau.title} à la playlist`}
+                          className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-semibold transition ${
+                            dedans
+                              ? 'bg-black text-white hover:bg-neutral-800'
+                              : 'border border-black/15 text-black/70 hover:border-black hover:text-black'
+                          }`}
+                        >
+                          {dedans ? <Check size={13} /> : <Plus size={13} />}
+                          {dedans ? 'Ajouté' : 'Ajouter'}
+                        </button>
+
                         {demandeurs.length > 0 && (
-                          <span className="text-black/40"> · demandé {demandeurs.length} fois</span>
+                          <span className="ml-auto font-mono text-[10px] uppercase tracking-wider text-black/40">
+                            demandé {demandeurs.length} fois
+                          </span>
                         )}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => demanderMorceau(morceau)}
-                      disabled={!signe}
-                      title={signe ? 'Mettre ce morceau sur le ticket du DJ' : 'Mettez d’abord votre nom, plus haut'}
-                      className={`flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition disabled:opacity-40 ${
-                        jeLaiDemande
-                          ? 'bg-black text-white hover:bg-neutral-800'
-                          : 'border border-black/15 text-black/70 hover:border-black hover:text-black'
-                      }`}
-                    >
-                      {jeLaiDemande ? <Check size={13} /> : <Music2 size={13} />}
-                      <span className="hidden sm:inline">{jeLaiDemande ? 'Sur le ticket' : 'Demander'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => basculerMorceau(morceau.id)}
-                      aria-label={dedans ? `Retirer ${morceau.title} de la playlist` : `Ajouter ${morceau.title} à la playlist`}
-                      className={`flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-semibold transition ${
-                        dedans
-                          ? 'bg-black text-white hover:bg-neutral-800'
-                          : 'border border-black/15 text-black/70 hover:border-black hover:text-black'
-                      }`}
-                    >
-                      {dedans ? <Check size={13} /> : <Plus size={13} />}
-                      {dedans ? 'Ajouté' : 'Ajouter'}
-                    </button>
-                  </div>
+                      </>
+                    }
+                  />
                 );
               })}
             </div>
@@ -283,25 +288,38 @@ export default function PlaylistCollaborative({
                     Rien encore. « Demander » met un morceau sur le ticket du DJ.
                   </p>
                 ) : (
-                  <ul className="mt-2 space-y-1.5">
-                    {mesDemandes.map((d) => (
-                      <li key={d.cle} className="flex items-center gap-2 text-[12.5px]">
-                        <Music2 size={12} className="shrink-0 text-black/35" />
-                        <span className="min-w-0 flex-1 truncate">
-                          {d.titre}
-                          {d.libre && <span className="text-black/40"> · proposé</span>}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => onTerminal((etat) => retirerDemande(etat, d.cle, nom))}
-                          aria-label={`Retirer ${d.titre} du ticket`}
-                          className="shrink-0 text-black/30 transition hover:text-black"
-                        >
-                          <X size={12} />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="mt-2 space-y-2">
+                    {mesDemandes.map((d) => {
+                      const auCatalogue = CATALOGUE.find((m) => m.id === d.cle);
+                      return (
+                        <div key={d.cle} className="flex items-center gap-2">
+                          <div className="min-w-0 flex-1">
+                            <MusicCard
+                              compact
+                              accent={style.accent}
+                              track={
+                                auCatalogue ?? {
+                                  title: d.titre,
+                                  subtitle: d.artiste || 'Titre proposé',
+                                  src: '',
+                                  cover: '/images/danse.jpg',
+                                }
+                              }
+                              pastille="Proposé"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => onTerminal((etat) => retirerDemande(etat, d.cle, nom))}
+                            aria-label={`Retirer ${d.titre} du ticket`}
+                            className="shrink-0 text-black/30 transition hover:text-black"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
 

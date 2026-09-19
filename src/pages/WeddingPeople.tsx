@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowRight, Loader2, Users } from 'lucide-react';
 import WeddingCard from '../components/WeddingCard';
+import { slugDePersonne } from '../lib/profil';
 import { apiGet } from '../lib/http';
 import { listWeddingMembers, personToCard } from '../lib/people';
 import { DAY_EVENTS, EMPTY_CARD, accessForRole, type CardData } from '../lib/weddingCard';
@@ -196,6 +197,15 @@ export default function WeddingPeople() {
                   redacted={membre.person?.redacted}
                   className="mx-auto w-full max-w-[360px]"
                 />
+                {/* Chaque carte a sa page : son timbre, son univers, ses mariages. */}
+                {membre.person && (
+                  <Link
+                    to={`/profil/${slugDePersonne(membre.person)}`}
+                    className="mx-auto mt-3 flex w-full max-w-[360px] items-center justify-center gap-1.5 font-mono text-[10.5px] uppercase tracking-wider text-[var(--vp-muted)] no-underline transition hover:text-[var(--vp-ink)]"
+                  >
+                    La page de {membre.person.first_name} <ArrowRight size={12} />
+                  </Link>
+                )}
               </div>
             ))}
           </div>

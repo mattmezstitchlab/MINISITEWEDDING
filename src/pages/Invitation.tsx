@@ -15,6 +15,7 @@ import {
 } from '../lib/people';
 import { ROLE_GROUPS } from '../lib/spaceDraft';
 import { styleById } from '../lib/weddingStyles';
+import { slugDePersonne } from '../lib/profil';
 import { DAY_EVENTS, accessForRole, savedOrEmpty, saveCard, type CardData } from '../lib/weddingCard';
 import type { Person, WeddingSite } from '../lib/types';
 
@@ -44,6 +45,7 @@ export default function Invitation() {
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState('');
   const [carte, setCarte] = useState<CardData | null>(null);
+  const [personneCreee, setPersonneCreee] = useState<Person | null>(null);
   const [cleNouvelle, setCleNouvelle] = useState('');
   const fichier = useRef<HTMLInputElement>(null);
 
@@ -120,6 +122,7 @@ export default function Invitation() {
 
       await joinWedding({ slug }, roleId);
       saveCard(base);
+      setPersonneCreee(personne);
       setCarte(personToCard(personne, base));
       setEtat('fait');
     } catch (err) {
@@ -441,8 +444,14 @@ export default function Invitation() {
               )}
 
               <div className="mt-5 flex flex-wrap gap-3">
-                <Link to={`/mariage/${slug}`} className="vp-btn vp-press">
-                  Les personnes du mariage <ArrowRight size={15} />
+                {/* La carte vient de naître : sa page existe. */}
+                {personneCreee && (
+                  <Link to={`/profil/${slugDePersonne(personneCreee)}`} className="vp-btn vp-press">
+                    Voir ma page <ArrowRight size={15} />
+                  </Link>
+                )}
+                <Link to={`/mariage/${slug}`} className="vp-btn vp-btn-glass vp-press">
+                  Les personnes du mariage
                 </Link>
                 <Link to="/carte" className="vp-btn vp-btn-glass vp-press">
                   Compléter ma carte

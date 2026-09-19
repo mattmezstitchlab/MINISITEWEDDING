@@ -17,6 +17,8 @@ import WeddingCard from '../components/WeddingCard';
 import StylePicker from '../components/StylePicker';
 import { prepareCardPhoto } from '../lib/cardPhoto';
 import { styleById } from '../lib/weddingStyles';
+import { slugDePersonne } from '../lib/profil';
+import type { Person } from '../lib/types';
 import { ROLE_GROUPS, roleTitle } from '../lib/spaceDraft';
 import {
   adoptPersonKey,
@@ -143,6 +145,8 @@ export default function CardStudio() {
   const [enregistrement, setEnregistrement] = useState<'repos' | 'encours' | 'ok' | 'erreur'>('repos');
   const [publication, setPublication] = useState(false);
   const [mariages, setMariages] = useState<Membership[]>([]);
+  /** La personne en ligne : c'est elle qui a une page. */
+  const [moi, setMoi] = useState<Person | null>(null);
   const [slug, setSlug] = useState('');
   const [roleJoint, setRoleJoint] = useState('');
   const [rejoint, setRejoint] = useState(false);
@@ -185,6 +189,7 @@ export default function CardStudio() {
       try {
         const person = await loadMyCard();
         if (!vivant || !person) return;
+        setMoi(person);
         setCard((base) => personToCard(person, base));
         const mes = await listMyMemberships();
         if (vivant) setMariages(mes);
@@ -213,7 +218,8 @@ export default function CardStudio() {
     setPublication(true);
     setMessage('');
     try {
-      const { key } = await createCard(card);
+      const { person, key } = await createCard(card);
+      setMoi(person);
       setCle(true);
       setCleNouvelle(key);
       setEnregistrement('ok');
@@ -736,12 +742,17 @@ export default function CardStudio() {
                 <h2 className="text-[15.5px] font-bold text-[var(--vp-ink)]">En ligne</h2>
                 <p className="mt-1 max-w-md text-[12.5px] leading-snug text-[var(--vp-muted)]">
                   {cle
-                    ? 'Votre carte est publiée : elle a une clé, et elle peut rejoindre un mariage.'
+                    ? 'Votre carte est publiée : elle a une clé, une page, et elle peut rejoindre un mariage.'
                     : 'Votre carte vit encore dans ce navigateur. Publiez-la pour qu’elle rejoigne le réseau.'}
                 </p>
               </div>
               {cle ? (
-                <span className="flex shrink-0 items-center gap-2 text-[12px] font-semibold text-[var(--vp-muted)]">
+                <span className="flex shrink-0 flex-wrap items-center justify-end gap-3 text-[12px] font-semibold text-[var(--vp-muted)]">
+                  {moi && (
+                    <Link to={`/profil/${slugDePersonne(moi)}`} className="vp-btn vp-press">
+                      Voir ma page <ArrowRight size={14} />
+                    </Link>
+                  )}
                   {enregistrement === 'encours' && (
                     <>
                       <Loader2 size={13} className="animate-spin" /> Enregistrement…

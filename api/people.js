@@ -1,14 +1,14 @@
 import supabase from '../server/db-client.js';
 import { createToken, hashToken, ownerPersonId, membershipsOf } from '../server/auth.js';
 import { respondError } from '../server/errors.js';
-import { cleanPersonPatch, redactPerson, resolveSiteId, canReadSite, viewerFor } from '../server/people.js';
+import { cleanPersonPatch, publicMembershipsOf, redactPerson, resolveSiteId, canReadSite, viewerFor } from '../server/people.js';
 
 /**
  * LES CARTES
  *
  *   POST  /api/people                 -> crée une personne et sa clé (une fois)
  *   GET   /api/people                 -> ma carte, complète (clé personnelle)
- *   GET   /api/people?id=…            -> une carte, filtrée par les permissions
+ *   GET   /api/people?id=…            -> une carte (et ses mariages publiés), filtrée
  *   GET   /api/people?slug=…          -> les cartes des membres d’un mariage
  *   PUT   /api/people                 -> met à jour sa carte (clé personnelle)
  *
@@ -109,11 +109,14 @@ async function lire(req, res) {
   const siteId = await resolveSiteId({ site_id: siteParam, slug });
 
   // Une carte précise : la permission dépend du mariage dans lequel on la lit.
+  // Lue seule, elle porte aussi les mariages publiés où cette carte a sa place :
+  // c'est ce qui fait une page de profil — un rôle, un univers.
   if (id) {
     const { data, error } = await supabase.from('people').select('*').eq('id', Number(id)).maybeSingle();
     if (error) throw error;
     if (!data) return res.status(404).json({ error: 'Introuvable' });
-    return res.status(200).json({ person: redactPerson(data, viewer, siteId) });
+    const memberships = siteId ? [] : await publicMembershipsOf(Number(id));
+    return res.status(200).json({ person: redactPerson(data, viewer, siteId), memberships });
   }
 
   if (!siteId) return res.status(404).json({ error: 'Introuvable' });

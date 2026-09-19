@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  ArrowRight, BadgeCheck, Building2, Check, Copy, Music2, Radio, Sparkles, Users,
+  ArrowRight, BadgeCheck, Building2, Check, Copy, Radio, Sparkles, Users,
 } from 'lucide-react';
 import MusicCard from '../components/MusicCard';
 import TicketCaisse from '../components/TicketCaisse';
 import { contentFor } from '../lib/universeContent';
 import { euros, lignesDuTicket, numeroDeTicket, totalCaisse } from '../lib/superMariage';
-import { chargerPlaylist, morceauxDeLaPlaylist } from '../lib/weddingPlaylist';
+import { chargerPlaylist, morceauParId, morceauxDeLaPlaylist } from '../lib/weddingPlaylist';
 import { planDj } from '../lib/weddingTicket';
 import { useComptoir } from '../lib/terminalLive';
 import { metiersVoisins, pageMetier, resumeMetier, slugDeRole, type PageMetier as Donnees } from '../lib/metierPage';
@@ -387,27 +387,31 @@ function PageMetierContenu({ page }: { page: Donnees }) {
                     morceau demandé.
                   </p>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="grid gap-2.5 sm:grid-cols-2">
                     {demandes.map((demande) => {
                       const libelle = DJ_CHRONOLOGICAL_PHASES.find((p) => p.id === demande.phaseId)?.label;
                       return (
-                        <div
-                          key={`${demande.cle}-${demande.nom}`}
-                          className="flex items-center gap-3.5 rounded-[16px] border border-black/10 bg-white p-3"
-                        >
-                          <Music2 size={15} className="shrink-0 text-black/35" />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[13.5px] font-semibold">
-                              {demande.titre}
-                              {demande.libre && <span className="text-black/40"> · proposé</span>}
-                            </span>
-                            <span className="block truncate text-[11.5px] text-black/55">
-                              {demande.artiste || 'Titre proposé par un invité'} · {libelle ?? 'Bal'}
-                            </span>
-                          </span>
-                          <span className="shrink-0 rounded-full bg-black/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-black/60">
-                            {demande.nom}
-                          </span>
+                        <div key={`${demande.cle}-${demande.nom}`}>
+                          {/* Une demande arrive comme une carte musicale : le
+                              morceau s'écoute quand il est au catalogue. */}
+                          <MusicCard
+                            track={
+                              morceauParId(demande.cle) ?? {
+                                title: demande.titre,
+                                subtitle: demande.artiste || 'Titre proposé par un invité',
+                                src: '',
+                                cover: style.image,
+                              }
+                            }
+                            accent={style.accent}
+                            sousTitre={`${demande.artiste || 'Proposé'} · ${libelle ?? 'Bal'}`}
+                            pastille="Proposé"
+                            actions={
+                              <span className="rounded-full bg-black/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-black/60">
+                                Demandé par {demande.nom}
+                              </span>
+                            }
+                          />
                         </div>
                       );
                     })}

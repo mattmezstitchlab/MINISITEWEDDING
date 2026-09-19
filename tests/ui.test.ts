@@ -39,6 +39,11 @@ import PageMetier from '../src/pages/PageMetier';
 import SiteChrome from '../src/components/SiteChrome';
 import RsvpTicket from '../src/components/RsvpTicket';
 import CartePostale from '../src/components/CartePostale';
+import PageProfil from '../src/pages/PageProfil';
+import PlaylistCollaborative from '../src/components/PlaylistCollaborative';
+import { Timbre } from '../src/components/Timbre';
+import { idDeProfil, morceauxDeNom, slugDePersonne, chargerProfil } from '../src/lib/profil';
+import { metierParSlug, pageMetier, slugDeRole, tousLesMetiers } from '../src/lib/metierPage';
 import { pageMetier, slugDeRole, tousLesMetiers } from '../src/lib/metierPage';
 import { chargerLive } from '../src/lib/terminalLive';
 import { contentFor } from '../src/lib/universeContent';
@@ -62,7 +67,7 @@ import { contentFor } from '../src/lib/universeContent';
 import { donneesMetier, estIntermittent, modulesDuMetier } from '../src/lib/vendorModules';
 import { CACHETS_DEFAUT, heuresCachets } from '../src/lib/vendorDraft';
 import { ALL_STYLES, WEDDING_STYLES, styleById } from '../src/lib/weddingStyles';
-import { EMPTY_CARD, cardRoleLabel, type CardData } from '../src/lib/weddingCard';
+import { EMPTY_CARD, cardDetail, cardRoleLabel, withDetail, type CardData } from '../src/lib/weddingCard';
 import {
   adoptPersonKey,
   createCard,
@@ -957,6 +962,121 @@ check('le timbre du marié', postale.includes('Le marié · Sarah'), true);
 check('et le timbre de la mariée', postale.includes('La mariée · Gabriel'), true);
 check('la date courte des timbres', postale.includes('12.06.2027'), true);
 check('le sceau rond du site', postale.includes('textPath') && postale.includes('textLength'), true);
+
+/* --------- la playlist en cartes, la page d'un métier, la page d'une personne ----- */
+
+/* Le catalogue se présente comme partout ailleurs : des cartes musicales. */
+const playlistVegas = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    null,
+    createElement(PlaylistCollaborative as never, {
+      style: styleById('vegas'),
+      playlist: ['track-c1'],
+      onPlaylist: () => {},
+      terminal: TERMINAL_VIDE,
+      onTerminal: () => {},
+      nom: 'Clara',
+      styleId: 'vegas',
+    }),
+  ),
+);
+check('la playlist s’écoute en cartes musicales', playlistVegas.includes('Écouter'), true);
+check('chaque carte porte ses deux gestes', playlistVegas.includes('Demander') && playlistVegas.includes('Ajouter'), true);
+check('et les cartes montrent le moment du morceau', playlistVegas.includes('· Cérémonie') || playlistVegas.includes('· Cocktail'), true);
+
+/* Les métiers : chacun a sa page, et la musique a la sienne. */
+const tous = tousLesMetiers();
+check('les métiers du catalogue ont tous une page', tous.every((m) => Boolean(metierParSlug(slugDeRole(m.role)))), true);
+check('et une page entière se compose pour chacun', tous.every((m) => Boolean(pageMetier(slugDeRole(m.role)))), true);
+check('une page de métier inconnue reste introuvable', metierParSlug('pas-un-metier'), null);
+const pageDj = pageMetier(slugDeRole('DJ Résident Clubbing / Sound Engineer'));
+check('le DJ a sa page', Boolean(pageDj), true);
+check('sa page porte la playlist', pageDj?.musique, true);
+check('et le terminal', pageDj?.dj, true);
+check('sa page a ses lignes de ticket', (pageDj?.lignes.length ?? 0) > 0, true);
+const pageFleuriste = pageMetier(slugDeRole('Fleuriste Tropical & Décoration'));
+check('le fleuriste a la sienne aussi', Boolean(pageFleuriste), true);
+check('sans playlist : ce n’est pas un métier de musique', pageFleuriste?.musique, false);
+
+/* Le comptoir du DJ : les invités demandent, sa page suit. */
+await apiSend('/api/wedding-live', 'POST', {
+  style_id: pageDj?.styleId ?? 'club',
+  geste: { type: 'demander', cle: 'sug-4', titre: 'Superstition', artiste: 'Stevie Wonder', phaseId: 'dancefloor_peak', nom: 'Camille' },
+});
+const comptoirDuMetier = await chargerLive(pageDj?.styleId ?? 'club');
+check(
+  'le comptoir du DJ reçoit la demande',
+  comptoirDuMetier?.demandes.some((d) => d.titre === 'Superstition' && d.nom === 'Camille'),
+  true,
+);
+check(
+  'et le morceau garde son moment',
+  comptoirDuMetier?.demandes.find((d) => d.titre === 'Superstition')?.phaseId,
+  'dancefloor_peak',
+);
+const planDuMetier = planDj(morceauxDeLaPlaylist(['track-d1']), comptoirDuMetier?.demandes ?? []);
+check(
+  'le plan de la soirée range la demande au bon moment',
+  planDuMetier.find((b) => b.phaseId === 'dancefloor_peak')?.lignes.length,
+  2,
+);
+
+/* La page d'une personne : son adresse, son timbre, son mariage. */
+check('une adresse de profil se fabrique', slugDePersonne({ id: 12, first_name: 'Clara', last_name: 'Mez', trade: '' }), '12-clara-mez');
+check('les accents ne collent pas à l’adresse', morceauxDeNom('Éloïse de la Forêt'), 'eloise-de-la-foret');
+check(
+  'le numéro suffit à ouvrir une page',
+  [idDeProfil('12-clara-mez'), idDeProfil('12'), idDeProfil('clara-mez')],
+  [12, 12, null],
+);
+
+/* Sans mariage publié, une page de profil ne montre aucun mariage. */
+check('avant publication, la page n’a pas de mariage', (await chargerProfil(relue!.id))?.memberships.length, 0);
+await apiSend('/api/wedding-sites', 'PUT', { id: created.site.id, published: true });
+const profil = await chargerProfil(relue!.id);
+check('la page d’une personne se charge', Boolean(profil?.person), true);
+check('elle porte le mariage publié', profil?.memberships.length, 1);
+check('avec son univers', profil?.memberships[0]?.site?.style, 'cinema');
+check('et le rôle qui y est tenu', profil?.memberships[0]?.role_id, 'fleuriste');
+check('une personne inconnue n’a pas de page', await chargerProfil(999999), null);
+/* Le nom, l'univers et le rôle voyagent avec la carte : la page peut se rendre. */
+const detail = cardDetail({ ...EMPTY_CARD, styleId: 'vegas', roleId: 'dj', access: 'prestataire' });
+check('le verso garde l’univers de la carte', detail.styleId, 'vegas');
+check('et le rôle déclaré', detail.roleId, 'dj');
+const remonte = withDetail({ ...EMPTY_CARD, styleId: 'vierge' }, detail);
+check(
+  'qui se remontent à l’identique',
+  [remonte.styleId, remonte.roleId, remonte.access],
+  ['vegas', 'dj', 'prestataire'],
+);
+
+const pageAbsente = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/profil/pas-un-nom'] },
+    createElement(Routes, null, createElement(Route, { path: '/profil/:slug', element: createElement(PageProfil as never) })),
+  ),
+);
+check('une page absente le dit', pageAbsente.includes('Cette page n’existe pas encore'), true);
+check('et propose de créer sa carte', pageAbsente.includes('Créer ma carte'), true);
+
+/* Le timbre : la photo de profil du réseau. */
+const timbre = renderToStaticMarkup(
+  createElement(Timbre, {
+    photo: '',
+    label: 'Son timbre',
+    nom: 'Clara',
+    date: '12.06.2027',
+    accent: '#C80000',
+    largeur: 148,
+    initiales: 'CM',
+  } as never),
+);
+check('le timbre annonce son propriétaire', timbre.includes('Son timbre · Clara'), true);
+check('et porte la date courte', timbre.includes('12.06.2027'), true);
+check('sans photo, il montre les initiales', timbre.includes('>CM<'), true);
+check('il reste dentelé', timbre.includes('border-dashed'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

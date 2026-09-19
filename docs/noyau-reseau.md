@@ -605,3 +605,59 @@ du mariage se garde.
   d'emprunt sur les pages d'univers et de métier, dos de carte en papier clair
   avec son code-barres, billet nominatif du cinéma contre carte de table corse,
   postale avec le mot, les deux timbres et le sceau), `npm run build` OK.
+
+## 20. La playlist en cartes, la page d'une personne, les métiers reliés (passe 25)
+
+Trois volets, une même suite : ce qui était une liste devient une carte, la
+carte devient une page, et les pages se répondent.
+
+- **Les playlists prennent le papier des cartes musicales.** `MusicCard` s'ouvre
+  (`sousTitre`, `pastille`, `actions`) : la carte non compacte est une pochette
+  (visuel, titre, artiste, durée) posée sur un feuillet `p-2.5`, avec sa rangée
+  et, sous un pointillé, son bloc d'actions. Le catalogue de
+  `PlaylistCollaborative` devient une grille `sm:grid-cols-2` — « Demander »
+  (qui envoie sur le ticket du DJ) et « Ajouter » (au socle du couple), la
+  pastille « demandé N fois » en `ml-auto` —, les demandes déjà posées passent en
+  cartes compactes avec la pastille « Proposé », et la page d'un métier de
+  musique affiche les demandes des invités dans exactement le même papier
+  (« Demandé par Camille »). Le socle du couple, la recherche et les phases ne
+  changent pas : c'est la forme qui s'aligne, pas la règle.
+- **Le réseau social commence par une page, celle de la personne.** La carte
+  faite avec le formulaire ne reste pas un formulaire : elle a une adresse —
+  `/profil/{id}-{nom}` (`src/lib/profil.ts` : `slugDePersonne`, `idDeProfil`,
+  `chargerProfil`). Côté serveur, `publicMembershipsOf(personId)` ajoute à la
+  carte lue seule la liste de ses mariages **publiés** (jamais les brouillons),
+  et `GET /api/people?id=…` répond `{ person, memberships }` — même règle en
+  local. `PageProfil` rend la page entière : couverture = le visuel de l'univers,
+  **son timbre en photo de profil** (`Timbre`, extrait de la carte postale avec
+  `Sceau`), le nom, le rôle, la ville, le mot du métier, l'univers (lien vers
+  `/le-mariage/{style}`), les modules de son métier, ses mariages publiés, ses
+  liens, et sa carte en `WeddingCard` masquée — adresse qui porte son numéro et
+  son nom, donc partageable et citable.
+- **Le timbre est la photo de profil.** `src/components/Timbre.tsx` : photo (ou
+  initiales), label « Son timbre · Clara », nom, date courte, dentelure en
+  pointillés, mention « VOWS · POSTE 22H », inclinaison et accent — posé à
+  `-mt-14` sur la couverture de la page. `CartePostale` l'importe désormais au
+  lieu de le porter : une seule définition, deux usages.
+- **Après la création, la page apparaît.** L'invitation (`/rejoindre/:slug`)
+  propose « Voir ma page » dès que la carte est créée, `CardStudio` l'offre à
+  côté de la clé (« votre carte est publiée : elle a une clé, une page »), et la
+  liste des personnes du mariage mène à la page de chacune (« La page de
+  Claire »). C'est la carte universelle : faite une fois, elle sert de carte de
+  visite, de billet et de page.
+- **Les métiers se relient.** Tous les métiers du catalogue ont leur page (§18)
+  et tout y mène : le menu des métiers d'un univers, la ligne d'un métier sur le
+  récapitulatif de la page des mariés (« Sa page »), le pied de l'espace
+  prestataire, et les métiers voisins en bas de page (`metiersVoisins`). Un
+  métier de musique y retrouve ses demandes, un DJ son terminal.
+- **Une carte porte son univers.** `cardDetail` / `withDetail` (`weddingCard`)
+  gardent désormais `styleId`, `roleId` et `access` : la carte publiée dit de
+  quel mariage et de quel rôle elle parle, sans quoi une page de profil ne
+  saurait pas quel univers montrer.
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+  173 / 55 / **303** (cartes musicales dans la playlist et sur la page du DJ,
+  tous les métiers ont une page entière, le fleuriste n'a pas de playlist, le
+  comptoir du DJ reçoit la demande de l'invité, une adresse de profil se
+  fabrique et se relit — accent, numéro, nom inconnu —, la page ne montre que
+  les mariages publiés, le timbre annonce son propriétaire ou ses initiales),
+  `npm run build` OK.

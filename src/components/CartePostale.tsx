@@ -1,7 +1,8 @@
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { RotateCcw } from 'lucide-react';
 import { formatDateLong } from '../lib/format';
+import { Sceau, Timbre } from './Timbre';
 
 /**
  * LA CARTE POSTALE D'INVITATION
@@ -35,80 +36,6 @@ interface Props {
 function dateCourte(date: string): string {
   const [a, m, j] = date.split('-');
   return a && m && j ? `${j}.${m}.${a}` : date;
-}
-
-/** Un timbre : la photo, le nom, la date — et la dentelure. */
-function Timbre({
-  photo,
-  nom,
-  label,
-  date,
-  accent,
-  penche,
-}: {
-  photo: string;
-  nom: string;
-  label: string;
-  date: string;
-  accent: string;
-  penche: number;
-}) {
-  return (
-    <figure
-      className="relative w-[112px] shrink-0 bg-white p-[3px] shadow-[0_12px_26px_-16px_rgba(0,0,0,0.6)]"
-      style={{ transform: `rotate(${penche}deg)` }}
-    >
-      {/* La dentelure du timbre */}
-      <span
-        className="pointer-events-none absolute inset-[3px] border border-dashed"
-        style={{ borderColor: 'rgba(0,0,0,0.28)' }}
-      />
-      <img src={photo} alt="" className="h-[80px] w-full object-cover" />
-      <figcaption className="px-1 pb-1 pt-1.5 text-center font-mono text-[8px] uppercase leading-[1.35] tracking-[0.1em] text-black/60">
-        <span className="block font-black" style={{ color: accent }}>
-          {label} · {nom}
-        </span>
-        {date}
-        <br />
-        VOWS · POSTE 22H
-      </figcaption>
-    </figure>
-  );
-}
-
-/** Le sceau rond du site : les noms, la date, le lieu, en cercle. */
-function Sceau({ texte, centre, accent }: { texte: string; centre: string; accent: string }) {
-  const id = useId().replace(/:/g, '');
-  const chemin = `sceau-${id}`;
-  const cercle = 2 * Math.PI * 41;
-  return (
-    <svg viewBox="0 0 120 120" className="h-[112px] w-[112px] mix-blend-multiply" aria-hidden>
-      <defs>
-        <path id={chemin} d="M60,60 m-41,0 a41,41 0 1,1 82,0 a41,41 0 1,1 -82,0" />
-      </defs>
-      <circle cx="60" cy="60" r="53" fill="none" stroke={accent} strokeWidth="2.4" opacity="0.9" />
-      <circle cx="60" cy="60" r="30" fill="none" stroke={accent} strokeWidth="1.2" opacity="0.75" />
-      <text fill={accent} fontSize="9" fontWeight="800" letterSpacing="0.6" opacity="0.95">
-        <textPath href={`#${chemin}`} textLength={cercle} lengthAdjust="spacing">
-          {texte}
-        </textPath>
-      </text>
-      <text
-        x="60"
-        y="58"
-        textAnchor="middle"
-        fill={accent}
-        fontSize="12"
-        fontWeight="800"
-        letterSpacing="0.5"
-      >
-        {centre}
-      </text>
-      <text x="60" y="70" textAnchor="middle" fill={accent} fontSize="7.5" fontWeight="700" letterSpacing="2">
-        VOWS
-      </text>
-    </svg>
-  );
 }
 
 export default function CartePostale({

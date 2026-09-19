@@ -167,6 +167,53 @@ export function redactPerson(person, viewer, siteId = null) {
   };
 }
 
+/**
+ * Les mariages d’une personne, **publics seulement**.
+ *
+ * C’est ce qui donne son univers à une page de profil : le mariage où la carte
+ * a été prise, son univers, son rôle. Un mariage non publié ne sort pas — même
+ * règle que partout ailleurs (`isPublished`).
+ */
+export async function publicMembershipsOf(personId) {
+  if (!personId) return [];
+  const { data, error } = await supabase
+    .from('wedding_members')
+    .select('id, site_id, role_id, joined_at')
+    .eq('person_id', Number(personId));
+  if (error || !data || data.length === 0) return [];
+
+  const siteIds = [...new Set(data.map((row) => Number(row.site_id)).filter(Number.isFinite))];
+  const { data: sites, error: erreurSites } = await supabase
+    .from('wedding_sites')
+    .select('id, slug, partner1, partner2, wedding_date, venue, city, style, published')
+    .in('id', siteIds);
+  if (erreurSites) return [];
+
+  const parId = new Map((sites || []).map((s) => [Number(s.id), s]));
+  return data
+    .map((row) => {
+      const site = parId.get(Number(row.site_id));
+      if (!site || !site.published) return null;
+      return {
+        id: Number(row.id),
+        site_id: Number(row.site_id),
+        role_id: String(row.role_id || ''),
+        joined_at: row.joined_at ?? null,
+        site: {
+          id: Number(site.id),
+          slug: site.slug || '',
+          partner1: site.partner1 || '',
+          partner2: site.partner2 || '',
+          wedding_date: site.wedding_date ?? '',
+          venue: site.venue || '',
+          city: site.city || '',
+          style: site.style || '',
+        },
+      };
+    })
+    .filter(Boolean);
+}
+
 /** La carte de quelqu’un d’autre, telle qu’elle apparaît dans un mariage. */
 export function redactMemberRow(member, person, viewer, siteId) {
   return {

@@ -46,7 +46,7 @@ export interface PageMetier {
   rayon?: { key: string; label: string };
   /** Le prix de sa ligne, tel qu'il est écrit sur le ticket. */
   prix: number;
-  /** Le magasin de l'univers de référence : son enseigne, sa caisse, ses rayons. */
+  /** Le magasin de l'univers de référence : enseigne, rayons, caisse. */
   magasin: MagasinUnivers;
   /** Vrai pour les métiers de la musique : leur page porte la playlist. */
   musique: boolean;

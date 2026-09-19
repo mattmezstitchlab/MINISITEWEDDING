@@ -418,6 +418,11 @@ export function cardSummary(card: CardData): string {
  * autre** : une information saisie une fois ne se recopie pas ailleurs.
  */
 export interface CardDetail {
+  /** L'univers du mariage, tel que la carte l'a choisi. */
+  styleId?: string;
+  /** Le rôle déclaré sur la carte — celui du mariage peut le préciser. */
+  roleId?: string;
+  access?: string;
   from: string;
   to: string;
   travel: string;
@@ -437,6 +442,11 @@ export interface CardDetail {
 
 export function cardDetail(card: CardData): CardDetail {
   return {
+    // L'univers et le rôle font partie de la carte : sans eux, une page de
+    // profil ne saurait pas de quel mariage elle parle.
+    styleId: card.styleId,
+    roleId: card.roleId,
+    access: card.access,
     from: card.from,
     to: card.to,
     travel: card.travel,
@@ -460,6 +470,9 @@ export function withDetail(card: CardData, detail: Partial<CardDetail> | null | 
   if (!detail || typeof detail !== 'object') return card;
   return {
     ...card,
+    styleId: typeof detail.styleId === 'string' && detail.styleId ? detail.styleId : card.styleId,
+    roleId: typeof detail.roleId === 'string' && detail.roleId ? detail.roleId : card.roleId,
+    access: typeof detail.access === 'string' && detail.access ? (detail.access as CardData['access']) : card.access,
     from: typeof detail.from === 'string' ? detail.from : card.from,
     to: typeof detail.to === 'string' ? detail.to : card.to,
     travel: typeof detail.travel === 'string' ? detail.travel : card.travel,
