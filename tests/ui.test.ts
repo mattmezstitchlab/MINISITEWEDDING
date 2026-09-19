@@ -35,11 +35,14 @@ import {
 } from '../src/lib/weddingPlaylist';
 import { magasinFor } from '../src/lib/weddingPage';
 import RecapCourses from '../src/components/RecapCourses';
+import PageMetier from '../src/pages/PageMetier';
+import { pageMetier, slugDeRole, tousLesMetiers } from '../src/lib/metierPage';
+import { chargerLive } from '../src/lib/terminalLive';
 import { contentFor } from '../src/lib/universeContent';
 import { styleById } from '../src/lib/weddingStyles';
 import {
-  TERMINAL_VIDE, avancement, decoderRecu, demander, encoderRecu, entrerRecu, lacher, planDj, prendre,
-  preneurDe, prisesParInvite, recuDe,
+  TERMINAL_VIDE, avancement, decoderRecu, demander, demandesDe, encoderRecu, entrerRecu, lacher, planDj,
+  prendre, preneurDe, prisesParInvite, recuDe,
 } from '../src/lib/weddingTicket';
 import { ALL_STYLES } from '../src/lib/weddingStyles';
 import { totalCaisse } from '../src/lib/superMariage';
@@ -299,6 +302,12 @@ check('les modules parlent la cuisine', studioChef.includes('Ce qui passe en cui
 check('les onglets portent les mots du métier', studioChef.includes('Onglet · Menus') && studioChef.includes('Onglet · Régimes'), true);
 check('la fiche mission vient de la carte', studioChef.includes('La même fiche que celle de votre carte'), true);
 check('rien n’est à ressaisir du site des mariés', studioChef.includes('Ce qui vient des mariés'), true);
+
+check(
+  'l’espace du métier mène à sa page entière',
+  studioChef.includes('/metiers/traiteur-haute-gastronomie'),
+  true,
+);
 
 const studioPhoto = studioDe('Photographe Néon', 'vegas');
 check('un autre métier parle une autre langue', studioPhoto.includes('Onglet · Repérages'), true);
@@ -641,7 +650,7 @@ check(
 
 /* Le récap, vu des mariés : le comptoir, le journal, et le terminal DJ. */
 const recapMaries = renderToStaticMarkup(
-  createElement(RecapCourses, {
+  createElement(MemoryRouter, null, createElement(RecapCourses, {
     styleId: 'supermarche',
     style: styleById('supermarche'),
     magasin: magasinSM,
@@ -659,7 +668,7 @@ const recapMaries = renderToStaticMarkup(
     nom: 'Camille',
     fond: '#FFFFFF',
     vueInitiale: 'maries',
-  }),
+  } as never)),
 ).replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, '`');
 check('le récap s’ouvre côté mariés', recapMaries.includes('Le comptoir'), true);
 check('il liste les reçus reçus', recapMaries.includes('Journal du terminal') && recapMaries.includes('Reçu de Camille'), true);
@@ -730,6 +739,118 @@ const liveVide2 = await apiSend<{ payload: { prises: unknown[] } }>('/api/weddin
   style_id: 'vegas', payload: TERMINAL_VIDE,
 });
 check('les mariés peuvent vider le comptoir', liveVide2.payload.prises.length, 0);
+
+/* --------------- la page entière de chaque métier, reliée à celle du mariage ------ */
+
+const tousMetiers = tousLesMetiers();
+check('tous les métiers ont une page', tousMetiers.length, 72);
+check(
+  'et leurs adresses sont toutes différentes',
+  new Set(tousMetiers.map((m) => slugDeRole(m.role))).size,
+  tousMetiers.length,
+);
+check(
+  'chaque page de métier se construit',
+  tousMetiers.every((m) => {
+    const p = pageMetier(slugDeRole(m.role));
+    return Boolean(p) && p!.modules.length >= 3 && p!.lignes.length >= 1 && p!.partages.length >= 3;
+  }),
+  true,
+);
+check('un métier inconnu ne donne pas de page', pageMetier('pas-un-metier'), null);
+
+/* Les métiers de la musique portent la playlist ; les autres, non. */
+const djResident = pageMetier('dj-resident-clubbing-sound-engineer');
+check('le DJ a sa page', Boolean(djResident), true);
+check('sa page porte la playlist', djResident?.musique, true);
+check('et le terminal DJ', djResident?.dj, true);
+const chef = pageMetier('chef-tapas-finger-food-etoile');
+check('le chef lit la table', chef?.rayon?.key, 'rayon-table');
+check(
+  'et ses lignes viennent du rayon Table',
+  chef?.lignes.slice(1).every((a) => a.id.startsWith('table-')),
+  true,
+);
+check('un métier de musique lit les horaires', djResident?.rayon?.key, 'rayon-moments');
+
+/* La page du mariage mène à celle de ses métiers : tout est relié. */
+check('le récap du mariage mène aux pages des métiers', mariageDecode.includes('/metiers/'), true);
+
+/* On rend la page du DJ, avec des demandes d'invités au comptoir. */
+const styleDj = djResident!.styleId;
+await apiSend('/api/wedding-live', 'POST', {
+  style_id: styleDj,
+  geste: { type: 'demander', cle: 'sug-4', titre: 'Superstition', artiste: 'Stevie Wonder', phaseId: 'dancefloor_peak', nom: 'Camille' },
+});
+await apiSend('/api/wedding-live', 'POST', {
+  style_id: styleDj,
+  geste: { type: 'demander', cle: 'libre:uptown-funk', titre: 'Uptown Funk', artiste: 'Bruno Mars', phaseId: 'dancefloor_peak', nom: 'Bastien', libre: true },
+});
+
+const htmlDj = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/metiers/dj-resident-clubbing-sound-engineer'] },
+    createElement(Routes, null, createElement(Route, { path: '/metiers/:slug', element: createElement(PageMetier as never) })),
+  ),
+);
+const djDecode = htmlDj.replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, "'");
+check('la page du DJ s’ouvre', htmlDj.length > 30_000, true);
+check('elle dit son domaine', djDecode.includes('DJ & Régie son'), true);
+check('elle rappelle l’univers', djDecode.includes(djResident!.style.name), true);
+check('elle porte le mariage des clients', djDecode.includes('La page du mariage'), true);
+check('elle dit qu’il n’y a rien à ressaisir', djDecode.includes('Vous ne ressaisissez rien'), true);
+check('elle porte ses moments du jour J', djDecode.includes('Ses moments dans la journée'), true);
+check('elle porte sa langue de métier', djDecode.includes('Sa langue'), true);
+check('elle demande à être envoyée au prestataire', djDecode.includes('Envoyer au prestataire'), true);
+check('elle liste les métiers d’à côté', djDecode.includes('Chaque métier a sa page entière'), true);
+check('son ticket de métier est un bon de commande', djDecode.includes('Bon de commande'), true);
+
+/* La playlist en direct : la page lit le comptoir partagé. Rendu statique, elle
+   montre son état vide ; en vrai, elle se remplit — c'est ce que vérifie la
+   lecture du comptoir juste après. */
+check('la page du DJ porte le terminal DJ', djDecode.includes('Le terminal DJ'), true);
+check('et l’ordre de la soirée', djDecode.includes('ordre de la soirée'), true);
+check(
+  'elle annonce l’état vide du comptoir',
+  djDecode.includes('Aucune demande d’invité pour l’instant'),
+  true,
+);
+const comptoirDj = await chargerLive(styleDj);
+check('le comptoir du DJ porte la demande de Camille', comptoirDj?.demandes.length, 2);
+check('avec le titre et l’artiste', comptoirDj?.demandes[0]?.titre, 'Superstition');
+check('et le titre proposé par un autre invité', comptoirDj?.demandes[1]?.libre, true);
+check('que le DJ verra sur son terminal', [
+  ...new Set(demandesDe(comptoirDj!, 'Camille').map((d) => d.titre)),
+  ...new Set(demandesDe(comptoirDj!, 'Bastien').map((d) => d.titre)),
+], ['Superstition', 'Uptown Funk']);
+const planDjResident = planDj(morceauxDeLaPlaylist(['track-d1', 'sug-6']), comptoirDj!.demandes);
+check(
+  'et qui se range dans le bon moment de la soirée',
+  planDjResident.find((b) => b.phaseId === 'dancefloor_peak')?.lignes.map((l) => l.titre),
+  ['Stayin’ Alive', 'Superstition', 'Uptown Funk'],
+);
+
+/* Une page sans musique ne parle pas de playlist. */
+const htmlChef = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/metiers/chef-tapas-finger-food-etoile'] },
+    createElement(Routes, null, createElement(Route, { path: '/metiers/:slug', element: createElement(PageMetier as never) })),
+  ),
+);
+check('la page du chef ne parle pas de playlist', htmlChef.includes('Ce que la soirée a demandé'), false);
+check('mais elle porte ses lignes sur le ticket', htmlChef.includes('Vos lignes sur le ticket'), true);
+
+/* Une adresse inconnue reste une page, avec une porte de sortie. */
+const htmlInconnu = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/metiers/pas-un-metier'] },
+    createElement(Routes, null, createElement(Route, { path: '/metiers/:slug', element: createElement(PageMetier as never) })),
+  ),
+);
+check('un métier inconnu renvoie vers la page du mariage', htmlInconnu.includes('Ce métier n’existe pas encore'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

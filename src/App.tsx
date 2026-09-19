@@ -22,6 +22,7 @@ import Invitation from './pages/Invitation';
 import VendorStudio from './pages/VendorStudio';
 import SuperMariage from './pages/SuperMariage';
 import LeMariage from './pages/LeMariage';
+import PageMetier from './pages/PageMetier';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -63,6 +64,8 @@ export default function App() {
             {/* Le mariage, en entier : l'article, la playlist, le récap — une page par univers. */}
             <Route path="/le-mariage" element={<LeMariage />} />
             <Route path="/le-mariage/:styleId" element={<LeMariage />} />
+            {/* La page entière d'un métier : la même forme, reliée au mariage. */}
+            <Route path="/metiers/:slug" element={<PageMetier />} />
             <Route path="/mariage/:slug" element={<WeddingPeople />} />
             <Route path="/rejoindre/:slug" element={<Invitation />} />
             <Route path="/generer" element={<Generating />} />

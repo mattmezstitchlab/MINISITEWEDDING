@@ -4,6 +4,7 @@ import VendorSiteStudio from '../components/VendorSiteStudio';
 import { previewPath } from '../lib/previewSite';
 import { styleById } from '../lib/weddingStyles';
 import { DOMAINES, domaineDe } from '../lib/weddingVendors';
+import { slugDeRole } from '../lib/metierPage';
 
 /**
  * L'ESPACE DU PRESTATAIRE
@@ -104,8 +105,14 @@ export default function VendorStudio() {
               ))}
           </div>
           <Link
+            to={`/metiers/${slugDeRole(role)}`}
+            className="ml-auto inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-wider text-black/60 no-underline transition hover:text-black"
+          >
+            La page entière de ce métier <ArrowRight size={12} />
+          </Link>
+          <Link
             to="/prestataire"
-            className="ml-auto inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-wider text-black/50 no-underline transition hover:text-black"
+            className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-wider text-black/50 no-underline transition hover:text-black"
           >
             Tous les métiers <ArrowRight size={12} />
           </Link>

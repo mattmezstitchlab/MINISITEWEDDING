@@ -21,27 +21,44 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
   const [progress, setProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [userVotedIds, setUserVotedIds] = useState<string[]>([]);
-  const [containerCenter, setContainerCenter] = useState(0);
+  /**
+   * La loupe au centre de la bande : pour chaque carte, de combien elle est
+   * « au centre » (1 = pile au milieu, 0 = hors champ). On la mesure dans les
+   * gestes — jamais pendant le rendu : les refs ne servent pas à rendre.
+   */
+  const [facteurs, setFacteurs] = useState<number[]>([]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Écoute continue du scroll pour calculer la distance au centre
-  const handleScroll = useCallback(() => {
-    if (!scrollContainerRef.current) return;
+  const mesurer = useCallback(() => {
     const container = scrollContainerRef.current;
-    setContainerCenter(container.scrollLeft + container.clientWidth / 2);
-  }, []);
+    if (!container) return;
+    const centre = container.scrollLeft + container.clientWidth / 2;
+    const maxDist = 360;
+    setFacteurs(
+      playlist.map((_, index) => {
+        const card = cardRefs.current[index];
+        if (!card) return 0;
+        const distance = Math.abs(centre - (card.offsetLeft + card.clientWidth / 2));
+        return Math.max(0, 1 - Math.min(distance, maxDist) / maxDist);
+      }),
+    );
+  }, [playlist]);
+
+  // Écoute continue du scroll pour recalculer la distance au centre
+  const handleScroll = useCallback(() => {
+    mesurer();
+  }, [mesurer]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
-    
-    setContainerCenter(container.scrollLeft + container.clientWidth / 2);
+
     container.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll);
 
-    // Centrage initial sur le 3ème morceau
+    // Centrage initial sur le 3ème morceau, puis première mesure.
     const initialTarget = cardRefs.current[2];
     if (initialTarget) {
       container.scrollTo({
@@ -49,12 +66,14 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
         behavior: 'auto',
       });
     }
+    const frame = requestAnimationFrame(mesurer);
 
     return () => {
+      cancelAnimationFrame(frame);
       container.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
     };
-  }, [handleScroll]);
+  }, [handleScroll, mesurer]);
 
   /** Arrête le son quand la page se ferme ou que l'onglet passe en arrière-plan. */
   useEffect(() => {
@@ -168,17 +187,8 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
           {playlist.map((track, idx) => {
             const isPlayingThis = playingId === track.id;
 
-            // Calcul dynamique de la distance au centre du viewport pendant le scroll
-            const cardEl = cardRefs.current[idx];
-            let distFromCenter = 9999;
-            if (cardEl && containerCenter > 0) {
-              const cardCenter = cardEl.offsetLeft + cardEl.clientWidth / 2;
-              distFromCenter = Math.abs(containerCenter - cardCenter);
-            }
-
-            // Normalisation de l'échelle (de 0.88 à 1.10) et de l'opacité (de 0.55 à 1.0)
-            const maxDist = 360;
-            const factor = Math.max(0, 1 - Math.min(distFromCenter, maxDist) / maxDist);
+            // La mesure vient du scroll : échelle de 0.88 à 1.10, opacité de 0.55 à 1.0
+            const factor = facteurs[idx] ?? 0;
             const scale = 0.88 + factor * 0.22;
             const opacity = 0.55 + factor * 0.45;
             const isDominant = factor > 0.65;

@@ -503,3 +503,49 @@ les mariés le voient. Maintenant la page des mariés **se remplit toute seule**
   (la route testée dans `tests/api.test.mjs` : prise, conflit, lâcher d'autrui,
   demande et doublon, reçu idempotent, cloisons entre univers, remise à zéro ; la
   route locale et les gestes testés côté interface), `npm run build` OK.
+
+## 18. Une page entière par métier (passe 23, lot D)
+
+Le DJ avait déjà son studio (`/prestataire?role=…&style=…`) : c'est l'éditeur
+que les mariés connaissent, monté pour un métier dans un univers. Sa **page**,
+c'est autre chose — c'est ce qu'il montre, lui, et à quoi son travail est relié.
+
+- **Une page par métier, pas par univers.** `src/lib/metierPage.ts` :
+  `tousLesMetiers()` (72 métiers, 10 domaines), `slugDeRole()` transforme un
+  intitulé en adresse (`DJ Résident Clubbing / Sound Engineer` →
+  `dj-resident-clubbing-sound-engineer`), `metierParSlug()` rend une `PageMetier`
+  mémoïsée — ou `null` si l'adresse ne correspond à rien. La route est
+  `/metiers/:slug`, dans `src/App.tsx`.
+- **Ce que porte la page** (`src/pages/PageMetier.tsx`) : le grand visuel de
+  l'univers du métier et sa signature, quatre informations (domaine, univers,
+  prix de sa ligne, nombre d'univers où il exerce), le lien à copier, puis :
+  « Venu des mariés » (ce qu'il reçoit, sans le ressaisir), le récit magazine de
+  l'univers, ses moments du jour J et sa mission, « Sa langue » (ses modules :
+  onglets, gestes, outils), son ticket, et les métiers d'à côté.
+- **Le métier lit un rayon du magasin.** `RAYON_PAR_DOMAINE` range chaque
+  domaine dans un rayon de l'univers (cuisine/bar → la table, musique et
+  cérémonie → les moments, image et décor → la sélection) ; ses « lignes » sont
+  celles du rayon, donc le métier voit exactement ce qui se vend sur le ticket
+  du mariage, au même prix.
+- **La musique se retrouve au même endroit.** Les métiers des domaines `dj` et
+  `musicien` (un « Acousticien » en fait partie : c'est le domaine qui tranche,
+  pas l'intitulé) portent en plus la section playlist : ce que les invités ont
+  demandé au comptoir, le terminal DJ et l'ordre de la soirée par moments
+  (`planDj`), dans le même `TicketCaisse` variante `dj`.
+- **Le ticket du métier.** `TicketCaisse` accepte une variante `'metier'` et un
+  `sousTitre` : en-tête « Bon de commande », « Vos lignes sur le ticket », tampon
+  « Confirmé par le couple », pied « Édité depuis la page du mariage · rien à
+  ressaisir ».
+- **Tout est relié.** Le récap du mariage mène à la page de chaque métier engagé
+  (bouton « Sa page » sur les lignes `metier-*` de `RecapCourses`), le menu des
+  métiers de l'accueil ouvre sa page, et l'espace prestataire aussi (« La page
+  entière de ce métier »). Depuis une page de métier, on revient au mariage
+  (`/le-mariage/:styleId`) et on parcourt les métiers voisins — même univers
+  d'abord, puis même domaine, douze au plus.
+- **Adresse inconnue.** `/metiers/pas-un-metier` reste une page : elle le dit et
+  renvoie vers la page du mariage, jamais un écran blanc.
+- **Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **173** / 55 / **243**
+  (72 métiers tous pourvus, adresses uniques, page du DJ : domaine, univers,
+  terminal, ordre de la soirée, comptoir des invités ; page du chef sans
+  playlist mais avec ses lignes du rayon Table ; adresse inconnue), `npm run
+  build` OK.

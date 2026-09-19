@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Check, Printer, RefreshCw, RotateCcw, ShoppingCart, Ticket, UserRound } from 'lucide-react';
+import { slugDeRole } from '../lib/metierPage';
 import TicketCaisse from './TicketCaisse';
 import { EnvoiRecu, QrPage } from './PlaylistCollaborative';
 import { euros, lignesDuTicket, numeroDeTicket, prixDeLArticle, totalCaisse } from '../lib/superMariage';
@@ -304,6 +306,16 @@ export default function RecapCourses({
                               </>
                             )}
                           </button>
+                        )}
+
+                        {/* Un métier a sa page entière : la ligne y mène. */}
+                        {article.id.startsWith('metier-') && (
+                          <Link
+                            to={`/metiers/${slugDeRole(article.id.slice('metier-'.length))}`}
+                            className="shrink-0 rounded-full border border-black/12 px-3 py-1.5 text-[11.5px] font-semibold text-black/60 no-underline transition hover:border-black/35 hover:text-black"
+                          >
+                            Sa page
+                          </Link>
                         )}
                       </div>
                     );

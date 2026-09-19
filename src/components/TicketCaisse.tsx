@@ -14,7 +14,7 @@ import type { BlocDj } from '../lib/weddingTicket';
  * change, parce que le ticket est la monnaie du mariage.
  */
 
-export type VarianteTicket = 'couple' | 'invite' | 'dj';
+export type VarianteTicket = 'couple' | 'invite' | 'dj' | 'metier';
 
 interface Props {
   variante?: VarianteTicket;
@@ -31,8 +31,10 @@ interface Props {
   lignes?: LigneTicket[];
   total?: TotalCaisse;
   remiseLabel?: string;
-  /** Le nom de l'invité (variante invité). */
+  /** Le nom de l'invité, ou celui du métier (variantes invité et métier). */
   nom?: string;
+  /** Le sous-titre de l'en-tête (variante métier : le domaine). */
+  sousTitre?: string;
   /** Le plan de la soirée (variante DJ). */
   plan?: BlocDj[];
   /** Le nombre de morceaux du socle, et de demandes d'invités (variante DJ). */
@@ -52,19 +54,23 @@ export default function TicketCaisse({
   total,
   remiseLabel,
   nom,
+  sousTitre,
   plan = [],
   nbMorceaux = 0,
   nbDemandes = 0,
 }: Props) {
   const invite = variante === 'invite';
   const dj = variante === 'dj';
+  const metier = variante === 'metier';
   const aDesLignes = lignes.length > 0;
 
   const enTete = dj
     ? { titre: 'VOWS · TERMINAL DJ', sous: 'Playlist complète à emporter' }
-    : invite
-      ? { titre: magasin.nom, sous: `Reçu invité · ${magasin.slogan}` }
-      : { titre: magasin.nom, sous: magasin.slogan };
+    : metier
+      ? { titre: magasin.nom, sous: `Bon de commande · ${sousTitre ?? 'Métier'}` }
+      : invite
+        ? { titre: magasin.nom, sous: `Reçu invité · ${magasin.slogan}` }
+        : { titre: magasin.nom, sous: magasin.slogan };
 
   return (
     <div className="relative mx-auto w-full max-w-[420px]">
@@ -98,13 +104,13 @@ export default function TicketCaisse({
           {/* L'article principal */}
           <div className="mt-5 border-b border-dashed border-black/20 pb-4">
             <div className="text-[10px] uppercase tracking-widest text-black/40">
-              {invite ? 'Le reçu de' : dj ? 'Le socle' : 'Article principal'}
+              {invite ? 'Le reçu de' : metier ? 'Le métier' : dj ? 'Le socle' : 'Article principal'}
             </div>
             <div className="mt-1 text-[19px] font-black leading-none tracking-tight">
-              {(invite ? nom ?? 'Invité' : couple.noms).toUpperCase()}
+              {(invite || metier ? nom ?? (invite ? 'Invité' : 'Métier') : couple.noms).toUpperCase()}
             </div>
             <div className="mt-1 text-[10.5px] text-black/60">
-              {dj
+              {dj || metier
                 ? `${couple.noms} · ${couple.date}`
                 : `${couple.date} · ${couple.venue}`}
             </div>
@@ -114,7 +120,7 @@ export default function TicketCaisse({
                   <span className="rounded bg-black px-2 py-0.5 text-white">{nbMorceaux} MORCEAUX</span>
                   <span className="text-black/45">{nbDemandes} DEMANDE{nbDemandes > 1 ? 'S' : ''} D’INVITÉS</span>
                 </>
-              ) : invite ? (
+              ) : invite || metier ? (
                 <>
                   <span className="rounded bg-black px-2 py-0.5 text-white">{lignes.length} LIGNE{lignes.length > 1 ? 'S' : ''}</span>
                   <span className="text-black/45">POUR {couple.noms.toUpperCase()}</span>
@@ -174,7 +180,8 @@ export default function TicketCaisse({
             ) : (
               <>
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em]">
-                  <ShoppingCart size={12} /> {invite ? 'Ce que vous prenez' : 'Vos courses'}
+                  <ShoppingCart size={12} />{' '}
+                  {invite ? 'Ce que vous prenez' : metier ? 'Vos lignes sur le ticket' : 'Vos courses'}
                 </div>
 
                 {!aDesLignes ? (
@@ -184,6 +191,12 @@ export default function TicketCaisse({
                         Rien de pris pour l’instant.
                         <br />
                         Choisissez une ligne : votre reçu s’imprime ici.
+                      </>
+                    ) : metier ? (
+                      <>
+                        Aucune ligne pour l’instant.
+                        <br />
+                        Les mariés n’ont rien validé sur ce poste.
                       </>
                     ) : (
                       <>
@@ -280,11 +293,15 @@ export default function TicketCaisse({
               </span>
             ) : paye ? (
               <span className="inline-flex -rotate-[4deg] items-center gap-1.5 rounded border-2 border-black px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em]">
-                <Check size={12} /> {invite ? 'Réservé · merci' : 'Payé · merci'}
+                <Check size={12} /> {invite ? 'Réservé · merci' : metier ? 'Confirmé par le couple' : 'Payé · merci'}
               </span>
             ) : (
               <span className="inline-block rounded border border-dashed border-black/35 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-black/50">
-                {invite ? 'Ticket en cours · rien de pris' : 'Ticket en cours · passez à la caisse'}
+                {invite
+                  ? 'Ticket en cours · rien de pris'
+                  : metier
+                    ? 'En attente du couple'
+                    : 'Ticket en cours · passez à la caisse'}
               </span>
             )}
           </div>
@@ -308,9 +325,11 @@ export default function TicketCaisse({
             <br />
             {dj
               ? 'Remis au DJ le soir du jour J · playlist du couple et demandes des invités'
-              : invite
-                ? `Reçu invité · les mariés reçoivent la même liste · pour ${couple.noms}`
-                : 'Ticket non échangeable, amour définitif'}
+              : metier
+                ? 'Édité depuis la page du mariage · rien à ressaisir'
+                : invite
+                  ? `Reçu invité · les mariés reçoivent la même liste · pour ${couple.noms}`
+                  : 'Ticket non échangeable, amour définitif'}
             <br />
             Tarifs indicatifs — aucun paiement réel
           </div>

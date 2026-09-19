@@ -19,7 +19,9 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { metiersParDomaine } from '../lib/weddingVendors';
+import { slugDeRole } from '../lib/metierPage';
 import { styleById, type WeddingStyle } from '../lib/weddingStyles';
 
 /**
@@ -152,7 +154,13 @@ export default function VendorDomainMenu({ onSelectStyle, open, onOpenChange }: 
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {ouvert.metiers.map((metier) => (
                       <div key={metier.role} className="rounded-[22px] bg-[#F7F7F8] p-4">
-                        <div className="text-[13.5px] font-bold text-[#0B0C12]">{metier.role}</div>
+                        <Link
+                          to={`/metiers/${slugDeRole(metier.role)}`}
+                          className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-[#0B0C12] no-underline transition hover:gap-2.5"
+                        >
+                          {metier.role}
+                          <ArrowRight size={13} className="text-[#0B0C12]/45" />
+                        </Link>
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {metier.universes.slice(0, 4).map((univers) => (
                             <button
