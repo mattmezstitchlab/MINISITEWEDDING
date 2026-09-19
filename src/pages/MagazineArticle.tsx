@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
@@ -5,6 +6,8 @@ import { articleBySlug, badgeDUnivers, relatedArticles, UNIVERSE_ARTICLES } from
 import { styleById } from '../lib/weddingStyles';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesMoments, morceauDUneUnivers } from '../lib/cartesVivantes';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_ARTICLE } from '../lib/navDesPages';
 import RichText from '../components/RichText';
 
 /**
@@ -17,6 +20,12 @@ import RichText from '../components/RichText';
 export default function MagazineArticle() {
   const { slug } = useParams<{ slug: string }>();
   const article = slug ? articleBySlug(slug) : undefined;
+
+  // La nav de droite : lire, les moments, tous les articles.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_ARTICLE);
+    return () => enregistrerNavVerticale(null);
+  }, []);
 
   if (!article) return <Navigate to="/magazine" replace />;
 

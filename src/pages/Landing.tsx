@@ -10,6 +10,8 @@ import OuvertureSite from '../components/OuvertureSite';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesPersonas, cartesDesUnivers } from '../lib/cartesVivantes';
 import { definirPersonaCourant, definirPersonaSurvolee, enregistrerControlesBande } from '../lib/personaCourant';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_ACCUEIL } from '../lib/navDesPages';
 import SiteHeader from '../components/SiteHeader';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
@@ -53,6 +55,12 @@ export default function Landing() {
   useEffect(() => {
     definirPersonaCourant(persona.id);
   }, [persona.id]);
+
+  // La nav de droite : la carte, les univers, le mariage, la playlist.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_ACCUEIL);
+    return () => enregistrerNavVerticale(null);
+  }, []);
 
   /** Les deux flèches, posées de chaque côté du dock : elles mènent la bande. */
   const suivant = () => setPersonaId(PERSONNAGES[(indexPersona + 1) % PERSONNAGES.length]!.id);

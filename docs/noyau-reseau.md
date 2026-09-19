@@ -1070,3 +1070,33 @@ capsule** — et rien quand aucune bande n'est menée.
 
 **Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
 178 / 55 / **451**, `npm run build` OK.
+
+## 32. La nav verticale, différente sur chaque page (passe 37)
+
+**Les deux portes passent en blanc.** Le caddie et le magazine de la barre sont
+désormais **blancs, picto noir** (`border-white bg-white text-[#0B0C12]`) : on les
+voit sur n'importe quel visuel, et l'encre ne se perd plus dans le hero.
+
+**Une capsule verticale à droite, propre à chaque page.** `NavVerticale` se pose
+au milieu du bord droit (`fixed right-3 top-1/2`, `hidden sm:block`) : en haut
+**le Shop et le Magazine** (les deux portes, en blanc, et scopées si un rôle est
+survolé), un filet, puis **ce que la page propose** — son article, son
+programme, sa carte de fidélité, sa playlist, ses pièces, ses détails, de quoi
+créer sa carte. Le nom de chaque action s'écrit au survol, à gauche de la
+capsule ; un clic descend vers la section (ancre) ou ouvre la page.
+
+**Chaque page déclare la sienne.** `src/lib/navDesPages.ts` tient les huit listes
+(accueil, univers, métier, magazine, article, shop, produit, prestataire), et
+chaque page les enregistre (`enregistrerNavVerticale`) — la capsule est montée
+une seule fois, dans `SiteChrome`, et suit la page. **Aucune action ne mène dans
+le vide** : chaque ancre existe réellement (`#ecran`, `#univers`, `#site`,
+`#bande-son`, `#article`, `#programme`, `#carte-fidelite`, `#playlist`,
+`#ticket`, `#pieces`, `#modes`, `#details`, `#similaires`, `#editeur`), et les
+identifiants manquants ont été posés sur les sections qui les portent.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+178 / 55 / **459** (les deux pictos blancs de la barre ; huit navs, deux actions
+minimum chacune, jamais d'ancre **et** de page à la fois ; toutes les ancres
+présentes dans le rendu des pages ; la capsule qui porte le shop, le magazine et
+les actions de la page, qui change avec elle et se tient à droite),
+`npm run build` OK.

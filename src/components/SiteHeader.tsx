@@ -7,9 +7,10 @@ import { NOM_DU_SITE } from '../lib/nomDuSite';
  * LA BARRE DU SITE
  *
  * Une seule ligne posée sur le hero, sans fond : **le nom**, et à droite les
- * deux portes — le caddie pour le Shop, le magazine pour le Magazine. Pas de
- * capsule : la barre laisse voir le hero, et un voile très doux tient la
- * lisibilité du blanc quand la page défile.
+ * deux portes — le caddie pour le Shop, le magazine pour le Magazine, **en blanc
+ * sur encre noire** : on les voit sur n'importe quel visuel. Pas de capsule : la
+ * barre laisse voir le hero, et un voile très doux tient la lisibilité du blanc
+ * quand la page défile.
  *
  * **Tout suit le rôle qu'on regarde.** On survole « SUPER PHOTOGRAPHE » : le nom
  * devient le sien, et les deux portes deviennent les siennes — son Shop (les
@@ -58,7 +59,7 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
             to={`/shop${suite}`}
             aria-label={survole ? `Le Shop de ${survole.nom}` : 'Le Shop'}
             title={survole ? `Le Shop de ${survole.nom}` : 'Le Shop'}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/30 text-white backdrop-blur-md transition hover:border-white hover:bg-white hover:text-[#0B0C12]"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white bg-white text-[#0B0C12] shadow-[0_6px_18px_rgba(0,0,0,0.35)] transition hover:scale-105 hover:bg-black hover:text-white"
           >
             <ShoppingCart size={16} />
           </Link>
@@ -66,7 +67,7 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
             to={`/magazine${suite}`}
             aria-label={survole ? `Le Magazine de ${survole.nom}` : 'Le Magazine'}
             title={survole ? `Le Magazine de ${survole.nom}` : 'Le Magazine'}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/30 text-white backdrop-blur-md transition hover:border-white hover:bg-white hover:text-[#0B0C12]"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white bg-white text-[#0B0C12] shadow-[0_6px_18px_rgba(0,0,0,0.35)] transition hover:scale-105 hover:bg-black hover:text-white"
           >
             <BookOpen size={16} />
           </Link>

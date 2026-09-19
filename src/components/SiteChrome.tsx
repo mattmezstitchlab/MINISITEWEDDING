@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import SiteHeader from './SiteHeader';
 import BottomCapsuleNav from './BottomCapsuleNav';
+import NavVerticale from './NavVerticale';
 
 /**
  * LA NAVIGATION DU SITE, POSÉE UNE SEULE FOIS
@@ -52,6 +53,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       {/* La barre est la même partout : le nom, le caddie, le magazine. Les
           univers, eux, se parcourent dans la bande, sous le hero. */}
       {pathname !== '/' && <SiteHeader mention={mention} />}
+      {/* La nav verticale : à droite, et différente sur chaque page. */}
+      <NavVerticale />
       {/* Le dock est fixe : la page laisse la place au bas. */}
       <div className="pb-24">{children}</div>
       <BottomCapsuleNav />

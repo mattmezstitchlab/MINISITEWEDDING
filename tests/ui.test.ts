@@ -58,6 +58,7 @@ import { totalCaisse } from '../src/lib/superMariage';
 import PreviewSite from '../src/pages/PreviewSite';
 import OuvertureSite from '../src/components/OuvertureSite';
 import BottomCapsuleNav from '../src/components/BottomCapsuleNav';
+import NavVerticale from '../src/components/NavVerticale';
 import LecteurHero from '../src/components/LecteurHero';
 import Magazine from '../src/pages/Magazine';
 import MagazineArticle from '../src/pages/MagazineArticle';
@@ -68,6 +69,10 @@ import { articlesPourRole, phraseShopDuRole, piecesPourRole } from '../src/lib/p
 import { cartesDesMoments, cartesDesPersonas, cartesDesProduits, cartesDesUnivers } from '../src/lib/cartesVivantes';
 import { PERSONNAGES, VISUELS_DU_HERO } from '../src/lib/personas';
 import { definirPersonaSurvolee, enregistrerControlesBande, personaCourant } from '../src/lib/personaCourant';
+import { enregistrerNavVerticale } from '../src/lib/navVerticale';
+import {
+  NAV_ACCUEIL, NAV_ARTICLE, NAV_MAGAZINE, NAV_METIER, NAV_PRODUIT, NAV_PRESTATAIRE, NAV_SHOP, NAV_UNIVERS,
+} from '../src/lib/navDesPages';
 import { FULL_ROLES_TAXONOMY } from '../src/lib/weddingTaxonomy';
 import { DUREE_OUVERTURE, DUREE_OUVERTURE_SANS_MOUVEMENT, ouvertureDejaVue } from '../src/lib/ouverture';
 import { appliquerGeste } from '../src/lib/liveRules';
@@ -915,8 +920,10 @@ const chromeAccueil = renderToStaticMarkup(
     createElement(SiteChrome, null, createElement('div', null, 'contenu')),
   ),
 );
-check('sur l’accueil, le chrome ne double pas la barre de la page', chromeAccueil.includes('Magazine'), false);
+check('sur l’accueil, le chrome ne double pas la barre de la page', chromeAccueil.includes('SUPER MARIAGE'), false);
 check('mais le dock y est', chromeAccueil.includes('SUPER MARIÉS'), true);
+/* La nav verticale, elle, est montée une fois pour tout le site. */
+check('la nav verticale y est', chromeAccueil.includes('aria-label="Le Magazine"'), true);
 const chromeSite = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -1482,6 +1489,66 @@ const pageMagazinePhoto = renderToStaticMarkup(
 );
 check('le magazine dit de qui il est', pageMagazinePhoto.includes('Le Magazine de SUPER PHOTOGRAPHE'), true);
 check('et reste ouvert en entier', pageMagazinePhoto.includes('Tout le magazine'), true);
+
+/* ------------- la nav verticale : le shop, le magazine, et la page ---------- */
+
+/** La nav d'une page, par son nom. */
+function navDePage(nom: string) {
+  const parNom: Record<string, typeof NAV_ACCUEIL> = {
+    accueil: NAV_ACCUEIL, univers: NAV_UNIVERS, metier: NAV_METIER, magazine: NAV_MAGAZINE,
+    article: NAV_ARTICLE, shop: NAV_SHOP, produit: NAV_PRODUIT, prestataire: NAV_PRESTATAIRE,
+  };
+  return parNom[nom] ?? [];
+}
+const NAV = { get: navDePage };
+
+/* La capsule est différente sur chaque page : chaque liste vise ses sections. */
+const NAVS: Array<[string, ReturnType<typeof navDePage>]> = [
+  ['l’accueil', NAV_ACCUEIL],
+  ['un univers', NAV_UNIVERS],
+  ['un métier', NAV_METIER],
+  ['le magazine', NAV_MAGAZINE],
+  ['un article', NAV_ARTICLE],
+  ['le shop', NAV_SHOP],
+  ['une fiche produit', NAV_PRODUIT],
+  ['l’espace prestataire', NAV_PRESTATAIRE],
+];
+check('chaque page a sa nav', NAVS.every(([, liste]) => liste.length >= 2), true);
+check(
+  'aucune action ne mène dans le vide',
+  NAVS.every(([, liste]) => liste.every((a) => Boolean(a.ancre) !== Boolean(a.to))),
+  true,
+);
+
+/* Les ancres existent vraiment dans les pages qui les annoncent. */
+const ancresAttendues: Record<string, string[]> = {
+  accueil: ['ecran', 'univers', 'site', 'bande-son'],
+  univers: ['article', 'programme', 'carte-fidelite'],
+  metier: ['playlist', 'ticket'],
+  article: ['article'],
+  shop: ['pieces', 'modes'],
+  produit: ['details', 'similaires'],
+  prestataire: ['editeur'],
+};
+const sourceDuSite = [accueil, universBande, metierBande, pageArticle, pageShop, pageProduit, pagePrestataire, pageMagazine].join(' ');
+check(
+  'les ancres de la nav existent dans les pages',
+  Object.values(ancresAttendues).flat().every((ancre) => sourceDuSite.includes(`id="${ancre}"`)),
+  true,
+);
+
+/* La capsule : le shop, le magazine, puis les actions de la page. */
+enregistrerNavVerticale(NAV_UNIVERS);
+const navRendue = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(NavVerticale as never)));
+enregistrerNavVerticale(null);
+check('la nav porte le shop et le magazine', ['aria-label="Le Shop"', 'aria-label="Le Magazine"'].every((l) => navRendue.includes(l)), true);
+check('et les actions de la page', ['L’article', 'Le programme', 'La carte de fidélité'].every((l) => navRendue.includes(l)), true);
+check(
+  'avec les actions d’une autre page, elle change',
+  NAV.get('accueil')!.every((a) => navRendue.includes(a.label)),
+  false,
+);
+check('elle se tient à droite', navRendue.includes('fixed right-3 top-1/2'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

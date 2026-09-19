@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowRight, BadgeCheck, Building2, Check, Copy, Radio, Sparkles, Users,
@@ -12,6 +12,8 @@ import { planDj } from '../lib/weddingTicket';
 import { useComptoir } from '../lib/terminalLive';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesMetiers } from '../lib/cartesVivantes';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_METIER } from '../lib/navDesPages';
 import { metiersVoisins, pageMetier, resumeMetier, slugDeRole, type PageMetier as Donnees } from '../lib/metierPage';
 import { formatDateLong } from '../lib/format';
 import { DJ_CHRONOLOGICAL_PHASES } from '../lib/weddingDjPlaylist';
@@ -28,6 +30,12 @@ import { DJ_CHRONOLOGICAL_PHASES } from '../lib/weddingDjPlaylist';
 export default function PageMetier() {
   const { slug } = useParams<{ slug: string }>();
   const page: Donnees | null = useMemo(() => (slug ? pageMetier(slug) : null), [slug]);
+
+  // La nav de droite : la playlist, le ticket, les autres métiers.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_METIER);
+    return () => enregistrerNavVerticale(null);
+  }, []);
 
   if (!page) {
     return (
@@ -78,7 +86,7 @@ function PageMetierContenu({ page }: { page: Donnees }) {
   return (
     <div className="bg-[#FBFAF8] text-[#14130F]">
       {/* ═══════════════════════════ LE HERO ═══════════════════════════ */}
-      <header className="relative min-h-[100svh] overflow-hidden">
+      <header id="hero" className="relative min-h-[100svh] overflow-hidden">
         <img src={style.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-[#0A0A0A]/35" />
 

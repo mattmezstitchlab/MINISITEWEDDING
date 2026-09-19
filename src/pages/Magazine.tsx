@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
@@ -11,6 +11,8 @@ import {
 } from '../lib/magazine';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_MAGAZINE } from '../lib/navDesPages';
 
 /**
  * LE MAGAZINE
@@ -39,6 +41,13 @@ export default function Magazine() {
   const role = roleDuneAdresse(params.get('role'));
 
   const siens = useMemo(() => (role ? articlesPourRole(role.id) : null), [role]);
+
+  // La nav de droite : les articles, et de quoi faire ses courses.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_MAGAZINE);
+    return () => enregistrerNavVerticale(null);
+  }, []);
+
   const listeUnivers = role ? [] : UNIVERSE_ARTICLES;
   const listeGuides = role ? siens!.filter((a) => a.category === 'guide') : GUIDE_ARTICLES;
   const listeInsolite = role ? siens!.filter((a) => a.category === 'insolite') : INSOLITE_ARTICLES;
@@ -173,6 +182,7 @@ export default function Magazine() {
       )}
 
       {/* Les grilles d'articles */}
+      <div id="articles" />
       {[
         { titre: role ? 'Choisis pour ce rôle' : 'Les univers, racontés', liste: role ? siens! : listeUnivers, visible: filtre !== 'guide' },
         { titre: 'Les guides', liste: listeGuides, visible: filtre === 'tout' || filtre === 'guide' },

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, Gift, Handshake, ShoppingBag, Truck } from 'lucide-react';
@@ -5,6 +6,8 @@ import { SHOP_CATEGORIES, modeLabel, productBySlug, similarProducts, type ShopMo
 import ShopImage from '../components/ShopImage';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesProduits } from '../lib/cartesVivantes';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_PRODUIT } from '../lib/navDesPages';
 import { UNIVERSE_ARTICLES } from '../lib/magazine';
 import { styleById } from '../lib/weddingStyles';
 
@@ -27,6 +30,12 @@ const ICONES_MODE: Record<ShopMode, typeof Truck> = {
 export default function ShopProduct() {
   const { slug } = useParams<{ slug: string }>();
   const produit = slug ? productBySlug(slug) : undefined;
+
+  // La nav de droite : les détails, le même univers, le shop.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_PRODUIT);
+    return () => enregistrerNavVerticale(null);
+  }, []);
 
   if (!produit) return <Navigate to="/shop" replace />;
 
@@ -155,7 +164,7 @@ export default function ShopProduct() {
           </div>
 
           {/* Ce que comprend la pièce */}
-          <section className="mt-14">
+          <section id="details" className="mt-14">
             <h2 className="vp-title text-[22px]">Ce que ça comprend</h2>
             <ul className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               {produit.includes.map((item) => (
@@ -180,7 +189,7 @@ export default function ShopProduct() {
           </div>
 
           {/* Ce qui va avec */}
-          <section className="mt-14 border-t border-black/8 pt-10">
+          <section id="similaires" className="mt-14 border-t border-black/8 pt-10">
             <div className="flex items-baseline justify-between gap-2">
               <h2 className="vp-title text-[22px]">Articles similaires</h2>
               <Link to="/shop" className="text-[12.5px] font-semibold text-black/55 underline transition hover:text-black">

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import VendorSiteStudio from '../components/VendorSiteStudio';
@@ -7,6 +8,8 @@ import { DOMAINES, domaineDe } from '../lib/weddingVendors';
 import { slugDeRole } from '../lib/metierPage';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesMetiersDuRole } from '../lib/cartesVivantes';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_PRESTATAIRE } from '../lib/navDesPages';
 
 /**
  * L'ESPACE DU PRESTATAIRE
@@ -25,6 +28,12 @@ export default function VendorStudio() {
   const styleId = params.get('style')?.trim() || STYLE_DEFAUT;
   const style = styleById(styleId);
   const domaine = DOMAINES[domaineDe(role)] ?? DOMAINES.polyvalent;
+
+  // La nav de droite : le mini-site, les autres métiers.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_PRESTATAIRE);
+    return () => enregistrerNavVerticale(null);
+  }, []);
 
   return (
     <div className="vp-env min-h-screen bg-[#FBFAF8] text-[#0B0C12]">

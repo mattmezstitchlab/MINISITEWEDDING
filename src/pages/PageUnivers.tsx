@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Check, Copy, Music2, Sparkles, Ticket } from 'lucide-react';
 import BandeDuHero from '../components/BandeDuHero';
@@ -9,6 +9,8 @@ import RecapCourses from '../components/RecapCourses';
 import { contentFor } from '../lib/universeContent';
 import { getComplementaryStyles } from '../lib/weddingStyles';
 import { cartesDesUnivers } from '../lib/cartesVivantes';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_UNIVERS } from '../lib/navDesPages';
 import { getScenesForStyle } from '../lib/themeTimelineScenarios';
 import { trackForText } from '../lib/weddingSoundtrack';
 import { daysUntil, formatDateLong } from '../lib/format';
@@ -36,6 +38,12 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
   /** Le reçu d'un invité, quand on ouvre son lien. */
   const codeRecu = params.get('recu');
 
+
+  // La nav de droite : l'article, le programme, la carte de fidélité.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_UNIVERS);
+    return () => enregistrerNavVerticale(null);
+  }, []);
   const aujourdHui = useMemo(() => new Date(), []);
   const dateLabel = aujourdHui.toLocaleDateString('fr-FR');
   const heureLabel = `${aujourdHui.getHours()}h${String(aujourdHui.getMinutes()).padStart(2, '0')}`;
@@ -93,7 +101,7 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
   return (
     <div style={{ background: tons.papier, color: '#14130F' }}>
       {/* ═══════════════════════════ LE HERO ═══════════════════════════ */}
-      <header className="relative min-h-[100svh] overflow-hidden">
+      <header id="hero" className="relative min-h-[100svh] overflow-hidden">
         <img src={style.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-[#0A0A0A]/35" />
 

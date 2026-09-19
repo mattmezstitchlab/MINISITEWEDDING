@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Gift, Handshake, ShoppingBag, Tag, Truck } from 'lucide-react';
@@ -15,6 +15,8 @@ import ShopImage from '../components/ShopImage';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesProduits, PRODUITS_POUR_BANDE } from '../lib/cartesVivantes';
 import { phraseShopDuRole, piecesPourRole, roleDuneAdresse } from '../lib/personaSuites';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_SHOP } from '../lib/navDesPages';
 
 /**
  * LE SHOP
@@ -52,6 +54,13 @@ export default function Shop() {
    */
   const [params] = useSearchParams();
   const role = roleDuneAdresse(params.get('role'));
+
+  // La nav de droite : les pièces, les modes, le magazine.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_SHOP);
+    return () => enregistrerNavVerticale(null);
+  }, []);
+
   const piecesDuRole = useMemo(() => (role ? piecesPourRole(role.id) : null), [role]);
 
   const produits = useMemo(() => {
@@ -138,7 +147,7 @@ export default function Shop() {
       )}
 
       {/* Les quatre modes */}
-      <section className="pb-8 pt-10 sm:pt-14">
+      <section id="modes" className="pb-8 pt-10 sm:pt-14">
         <div className="vp-page">
           <div className="flex flex-wrap gap-2">
             {SHOP_MODES.map((mode) => {
@@ -195,7 +204,7 @@ export default function Shop() {
       </section>
 
       {/* La grille de produits */}
-      <section className="py-12">
+      <section id="pieces" className="py-12">
         <div className="vp-page">
           <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="vp-title text-[20px]">
