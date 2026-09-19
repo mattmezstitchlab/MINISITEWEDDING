@@ -1035,3 +1035,38 @@ badge, phrase et média ; le play qui fait entrer, pour les trois cartes, et plu
 de bouton à part ; le dock qui porte les outils du personnage, les mêmes que ses
 entrées, qui garde la capsule du site, suit le personnage et défile),
 `npm run build` OK.
+
+## 31. Tout suit le rôle : le nom, les deux portes, le dock (passe 36)
+
+**Le nom se transforme.** On survole « SUPER PHOTOGRAPHE » : le nom du site
+devient le sien, et redevient **SUPER MARIAGE** dès qu'on ne survole plus rien
+(`personaCourant` porte le survol, la barre le lit). Le nom vit maintenant dans
+`src/lib/nomDuSite.ts`, écrit une fois.
+
+**Les deux portes deviennent les siennes.** Pendant qu'un rôle est survolé, le
+caddie mène à `/shop?role=…` et le magazine à `/magazine?role=…` — **son** shop,
+**son** magazine, et leurs infobulles le disent. `src/lib/personaSuites.ts` sait
+ce qui concerne un rôle : les catégories du shop (le fleuriste voit le décor, le
+DJ voit la lumière et le mobilier) et les mots qui rattachent un article (titre
+et chapô seuls — le corps cite tout le monde). Les mariés, eux, voient tout.
+
+**Le rôle remplace les filtres.** Le Shop d'un rôle n'affiche que ses pièces
+(9 pour le fleuriste), le Magazine que ses articles (10 pour le photographe) —
+les catégories et les modes restent pour affiner, jamais pour trier, et « Tout le
+shop » / « Tout le magazine » ramènent le catalogue entier.
+
+**Le dock porte les outils du rôle.** Les pictos du site (Accueil, La carte,
+Prestataires, Zéro contrainte, Playlist) quittent la capsule : **le rôle ouvre le
+dock de son propre picto**, puis ses outils — ceux de ses entrées — avec leur
+picto à chacun et leur page. Quand le rôle défile dans le hero, les outils du
+dock changent avec lui.
+
+**Les flèches encadrent le dock.** Les rôles sont des cartes vivantes, posées
+**dans le hero, juste au-dessus du dock** (`bottom-[6.5rem]`), et le texte du
+hero remonte (`contenuClassName="-translate-y-[10vh]"`) pour qu'elles se voient.
+Les deux flèches ont quitté la bande : la page enregistre ses deux gestes
+(`enregistrerControlesBande`), le dock les affiche **de chaque côté de la
+capsule** — et rien quand aucune bande n'est menée.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+178 / 55 / **451**, `npm run build` OK.

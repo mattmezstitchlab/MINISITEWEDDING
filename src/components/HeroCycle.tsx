@@ -34,6 +34,8 @@ interface HeroCycleProps {
   /** Celui qui est à l'écran. */
   actifId?: string;
   className?: string;
+  /** Ce qui remonte le texte du hero, quand les cartes occupent le bas. */
+  contenuClassName?: string;
 }
 
 export default function HeroCycle({
@@ -41,6 +43,7 @@ export default function HeroCycle({
   visuels = WEDDING_STYLES.map((s) => ({ id: s.id, image: s.image, aura: s.aura, nom: s.name })),
   actifId,
   className = '',
+  contenuClassName = '',
 }: HeroCycleProps) {
   const reduced = usePrefersReducedMotion();
   const courant = Math.max(0, visuels.findIndex((v) => v.id === actifId));
@@ -90,7 +93,7 @@ export default function HeroCycle({
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/65" />
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-4xl">{children}</div>
+      <div className={`relative z-10 mx-auto w-full max-w-4xl ${contenuClassName}`}>{children}</div>
     </header>
   );
 }

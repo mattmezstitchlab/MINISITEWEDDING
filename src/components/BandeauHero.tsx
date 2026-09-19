@@ -35,6 +35,10 @@ interface BandeauHeroProps {
   onChoisir?: (carte: CarteVivante) => void;
   /** Ce que fait le play, quand ce n'est pas jouer : « Entrer ». */
   libelleAction?: string;
+  /** On regarde une carte : la page s'accorde à elle (le nom, les portes). */
+  onSurvol?: (carte: CarteVivante | null) => void;
+  /** Vrai pour la bande posée dans le hero : son libellé s'écrit en blanc. */
+  premiere?: boolean;
 }
 
 export default function BandeauHero({
@@ -45,6 +49,8 @@ export default function BandeauHero({
   onJouer,
   onChoisir,
   libelleAction,
+  onSurvol,
+  premiere = false,
 }: BandeauHeroProps) {
   const navigate = useNavigate();
   const { compte, aime, basculer } = useAvis(styleId);
@@ -68,6 +74,8 @@ export default function BandeauHero({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       className={cote ? 'hidden opacity-60 transition-opacity hover:opacity-100 sm:block' : ''}
+      onMouseEnter={() => onSurvol?.(carte)}
+      onMouseLeave={() => onSurvol?.(null)}
     >
       <CarteVivanteUI
         carte={carte}
@@ -85,7 +93,11 @@ export default function BandeauHero({
 
   return (
     <div className="w-full">
-      <div className="mb-1 text-center font-mono text-[9.5px] uppercase tracking-[0.22em] text-black/40">
+      <div
+        className={`mb-1 text-center font-mono text-[9.5px] uppercase tracking-[0.22em] ${
+          premiere ? 'text-white/60' : 'text-black/40'
+        }`}
+      >
         {libelle}
       </div>
 

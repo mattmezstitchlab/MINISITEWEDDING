@@ -31,8 +31,13 @@ interface BandeDuHeroProps {
   libelleAction?: string;
   /** Vrai quand un média occupe le hero : la page peut retenir son défilé. */
   onLecture?: (enLecture: boolean) => void;
-  /** Vrai pour la bande collée au hero : elle remonte à moitié dessus. */
+  /**
+   * Vrai pour la bande **posée dans le hero** : pas de fond, pas de bord — les
+   * cartes flottent sur le visuel, et son libellé s'écrit en blanc.
+   */
   premiere?: boolean;
+  /** On regarde une carte : la page s'accorde à elle. */
+  onSurvol?: (carte: CarteVivante | null) => void;
 }
 
 export default function BandeDuHero({
@@ -44,6 +49,7 @@ export default function BandeDuHero({
   libelleAction,
   onLecture,
   premiere = false,
+  onSurvol,
 }: BandeDuHeroProps) {
   const [carte, setCarte] = useState<CarteVivante | null>(null);
   const [enLecture, setEnLecture] = useState(false);
@@ -78,9 +84,11 @@ export default function BandeDuHero({
 
   return (
     <section
-      className={`relative z-40 border-b border-black/5 bg-white pb-6 pt-5 sm:pb-8 sm:pt-6 ${
-        premiere ? '-mt-32 sm:-mt-36' : ''
-      }`}
+      className={
+        premiere
+          ? 'relative z-30'
+          : 'relative z-40 border-b border-black/5 bg-white pb-6 pt-5 sm:pb-8 sm:pt-6'
+      }
     >
       {/* Le média prend le hero : le lecteur se pose au-dessus de la bande,
           sur la hauteur d'un écran. */}
@@ -106,6 +114,8 @@ export default function BandeDuHero({
           onJouer={jouer}
           onChoisir={onChoisir}
           libelleAction={libelleAction}
+          onSurvol={onSurvol}
+          premiere={premiere}
         />
       </div>
     </section>

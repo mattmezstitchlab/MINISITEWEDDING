@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
 import {
@@ -10,6 +10,7 @@ import {
   UNIVERSE_ARTICLES,
 } from '../lib/magazine';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
+import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
 
 /**
  * LE MAGAZINE
@@ -27,8 +28,24 @@ const fadeUp = {
 export default function Magazine() {
   const [filtre, setFiltre] = useState<'tout' | 'univers' | 'guide' | 'insolite'>('tout');
   const [visuelHero, setVisuelHero] = useState(true);
-  const aLaUne = UNIVERSE_ARTICLES[0];
-  const total = UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length + INSOLITE_ARTICLES.length;
+  /**
+   * LE MAGAZINE D'UN RÔLE
+   *
+   * « ?role=photographe » : le magazine ne parle plus que de ce qui concerne ce
+   * rôle — ses conseils, ses articles. Les filtres restent, mais ils filtrent
+   * d'abord ce qui le regarde : c'est le rôle qui remplace le tri par défaut.
+   */
+  const [params] = useSearchParams();
+  const role = roleDuneAdresse(params.get('role'));
+
+  const siens = useMemo(() => (role ? articlesPourRole(role.id) : null), [role]);
+  const listeUnivers = role ? [] : UNIVERSE_ARTICLES;
+  const listeGuides = role ? siens!.filter((a) => a.category === 'guide') : GUIDE_ARTICLES;
+  const listeInsolite = role ? siens!.filter((a) => a.category === 'insolite') : INSOLITE_ARTICLES;
+  const aLaUne = role ? siens![0] ?? GUIDE_ARTICLES[0]! : UNIVERSE_ARTICLES[0]!;
+  const total = role
+    ? siens!.length
+    : UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length + INSOLITE_ARTICLES.length;
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
@@ -49,17 +66,19 @@ export default function Magazine() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
 
         <div className="vp-page relative w-full pb-10 sm:pb-14">
-          <span className="vp-eyebrow !text-white/70">Le Magazine Super Mariage</span>
+          <span className="vp-eyebrow !text-white/70">
+            {role ? `Le Magazine de ${role.nom}` : 'Le Magazine Super Mariage'}
+          </span>
           <h1
             className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
             style={{ fontSize: 'clamp(2.2rem, 5.4vw, 4.2rem)', lineHeight: 1.04 }}
           >
-            Ce qu’il faut savoir avant de choisir.
+            {role ? 'Les articles qui parlent de ce rôle.' : 'Ce qu’il faut savoir avant de choisir.'}
           </h1>
           <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-white/75">
-            {UNIVERSE_ARTICLES.length} univers racontés en détail — le lieu, la journée heure par heure, les métiers
-            qui la font tourner — et {GUIDE_ARTICLES.length} guides sur ce qui vaut pour tous les mariages :
-            rétroplanning, budget, cagnotte, RSVP, allergènes.
+            {role
+              ? `${total} articles choisis pour ce rôle : ceux qui parlent de son métier, et rien d’autre. Le magazine entier reste à un clic.`
+              : `${UNIVERSE_ARTICLES.length} univers racontés en détail — le lieu, la journée heure par heure, les métiers qui la font tourner — et ${GUIDE_ARTICLES.length} guides sur ce qui vaut pour tous les mariages : rétroplanning, budget, cagnotte, RSVP, allergènes.`}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2.5">
@@ -141,11 +160,23 @@ export default function Magazine() {
         </section>
       )}
 
+      {/* Le magazine entier, quand on est entré par un rôle */}
+      {role && (
+        <div className="vp-page -mt-8 pb-4">
+          <Link
+            to="/magazine"
+            className="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-[12.5px] font-semibold text-black/70 no-underline transition hover:border-black/35 hover:text-black"
+          >
+            Tout le magazine <ArrowRight size={13} />
+          </Link>
+        </div>
+      )}
+
       {/* Les grilles d'articles */}
       {[
-        { titre: 'Les univers, racontés', liste: UNIVERSE_ARTICLES, visible: filtre !== 'guide' },
-        { titre: 'Les guides', liste: GUIDE_ARTICLES, visible: filtre === 'tout' || filtre === 'guide' },
-        { titre: 'Insolite', liste: INSOLITE_ARTICLES, visible: filtre === 'tout' || filtre === 'insolite' },
+        { titre: role ? 'Choisis pour ce rôle' : 'Les univers, racontés', liste: role ? siens! : listeUnivers, visible: filtre !== 'guide' },
+        { titre: 'Les guides', liste: listeGuides, visible: filtre === 'tout' || filtre === 'guide' },
+        { titre: 'Insolite', liste: listeInsolite, visible: filtre === 'tout' || filtre === 'insolite' },
       ]
         .filter((bloc) => bloc.visible)
         .map((bloc) => (

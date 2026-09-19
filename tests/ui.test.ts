@@ -64,9 +64,10 @@ import MagazineArticle from '../src/pages/MagazineArticle';
 import Shop from '../src/pages/Shop';
 import ShopProduct from '../src/pages/ShopProduct';
 import { ALL_ARTICLES, articleDUnivers, badgeDUnivers } from '../src/lib/magazine';
+import { articlesPourRole, phraseShopDuRole, piecesPourRole } from '../src/lib/personaSuites';
 import { cartesDesMoments, cartesDesPersonas, cartesDesProduits, cartesDesUnivers } from '../src/lib/cartesVivantes';
 import { PERSONNAGES, VISUELS_DU_HERO } from '../src/lib/personas';
-import { personaCourant } from '../src/lib/personaCourant';
+import { definirPersonaSurvolee, enregistrerControlesBande, personaCourant } from '../src/lib/personaCourant';
 import { FULL_ROLES_TAXONOMY } from '../src/lib/weddingTaxonomy';
 import { DUREE_OUVERTURE, DUREE_OUVERTURE_SANS_MOUVEMENT, ouvertureDejaVue } from '../src/lib/ouverture';
 import { appliquerGeste } from '../src/lib/liveRules';
@@ -258,7 +259,12 @@ check('l’accueil n’a plus de bouton « Découvrir »', accueil.includes('Dé
 check('le hero demande qui vous êtes', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
 check('et il présente le premier personnage', accueil.includes(PERSONNAGES[0]!.nom), true);
 check('avec sa phrase', accueil.includes(PERSONNAGES[0]!.phrase.slice(0, 30)), true);
-check('et les entrées de son espace', PERSONNAGES[0]!.entrees.every((e) => accueil.includes(e)), true);
+/* Les badges sous le titre ont disparu : les outils sont dans le dock. */
+check(
+  'les entrées ne sont pas répétées dans le hero',
+  accueil.slice(accueil.indexOf('Qui êtes-vous'), accueil.indexOf('Les rôles —')).includes('>Invités<'),
+  false,
+);
 /* Le picto est posé nu, au-dessus du titre. */
 check('le picto n’a plus de rond', accueil.includes('flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-white/10'), false);
 /* Le rôle entre en scène : de la gauche, puis de la droite. */
@@ -901,7 +907,7 @@ const chromeMetier = renderToStaticMarkup(
 check('la barre du site est sur la page d’un métier', chromeMetier.includes('SUPER MARIAGE'), true);
 check('elle annonce la page', chromeMetier.includes('Les métiers'), true);
 check('elle porte le caddie et le magazine', ['Le Shop', 'Le Magazine'].every((m) => chromeMetier.includes(m)), true);
-check('le dock est là aussi', chromeMetier.includes('Zéro contrainte') && chromeMetier.includes('Playlist'), true);
+check('le dock est là aussi', chromeMetier.includes('Outils') || chromeMetier.includes('SUPER MARIÉS'), true);
 const chromeAccueil = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -910,7 +916,7 @@ const chromeAccueil = renderToStaticMarkup(
   ),
 );
 check('sur l’accueil, le chrome ne double pas la barre de la page', chromeAccueil.includes('Magazine'), false);
-check('mais le dock y est', chromeAccueil.includes('Zéro contrainte'), true);
+check('mais le dock y est', chromeAccueil.includes('SUPER MARIÉS'), true);
 const chromeSite = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -943,7 +949,11 @@ check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
 check('la bande des univers est sur l’accueil', accueil.includes('Les univers'), true);
 check('la bande ne montre que des univers', accueil.includes('Vue d’ensemble'), false);
 check('elle s’annonce sous le hero', accueil.indexOf('Les univers') > accueil.indexOf('</header>'), true);
-check('les cartes sont à moitié sur le hero', accueil.includes('-mt-32') && accueil.includes('sm:-mt-36'), true);
+check(
+  'les cartes des rôles sont dans le hero, au-dessus du dock',
+  accueil.includes('bottom-[6.5rem]') && accueil.includes('sm:bottom-[7rem]'),
+  true,
+);
 check('et se posent sur blanc', accueil.includes('bg-white pb-6 pt-5'), true);
 /* Trois cartes au centre par bande, celle du milieu plus grande, et les flèches. */
 check('chaque bande ne garde que trois cartes', (accueil.match(/Aimer /g) ?? []).length, 6);
@@ -1384,13 +1394,15 @@ check('sans choix, on est les mariés', personaCourant(), 'maries');
 const dockDefaut = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/le-mariage/vegas'] }, createElement(BottomCapsuleNav as never)),
 );
-check('le dock porte les outils du personnage', dockDefaut.includes(`Outils · ${PERSONNAGES[0]!.nom}`), true);
+check('le dock porte le personnage', dockDefaut.includes(`aria-label="Entrer comme ${PERSONNAGES[0]!.nom}"`), true);
 check(
-  'ceux des mariés, un par un',
+  'et ses outils, un par un',
   PERSONNAGES[0]!.entrees.every((e) => dockDefaut.includes(e)),
   true,
 );
-check('et il garde la capsule du site', ['Zéro contrainte', 'Playlist'].every((m) => dockDefaut.includes(m)), true);
+check('les pictos du site ont quitté le dock', dockDefaut.includes('Zéro contrainte'), false);
+/* Les deux flèches se posent de chaque côté du dock, quand une bande les mène. */
+check('sans bande menée, pas de flèches', dockDefaut.includes('Rôle précédent'), false);
 
 /* Le personnage change : le dock change d'outils. */
 localStorage.setItem('supermariage:persona', 'photographe');
@@ -1398,14 +1410,78 @@ const photo = PERSONNAGES.find((p) => p.id === 'photographe')!;
 const dockPhoto = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(BottomCapsuleNav as never)),
 );
-check('le dock suit le personnage', dockPhoto.includes(`Outils · ${photo.nom}`), true);
+check('le dock suit le personnage', dockPhoto.includes(photo.nom) && dockPhoto.includes(`Entrer comme ${photo.nom}`), true);
 check(
   'et montre ses outils à lui',
   photo.entrees.every((e) => dockPhoto.includes(e)),
   true,
 );
-check('c’est bien un autre jeu d’outils', dockPhoto.includes('Outils · ' + PERSONNAGES[0]!.nom), false);
+check('c’est bien un autre jeu d’outils', dockPhoto.includes(PERSONNAGES[0]!.entrees[0]!), false);
 check('la capsule défile', dockPhoto.includes('overflow-x-auto') && dockPhoto.includes('no-scrollbar'), true);
+/* Le rôle qui mène la bande met ses flèches à côté du dock. */
+enregistrerControlesBande({ precedent: () => undefined, suivant: () => undefined });
+const dockFleches = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(BottomCapsuleNav as never)),
+);
+enregistrerControlesBande(null);
+check('les flèches encadrent le dock', ['Rôle précédent', 'Rôle suivant'].every((f) => dockFleches.includes(f)), true);
+
+/* ------------------- le nom se transforme, les deux portes suivent le rôle --- */
+
+/* On survole « SUPER PHOTOGRAPHE » : le nom devient le sien. */
+definirPersonaSurvolee('photographe');
+const entetePhoto = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
+const rolePhoto = PERSONNAGES.find((p) => p.id === 'photographe')!;
+check('le nom du site devient celui du rôle', entetePhoto.includes(rolePhoto.nom), true);
+check('et plus « SUPER MARIAGE » tant qu’on le regarde', entetePhoto.includes('>SUPER MARIAGE<'), false);
+check('le caddie mène à son Shop', entetePhoto.includes('href="/shop?role=photographe"'), true);
+check('le magazine à son Magazine', entetePhoto.includes('href="/magazine?role=photographe"'), true);
+check('et les deux portes disent de qui elles sont', entetePhoto.includes(`aria-label="Le Shop de ${rolePhoto.nom}"`), true);
+
+definirPersonaSurvolee(null);
+const enteteNeutre = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
+check('sans survol, le nom du site revient', enteteNeutre.includes('SUPER MARIAGE'), true);
+check('et les portes sont celles de tout le monde', enteteNeutre.includes('href="/shop"') && enteteNeutre.includes('href="/magazine"'), true);
+
+/* LE SHOP D'UN RÔLE : les pièces qui le concernent, et rien d'autre. */
+const piecesFleuriste = piecesPourRole('fleuriste');
+check('le fleuriste ne voit pas tout le shop', piecesFleuriste.length < SHOP_PRODUCTS.length, true);
+check('chaque pièce le concerne', piecesFleuriste.every((p) => p.category === 'deco'), true);
+check('les mariés voient tout', piecesPourRole('maries').length, SHOP_PRODUCTS.length);
+check('et le rôle a sa phrase', phraseShopDuRole('fleuriste').includes('composer'), true);
+
+const pageShopFleuriste = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/shop?role=fleuriste'] }, createElement(Shop as never)),
+);
+check('le shop dit de qui il est', pageShopFleuriste.includes('Le Shop de SUPER FLEURISTE'), true);
+check(
+  'et annonce ses pièces',
+  pageShopFleuriste.includes(`${piecesFleuriste.length} pièces, choisies pour ce rôle.`),
+  true,
+);
+check('on peut revenir au shop entier', pageShopFleuriste.includes('Tout le shop'), true);
+
+/* LE MAGAZINE D'UN RÔLE : les articles qui lui parlent. */
+const articlesPhoto = articlesPourRole('photographe');
+check('le rôle a ses articles', articlesPhoto.length > 0, true);
+/** Un article parle d'un rôle : un de ses mots apparaît dans le titre ou le chapô. */
+const parle = (a: { title: string; intro: string; kicker: string }, mots: string[]) => {
+  const texte = `${a.title} ${a.intro} ${a.kicker}`.toLowerCase();
+  return mots.some((mot) => texte.includes(mot));
+};
+check('et ils parlent de lui', articlesPhoto.every((a) => parle(a, ['photo', 'portrait', 'image', 'lumière'])), true);
+check(
+  'le fleuriste a les siens aussi',
+  articlesPourRole('fleuriste').every((a) => parle(a, ['fleur', 'bouquet', 'végétal', 'floral', 'arche'])),
+  true,
+);
+check('moins que le magazine entier', articlesPhoto.length < ALL_ARTICLES.length, true);
+
+const pageMagazinePhoto = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?role=photographe'] }, createElement(Magazine as never)),
+);
+check('le magazine dit de qui il est', pageMagazinePhoto.includes('Le Magazine de SUPER PHOTOGRAPHE'), true);
+check('et reste ouvert en entier', pageMagazinePhoto.includes('Tout le magazine'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

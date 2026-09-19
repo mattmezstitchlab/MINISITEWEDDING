@@ -9,7 +9,7 @@ import PictoPersonnage from '../components/PictoPersonnage';
 import OuvertureSite from '../components/OuvertureSite';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesPersonas, cartesDesUnivers } from '../lib/cartesVivantes';
-import { definirPersonaCourant } from '../lib/personaCourant';
+import { definirPersonaCourant, definirPersonaSurvolee, enregistrerControlesBande } from '../lib/personaCourant';
 import SiteHeader from '../components/SiteHeader';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
@@ -54,6 +54,14 @@ export default function Landing() {
     definirPersonaCourant(persona.id);
   }, [persona.id]);
 
+  /** Les deux flèches, posées de chaque côté du dock : elles mènent la bande. */
+  const suivant = () => setPersonaId(PERSONNAGES[(indexPersona + 1) % PERSONNAGES.length]!.id);
+  const precedent = () => setPersonaId(PERSONNAGES[(indexPersona - 1 + PERSONNAGES.length) % PERSONNAGES.length]!.id);
+  useEffect(() => {
+    enregistrerControlesBande({ precedent, suivant });
+    return () => enregistrerControlesBande(null);
+  });
+
   /** Le défilé des personnages : personne ne clique, et il avance tout seul. */
   useEffect(() => {
     if (reduced || lectureEnCours) return;
@@ -80,10 +88,10 @@ export default function Landing() {
     <BandeDuHero
       libelle="Les rôles — cliquez pour voir, play pour entrer"
       styleId="personas"
-      premiere
       cartes={cartesDesPersonas(persona.id)}
       onChoisir={(carte) => setPersonaId(carte.id)}
       onAction={(carte) => entrer(carte.id)}
+      onSurvol={(carte) => definirPersonaSurvolee(carte?.id ?? null)}
       libelleAction="Entrer"
     />
   );
@@ -122,7 +130,7 @@ export default function Landing() {
 
       {/* LE HERO : QUI ÊTES-VOUS DANS CE MARIAGE ? */}
       <div id="hero">
-        <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id}>
+        <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id} contenuClassName="-translate-y-[10vh]">
           <div className="flex flex-col items-center text-center">
             <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
 
@@ -149,26 +157,19 @@ export default function Landing() {
                 « {persona.phrase} »
               </p>
 
-              {/* Les entrées de son espace : la démonstration, sans ses données */}
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                {persona.entrees.map((entree) => (
-                  <span
-                    key={entree}
-                    className="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-mono text-[9.5px] uppercase tracking-[0.14em] text-white/70 backdrop-blur"
-                  >
-                    {entree}
-                  </span>
-                ))}
-              </div>
             </div>
+          </div>
+
+          {/* LES CARTES DES RÔLES, dans le hero : juste au-dessus du dock, pour
+              qu'on les voie sans quitter le hero — le texte, lui, est remonté. */}
+          <div className="absolute inset-x-0 bottom-[6.5rem] z-20 sm:bottom-[7rem]">
+            <div className="vp-page">{bandeDesRoles}</div>
           </div>
         </HeroCycle>
       </div>
 
-      {/* LES DEUX BANDES : les rôles sous le hero — les mêmes cartes que les
-          univers, et leur play qui fait entrer — puis les univers, le second
-          axe du site. */}
-      {bandeDesRoles}
+      {/* LA BANDE DES UNIVERS : le second axe du site, sous le hero — les rôles,
+          eux, sont dans le hero, juste au-dessus du dock. */}
       {bandeDesUnivers}
 
       {/* LA CARTE AVANT LE SITE : sous le hero, la carte — on voit ce qu'il

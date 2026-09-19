@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Gift, Handshake, ShoppingBag, Tag, Truck } from 'lucide-react';
 import {
@@ -9,12 +9,12 @@ import {
   SHOP_MODES,
   SHOP_PRODUCTS,
   modeLabel,
-  productsByCategory,
   type ShopMode,
 } from '../lib/shopData';
 import ShopImage from '../components/ShopImage';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesProduits, PRODUITS_POUR_BANDE } from '../lib/cartesVivantes';
+import { phraseShopDuRole, piecesPourRole, roleDuneAdresse } from '../lib/personaSuites';
 
 /**
  * LE SHOP
@@ -43,13 +43,30 @@ export default function Shop() {
   const [modeActif, setModeActif] = useState<ShopMode | null>(null);
   const [visuelHero, setVisuelHero] = useState(SHOP_HERO);
 
+  /**
+   * LE SHOP D'UN RÔLE
+   *
+   * « ?role=fleuriste » : le shop ne montre plus que les pièces qui concernent
+   * ce rôle — plus de tri à faire, c'est le rôle qui trie. Les catégories et les
+   * modes restent là pour affiner ce qu'on regarde, jamais pour se perdre.
+   */
+  const [params] = useSearchParams();
+  const role = roleDuneAdresse(params.get('role'));
+  const piecesDuRole = useMemo(() => (role ? piecesPourRole(role.id) : null), [role]);
+
   const produits = useMemo(() => {
-    const parCategorie = productsByCategory(categorie);
+    const dansLeRole = piecesDuRole ?? SHOP_PRODUCTS;
+    const parCategorie = categorie === 'tout'
+      ? dansLeRole
+      : dansLeRole.filter((p) => p.category === categorie);
     return modeActif ? parCategorie.filter((p) => p.modes.includes(modeActif)) : parCategorie;
-  }, [categorie, modeActif]);
+  }, [categorie, modeActif, piecesDuRole]);
 
   /** La bande du hero : les pièces mises en avant, en cartes vivantes. */
   const cartesDuShop = useMemo(() => cartesDesProduits(PRODUITS_POUR_BANDE), []);
+
+  /** Les pièces du shop ouvert : celles du rôle, ou tout le catalogue. */
+  const produitsParRole = role ? piecesDuRole! : SHOP_PRODUCTS;
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
@@ -64,22 +81,26 @@ export default function Shop() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
 
         <div className="vp-page relative w-full pb-40 sm:pb-44">
-          <span className="vp-eyebrow !text-white/70">Le Shop Super Mariage</span>
+          <span className="vp-eyebrow !text-white/70">
+            {role ? `Le Shop de ${role.nom}` : 'Le Shop Super Mariage'}
+          </span>
           <h1
             className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
             style={{ fontSize: 'clamp(2.2rem, 5.2vw, 4rem)', lineHeight: 1.05 }}
           >
-            Tout ce qu’il faut, sans rien acheter pour une seule journée.
+            {role
+              ? `${piecesDuRole!.length} pièces, choisies pour ce rôle.`
+              : 'Tout ce qu’il faut, sans rien acheter pour une seule journée.'}
           </h1>
           <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-white/75">
-            {SHOP_PRODUCTS.length} pièces à louer, acheter, emprunter ou recevoir : mobilier, vaisselle, décor,
-            lumière, tenues, papeterie — et quelques objets qu’on ne trouve nulle part ailleurs. Le mobilier est
-            livré, monté et repris ; ce qui ne sert plus est prêté ou donné.
+            {role
+              ? `${phraseShopDuRole(role.id)} Le shop entier reste à un clic, et les catégories sont là pour affiner.`
+              : `${SHOP_PRODUCTS.length} pièces à louer, acheter, emprunter ou recevoir : mobilier, vaisselle, décor, lumière, tenues, papeterie — et quelques objets qu’on ne trouve nulle part ailleurs. Le mobilier est livré, monté et repris ; ce qui ne sert plus est prêté ou donné.`}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2.5">
             {[
-              { label: 'Pièces', value: String(SHOP_PRODUCTS.length) },
+              { label: 'Pièces', value: String(role ? piecesDuRole!.length : SHOP_PRODUCTS.length) },
               { label: 'Modes', value: SHOP_MODES.map((m) => m.label).join(' · ') },
               { label: 'Catégories', value: String(SHOP_CATEGORIES.length) },
             ].map((fait) => (
@@ -104,6 +125,18 @@ export default function Shop() {
         cartes={cartesDuShop}
       />
 
+      {/* Le rôle qui a ouvert ce shop : on peut revenir au shop entier. */}
+      {role && (
+        <div className="vp-page -mt-6 pb-2 pt-4">
+          <Link
+            to="/shop"
+            className="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-[12.5px] font-semibold text-black/70 no-underline transition hover:border-black/35 hover:text-black"
+          >
+            Tout le shop <ArrowRight size={13} />
+          </Link>
+        </div>
+      )}
+
       {/* Les quatre modes */}
       <section className="pb-8 pt-10 sm:pt-14">
         <div className="vp-page">
@@ -111,7 +144,7 @@ export default function Shop() {
             {SHOP_MODES.map((mode) => {
               const Icone = ICONES_MODE[mode.id];
               const actif = modeActif === mode.id;
-              const nombre = SHOP_PRODUCTS.filter((p) => p.modes.includes(mode.id)).length;
+              const nombre = (piecesDuRole ?? SHOP_PRODUCTS).filter((p) => p.modes.includes(mode.id)).length;
               return (
                 <button
                   key={mode.id}
@@ -141,10 +174,10 @@ export default function Shop() {
               categorie === 'tout' ? 'bg-black text-white' : 'bg-black/5 text-[#0B0C12] hover:bg-black/10'
             }`}
           >
-            Tout ({SHOP_PRODUCTS.length})
+            Tout ({produitsParRole.length})
           </button>
           {SHOP_CATEGORIES.map((cat) => {
-            const nombre = SHOP_PRODUCTS.filter((p) => p.category === cat.id).length;
+            const nombre = produitsParRole.filter((p) => p.category === cat.id).length;
             return (
               <button
                 key={cat.id}

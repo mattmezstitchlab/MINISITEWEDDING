@@ -34,6 +34,8 @@ interface CarteVivanteProps {
   onClic: () => void;
   onAimer: () => void;
   onJouer: () => void;
+  /** On la regarde, ou on la quitte : la page s'accorde à son rôle. */
+  onSurvol?: (survole: boolean) => void;
 }
 
 export default function CarteVivanteUI({
@@ -46,6 +48,7 @@ export default function CarteVivanteUI({
   onClic,
   onAimer,
   onJouer,
+  onSurvol,
 }: CarteVivanteProps) {
   // Le même grossissement que la bande de la playlist : 0.88 au bord, 1.06 au
   // centre.
@@ -56,6 +59,8 @@ export default function CarteVivanteUI({
     <div
       data-actif={carte.actif ? 'true' : undefined}
       style={{ transform: `scale(${echelle})` }}
+      onMouseEnter={() => onSurvol?.(true)}
+      onMouseLeave={() => onSurvol?.(false)}
       className={`group relative w-[172px] shrink-0 rounded-[20px] p-2.5 text-left transition-transform duration-150 ease-out sm:w-[188px] ${
         carte.actif
           ? 'z-20 border border-black/10 bg-white shadow-[0_16px_40px_-16px_rgba(0,0,0,0.28)]'
