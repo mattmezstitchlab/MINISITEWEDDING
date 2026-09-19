@@ -54,9 +54,15 @@ export interface EtatTerminal {
   prises: Prise[];
   demandes: DemandeMusicale[];
   journal: RecuEntrant[];
+  /**
+   * Les avis du public : le nombre de cœurs par sujet (une carte, un morceau,
+   * un moment, un produit, un métier). C'est la température statistique de la
+   * page — la même clé partout, et le comptoir l'additionne pour tout le monde.
+   */
+  avis: Record<string, number>;
 }
 
-export const TERMINAL_VIDE: EtatTerminal = { prises: [], demandes: [], journal: [] };
+export const TERMINAL_VIDE: EtatTerminal = { prises: [], demandes: [], journal: [], avis: {} };
 
 /* ————————————————————————— les gestes, en pur ————————————————————————— */
 
@@ -309,6 +315,7 @@ export function entrerRecu(etat: EtatTerminal, recu: PayloadRecu, code: string):
   return {
     prises,
     demandes,
+    avis: etat.avis,
     journal: [
       ...etat.journal,
       {
@@ -338,6 +345,7 @@ export function chargerTerminal(styleId = ''): EtatTerminal {
       prises: Array.isArray(etat.prises) ? etat.prises : [],
       demandes: Array.isArray(etat.demandes) ? etat.demandes : [],
       journal: Array.isArray(etat.journal) ? etat.journal : [],
+      avis: etat.avis && typeof etat.avis === 'object' ? etat.avis : {},
     };
   } catch {
     return TERMINAL_VIDE;

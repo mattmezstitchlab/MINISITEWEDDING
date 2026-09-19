@@ -775,3 +775,48 @@ qui mène enfin là où l'on découvre.
   Programme, avec « Découvrir » ; plus de téléphones sur l'accueil ; toutes les
   pages en `min-h-[100svh]` ; la bande de l'article mène d'un article à
   l'autre), `npm run build` OK.
+
+## 24. La carte vivante : multi-fonction, multi-couche, multi-page (passe 29)
+
+La carte musicale n'était pas un composant : c'était le principe du site. Elle
+devient la carte de tout le monde — et deux gestes lui suffisent.
+
+- **Une carte, quatre couches.** `src/components/CarteVivante.tsx` : le visuel,
+  le badge (une heure, un domaine, un mode, un prix), le nom et sa précision —
+  puis **le play** (le média s'enclenche dans le hero) et **le cœur avec son
+  nombre** (la température du public). Les cartes **grossissent au centre de la
+  bande**, comme dans la section playlist : la mesure du défilement donne
+  l'échelle (0.92 → 1.06) et la carte du milieu est la plus grande.
+- **Les cœurs sont partagés.** Les avis entrent au comptoir (`wedding_live`) :
+  `avis: Record<clé, nombre>` dans l'état, un geste `aimer` (avec son sens) côté
+  navigateur (`liveRules`), côté serveur (`server/live.js`) et dans la version
+  locale. Le nombre est public et additif ; jamais un nom, et jamais sous zéro.
+  `src/lib/avis.ts` garde seulement « j'ai déjà aimé » sur l'appareil, et
+  additionne mon cœur tout de suite pour que le chiffre bouge sous le doigt.
+- **Le lecteur du hero.** `src/components/LecteurHero.tsx` : le média prend le
+  cadre — plan animé (`hero-plan`, un lent mouvement sur le visuel) et **le
+  morceau joue**, en boucle, pendant que la carte reste allumée dans sa bande.
+  Si une carte porte une **vidéo** (`media.video`), c'est elle qui tourne, avec
+  son son : le site n'a pas encore de rushes, et brancher la vidéo sur la carte
+  suffit à l'allumer — le lecteur, lui, ne change pas.
+- **La fabrique.** `src/lib/cartesVivantes.ts` construit les cartes depuis les
+  sources du site : les univers (`cartesDesUnivers`, badge du magazine), **les
+  moments du Jour J** (`cartesDesMoments` — l'heure sur la carte, le morceau du
+  moment, le visuel de la scène), les produits du shop (`cartesDesProduits` —
+  mode, prix, le moment où la pièce se voit), et les métiers
+  (`cartesDesMetiers` / `cartesDesMetiersDuRole`). Rien n'est ressaisi.
+- **Quatre pages, la même bande.** L'accueil (les univers : le clic choisit
+  l'univers du hero, le play l'allume), la page d'un univers (les vingt-cinq
+  univers), **l'article d'un univers (les moments du Jour J ; sur un guide, les
+  univers, et l'on change d'article)**, le shop et la fiche produit (« Les
+  pièces, en conditions », puis « Dans le même univers »), l'espace prestataire
+  et la page d'un métier (les métiers, où le cœur vaut pour un **avis** et le
+  play montre leur Jour J). Le shop compte ses avis sous la clé `boutique`,
+  comme un univers à part entière.
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+  173 → **178** / 55 / 343 → **370** (le cœur s'ajoute, deux personnes font deux,
+  un retrait redescend, jamais sous zéro, les univers ne se mélangent pas, un
+  avis sans sujet ne change rien ; un univers, un moment, un produit et un
+  métier donnent bien une carte vivante avec sa clé, son badge et son morceau ;
+  le shop et la fiche portent la bande, l'espace prestataire aussi ; le lecteur
+  prend le cadre, joue, et se ferme), `npm run build` OK.

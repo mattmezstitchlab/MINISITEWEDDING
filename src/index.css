@@ -251,6 +251,28 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
+ *  Le plan du lecteur
+ *
+ *  Quand une carte vivante se lance, le visuel du hero avance lentement —
+ *  un plan qui respire, en attendant les vraies vidéos : brancher un
+ *  `media.video` sur une carte suffit à les allumer.
+ * ------------------------------------------------------------------ */
+
+.hero-plan {
+  animation: vp-plan 26s var(--vp-ease) infinite alternate;
+  will-change: transform;
+}
+
+@keyframes vp-plan {
+  from { transform: scale(1.02) translate3d(0, 0, 0); }
+  to { transform: scale(1.14) translate3d(-1.2%, -1.4%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-plan { animation: none; }
+}
+
+/* ------------------------------------------------------------------ *
  *  Le contenant éditorial
  *
  *  La mise en page d'un article de magazine, appliquée partout : une

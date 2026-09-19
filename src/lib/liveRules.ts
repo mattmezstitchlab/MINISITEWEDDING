@@ -17,6 +17,8 @@ import {
  */
 
 export type Geste =
+  /** Un cœur sur une carte : le compteur du sujet monte (ou redescend). */
+  | { type: 'aimer'; cle: string; sens?: 'plus' | 'moins' }
   | { type: 'prendre'; articleId: string; nom: string }
   | { type: 'lacher'; articleId: string; nom: string }
   | { type: 'demander'; cle: string; titre: string; artiste: string; phaseId: string; nom: string; libre?: boolean }
@@ -30,12 +32,26 @@ export type Geste =
     recu: PayloadRecu;
   };
 
+/** Un cœur de plus (ou de moins) sur un sujet. Jamais en dessous de zéro. */
+function basculerAvis(etat: EtatTerminal, cle: string, pas: number): EtatTerminal {
+  const propre = cle.trim();
+  if (!propre) return etat;
+  const avant = Math.max(0, etat.avis[propre] ?? 0);
+  const apres = Math.max(0, avant + pas);
+  if (apres === avant) return etat;
+  return { ...etat, avis: { ...etat.avis, [propre]: apres } };
+}
+
 /**
  * Applique un geste. Retourne le nouvel état, ou `null` quand le geste ne
  * change rien — ligne déjà prise, rien à lâcher, reçu déjà au journal.
  */
 export function appliquerGeste(etat: EtatTerminal, geste: Geste): EtatTerminal | null {
   switch (geste.type) {
+    case 'aimer': {
+      const suivant = basculerAvis(etat, geste.cle, geste.sens === 'moins' ? -1 : 1);
+      return suivant === etat ? null : suivant;
+    }
     case 'prendre': {
       const suivant = prendre(etat, geste.articleId, geste.nom);
       return suivant === etat ? null : suivant;

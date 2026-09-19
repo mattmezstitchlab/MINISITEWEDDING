@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Check, Gift, Handshake, ShoppingBag, Truck } from 'lucide-react';
 import { SHOP_CATEGORIES, modeLabel, productBySlug, similarProducts, type ShopMode } from '../lib/shopData';
 import ShopImage from '../components/ShopImage';
+import BandeDuHero from '../components/BandeDuHero';
+import { cartesDesProduits } from '../lib/cartesVivantes';
 import { UNIVERSE_ARTICLES } from '../lib/magazine';
 import { styleById } from '../lib/weddingStyles';
 
@@ -90,6 +92,17 @@ export default function ShopProduct() {
             <span className="pb-1 text-[13px] text-white/65">
               · {produit.modes.map((mode) => modeLabel(mode)).join(' · ')}
             </span>
+          </div>
+
+          {/* La bande de la fiche : les pièces qui vont avec, en cartes
+              vivantes — le play les montre dans les conditions du Jour J. */}
+          <div className="mt-10">
+            <BandeDuHero
+              libelle="Dans le même univers"
+              note={`${similaires.length} pièces · avis du public`}
+              styleId="boutique"
+              cartes={cartesDesProduits(similaires)}
+            />
           </div>
         </div>
       </header>

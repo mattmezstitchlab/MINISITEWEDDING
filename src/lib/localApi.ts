@@ -168,6 +168,8 @@ function normaliserEtat(payload: unknown): EtatTerminal {
     prises: Array.isArray(etat.prises) ? etat.prises : [],
     demandes: Array.isArray(etat.demandes) ? etat.demandes : [],
     journal: Array.isArray(etat.journal) ? etat.journal : [],
+    // Les avis sont publics : un cœur par sujet, jamais un nom.
+    avis: etat.avis && typeof etat.avis === 'object' ? etat.avis : {},
   };
 }
 

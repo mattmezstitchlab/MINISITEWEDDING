@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Check, Copy, Music2, Sparkles, Ticket } from 'lucide-react';
-import BandeauHero from '../components/BandeauHero';
+import BandeDuHero from '../components/BandeDuHero';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 import UniversPagesGrid from '../components/UniversPagesGrid';
 import PlaylistCollaborative from '../components/PlaylistCollaborative';
 import RecapCourses from '../components/RecapCourses';
 import { contentFor } from '../lib/universeContent';
 import { ALL_STYLES, getComplementaryStyles } from '../lib/weddingStyles';
-import { badgeDUnivers } from '../lib/magazine';
+import { cartesDesUnivers } from '../lib/cartesVivantes';
 import { getScenesForStyle } from '../lib/themeTimelineScenarios';
 import { trackForText } from '../lib/weddingSoundtrack';
 import { daysUntil, formatDateLong } from '../lib/format';
@@ -163,20 +163,14 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
             </button>
           </div>
 
-          {/* La bande du hero : tous les univers, au même endroit, d'un geste. */}
+          {/* La bande du hero : les mêmes cartes vivantes que partout, et l'on
+              passe d'un univers à l'autre — ou l'on lance son média. */}
           <div className="mt-10">
-            <BandeauHero
+            <BandeDuHero
               libelle="Passer d’un univers à l’autre"
-              note={`${ALL_STYLES.length} univers · cliquez pour changer`}
-              cartes={ALL_STYLES.map((univers) => ({
-                id: univers.id,
-                titre: univers.name,
-                badge: badgeDUnivers(univers.id),
-                image: univers.image,
-                accent: univers.accent,
-                actif: univers.id === style.id,
-                to: `/le-mariage/${univers.id}`,
-              }))}
+              note={`${ALL_STYLES.length} univers · aimés par le public`}
+              styleId={style.id}
+              cartes={cartesDesUnivers((univers) => `/le-mariage/${univers.id}`, style.id)}
             />
           </div>
         </div>

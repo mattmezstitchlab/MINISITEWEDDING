@@ -46,7 +46,7 @@ import { Timbre } from '../src/components/Timbre';
 import { idDeProfil, morceauxDeNom, slugDePersonne, chargerProfil } from '../src/lib/profil';
 import { metierParSlug, pageMetier, slugDeRole, tousLesMetiers } from '../src/lib/metierPage';
 import { pageMetier, slugDeRole, tousLesMetiers } from '../src/lib/metierPage';
-import { chargerLive } from '../src/lib/terminalLive';
+import { chargerLive, envoyerGeste } from '../src/lib/terminalLive';
 import { contentFor } from '../src/lib/universeContent';
 import { styleById } from '../src/lib/weddingStyles';
 import {
@@ -56,12 +56,17 @@ import {
 import { ALL_STYLES } from '../src/lib/weddingStyles';
 import { totalCaisse } from '../src/lib/superMariage';
 import PreviewSite from '../src/pages/PreviewSite';
+import LecteurHero from '../src/components/LecteurHero';
 import Magazine from '../src/pages/Magazine';
 import MagazineArticle from '../src/pages/MagazineArticle';
 import Shop from '../src/pages/Shop';
 import ShopProduct from '../src/pages/ShopProduct';
 import { ALL_ARTICLES, UNIVERSE_ARTICLES, articleDUnivers, badgeDUnivers } from '../src/lib/magazine';
-import { SHOP_PRODUCTS } from '../src/lib/shopData';
+import { cartesDesMoments, cartesDesProduits, cartesDesUnivers } from '../src/lib/cartesVivantes';
+import { appliquerGeste } from '../src/lib/liveRules';
+import { TERMINAL_VIDE } from '../src/lib/weddingTicket';
+import { getScenesForStyle } from '../src/lib/themeTimelineScenarios';
+import { SHOP_PRODUCTS, modeLabel } from '../src/lib/shopData';
 import {
   CONVIVES, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
 } from '../src/lib/superMariage';
@@ -915,7 +920,7 @@ check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
 /* La bande du hero : les univers, à l'horizontale, en bas du hero de l'accueil. */
 check('la bande des univers est sur l’accueil', accueil.includes('Les univers'), true);
 check('elle propose la vue d’ensemble', accueil.includes('Vue d’ensemble'), true);
-check('elle annonce le nombre d’univers', accueil.includes(`${WEDDING_STYLES.length} univers · faites défiler`), true);
+check('elle annonce le nombre d’univers', accueil.includes(`${WEDDING_STYLES.length} univers · aimés par le public`), true);
 /** Un nom peut contenir une esperluette : le HTML l'échappe. */
 const enHtml = (texte: string) => texte.replace(/&/g, '&amp;');
 check(
@@ -1171,10 +1176,12 @@ check('il reste dentelé', timbre.includes('border-dashed'), true);
 
 /* Les cartes de la bande reprennent la charte : visuel, badge blanc, majuscules. */
 const carteBande = accueil.slice(accueil.indexOf('Les univers'));
-check('les cartes de la bande sont grandes', accueil.includes('w-[248px]') && accueil.includes('sm:w-[288px]'), true);
+check('les cartes vivantes ont leur taille', accueil.includes('w-[186px]') && accueil.includes('sm:w-[214px]'), true);
 check('elles portent le badge blanc du magazine', carteBande.includes('bg-white/95 px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase'), true);
-check('et le nom de l’univers en majuscules', carteBande.includes('font-bold uppercase tracking-[0.08em] text-white'), true);
+check('et le nom de l’univers en majuscules', carteBande.includes('font-bold uppercase'), true);
 check('le badge est celui de l’univers', carteBande.includes('Urbain') || carteBande.includes('Sauvage'), true);
+check('chaque carte porte son play', carteBande.includes('Lancer '), true);
+check('et son cœur, avec le nombre d’avis', carteBande.includes('Aimer '), true);
 
 /* Choisir un univers : le hero montre son titre, sans les badges, et Découvrir. */
 const accueilVegas = renderToStaticMarkup(
@@ -1205,9 +1212,69 @@ check(
 );
 
 /* L'article porte la même bande, et l'on passe d'un article à l'autre. */
-check('l’article porte la bande des univers', pageArticle.includes('Changer d’univers'), true);
-check('elle annonce les articles', pageArticle.includes(`${UNIVERSE_ARTICLES.length} articles · cliquez pour lire`), true);
-check('et mène bien à un autre article', (pageArticle.match(/\/magazine\/univers-/g) ?? []).length > 5, true);
+/* Sur l'article d'un univers, la bande devient celle des moments du Jour J. */
+check('l’article porte la bande des moments', pageArticle.includes('Les moments du Jour J'), true);
+check('elle annonce les moments aimés', pageArticle.includes('moments · aimés par le public'), true);
+const universArticle = ALL_ARTICLES[0].universeId!;
+const momentsArticle = cartesDesMoments(universArticle);
+check('un moment, c’est une heure sur la carte', momentsArticle[0]?.badge, getScenesForStyle(universArticle)[0]?.time);
+check('et le morceau du moment', String(momentsArticle[0]?.media.audio ?? '').startsWith('/audio/'), true);
+check('chaque moment a son cœur', momentsArticle.every((m) => m.cle.startsWith(`moment|${universArticle}|`)), true);
+check(
+  'l’article les affiche tous',
+  momentsArticle.every((m) => pageArticle.includes((m.badge ?? '·').replace('&', '&amp;'))),
+  true,
+);
+
+/* ---------- les cartes vivantes : le cœur partagé, le play, les quatre pages -- */
+
+/* Le cœur passe par le comptoir partagé : le nombre est public, jamais un nom. */
+const avantAvis = await chargerLive('vegas');
+check('le comptoir accepte les avis', typeof avantAvis?.avis, 'object');
+await envoyerGeste('vegas', { type: 'aimer', cle: 'univers|vegas' });
+await envoyerGeste('vegas', { type: 'aimer', cle: 'univers|vegas' });
+await envoyerGeste('vegas', { type: 'aimer', cle: 'univers|vegas', sens: 'moins' });
+const apresAvis = await chargerLive('vegas');
+check('deux cœurs posés, un retiré : il en reste un', apresAvis?.avis['univers|vegas'], 1);
+check('un avis ne descend jamais sous zéro', appliquerGeste(TERMINAL_VIDE, { type: 'aimer', cle: 'x', sens: 'moins' }), null);
+check('les avis de deux univers ne se mélangent pas', apresAvis?.avis['univers|corse'], undefined);
+
+/* Les quatre pages fabriquent leurs cartes avec la même fabrique. */
+const cartesUnivers = cartesDesUnivers(() => '/le-mariage/vegas');
+check('un univers donne une carte vivante', cartesUnivers.length, ALL_STYLES.length);
+check('avec sa clé d’avis', cartesUnivers[0]?.cle, `univers|${ALL_STYLES[0]!.id}`);
+check('avec son badge de magazine', cartesUnivers[1]?.badge, badgeDUnivers(ALL_STYLES[1]!.id));
+check('et un morceau à jouer', String(cartesUnivers[1]?.media.audio ?? '').startsWith('/audio/'), true);
+
+const cartesProduits = cartesDesProduits(SHOP_PRODUCTS.slice(0, 4));
+check('un produit donne une carte vivante', cartesProduits.length, 4);
+check('avec son mode en badge', cartesProduits[0]?.badge, modeLabel(SHOP_PRODUCTS[0]!.mode));
+check('son prix, et sa clé', [cartesProduits[0]?.sousTitre?.includes(SHOP_PRODUCTS[0]!.price), cartesProduits[0]?.cle], [true, `produit|${SHOP_PRODUCTS[0]!.slug}`]);
+
+/* Le shop et la fiche produit portent la bande, et le play y est prêt. */
+check('le shop a sa bande de pièces', pageShop.includes('Les pièces, en conditions'), true);
+check('elle annonce les avis du public', pageShop.includes('pièces · avis du public'), true);
+check('la fiche produit a la sienne', pageProduit.includes('Dans le même univers'), true);
+check('et chaque pièce y porte son cœur', pageProduit.includes('Aimer '), true);
+
+/* L'espace prestataire : les métiers en cartes, les avis et le média. */
+check('l’espace prestataire a sa bande de métiers', pagePrestataire.includes('Les métiers de cet univers'), true);
+check('les cartes y disent leur domaine', pagePrestataire.includes('avis du public'), true);
+
+/* Le lecteur : il prend le hero, avec le morceau de la carte. */
+const lecteur = renderToStaticMarkup(
+  createElement(LecteurHero as never, {
+    carte: cartesUnivers[1],
+    enLecture: true,
+    onBasculer: () => undefined,
+    onFermer: () => undefined,
+  }),
+);
+check('le lecteur montre la carte', lecteur.includes(cartesUnivers[1]!.titre), true);
+check('il prend tout le cadre', lecteur.includes('fixed inset-0'), true);
+check('il dit ce qu’il joue', lecteur.includes('Le morceau joue'), true);
+check('son plan est animé', lecteur.includes('hero-plan'), true);
+check('et il se ferme', lecteur.includes('Fermer le lecteur'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

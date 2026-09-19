@@ -13,6 +13,8 @@ import {
   type ShopMode,
 } from '../lib/shopData';
 import ShopImage from '../components/ShopImage';
+import BandeDuHero from '../components/BandeDuHero';
+import { cartesDesProduits, PRODUITS_POUR_BANDE } from '../lib/cartesVivantes';
 
 /**
  * LE SHOP
@@ -45,6 +47,9 @@ export default function Shop() {
     const parCategorie = productsByCategory(categorie);
     return modeActif ? parCategorie.filter((p) => p.modes.includes(modeActif)) : parCategorie;
   }, [categorie, modeActif]);
+
+  /** La bande du hero : les pièces mises en avant, en cartes vivantes. */
+  const cartesDuShop = useMemo(() => cartesDesProduits(PRODUITS_POUR_BANDE), []);
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
@@ -86,6 +91,17 @@ export default function Shop() {
                 <span className="ml-1.5 font-semibold">{fait.value}</span>
               </span>
             ))}
+          </div>
+
+          {/* La bande du shop : les pièces en cartes vivantes — leur mode, leur
+              prix, le cœur du public, et le play qui les montre en conditions. */}
+          <div className="mt-10">
+            <BandeDuHero
+              libelle="Les pièces, en conditions"
+              note={`${cartesDuShop.length} pièces · avis du public`}
+              styleId="boutique"
+              cartes={cartesDuShop}
+            />
           </div>
         </div>
       </header>

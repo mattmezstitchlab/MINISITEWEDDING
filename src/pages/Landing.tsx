@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 import { contentFor } from '../lib/universeContent';
-import { articleDUnivers, badgeDUnivers } from '../lib/magazine';
+import { articleDUnivers } from '../lib/magazine';
 import HeroCycle from '../components/HeroCycle';
-import BandeauHero from '../components/BandeauHero';
+import BandeDuHero from '../components/BandeDuHero';
+import { cartesDesUnivers, morceauDUneUnivers } from '../lib/cartesVivantes';
 import SiteHeader from '../components/SiteHeader';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
@@ -67,35 +68,39 @@ export default function Landing() {
   };
 
   /**
-   * LA BANDE DU HERO
+   * LA BANDE DU HERO — LES CARTES VIVANTES
    *
-   * Les vingt-cinq univers, à l'horizontale, en bas du hero : d'un geste on
-   * change celui qui se montre — et « Vue d'ensemble » revient au site entier.
-   * C'est la navigation de l'accueil, à la place du menu déroulant du header.
+   * Les univers, en cartes musicales : elles grossissent au centre, portent le
+   * nombre de personnes qui les aiment, et leur play allume le hero — le visuel
+   * de l'univers et un morceau du Jour J. Un clic sur la carte choisit l'univers
+   * que le hero montre. C'est la navigation de l'accueil.
    */
   const bandeDesUnivers = (
-    <BandeauHero
+    <BandeDuHero
       libelle="Les univers"
-      note={`${WEDDING_STYLES.length} univers · faites défiler`}
+      note={`${WEDDING_STYLES.length} univers · aimés par le public`}
+      styleId={activeStyleOrFallback.id}
       cartes={[
         {
           id: 'ensemble',
+          cle: 'univers|ensemble',
           titre: 'Vue d’ensemble',
           sousTitre: 'Le site entier',
-          accent: 'rgba(255,255,255,0.8)',
+          badge: 'Tous',
+          accent: '#FFFFFF',
+          media: {
+            image: WEDDING_STYLES[0]!.image,
+            audio: morceauDUneUnivers()?.src,
+            legende: 'Le site tel qu’on le parcourt, du hero au mini-site.',
+          },
           actif: !selectedStyle,
-          onChoisir: () => handleSelectStyle(null),
         },
-        ...WEDDING_STYLES.map((univers) => ({
-          id: univers.id,
-          titre: univers.name,
-          badge: badgeDUnivers(univers.id),
-          image: univers.image,
-          accent: univers.accent,
-          actif: selectedStyle?.id === univers.id,
-          onChoisir: () => handleSelectStyle(univers),
-        })),
+        ...cartesDesUnivers(() => undefined, selectedStyle?.id),
       ]}
+      onChoisir={(carte) => {
+        const univers = carte.id === 'ensemble' ? null : WEDDING_STYLES.find((s) => s.id === carte.id) ?? null;
+        handleSelectStyle(univers);
+      }}
     />
   );
 

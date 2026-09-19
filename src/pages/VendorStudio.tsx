@@ -5,6 +5,8 @@ import { previewPath } from '../lib/previewSite';
 import { styleById } from '../lib/weddingStyles';
 import { DOMAINES, domaineDe } from '../lib/weddingVendors';
 import { slugDeRole } from '../lib/metierPage';
+import BandeDuHero from '../components/BandeDuHero';
+import { cartesDesMetiersDuRole } from '../lib/cartesVivantes';
 
 /**
  * L'ESPACE DU PRESTATAIRE
@@ -66,6 +68,17 @@ export default function VendorStudio() {
             >
               Leur mini-site
             </Link>
+          </div>
+
+          {/* La bande de l'espace : les métiers de l'univers, en cartes
+              vivantes — le cœur vaut pour un avis, le play montre leur Jour J. */}
+          <div className="mt-10">
+            <BandeDuHero
+              libelle="Les métiers de cet univers"
+              note={`${style.humanMissions.length} métiers · avis du public`}
+              styleId={style.id}
+              cartes={cartesDesMetiersDuRole(role, style.id, 12)}
+            />
           </div>
         </div>
       </header>

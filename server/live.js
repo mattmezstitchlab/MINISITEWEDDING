@@ -20,7 +20,7 @@
  * Aucun horodatage : `rang` dit l'ordre d'arrivée, et il suffit.
  */
 
-export const LIVE_VIDE = { prises: [], demandes: [], journal: [] };
+export const LIVE_VIDE = { prises: [], demandes: [], journal: [], avis: {} };
 
 /** L'état relu tel qu'il est stocké : jamais de champ manquant. */
 export function normaliser(payload) {
@@ -29,6 +29,7 @@ export function normaliser(payload) {
     prises: Array.isArray(etat.prises) ? etat.prises : [],
     demandes: Array.isArray(etat.demandes) ? etat.demandes : [],
     journal: Array.isArray(etat.journal) ? etat.journal : [],
+    avis: etat.avis && typeof etat.avis === 'object' ? etat.avis : {},
   };
 }
 
@@ -53,6 +54,17 @@ export function appliquerGeste(payload, geste) {
   if (!geste || typeof geste !== 'object') return null;
   const nom = texte(geste.nom);
   const type = geste.type;
+
+  /* Un cœur sur une carte : le compteur du sujet monte (ou redescend). Les avis
+     sont publics — c'est la température de la page, jamais un nom. */
+  if (type === 'aimer') {
+    const cle = texte(geste.cle);
+    if (!cle) return null;
+    const avant = Math.max(0, Number(etat.avis[cle]) || 0);
+    const apres = Math.max(0, avant + (geste.sens === 'moins' ? -1 : 1));
+    if (apres === avant) return null;
+    return { ...etat, avis: { ...etat.avis, [cle]: apres } };
+  }
 
   if (type === 'prendre') {
     const articleId = texte(geste.articleId);

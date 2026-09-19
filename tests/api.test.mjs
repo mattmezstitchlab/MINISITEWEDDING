@@ -467,6 +467,21 @@ check('site sans clé : édition impossible → 403', (await call(weddingSites, 
   check('le comptoir vide n’a pas d’invité', vide.body.invites.length, 0);
   check('sans univers → 400', (await call(live, { query: {} })).statusCode, 400);
 
+  /* — les avis du public : un cœur par sujet, jamais un nom */
+  const premier = await call(live, { method: 'POST', body: { style_id: 'vegas', geste: { type: 'aimer', cle: 'univers|vegas' } } });
+  check('un cœur s’ajoute au comptoir', premier.body.payload.avis['univers|vegas'], 1);
+  await call(live, { method: 'POST', body: { style_id: 'vegas', geste: { type: 'aimer', cle: 'univers|vegas' } } });
+  const deux = await call(live, { method: 'GET', query: { style_id: 'vegas' } });
+  check('deux personnes, deux cœurs', deux.body.payload.avis['univers|vegas'], 2);
+  const retire = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'aimer', cle: 'univers|vegas', sens: 'moins' } },
+  });
+  check('un cœur retiré redescend', retire.body.payload.avis['univers|vegas'], 1);
+  const sansCle = await call(live, { method: 'POST', body: { style_id: 'vegas', geste: { type: 'aimer' } } });
+  check('un avis sans sujet ne change rien', sansCle.body.applique, false);
+  check('le comptoir garde les avis des autres sujets', deux.body.payload.avis['moment|vegas|20h'], undefined);
+
   /* — une prise : le premier arrivé la garde */
   const prise = await call(live, {
     method: 'POST',

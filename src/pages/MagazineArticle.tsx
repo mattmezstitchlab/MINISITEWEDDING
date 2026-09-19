@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
 import { articleBySlug, badgeDUnivers, relatedArticles, UNIVERSE_ARTICLES } from '../lib/magazine';
 import { styleById } from '../lib/weddingStyles';
-import BandeauHero from '../components/BandeauHero';
+import BandeDuHero from '../components/BandeDuHero';
+import { cartesDesMoments, morceauDUneUnivers } from '../lib/cartesVivantes';
 import RichText from '../components/RichText';
 
 /**
@@ -21,6 +22,29 @@ export default function MagazineArticle() {
 
   const univers = article.universeId ? styleById(article.universeId) : null;
   const suivants = relatedArticles(article);
+  /** L'article d'un univers : sa bande est celle des moments du Jour J. */
+  const estUnivers = article.category === 'univers' && Boolean(article.universeId);
+  const moments = estUnivers ? cartesDesMoments(article.universeId!) : [];
+  const universTour = UNIVERSE_ARTICLES[0]?.universeId ?? null;
+  const cartesDArticles = UNIVERSE_ARTICLES.map((un) => {
+    const style = styleById(un.universeId ?? '');
+    const track = morceauDUneUnivers();
+    return {
+      id: un.slug,
+      cle: `article|${un.slug}`,
+      titre: style?.name ?? un.title,
+      sousTitre: un.kicker,
+      badge: un.universeId ? badgeDUnivers(un.universeId) : un.kicker,
+      accent: style?.accent,
+      media: {
+        image: un.cover,
+        audio: track?.src,
+        legende: un.intro,
+      },
+      actif: un.universeId === article.universeId,
+      to: `/magazine/${un.slug}`,
+    };
+  });
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
@@ -52,22 +76,22 @@ export default function MagazineArticle() {
           </div>
         </div>
 
-        {/* La bande : les mêmes cartes d'univers que partout — ici, elles
-            mènent d'un article à l'autre. */}
+        {/* La bande : les mêmes cartes vivantes que partout. Sur l'article d'un
+            univers, ce sont **les moments du Jour J** — l'heure sur la carte, le
+            morceau du moment, le cœur du public — et le play les montre en
+            conditions. Sur un guide, ce sont les univers, et l'on change
+            d'article d'un clic. */}
         <div className="relative pb-8 pt-2">
           <div className="vp-page">
-            <BandeauHero
-              libelle="Changer d’univers"
-              note={`${UNIVERSE_ARTICLES.length} articles · cliquez pour lire`}
-              cartes={UNIVERSE_ARTICLES.map((un) => ({
-                id: un.slug,
-                titre: styleById(un.universeId ?? '')?.name ?? un.kicker,
-                badge: un.universeId ? badgeDUnivers(un.universeId) : un.kicker,
-                image: un.cover,
-                accent: un.universeId ? styleById(un.universeId)?.accent : undefined,
-                actif: un.universeId === article.universeId,
-                to: `/magazine/${un.slug}`,
-              }))}
+            <BandeDuHero
+              libelle={estUnivers ? 'Les moments du Jour J' : 'Changer d’univers'}
+              note={
+                estUnivers
+                  ? `${moments.length} moments · aimés par le public`
+                  : `${UNIVERSE_ARTICLES.length} articles · cliquez pour lire`
+              }
+              styleId={article.universeId ?? universTour ?? 'traditionnel'}
+              cartes={estUnivers ? moments : cartesDArticles}
             />
           </div>
         </div>
