@@ -39,6 +39,11 @@ interface BandeauHeroProps {
   onSurvol?: (carte: CarteVivante | null) => void;
   /** Vrai pour la bande posée dans le hero : son libellé s'écrit en blanc. */
   premiere?: boolean;
+  /**
+   * Les deux flèches de la bande. Faux quand une autre les porte déjà : dans le
+   * hero de l'accueil, ce sont celles du dock qui mènent les rôles.
+   */
+  fleches?: boolean;
 }
 
 export default function BandeauHero({
@@ -51,6 +56,7 @@ export default function BandeauHero({
   libelleAction,
   onSurvol,
   premiere = false,
+  fleches = true,
 }: BandeauHeroProps) {
   const navigate = useNavigate();
   const { compte, aime, basculer } = useAvis(styleId);
@@ -91,6 +97,15 @@ export default function BandeauHero({
     </motion.div>
   );
 
+  /** Les trois cartes de la bande, centrées : le milieu est celle de la page. */
+  const troisCartes = (
+    <div className="flex min-w-0 items-center justify-center gap-3 sm:flex-1 sm:gap-6">
+      {rendre(precedente, 0.25, true)}
+      {rendre(cartes[milieu]!, 1, false)}
+      {rendre(suivante, 0.25, true)}
+    </div>
+  );
+
   return (
     <div className="w-full">
       <div
@@ -101,18 +116,16 @@ export default function BandeauHero({
         {libelle}
       </div>
 
-      {/* Trois cartes, et les flèches dans l'espace de chaque côté. */}
-      <div className="flex items-center justify-between gap-2 sm:gap-4">
-        <Fleche sens="gauche" onClick={() => choisir(precedente)} />
-
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-3 sm:gap-6">
-          {rendre(precedente, 0.25, true)}
-          {rendre(cartes[milieu]!, 1, false)}
-          {rendre(suivante, 0.25, true)}
+      {/* Les trois cartes : celle de la page au milieu, plus grande. */}
+      {fleches ? (
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
+          <Fleche sens="gauche" onClick={() => choisir(precedente)} />
+          {troisCartes}
+          <Fleche sens="droite" onClick={() => choisir(suivante)} />
         </div>
-
-        <Fleche sens="droite" onClick={() => choisir(suivante)} />
-      </div>
+      ) : (
+        troisCartes
+      )}
     </div>
   );
 }

@@ -34,7 +34,7 @@ interface HeroCycleProps {
   /** Celui qui est à l'écran. */
   actifId?: string;
   className?: string;
-  /** Ce qui remonte le texte du hero, quand les cartes occupent le bas. */
+  /** Ce que la page ajoute au bloc de contenu : de quoi le décaler, au besoin. */
   contenuClassName?: string;
 }
 

@@ -1100,3 +1100,28 @@ minimum chacune, jamais d'ancre **et** de page à la fois ; toutes les ancres
 présentes dans le rendu des pages ; la capsule qui porte le shop, le magazine et
 les actions de la page, qui change avec elle et se tient à droite),
 `npm run build` OK.
+
+## 33. Les cartes des rôles, sous le titre du hero (passe 38)
+
+**Elles étaient mal posées.** La bande des rôles flottait, en absolu, au bas du
+hero (`bottom-[6.5rem]`) — et le texte du hero avait été remonté de 10vh pour
+lui faire de la place. Fini : **les cartes se posent dans le flux, juste sous le
+titre du personnage** (`mt-9 w-full sm:mt-11`), dans le hero, et le texte reprend
+sa place (`HeroCycle` sans `contenuClassName`).
+
+**Plus de bande blanche.** La bande des rôles passe `premiere` : la section n'a
+ni fond blanc ni bord (`relative z-30`), les cartes flottent sur le visuel, et
+son libellé s'écrit en blanc. La bande blanche, c'est celle des univers, sous le
+hero — elle ne bouge pas.
+
+**Plus de flèches sur les cartes.** `BandeauHero` prend `fleches` (vrai par
+défaut) : les trois cartes se centrent, sans les deux boutons d'espace. Dans
+`BandeDuHero`, `fleches = !premiere` — la bande posée dans le hero n'en porte
+donc pas : **ce sont celles du dock qui mènent la bande**, et un seul geste n'a
+qu'une paire de flèches. La bande des univers, hors du hero, garde les siennes.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **461** (les
+cartes des rôles entre le titre et la fin du hero ; plus de `bottom-[6.5rem]` ;
+**une seule** paire de flèches de cartes dans toute la page — celle des univers —
+et les deux du dock ; la bande des univers toujours sur blanc), `npm run build`
+OK.

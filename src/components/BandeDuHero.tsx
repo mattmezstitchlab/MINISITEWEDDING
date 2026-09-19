@@ -36,6 +36,11 @@ interface BandeDuHeroProps {
    * cartes flottent sur le visuel, et son libellé s'écrit en blanc.
    */
   premiere?: boolean;
+  /**
+   * Les deux flèches de la bande. Dans le hero, il n'y en a pas : ce sont celles
+   * du dock qui mènent la bande — pas deux jeux de flèches pour un seul geste.
+   */
+  fleches?: boolean;
   /** On regarde une carte : la page s'accorde à elle. */
   onSurvol?: (carte: CarteVivante | null) => void;
 }
@@ -49,6 +54,7 @@ export default function BandeDuHero({
   libelleAction,
   onLecture,
   premiere = false,
+  fleches = !premiere,
   onSurvol,
 }: BandeDuHeroProps) {
   const [carte, setCarte] = useState<CarteVivante | null>(null);
@@ -116,6 +122,7 @@ export default function BandeDuHero({
           libelleAction={libelleAction}
           onSurvol={onSurvol}
           premiere={premiere}
+          fleches={fleches}
         />
       </div>
     </section>

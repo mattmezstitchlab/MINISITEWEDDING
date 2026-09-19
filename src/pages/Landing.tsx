@@ -90,10 +90,13 @@ export default function Landing() {
    *
    * Les mêmes cartes que les univers, pour la première question du site : celle
    * du milieu est le personnage du hero, un clic montre son hero, et **le play
-   * entre** — c'est lui le bouton. Pas de flèches, pas de bouton « Entrer ».
+   * entre** — c'est lui le bouton. **Dans le hero** (`premiere`) : pas de bande
+   * blanche sous les cartes, le libellé s'écrit en blanc, et **pas de flèches** —
+   * celles du dock mènent déjà la bande.
    */
   const bandeDesRoles = (
     <BandeDuHero
+      premiere
       libelle="Les rôles — cliquez pour voir, play pour entrer"
       styleId="personas"
       cartes={cartesDesPersonas(persona.id)}
@@ -138,7 +141,7 @@ export default function Landing() {
 
       {/* LE HERO : QUI ÊTES-VOUS DANS CE MARIAGE ? */}
       <div id="hero">
-        <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id} contenuClassName="-translate-y-[10vh]">
+        <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id}>
           <div className="flex flex-col items-center text-center">
             <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
 
@@ -164,14 +167,12 @@ export default function Landing() {
               <p className="mx-auto mt-3 max-w-xl text-[15.5px] leading-relaxed text-white/80">
                 « {persona.phrase} »
               </p>
-
             </div>
-          </div>
 
-          {/* LES CARTES DES RÔLES, dans le hero : juste au-dessus du dock, pour
-              qu'on les voie sans quitter le hero — le texte, lui, est remonté. */}
-          <div className="absolute inset-x-0 bottom-[6.5rem] z-20 sm:bottom-[7rem]">
-            <div className="vp-page">{bandeDesRoles}</div>
+            {/* LES CARTES DES RÔLES, JUSTE SOUS LE TITRE : on les a sous les yeux
+                dans le hero, sans bande blanche et sans flèches — celles du dock
+                mènent la bande. */}
+            <div className="mt-9 w-full sm:mt-11">{bandeDesRoles}</div>
           </div>
         </HeroCycle>
       </div>

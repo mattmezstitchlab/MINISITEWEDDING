@@ -957,15 +957,18 @@ check('la bande des univers est sur l’accueil', accueil.includes('Les univers'
 check('la bande ne montre que des univers', accueil.includes('Vue d’ensemble'), false);
 check('elle s’annonce sous le hero', accueil.indexOf('Les univers') > accueil.indexOf('</header>'), true);
 check(
-  'les cartes des rôles sont dans le hero, au-dessus du dock',
-  accueil.includes('bottom-[6.5rem]') && accueil.includes('sm:bottom-[7rem]'),
+  'les cartes des rôles sont juste sous le titre du hero',
+  accueil.indexOf('Les rôles') > accueil.indexOf('Qui êtes-vous dans ce mariage') &&
+    accueil.indexOf('Les rôles') < accueil.indexOf('</header>'),
   true,
 );
-check('et se posent sur blanc', accueil.includes('bg-white pb-6 pt-5'), true);
+check('sans bande blanche', accueil.includes('bottom-[6.5rem]'), false);
+check('et sans flèches : celles du dock mènent la bande', (accueil.match(/Carte précédente/g) ?? []).length, 1);
+check('la bande des univers, elle, se pose sur blanc', accueil.includes('bg-white pb-6 pt-5'), true);
 /* Trois cartes au centre par bande, celle du milieu plus grande, et les flèches. */
 check('chaque bande ne garde que trois cartes', (accueil.match(/Aimer /g) ?? []).length, 6);
 check('la bande des rôles annonce ce qu’elle fait', accueil.includes('Les rôles — cliquez pour voir, play pour entrer'), true);
-check('une flèche de chaque côté', ['Carte précédente', 'Carte suivante'].every((f) => accueil.includes(f)), true);
+check('la bande des univers garde ses deux flèches', (accueil.match(/Carte suivante/g) ?? []).length, 1);
 check('deux bandes, une carte marquée chacune', (accueil.match(/data-actif="true"/g) ?? []).length, 2);
 /* Le hero annonce l'univers qu'il montre : la bande s'aligne, une seule carte. */
 check('une carte de la page par bande', (accueil.match(/data-actif="true"/g) ?? []).length, 2);
