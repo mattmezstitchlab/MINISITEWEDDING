@@ -61,6 +61,40 @@ export interface UniverseContent {
 }
 
 export const UNIVERSE_CONTENT: Record<string, UniverseContent> = {
+  /**
+   * L'univers vierge : le socle neutre. Aucun décor, aucune personne sur les
+   * images, des sections classiques — les informations réelles viennent du
+   * programme et de la carte des mariés.
+   */
+  vierge: {
+    hero: {
+      kicker: 'Votre mariage',
+      title: 'Votre histoire, sans décor imposé.',
+      subtitle:
+        'Les sections classiques — le programme, les lieux, les informations, le RSVP, la cagnotte, la galerie — dans une esthétique neutre et florale.',
+      facts: [
+        { label: 'Cérémonie', value: 'À préciser dans le programme' },
+        { label: 'Réception', value: 'À préciser dans le programme' },
+        { label: 'Tenue', value: 'Décidée par les mariés' },
+      ],
+    },
+    couple: { names: 'Vous deux', date: '2027-06-12', countdown: 'Bientôt', venue: 'Le lieu du mariage', city: 'La ville', season: 'La saison', dressCode: 'À définir avec les invités', guests: 80 },
+    rsvp: { confirmed: 0, pending: 80, invitation: 'Confirmez votre présence avant le 1ᵉʳ juin' },
+    cagnotte: { purpose: 'Votre liste : les mariés décident de la destination', goal: 3000, raised: 0, contributors: 0, top: '—' },
+    menu: { service: 'Repas assis, service à l’assiette', items: ['Apéritif et cocktail', 'Entrée', 'Plat', 'Dessert'] },
+    allergens: [{ label: 'Végétarien', value: 'Selon les réponses' }, { label: 'Sans gluten', value: 'Selon les réponses' }],
+    infos: [
+      { label: 'Cérémonie', value: 'L’heure et le lieu se règlent dans le programme' },
+      { label: 'Réception', value: 'Le lieu de réception se règle dans les lieux' },
+      { label: 'Accès', value: 'L’itinéraire se règle dans les informations pratiques' },
+    ],
+    vendor: {
+      arrival: 'Arrivée à préciser avec les mariés',
+      access: 'Accès et stationnement à compléter',
+      contact: 'Contact sur place : à renseigner',
+    },
+  },
+
   'noir-blanc': {
     hero: {
       kicker: 'Univers · Minimal & Haute Couture',

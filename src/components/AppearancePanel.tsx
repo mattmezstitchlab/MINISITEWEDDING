@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Check } from 'lucide-react';
 import type { WeddingSite } from '../lib/types';
-import { TYPO_OPTIONS, ACCENT_PRESETS, BUTTON_OPTIONS, SHAPE_OPTIONS, LAYOUT_OPTIONS, ANIMATION_OPTIONS, WEDDING_STYLES, typographyFor } from '../lib/weddingStyles';
+import { TYPO_OPTIONS, ACCENT_PRESETS, BUTTON_OPTIONS, SHAPE_OPTIONS, LAYOUT_OPTIONS, ANIMATION_OPTIONS, ALL_STYLES, typographyFor } from '../lib/weddingStyles';
 
 interface Props {
   site: WeddingSite;
@@ -27,7 +27,7 @@ export default function AppearancePanel({ site, onPatch }: Props) {
       <div>
         <Label>Univers</Label>
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-          {WEDDING_STYLES.map((theme) => {
+          {ALL_STYLES.map((theme) => {
             const actif = site.style === theme.id;
             return (
               <button

@@ -1,4 +1,4 @@
-import { WEDDING_STYLES } from './weddingStyles';
+import { BLANK_STYLE_ID } from './weddingStyles';
 import { roleToScreen, roleTitle } from './spaceDraft';
 
 /**
@@ -199,7 +199,7 @@ export const EMPTY_CARD: CardData = {
   date: '',
   venue: '',
   city: '',
-  styleId: WEDDING_STYLES[0].id,
+  styleId: BLANK_STYLE_ID,
   events: DAY_EVENTS.map((e) => e.id),
   music: MUSIC_MOODS[0].id,
 

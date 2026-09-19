@@ -20,8 +20,8 @@ interface Step {
 
 const STEPS: Step[] = [
   { id: 'hero', label: 'Le visuel plein écran et la création de l’espace', short: 'Accueil', icon: Home },
-  { id: 'ecran', label: 'Le site du couple, dans la main', short: 'L’écran', icon: Smartphone },
-  { id: 'direction', label: 'Direction artistique & scénographie', short: 'Direction artistique', icon: Images },
+  { id: 'ecran', label: 'La carte, avant le mini-site', short: 'La carte', icon: Smartphone },
+  { id: 'direction', label: 'Les univers dans la main : le vrai mini-site, écran par écran', short: 'Le mini-site', icon: Images },
   { id: 'univers', label: 'Prestataires & univers complémentaires', short: 'Prestataires', icon: Layers },
   { id: 'contrainte', label: 'Le plus beau jour se vit', short: 'Zéro contrainte', icon: Heart },
   { id: 'bande-son', label: 'Playlist collaborative du Jour J', short: 'Playlist', icon: Music2 },

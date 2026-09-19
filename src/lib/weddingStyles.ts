@@ -36,6 +36,39 @@ export interface ThemeCategory {
   description: string;
 }
 
+/**
+ * L'UNIVERS VIERGE
+ *
+ * Personne n'est obligé de choisir un univers : ce socle neutre porte les
+ * sections classiques, un visuel floral sans personne, et aucune esthétique
+ * imposée. C'est ce que reçoit un mariage qui n'a rien choisi — et il peut le
+ * garder tel quel ou basculer vers un univers, plus tard, depuis l'éditeur.
+ */
+export const BLANK_STYLE_ID = 'vierge';
+
+export const BLANK_STYLE: WeddingStyle = {
+  id: BLANK_STYLE_ID,
+  name: 'Sans univers',
+  tagline: 'Vos sections classiques, vos textes, aucune esthétique imposée.',
+  ink: '#1B1B1F',
+  muted: '#83807A',
+  accent: '#8C7A6B',
+  dark: false,
+  image: '/images/bouquet.jpg',
+  aura: ['#FBF9F5', '#EFEAE2', '#DED5C8'],
+  manifesto:
+    'Ni décor, ni manifeste : le mariage tel que vous le racontez. Les sections classiques, vos photos, vos mots — et si un univers vous attire plus tard, il sera toujours temps.',
+  synopsis:
+    'Le programme, les lieux, les informations pratiques, le RSVP, la cagnotte, la galerie : tout est là, dans une esthétique neutre et florale, sans personne sur les images.',
+  humanMissions: [],
+  complementaryStyleIds: ['garden-party', 'chateau-moderne', 'noir-blanc'],
+  vendorToolkit: {
+    title: 'Aucun décor imposé',
+    description: 'Le socle neutre : vos sections classiques, et rien qui vous soit étranger.',
+    badge: 'Vierge',
+  },
+};
+
 export const THEME_CATEGORIES: ThemeCategory[] = [
   { id: 'all', label: 'Tous les univers & missions', description: 'Explorez tous les styles et leurs équipes humaines' },
   { id: 'imprevu', label: '⚡ Last Minute & Plan B', description: 'Mariages spontanés, alertes secours et plans B héroïques' },
@@ -650,8 +683,12 @@ export const WEDDING_STYLES: WeddingStyle[] = [
   },
 ];
 
+/** Tous les choix possibles : l'univers vierge d'abord, puis les vingt-quatre univers. */
+export const ALL_STYLES: WeddingStyle[] = [BLANK_STYLE, ...WEDDING_STYLES];
+
 export function getDirectionArtistiqueImage(styleId: string): string {
   const mapping: Record<string, string> = {
+    [BLANK_STYLE_ID]: BLANK_STYLE.image,
     'noir-blanc': '/images/da-noir-blanc.jpg',
     'desert': '/images/da-desert.jpg',
     'brutal': '/images/da-brutal.jpg',
@@ -677,7 +714,7 @@ export function getDirectionArtistiqueImage(styleId: string): string {
 }
 
 export function styleById(id: string): WeddingStyle {
-  return WEDDING_STYLES.find((s) => s.id === id) ?? WEDDING_STYLES[0];
+  return ALL_STYLES.find((s) => s.id === id) ?? WEDDING_STYLES[0];
 }
 
 export function getComplementaryStyles(currentStyle: WeddingStyle): WeddingStyle[] {

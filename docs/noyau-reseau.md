@@ -213,3 +213,24 @@ Plus une : **l'annonce** du couple, une seule, en haut.
   l'univers — jamais une couleur qui ne vienne de lui. `PhoneShell` publie le
   thème (`src/components/phone/phoneTheme.ts`) et les modules le lisent : un
   écran ne ressemble pas à un autre.
+
+## 10. Ce que « la carte d'abord » a tranché
+
+- **L'univers vierge existe.** Personne n'est obligé de choisir un univers : le
+  socle `Sans univers` (`BLANK_STYLE_ID` dans `src/lib/weddingStyles.ts`) porte
+  les sections classiques, un visuel floral sans personne (`bouquet.jpg`),
+  aucune mission de métier. Il vit dans `ALL_STYLES`, à côté des vingt-quatre
+  univers — et il est le point de départ d'une carte neuve (`EMPTY_CARD`).
+- **La carte passe avant le site.** Sous le hero, l'accueil montre la carte —
+  pas un téléphone : « Votre nom », « Votre ville », l'univers vierge en grand
+  visuel — et son bouton mène à `/creer`. Le hero, lui, dit « Découvrir ».
+- **Le mini-site se découvre sous l'éditeur.** Un défilé de téléphones
+  (`MiniSiteRail`) ouvre le **vrai** aperçu du mini-site d'un univers — le même
+  que celui de l'éditeur, monté à la largeur d'un téléphone et réduit dans le
+  châssis — avec le visuel plein écran et le titre de l'univers en grand
+  (`/apercu?style=…&titre=…&sans=…`). Trois téléphones passent de l'autre côté
+  du comptoir : l'écran prestataire. Les cartes de prestataires suivent, dans la
+  section « Harmonies & Affinités ».
+- **Ce que la carte dit, le mini-site l'écrit.** Le parcours est carte → mini-site :
+  les informations composées sur la carte sont celles que le site affiche, on ne
+  les demande pas deux fois.

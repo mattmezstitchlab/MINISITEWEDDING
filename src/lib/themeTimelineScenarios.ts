@@ -18,6 +18,38 @@ export interface ThemeTimelineScene {
 }
 
 export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
+  // 0. L'UNIVERS VIERGE (sections classiques, aucune personne sur les images)
+  vierge: [
+    {
+      time: '15h00',
+      title: 'La cérémonie',
+      narrativeScript: 'Vos vœux, vos alliances, la sortie au milieu des invités. L’heure et le lieu se règlent dans le programme.',
+      ambianceDetail: 'La tenue et le déroulé restent à définir avec vos prestataires.',
+      image: '/images/bouquet.jpg',
+    },
+    {
+      time: '17h30',
+      title: 'Le cocktail',
+      narrativeScript: 'Les retrouvailles, les discours courts, les photos de famille — au lieu que vous aurez choisi.',
+      ambianceDetail: 'L’apéritif et le service se règlent avec le traiteur.',
+      image: '/images/champagne.jpg',
+    },
+    {
+      time: '20h00',
+      title: 'Le dîner',
+      narrativeScript: 'Le repas, les tables, les régimes pris en compte. Chaque information pratique se règle dans les sections du site.',
+      ambianceDetail: 'Le lieu de réception se règle dans les lieux.',
+      image: '/images/table-noir.jpg',
+    },
+    {
+      time: '23h00',
+      title: 'La soirée',
+      narrativeScript: 'Le bal, la piste, la fin de nuit. La playlist collaborative se remplit depuis le site.',
+      ambianceDetail: 'La musique du mariage se règle dans la playlist.',
+      image: '/images/danse.jpg',
+    },
+  ],
+
   // 1. BLACK & WHITE (Éditorial, pur, haute couture)
   'noir-blanc': [
     {

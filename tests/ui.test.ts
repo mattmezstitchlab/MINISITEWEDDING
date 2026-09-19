@@ -26,7 +26,7 @@ import WeddingCard from '../src/components/WeddingCard';
 import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
 import Landing from '../src/pages/Landing';
 import { contentFor } from '../src/lib/universeContent';
-import { styleById } from '../src/lib/weddingStyles';
+import { ALL_STYLES, WEDDING_STYLES, styleById } from '../src/lib/weddingStyles';
 import { EMPTY_CARD, type CardData } from '../src/lib/weddingCard';
 import {
   adoptPersonKey,
@@ -194,6 +194,20 @@ check(
   accueil.includes('J’ai déjà une carte'),
   true,
 );
+check('l’accueil met la carte avant le site', accueil.includes('La carte d’abord.'), true);
+check('l’accueil ouvre sur « Découvrir »', accueil.includes('Découvrir'), true);
+check('le défilé montre les vrais mini-sites', accueil.includes('Mini-site · '), true);
+check('le défilé passe aussi côté prestataire', accueil.includes('Écran prestataire'), true);
+check('l’aperçu du défilé ne garde que le hero', accueil.includes('sans=histoire'), true);
+check('l’aperçu du défilé porte le titre de l’univers', accueil.includes('titre='), true);
+
+/* L'univers vierge : les sections classiques, un visuel floral, personne sur
+   les images — pour les mariés qui n'ont rien choisi, ou prévu autre chose. */
+const vierge = styleById('vierge');
+check('l’univers vierge existe', vierge.name, 'Sans univers');
+check('l’univers vierge ne mobilise personne', vierge.humanMissions.length, 0);
+check('l’univers vierge garde un visuel floral', vierge.image.endsWith('bouquet.jpg'), true);
+check('l’éditeur propose tous les univers, vierge compris', ALL_STYLES.length, WEDDING_STYLES.length + 1);
 
 /* L'écran invité parle la langue du mini-site : capsule du site, hero du site,
    accent du thème, sections du site. */

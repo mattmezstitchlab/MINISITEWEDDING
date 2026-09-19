@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { WEDDING_STYLES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
+import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 import { contentFor } from '../lib/universeContent';
 import HeroCycle from '../components/HeroCycle';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
@@ -15,7 +15,8 @@ import ComplementaryThemes from '../components/ComplementaryThemes';
 import UniversePhoneScreens from '../components/UniversePhoneScreens';
 import ErrorBoundary from '../components/ErrorBoundary';
 import BottomCapsuleNav from '../components/BottomCapsuleNav';
-import HomePhoneShowcase from '../components/HomePhoneShowcase';
+import MiniSiteRail from '../components/MiniSiteRail';
+import HomeCardShowcase from '../components/HomeCardShowcase';
 
 const HERO_ROTATING_TITLES = [
   'Votre mariage. Votre histoire.\nUn seul endroit.',
@@ -51,13 +52,11 @@ export default function Landing() {
     return () => clearInterval(interval);
   }, [selectedStyle]);
 
-  const scrollToHero = () => {
-    // Sur un univers, la création vit sur l'accueil : on y revient d'abord.
-    if (selectedStyle) {
-      setSelectedStyle(null);
-    }
-    const el = document.getElementById('hero-ai-container');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  /** « Découvrir » descend d'un écran : la carte, puis le mini-site. */
+  const descendreVersLaCarte = () => {
+    if (selectedStyle) setSelectedStyle(null);
+    const el = document.getElementById('ecran');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const handleSelectStyle = (style: WeddingStyle | null) => {
@@ -182,14 +181,14 @@ export default function Landing() {
                 <div id="hero-ai-container" className="mt-6 flex w-full flex-col items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => navigate('/creer')}
+                    onClick={descendreVersLaCarte}
                     className="vp-btn vp-press !bg-white !px-8 !py-3.5 !text-black shadow-2xl hover:!bg-white/90"
                   >
-                    Créer ma carte <ArrowRight size={16} />
+                    Découvrir <ArrowRight size={16} />
                   </button>
                   <p className="max-w-md text-[12.5px] leading-snug text-white/65">
-                    Quelques questions, et votre carte ouvre le mini-site de votre mariage. L’univers se
-                    choisit ensuite, dans l’éditeur.
+                    La carte d’abord, le mini-site juste après : l’univers se choisit ensuite, dans
+                    l’éditeur.
                   </p>
                   <Link
                     to="/carte"
@@ -205,15 +204,16 @@ export default function Landing() {
       </HeroCycle>
       </div>
 
-      {/* L'ÉCRAN DU COUPLE : un seul téléphone, qui remonte d'un tiers sur le hero.
-          Sur un univers précis, l'iPhone interactif permet de faire défiler les vues. */}
+      {/* LA CARTE AVANT LE SITE : sous le hero, la carte remplace l'écran — on
+          voit ce qu'il reste à remplir. Sur un univers précis, les trois écrans
+          de cet univers prennent sa place. */}
       <ErrorBoundary>
         <div id="ecran">
-        {!selectedStyle ? (
-          <HomePhoneShowcase />
-        ) : (
-          <UniversePhoneScreens currentStyle={selectedStyle} />
-        )}
+          {selectedStyle ? (
+            <UniversePhoneScreens currentStyle={selectedStyle} />
+          ) : (
+            <HomeCardShowcase />
+          )}
         </div>
       </ErrorBoundary>
 
@@ -222,54 +222,9 @@ export default function Landing() {
         <EditorShowcase key={activeStyleOrFallback.id} styleId={activeStyleOrFallback.id} />
       </div>
 
-      {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}
+      {/* LE DÉFILÉ DES MINI-SITES : sous l'éditeur, les univers dans la main */}
       <div id="direction">
-      <ParallaxSection
-        image={
-          selectedStyle
-            ? getDirectionArtistiqueImage(selectedStyle.id)
-            : '/images/table-noir.jpg'
-        }
-        overlayOpacity={0.62}
-        heightClass="min-h-[72vh]"
-      >
-        <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl text-center">
-          <span className="vp-eyebrow !text-white/70">
-            {selectedStyle
-              ? `Direction Artistique & Scénographie · ${selectedStyle.name}`
-              : 'Direction Artistique & Haute Scénographie'}
-          </span>
-          <h2
-            className="vp-title mt-4 text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)]"
-            style={{ fontSize: 'clamp(2.4rem, 5.5vw, 4.5rem)', lineHeight: 1.05 }}
-          >
-            {selectedStyle ? (
-              <>
-                L’émotion d’une esthétique pure.<br />
-                {selectedStyle.tagline}
-              </>
-            ) : (
-              <>
-                Des univers créés comme des pièces de mode.<br />
-                Jamais de templates génériques.
-              </>
-            )}
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-white/80">
-            {selectedStyle?.manifesto ||
-              "Chaque mariage possède son langage visuel, sa typographie et ses métiers dédiés. De la chapelle de béton au château contemporain, explorez des atmosphères sans concession."}
-          </p>
-          <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              onClick={scrollToHero}
-              className="vp-btn vp-press !bg-white !text-black hover:!bg-white/90 !px-8 !py-3.5 shadow-2xl"
-            >
-              Donner vie à votre projet <ArrowRight size={16} />
-            </button>
-          </div>
-        </motion.div>
-      </ParallaxSection>
+        <MiniSiteRail />
       </div>
 
       {/* SECTION SUGGESTIONS COMPLÉMENTAIRES D'UNIVERS & MISSIONS */}
