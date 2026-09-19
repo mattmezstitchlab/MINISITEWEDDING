@@ -105,7 +105,9 @@ export default function SpaceBuilder({ draft, onDraftChange, onCreated }: SpaceB
           </div>
         </div>
 
-        {/* La réponse à la question du moment */}
+        {/* La réponse à la question du moment. Hauteur fixe : le bloc ne bouge
+            plus quand on passe d'une question à l'autre. */}
+        <div className="no-scrollbar h-[228px] overflow-y-auto pr-0.5">
         <AnimatePresence mode="wait">
           <motion.div
             key={current.id}
@@ -182,7 +184,7 @@ export default function SpaceBuilder({ draft, onDraftChange, onCreated }: SpaceB
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.16 }}
-                    className="grid grid-cols-2 gap-1.5 sm:grid-cols-3"
+                    className="grid grid-cols-3 gap-1.5 sm:grid-cols-4"
                   >
                     {universAffiches.map((style) => {
                       const actif = draft.styleId === style.id;
@@ -195,7 +197,7 @@ export default function SpaceBuilder({ draft, onDraftChange, onCreated }: SpaceB
                             actif ? 'border-white ring-2 ring-white' : 'border-white/12 hover:border-white/40'
                           }`}
                         >
-                          <span className="relative block h-[54px] w-full overflow-hidden">
+                          <span className="relative block aspect-[16/10] w-full overflow-hidden">
                             <img src={style.image} alt={style.name} className="h-full w-full object-cover" />
                             <span className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                             <span className="absolute bottom-1 left-2 right-2 truncate text-[10.5px] font-bold text-white">
@@ -216,6 +218,7 @@ export default function SpaceBuilder({ draft, onDraftChange, onCreated }: SpaceB
             )}
           </motion.div>
         </AnimatePresence>
+        </div>
 
         {/* Le pilotage */}
         <div className="mt-3.5 flex items-center justify-between gap-3 px-1">

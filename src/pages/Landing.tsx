@@ -156,16 +156,18 @@ export default function Landing() {
               </motion.div>
             </div>
           ) : (
-            <div className="min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
+            /* Hauteur fixe : le bloc de création en dessous ne bouge plus quand
+               le titre tourne, et l'animation se fait dans un cadre stable. */
+            <div className="flex h-[118px] items-center justify-center overflow-hidden sm:h-[138px] lg:h-[158px]">
               <AnimatePresence mode="wait">
                 <motion.h1
                   key={titleIdx}
-                  initial={{ opacity: 0, y: 16 }}
+                  initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -16 }}
+                  exit={{ opacity: 0, y: -14 }}
                   transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className="vp-title max-w-4xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] whitespace-pre-line"
-                  style={{ fontSize: 'clamp(2.4rem, 6vw, 4.6rem)', lineHeight: 1.08 }}
+                  className="vp-title max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] whitespace-pre-line"
+                  style={{ fontSize: 'clamp(1.75rem, 4.2vw, 3.2rem)', lineHeight: 1.06 }}
                 >
                   {HERO_ROTATING_TITLES[titleIdx]}
                 </motion.h1>

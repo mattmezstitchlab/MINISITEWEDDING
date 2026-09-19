@@ -68,8 +68,8 @@ export default function ShopProduct() {
               transition={{ duration: 0.5 }}
               className="relative overflow-hidden rounded-[28px] border border-black/8"
             >
-              <div className="aspect-[4/5]">
-                <img src={produit.image} alt={produit.name} className="h-full w-full object-cover" />
+              <div className="aspect-[4/3]">
+                <img src={produit.image} alt={produit.name} className="h-full w-full object-cover object-center" />
               </div>
               <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 backdrop-blur-sm">
                 <Icone size={12} className="text-white/90" />
@@ -186,11 +186,11 @@ export default function ShopProduct() {
                   to={`/shop/${item.slug}`}
                   className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-black/10 bg-white p-2.5 transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className="aspect-[4/5] overflow-hidden rounded-[16px]">
+                  <div className="aspect-[4/3] overflow-hidden rounded-[16px]">
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                      className="h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.03]"
                     />
                   </div>
                   <div className="px-1 pt-2.5">

@@ -166,11 +166,11 @@ export default function Shop() {
                       to={`/shop/${produit.slug}`}
                       className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-black/10 bg-white p-2.5 transition-all hover:-translate-y-1 hover:border-black/20 hover:shadow-xl"
                     >
-                      <div className="relative aspect-[4/5] overflow-hidden rounded-[18px]">
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-[18px]">
                         <img
                           src={produit.image}
                           alt={produit.name}
-                          className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                          className="h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.03]"
                         />
                         <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 backdrop-blur-sm">
                           <Icone size={10} className="text-white/85" />

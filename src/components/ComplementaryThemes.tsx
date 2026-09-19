@@ -47,12 +47,12 @@ export default function ComplementaryThemes({ currentStyle, onClaimRole }: Compl
               transition={{ duration: 0.25 }}
               className="group overflow-hidden rounded-[24px] border border-black/10 bg-white p-2.5 shadow-sm transition-all hover:border-black/20 hover:shadow-xl"
             >
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[18px]">
+              <div className="relative aspect-[3/4] overflow-hidden rounded-[18px]">
                 {/* Le portrait, animé comme un plan filmé */}
                 <img
                   src={vendor.portrait}
                   alt={vendor.trade}
-                  className="vp-live-frame h-full w-full object-cover"
+                  className="vp-live-frame h-full w-full object-cover object-top"
                   style={{ animationDelay: `${(i % 6) * -2.7}s` }}
                 />
 

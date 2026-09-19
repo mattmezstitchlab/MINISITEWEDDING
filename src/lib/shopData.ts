@@ -549,7 +549,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '340 €',
     unit: 'la location 3 jours',
-    image: '/images/shop/robe.jpg',
+    image: '/images/shop/robe-large.jpg',
     tagline: 'Une seule ligne, aucune broderie.',
     description:
       'Robe fluide en soie sauvage, bretelles fines, dos nu, traîne courte. Coupe droite sans baleinage, taille 34 à 42, retouches possibles par notre atelier. La version la plus calme de la robe de mariée, celle qui laisse toute la place au lieu et à la lumière.',
@@ -572,7 +572,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '190 €',
     unit: 'la location 3 jours',
-    image: '/images/shop/robe.jpg',
+    image: '/images/shop/robe-large.jpg',
     tagline: 'Un costume qui respire, même en juillet.',
     description:
       'Laine froide 240 g, coupe demi-mesure, veston deux boutons et pantalon à pinces. Pour les mariages d’été, c’est la seule matière qui tient la journée entière sans transpirer dans les photos de 18h.',
@@ -594,7 +594,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '85 €',
     unit: 'la location',
-    image: '/images/shop/robe.jpg',
+    image: '/images/shop/robe-large.jpg',
     tagline: 'Trois mètres de tulle, et la cérémonie change de ton.',
     description:
       'Voile cathédrale en tulle de soie, 3 m, bords non ourlés, peigne en corne. Il se porte à l’église puis se retire d’un geste pour le cocktail — et il se prête volontiers entre mariées quand il a servi une fois.',
@@ -616,7 +616,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '45 €',
     unit: 'la pièce',
-    image: '/images/shop/robe.jpg',
+    image: '/images/shop/robe-large.jpg',
     tagline: 'Le détail qui sauve un costume loué.',
     description:
       'Nœud papillon à nouer, soie sauvage teintée à la main, onze coloris. Le nœud pré-noué se voit à vingt mètres sur une photo ; celui-ci non. Un atelier de la Drôme les coud un par un.',
@@ -638,7 +638,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '38 €',
     unit: 'la location',
-    image: '/images/shop/robe.jpg',
+    image: '/images/shop/robe-large.jpg',
     tagline: 'Belles à la cérémonie, tenables jusqu’à 3h.',
     description:
       'Derby en cuir souple, semelle cuir cousue, talon 2 cm. Le pire ennemi d’un mariage n’est pas la pluie, c’est la mariée qui enlève ses chaussures à 21h. Celles-ci sont faites pour danser.',
@@ -878,7 +878,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'pret',
     price: 'Gratuit',
     unit: 'au prêt, caution 20 €',
-    image: '/images/shop/robe.jpg',
+    image: '/images/shop/robe-large.jpg',
     tagline: 'Un mariage à 38 °C, on vous prête de quoi tenir.',
     description:
       'Quarante chemises en lin lavé, du S au XXL, dans quatre teintes claires. Elles circulent gratuitement depuis trois ans entre les mariages de l’été : on les emprunte, on les rend lavées, elles repartent ailleurs. C’est notre manière de faire circuler ce qui ne sert qu’une fois.',
