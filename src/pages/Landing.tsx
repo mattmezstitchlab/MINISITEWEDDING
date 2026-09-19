@@ -12,10 +12,14 @@ import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import ThemeManifestoWhite from '../components/ThemeManifestoWhite';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 import HeroAiPrompt from '../components/HeroAiPrompt';
-import HomeTriplePhoneShowcase from '../components/HomeTriplePhoneShowcase';
+
 import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
-import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
 import ErrorBoundary from '../components/ErrorBoundary';
+import TimelineBand from '../components/TimelineBand';
+import type { BandMoment } from '../components/TimelineBand';
+import { INITIAL_TIMELINE_ITEMS } from '../lib/timelineTheaterEngine';
+import { trackForText } from '../lib/weddingSoundtrack';
+import HomePhoneShowcase from '../components/HomePhoneShowcase';
 
 const HERO_ROTATING_TITLES = [
   'Votre mariage. Votre histoire.\nUn seul endroit.',
@@ -34,10 +38,32 @@ const MODULES = [
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
 
+/**
+ * La journée de démonstration posée sur la bande du bas : les cinq moments du
+ * moteur temporel, avec le métier qui les porte et leur morceau.
+ */
+function demoDayMoments(): BandMoment[] {
+  const used: string[] = [];
+  return INITIAL_TIMELINE_ITEMS.filter((m) => m.mode === 'jour-j').map((m) => {
+    const track = trackForText(`${m.title} ${m.subtitle} ${m.chapter}`, used);
+    if (track) used.push(track.src);
+    return {
+      id: m.id,
+      time: m.startTime,
+      title: m.title,
+      detail: m.coupleNote ?? m.description,
+      place: m.subtitle,
+      role: m.alignedRole,
+      track,
+    };
+  });
+}
+
 export default function Landing() {
   // Par défaut : null = page principale générale d'atterrissage VOWS
   const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(null);
   const [titleIdx, setTitleIdx] = useState(0);
+  const [dayMoments] = useState<BandMoment[]>(() => demoDayMoments());
 
   const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
 
@@ -64,7 +90,11 @@ export default function Landing() {
   };
 
   return (
-    <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
+    <div
+      className="vp-env min-h-screen overflow-x-clip text-[#0B0C12]"
+      // La bande du bas annonce sa hauteur : on lui laisse la place.
+      style={{ paddingBottom: 'calc(var(--vows-daybar, 72px) + 1rem)' }}
+    >
       {/* Barre de navigation unifiée : Logo à gauche, UNIVERS & MÉTIERS à droite */}
       <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
         <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
@@ -127,13 +157,11 @@ export default function Landing() {
         </div>
       </HeroCycle>
 
-      {/* EXPÉRIENCE SUR SMARTPHONE HAUT DE GAMME :
-          - Sur l'accueil général : Le triptyque aéré des 3 iPhones sobres & éditoriaux
-          - Sur une page Thème précis : L'iPhone interactif permettant de faire défiler les vues (Invité, Marié, chaque missionnaire)
-      */}
+      {/* L'ÉCRAN DU COUPLE : un seul téléphone, qui remonte d'un tiers sur le hero.
+          Sur un univers précis, l'iPhone interactif permet de faire défiler les vues. */}
       <ErrorBoundary>
         {!selectedStyle ? (
-          <HomeTriplePhoneShowcase onExplore={scrollToHero} />
+          <HomePhoneShowcase onExplore={scrollToHero} />
         ) : (
           <ThemePhoneShowcase
             currentStyle={selectedStyle}
@@ -302,8 +330,13 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* TOOLBAR TACTILE DISCRÈTE (Stories Live & Event OS) */}
-      <UniversalMiniSiteToolbar />
+      {/* LA BANDE DU BAS : la timeline du Jour J, toujours affichée, toute la largeur */}
+      <TimelineBand
+        moments={dayMoments}
+        title="Le Jour J, heure par heure"
+        subtitle="Cérémonie, cocktail, dîner, bal — chacun y voit ce qui le concerne"
+        pill="Un seul écran pour tous"
+      />
 
       <footer className="px-5 pb-10">
         <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">

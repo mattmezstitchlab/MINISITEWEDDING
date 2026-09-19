@@ -139,16 +139,20 @@ function normalize(value: string): string {
 }
 
 /**
- * Le morceau d'un moment, ou `null` si ce moment se vit en silence.
- * Un même mariage ne reçoit jamais deux fois le même morceau.
+ * Le morceau qui correspond à un texte, ou `null` si le moment se vit en
+ * silence. Un même mariage ne reçoit jamais deux fois le même morceau.
  */
-export function trackFor(event: ProgrammeEvent, used: string[] = []): Track | null {
-  const haystack = normalize(`${event.title} ${event.description ?? ''} ${event.place ?? ''}`);
+export function trackForText(text: string, used: string[] = []): Track | null {
+  const haystack = normalize(text);
   for (const entry of LIBRARY) {
     if (used.includes(entry.track.src)) continue;
     if (entry.keys.some((key) => haystack.includes(key))) return entry.track;
   }
   return null;
+}
+
+export function trackFor(event: ProgrammeEvent, used: string[] = []): Track | null {
+  return trackForText(`${event.title} ${event.description ?? ''} ${event.place ?? ''}`, used);
 }
 
 /** Toute la bande-son d'un site, dans l'ordre du programme, sans doublon. */
