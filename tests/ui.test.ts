@@ -12,7 +12,7 @@
  */
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import PublicSiteView from '../src/components/PublicSiteView';
 import SharePanel from '../src/components/SharePanel';
 import { forgetPersonToken, setActiveToken } from '../src/lib/auth';
@@ -29,8 +29,12 @@ import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LeMariage from '../src/pages/LeMariage';
 import {
-  PLAYLIST_DEPART, chercherMorceaux, morceauParId, morceauxDeLaPlaylist, repartitionParMoment,
+  PLAYLIST_DEPART, chargerPlaylist, chercherMorceaux, morceauParId, morceauxDeLaPlaylist,
+  repartitionParMoment,
 } from '../src/lib/weddingPlaylist';
+import { aPartirDe, magasinFor } from '../src/lib/weddingPage';
+import { ALL_STYLES } from '../src/lib/weddingStyles';
+import { totalCaisse } from '../src/lib/superMariage';
 import PreviewSite from '../src/pages/PreviewSite';
 import {
   CONVIVES, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
@@ -449,12 +453,12 @@ check(
   mariageDecode.includes('L’univers choisi') && mariageDecode.includes('Les univers voisins'),
   true,
 );
-check('elle porte le programme et ses cartes musicales', mariageDecode.includes('Cinq moments, cinq morceaux'), true);
+check('elle porte le programme et ses cartes musicales', mariageDecode.includes('moments, chacun son morceau'), true);
 check('elle porte la playlist collaborative', mariageDecode.includes('Cherchez un morceau, ajoutez-le'), true);
 check('avec un champ de recherche', mariageDecode.includes('Un titre, un artiste, un moment'), true);
-check('et le récap en ticket', mariageDecode.includes('Tout ce qui est préparé, sur un ticket'), true);
-check('le défilé des univers y vit encore', mariageDecode.includes('Mini-site · ') && mariage.includes('sans=histoire'), true);
-check('et passe aussi côté prestataire', mariageDecode.includes('Écran prestataire'), true);
+check('et le récap en ticket', mariageDecode.includes('Les invités font leurs courses'), true);
+check('la bande d’iPhones a aussi quitté la page', mariageDecode.includes('Mini-site · '), false);
+check('chaque univers mène à sa page entière', mariageDecode.includes('Chaque univers a sa page entière'), true);
 check('les métiers y défilent', mariageDecode.includes('Les métiers qui font tourner ces univers'), true);
 check('le ticket du récap est en cours', mariageDecode.includes('Ticket en cours'), true);
 
@@ -466,6 +470,69 @@ check('un morceau suggéré n’a pas d’extrait local', Boolean(chercherMorcea
 check('la playlist de départ est dans le catalogue', morceauxDeLaPlaylist(PLAYLIST_DEPART).length, 3);
 check('les morceaux enregistrés se relisent', morceauParId('track-c1')?.title, "Can't Help Falling in Love");
 check('la répartition compte les moments', repartitionParMoment(morceauxDeLaPlaylist(PLAYLIST_DEPART)).length >= 1, true);
+
+/* ------------------ une page entière par univers : le même moteur, --------------- */
+/* ------------------ un magasin et un ticket différents à chaque fois ------------ */
+
+const pageVegas = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/le-mariage/vegas'] },
+    createElement(
+      Routes,
+      null,
+      createElement(Route, { path: '/le-mariage/:styleId', element: createElement(LeMariage as never) }),
+    ),
+  ),
+);
+const vegasDecode = pageVegas.replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, "'");
+
+check('la page de Las Vegas s’ouvre', pageVegas.length > 30_000, true);
+check('elle porte le geste de son univers', vegasDecode.includes('Chapelle rose & néon'), true);
+check('son ticket porte son enseigne', vegasDecode.includes('LAS VEGAS'), true);
+check('ses métiers sont les siens', vegasDecode.includes('Elvis Officiant'), true);
+check('son article est le sien', vegasDecode.includes('Un mariage signé Las Vegas'), true);
+check('ses moments sont les siens', vegasDecode.includes('La Chapelle Néon'), true);
+check('et ses plats aussi', vegasDecode.includes('Sliders et ailes de poulet sauce miel'), true);
+check('les invités peuvent envoyer la page', vegasDecode.includes('Envoyer aux invités'), true);
+check('le récap s’ouvre en billets', vegasDecode.includes('Les invités prennent leurs billets'), true);
+check('et chacun coche ce qu’il offre', vegasDecode.includes('coche ce qu’il offre'), true);
+
+/* Le moteur : chaque univers a son magasin, complet et cohérent. */
+const magasins = ALL_STYLES.map((s) => magasinFor(s.id));
+check('toutes les pages ont un magasin', magasins.length, ALL_STYLES.length);
+check('chacun a ses rayons pleins', magasins.every((m) => m.rayons.every((r) => r.articles.length > 0)), true);
+check('chacun propose ses trois formules', magasins.every((m) => m.packages.length === 3), true);
+check('chacun a un panier de départ', magasins.every((m) => m.panierDeDepart.length >= 4), true);
+check(
+  'chacun calcule un ticket non vide',
+  magasins.every((m) => totalCaisse(m.panierDeDepart, m.packages[0]?.id ?? null, m.articles, m.packages).total > 0),
+  true,
+);
+check(
+  'les préfixes de ticket sont tous différents',
+  new Set(magasins.map((m) => m.prefixe)).size,
+  ALL_STYLES.length,
+);
+check(
+  'la formule est offerte, la remise reste à zéro',
+  magasins.every((m) => m.packages.every((p) => p.prix === 0)),
+  true,
+);
+check(
+  'un univers vierge emprunte les métiers de ses voisins',
+  magasinFor('vierge').rayons.some((r) => r.key === 'rayon-metiers' && r.articles.length > 0),
+  true,
+);
+check('les trois registres existent', new Set(magasins.map((m) => m.registre)).size, 3);
+
+/* La playlist se souvient univers par univers. */
+check('la playlist de Vegas est celle de Vegas', chargerPlaylist('vegas').length >= 1, true);
+check(
+  'deux univers ne partagent pas la même clé',
+  chargerPlaylist('vegas').length === chargerPlaylist('corse').length,
+  true,
+);
 
 /* ------------------------------------------------------------------- bilan */
 

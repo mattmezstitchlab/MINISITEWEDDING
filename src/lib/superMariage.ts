@@ -74,7 +74,7 @@ export const CONVIVES = CONTENU.couple.guests;
  * Les tarifs par domaine — indicatifs, en euros. Ils servent à composer le
  * ticket, pas à facturer quoi que ce soit.
  */
-const PRIX_PAR_DOMAINE: Record<string, number> = {
+export const PRIX_PAR_DOMAINE: Record<string, number> = {
   chef: 4500,
   patissier: 900,
   photographe: 1800,
@@ -258,14 +258,18 @@ export function prixDeLArticle(article: Article): number {
   return article.prix * (article.quantite ?? 1);
 }
 
-/** Ce qui est dans le caddie, mis à plat : horaires d'abord, puis les rayons. */
-export function articlesDuPanier(selection: string[]): Article[] {
+/**
+ * Ce qui est dans le caddie, mis à plat : horaires d'abord, puis les rayons.
+ * Le catalogue est un paramètre : le Supermarché passe le sien, et chaque
+ * univers passe le sien — la caisse ne change pas de code pour autant.
+ */
+export function articlesDuPanier(selection: string[], articles: Article[] = ARTICLES): Article[] {
   const choisis = new Set(selection);
-  return ARTICLES.filter((a) => choisis.has(a.id));
+  return articles.filter((a) => choisis.has(a.id));
 }
 
-export function sousTotal(selection: string[]): number {
-  return articlesDuPanier(selection).reduce((n, a) => n + prixDeLArticle(a), 0);
+export function sousTotal(selection: string[], articles: Article[] = ARTICLES): number {
+  return articlesDuPanier(selection, articles).reduce((n, a) => n + prixDeLArticle(a), 0);
 }
 
 /** La carte de fidélité : un menu choisi, et la main-d’œuvre passe à -10 %. */
@@ -293,8 +297,13 @@ export interface LigneTicket {
 }
 
 /** Une ligne par article coché, plus le menu s'il y en a un. */
-export function lignesDuTicket(selection: string[], packageId?: string | null): LigneTicket[] {
-  const lignes: LigneTicket[] = articlesDuPanier(selection).map((a) => ({
+export function lignesDuTicket(
+  selection: string[],
+  packageId?: string | null,
+  articles: Article[] = ARTICLES,
+  packages: Package[] = PACKAGES,
+): LigneTicket[] {
+  const lignes: LigneTicket[] = articlesDuPanier(selection, articles).map((a) => ({
     id: a.id,
     label: a.label,
     detail: a.promo ? `Promo rayon 7 · ${a.detail}` : a.detail,
@@ -304,7 +313,7 @@ export function lignesDuTicket(selection: string[], packageId?: string | null): 
     promo: a.promo,
   }));
 
-  const menu = packageParId(packageId);
+  const menu = packages.find((m) => m.id === packageId);
   if (menu) {
     lignes.push({
       id: `menu-${menu.id}`,
@@ -328,8 +337,13 @@ export interface TotalCaisse {
 }
 
 /** Le calcul complet d'un panier : ce que la caisse affiche, et ce que le ticket imprime. */
-export function totalCaisse(selection: string[], packageId?: string | null): TotalCaisse {
-  const lignes = lignesDuTicket(selection, packageId);
+export function totalCaisse(
+  selection: string[],
+  packageId?: string | null,
+  articles: Article[] = ARTICLES,
+  packages: Package[] = PACKAGES,
+): TotalCaisse {
+  const lignes = lignesDuTicket(selection, packageId, articles, packages);
   const sous = lignes.reduce((n, l) => n + l.total, 0);
   const remise = remiseFidelite(sous, packageId);
   const total = sous - remise;
@@ -346,12 +360,12 @@ export function totalCaisse(selection: string[], packageId?: string | null): Tot
  * Le numéro du ticket : il ne change pas d'un rendu à l'autre, il est dérivé de
  * ce qui a été coché. Deux tickets différents ne portent jamais le même numéro.
  */
-export function numeroDeTicket(selection: string[], packageId?: string | null): string {
+export function numeroDeTicket(selection: string[], packageId?: string | null, prefixe = 'SM'): string {
   const cle = [...selection, packageId ?? ''].sort().join('|');
   let h = 0;
   for (let i = 0; i < cle.length; i += 1) h = (h * 31 + cle.charCodeAt(i)) % 1_000_000;
   const lettres = h.toString(36).toUpperCase().padStart(4, '0').slice(-4);
-  return `SM-${String(selection.length).padStart(2, '0')}-${lettres}`;
+  return `${prefixe}-${String(selection.length).padStart(2, '0')}-${lettres}`;
 }
 
 /** Les barres du code-barres : déterministes, elles lisent le numéro du ticket. */

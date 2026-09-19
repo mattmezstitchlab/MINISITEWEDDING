@@ -121,9 +121,12 @@ export const PLAYLIST_DEPART: string[] = ['track-c1', 'track-ck1', 'track-d1'];
 
 const CLE = 'vows:playlist';
 
-export function chargerPlaylist(): string[] {
+/** Chaque univers garde sa playlist : on passe de l'un à l'autre sans la mélanger. */
+const cleDe = (styleId: string): string => (styleId ? `${CLE}:${styleId}` : CLE);
+
+export function chargerPlaylist(styleId = ''): string[] {
   try {
-    const brut = localStorage.getItem(CLE);
+    const brut = localStorage.getItem(cleDe(styleId)) ?? localStorage.getItem(CLE);
     if (!brut) return PLAYLIST_DEPART;
     const ids = JSON.parse(brut) as unknown;
     if (!Array.isArray(ids)) return PLAYLIST_DEPART;
@@ -133,9 +136,9 @@ export function chargerPlaylist(): string[] {
   }
 }
 
-export function enregistrerPlaylist(ids: string[]): void {
+export function enregistrerPlaylist(ids: string[], styleId = ''): void {
   try {
-    localStorage.setItem(CLE, JSON.stringify(ids));
+    localStorage.setItem(cleDe(styleId), JSON.stringify(ids));
   } catch {
     // stockage indisponible : la playlist vit le temps de la visite
   }

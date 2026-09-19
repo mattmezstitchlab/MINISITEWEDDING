@@ -1,8 +1,5 @@
 import { Check, ShoppingCart } from 'lucide-react';
-import {
-  MAGASIN, TICKET_COUPLE, barresTicket, euros,
-  type LigneTicket, type TotalCaisse,
-} from '../lib/superMariage';
+import { barresTicket, euros, type LigneTicket, type TotalCaisse } from '../lib/superMariage';
 
 /**
  * LE TICKET DE CAISSE
@@ -22,9 +19,17 @@ interface Props {
   dateLabel: string;
   heureLabel: string;
   paye: boolean;
+  /** L'enseigne du magasin : chaque univers a la sienne. */
+  magasin: { nom: string; slogan: string; ville: string; rayon: string; caisse: string };
+  /** Le couple qui passe à la caisse, et ses têtes. */
+  couple: { noms: string; date: string; venue: string; convives: number };
+  /** La ligne de fidélité, quand la remise s'appelle autrement. */
+  remiseLabel?: string;
 }
 
-export default function TicketCaisse({ lignes, total, numero, dateLabel, heureLabel, paye }: Props) {
+export default function TicketCaisse({
+  lignes, total, numero, dateLabel, heureLabel, paye, magasin, couple, remiseLabel,
+}: Props) {
   return (
     <div className="relative mx-auto w-full max-w-[420px]">
       {/* L'imprimante */}
@@ -40,17 +45,17 @@ export default function TicketCaisse({ lignes, total, numero, dateLabel, heureLa
         <div className="p-6">
           {/* En-tête du magasin */}
           <div className="text-center">
-            <div className="font-black tracking-[0.2em]">{MAGASIN.nom}</div>
+            <div className="font-black tracking-[0.2em]">{magasin.nom}</div>
             <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-black/50">
-              {MAGASIN.slogan}
+              {magasin.slogan}
             </div>
             <div className="mt-3 border-y border-dashed border-black/20 py-2 text-[10px] leading-relaxed">
-              <div>{MAGASIN.ville}</div>
-              <div>{MAGASIN.rayon}</div>
+              <div>{magasin.ville}</div>
+              <div>{magasin.rayon}</div>
               <div>
                 TICKET {numero} · {heureLabel} · {dateLabel}
               </div>
-              <div>{MAGASIN.caisse} · POUR {TICKET_COUPLE.convives} CONVIVES</div>
+              <div>{magasin.caisse} · POUR {couple.convives} CONVIVES</div>
             </div>
           </div>
 
@@ -58,10 +63,10 @@ export default function TicketCaisse({ lignes, total, numero, dateLabel, heureLa
           <div className="mt-5 border-b border-dashed border-black/20 pb-4">
             <div className="text-[10px] uppercase tracking-widest text-black/40">Article principal</div>
             <div className="mt-1 text-[19px] font-black leading-none tracking-tight">
-              {TICKET_COUPLE.noms.toUpperCase()}
+              {couple.noms.toUpperCase()}
             </div>
             <div className="mt-1 text-[10.5px] text-black/60">
-              {TICKET_COUPLE.date} · {TICKET_COUPLE.venue}
+              {couple.date} · {couple.venue}
             </div>
             <div className="mt-2 flex items-center gap-2 text-[10.5px]">
               <span className="rounded bg-black px-2 py-0.5 text-white">QTÉ 2</span>
@@ -114,7 +119,7 @@ export default function TicketCaisse({ lignes, total, numero, dateLabel, heureLa
               <span className="tabular-nums">{euros(total.sousTotal)}</span>
             </div>
             <div className="flex justify-between text-[11px]">
-              <span>CARTE DE FIDÉLITÉ · -10 %</span>
+              <span>{remiseLabel ?? 'CARTE DE FIDÉLITÉ · -10 %'}</span>
               <span className="tabular-nums">-{euros(total.remise)}</span>
             </div>
             <div className="flex justify-between text-[11px] text-black/55">
@@ -159,7 +164,7 @@ export default function TicketCaisse({ lignes, total, numero, dateLabel, heureLa
           </div>
 
           <div className="mt-5 border-t border-black pt-3 text-center text-[9px] uppercase leading-relaxed tracking-widest text-black/35">
-            {MAGASIN.nom} · {MAGASIN.caisse}
+            {magasin.nom} · {magasin.caisse}
             <br />
             Ticket non échangeable, amour définitif
             <br />

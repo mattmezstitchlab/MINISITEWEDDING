@@ -455,6 +455,8 @@ export default function SuperMariage() {
               dateLabel={dateLabel}
               heureLabel={heureLabel}
               paye={paye}
+              magasin={MAGASIN}
+              couple={TICKET_COUPLE}
             />
           </div>
         </section>

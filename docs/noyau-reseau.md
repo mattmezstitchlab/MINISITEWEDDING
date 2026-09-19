@@ -378,3 +378,51 @@ Plus une : **l'annonce** du couple, une seule, en haut.
   143 / 55 / 135 (les checks de l'accueil portent désormais « la bande d'iPhones
   a quitté l'accueil », « la bande des éditeurs a quitté l'accueil » et
   « la playlist n'embarque plus le lecteur Spotify »), `npm run build` OK.
+
+## 15. Une page entière par univers (passe 21)
+
+Le concept change de camp : la page n'est plus un mini-site à admirer, c'est
+**l'espace de travail partagé du mariage**. On ouvre une page déjà prête, on
+coche, on ajoute, on partage — et les invités font leurs courses.
+
+- **La bande d'iPhones horizontale a quitté `/le-mariage`.** À sa place,
+  `UniversPagesGrid` : les vingt-cinq pages en cartes (image, nom, geste de
+  l'univers, « dès X € », « Vous êtes ici »), chacune menant à sa page.
+  `MiniSiteRail.tsx` est supprimé : le vrai mini-site reste accessible depuis le
+  pied de chaque page (`/apercu?style=…`).
+- **Un seul moteur, vingt-cinq pages.** `src/pages/PageUnivers.tsx` monte la page
+  complète à partir de `styleId` (hero, article, programme, playlist, métiers,
+  récap en ticket, autres univers). `/le-mariage` ouvre le Supermarché 22H ;
+  `/le-mariage/<univers>` ouvre exactement la même page pour n'importe lequel des
+  vingt-quatre autres.
+- **`src/lib/weddingPage.ts` : le magasin de chaque univers.** Tout y dérive du
+  contenu de l'univers, rien n'est inventé :
+  - **l'enseigne** — nom, slogan, rayon, caisse, ville ; le Supermarché 22H garde
+    son enseigne d'origine (`MAGASIN`), chaque autre univers la sienne, et le
+    préfixe du ticket vient de son identifiant (`SUP`, `LAS`, `COR`…) ;
+  - **trois registres** — `magasin` (on fait ses courses), `table` (on passe à
+    table), `billet` (on prend un billet), assignés univers par univers ; ils
+    changent le papier, la typographie, les petits suppléments et le titre du
+    récap (« Les invités font leurs courses / dressent la table / prennent leurs
+    billets ») ;
+  - **quatre rayons** — Horaires (les moments du jour J), Métiers (les trois
+    métiers de l'univers, tarifés par domaine), Table (le service et les plats
+    du menu), Petits prix (sept suppléments selon le registre) ;
+  - **trois formules** — un menu complet, un plus, un grand, composés avec les
+    plats de l'univers. **Elles sont offertes** : la formule choisie ouvre la
+    carte de fidélité, la remise passe donc à 0 € et le ticket l'affiche.
+  - Un univers vierge n'a aucun métier : son rayon Métiers emprunte ceux de son
+    premier univers voisin, et le rayon le dit.
+- **Tout est paramétrable côté caisse.** `totalCaisse`, `lignesDuTicket`,
+  `articlesDuPanier`, `sousTotal` et `numeroDeTicket` reçoivent le catalogue et
+  les formules (`articles`, `packages`, `prefixe`) ; `TicketCaisse` reçoit son
+  `magasin` et son `couple` — l'enseigne, la ville, la caisse, les convives. Le
+  Supermarché 22H, lui, continue de passer `MAGASIN` et `TICKET_COUPLE`.
+- **Collaboratif, explicitement.** Le hero porte un bouton « Envoyer aux
+  invités » (copie du lien), le récap dit que chacun coche ce qu'il offre, et la
+  playlist se souvient **univers par univers** (`vows:playlist:<univers>`).
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm test`
+  143 / 55 / **156** — la sonde du moteur vérifie les 25 magasins (rayons pleins,
+  trois formules, panier de départ, ticket non vide, préfixes uniques, registres,
+  univers vierge) et le rendu réel d'une page non-supermarché (Las Vegas) — ,
+  `npm run build` OK.
