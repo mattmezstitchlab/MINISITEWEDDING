@@ -70,18 +70,16 @@ export default function VendorStudio() {
             </Link>
           </div>
 
-          {/* La bande de l'espace : les métiers de l'univers, en cartes
-              vivantes — le cœur vaut pour un avis, le play montre leur Jour J. */}
-          <div className="mt-10">
-            <BandeDuHero
-              libelle="Les métiers de cet univers"
-              note={`${style.humanMissions.length} métiers · avis du public`}
-              styleId={style.id}
-              cartes={cartesDesMetiersDuRole(role, style.id, 12)}
-            />
-          </div>
         </div>
       </header>
+
+      {/* La bande, sous le hero : les métiers de l'univers, en cartes de
+          playlist — le cœur y vaut pour un avis. */}
+      <BandeDuHero
+        libelle="Les métiers de cet univers"
+        styleId={style.id}
+        cartes={cartesDesMetiersDuRole(role, style.id, 12)}
+      />
 
       {/* ——————————————————————— l'éditeur ——————————————————————— */}
       <main id="editeur" className="vp-page py-10">

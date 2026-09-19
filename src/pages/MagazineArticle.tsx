@@ -76,26 +76,17 @@ export default function MagazineArticle() {
           </div>
         </div>
 
-        {/* La bande : les mêmes cartes vivantes que partout. Sur l'article d'un
-            univers, ce sont **les moments du Jour J** — l'heure sur la carte, le
-            morceau du moment, le cœur du public — et le play les montre en
-            conditions. Sur un guide, ce sont les univers, et l'on change
-            d'article d'un clic. */}
-        <div className="relative pb-8 pt-2">
-          <div className="vp-page">
-            <BandeDuHero
-              libelle={estUnivers ? 'Les moments du Jour J' : 'Changer d’univers'}
-              note={
-                estUnivers
-                  ? `${moments.length} moments · aimés par le public`
-                  : `${UNIVERSE_ARTICLES.length} articles · cliquez pour lire`
-              }
-              styleId={article.universeId ?? universTour ?? 'traditionnel'}
-              cartes={estUnivers ? moments : cartesDArticles}
-            />
-          </div>
-        </div>
       </header>
+
+      {/* La bande, sous le hero. Sur l'article d'un univers, ce sont **les
+          moments du Jour J** — l'heure sur la carte, le morceau du moment, le
+          cœur du public. Sur un guide, ce sont les univers, et l'on change
+          d'article d'un clic. */}
+      <BandeDuHero
+        libelle={estUnivers ? 'Les moments du Jour J' : 'Changer d’univers'}
+        styleId={article.universeId ?? universTour ?? 'traditionnel'}
+        cartes={estUnivers ? moments : cartesDArticles}
+      />
 
       <main className="py-12">
         <div className="vp-page vp-page-read">

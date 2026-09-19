@@ -820,3 +820,36 @@ devient la carte de tout le monde — et deux gestes lui suffisent.
   métier donnent bien une carte vivante avec sa clé, son badge et son morceau ;
   le shop et la fiche portent la bande, l'espace prestataire aussi ; le lecteur
   prend le cadre, joue, et se ferme), `npm run build` OK.
+
+## 25. La bande sort du hero : la carte de la playlist, sous le hero, sur blanc (passe 30)
+
+La bande était trop chargée, et elle mangeait le hero. Elle devient exactement
+ce qu'elle doit être : **la bande de la playlist, sous le hero, sur fond blanc.**
+
+- **Elle quitte le hero.** `HeroCycle` reperd sa place réservée (`bas`) et
+  retrouve son hero plein ; `BandeDuHero` pose la bande dans une section à elle
+  — `border-b border-black/5 bg-white`, juste après `</header>` — sur l'accueil,
+  la page d'un univers, d'un métier, l'article, le shop, la fiche produit et
+  l'espace prestataire. Le hero respire, la bande se lit.
+- **La carte est celle de la playlist, au pixel.** `CarteVivante` reprend la
+  carte du dock de la playlist : `w-[172px] sm:w-[188px]`, `rounded-[20px] p-2.5`,
+  pochette carrée `rounded-[15px]`, pastille en haut à gauche (`bg-black/75`, la
+  même que l'heure des morceaux), **bouton de lecture blanc posé au centre de la
+  pochette**, titre en gras, précision en gris, barre d'extrait quand ça joue —
+  et **le grossissement mesuré au défilement, `0.88 → 1.06`**, comme la bande de
+  la playlist.
+- **Plus rien à lire sur la carte.** La mention « Ici » disparaît, le texte
+  « Avis · … » disparaît, le compte de métiers disparaît, et le sous-titre d'un
+  univers redevient sa tagline. Il reste la pastille (une heure, un mode, un
+  domaine), la bande du bas (l'univers, en petit sur la pochette), le titre, la
+  précision, le play et le cœur avec son nombre.
+- **La carte de la page est centrée.** Comme la carte dominante de la playlist :
+  au montage, la bande se place d'elle-même pour que la carte de la page soit au
+  centre (sans glisser, la bande s'ouvre déjà là) ; quand on en choisit une
+  autre, elle glisse jusqu'au centre. C'est la position qui dit où l'on est —
+  plus besoin de l'écrire.
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+  178 / 55 / **375** (la bande est sous le header sur blanc, la carte est
+  marquée `data-actif` pour être centrée, aucune mention d'état, aucun texte
+  d'avis, aucun compte de métiers, les cartes ont la taille et la pastille de la
+  playlist), `npm run build` OK.

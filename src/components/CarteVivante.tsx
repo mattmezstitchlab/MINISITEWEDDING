@@ -2,18 +2,16 @@ import { Heart, Pause, Play } from 'lucide-react';
 import type { CarteVivante } from '../lib/cartesVivantes';
 
 /**
- * LA CARTE VIVANTE
+ * LA CARTE VIVANTE — LA CARTE DE LA PLAYLIST
  *
- * La carte musicale, devenue la carte de tout le site : le visuel, le badge, le
- * nom, la précision — puis les deux gestes, toujours les mêmes, sur toutes les
- * pages :
+ * La carte de la section playlist, exactement : la pochette, le bouton de
+ * lecture posé dessus, la pastille du haut, le titre, la précision, et son
+ * avis dessous. Elle sert dans la bande de navigation, sous le hero, sur toutes
+ * les pages — et sur toute page, c'est la même carte.
  *
- *  - **le cœur**, avec son nombre : la température du public, additionnée par
- *    le comptoir partagé ;
- *  - **le play**, qui lance le média de la carte dans le hero.
- *
- * Elle ne décide de rien : c'est la page qui lui dit où mène un clic, ce que
- * fait le cœur, et ce que joue le play. Elle ne fait que la même chose partout.
+ * Deux gestes, et rien d'autre : **le play** (le média s'enclenche) et **le
+ * cœur** avec son nombre (l'avis du public). Aucune mention d'état sur la
+ * carte : c'est la bande qui dit où l'on est, en centrant la carte courante.
  */
 
 interface CarteVivanteProps {
@@ -29,7 +27,6 @@ interface CarteVivanteProps {
   onClic: () => void;
   onAimer: () => void;
   onJouer: () => void;
-  className?: string;
 }
 
 export default function CarteVivanteUI({
@@ -41,83 +38,96 @@ export default function CarteVivanteUI({
   onClic,
   onAimer,
   onJouer,
-  className = '',
 }: CarteVivanteProps) {
-  const echelle = 0.92 + facteur * 0.14;
+  // Le même grossissement que la bande de la playlist : 0.88 au bord, 1.06 au
+  // centre.
+  const echelle = 0.88 + facteur * 0.18;
   const jouable = Boolean(carte.media.audio || carte.media.video);
 
   return (
     <div
+      data-actif={carte.actif ? 'true' : undefined}
       style={{ transform: `scale(${echelle})` }}
-      className={`group relative flex w-[186px] shrink-0 snap-start flex-col text-left transition-transform duration-150 ease-out sm:w-[214px] ${className}`}
+      className={`group relative w-[172px] shrink-0 snap-center rounded-[20px] p-2.5 text-left transition-transform duration-150 ease-out sm:w-[188px] ${
+        carte.actif
+          ? 'z-20 border border-black/10 bg-white shadow-[0_16px_40px_-16px_rgba(0,0,0,0.28)]'
+          : 'z-10 border border-black/6 bg-white'
+      }`}
     >
-      {/* — la première couche : le visuel, et les deux gestes dessus — */}
-      <div className="relative aspect-square overflow-hidden rounded-[18px] bg-black/10">
+      {/* La pochette, avec le bouton de lecture posé dessus */}
+      <div className="relative aspect-square w-full overflow-hidden rounded-[15px] bg-black/5 shadow-inner">
         {carte.media.image && (
           <img
             src={carte.media.image}
             alt=""
             className={`h-full w-full object-cover transition duration-700 ${
-              joue ? 'scale-105 brightness-[0.78]' : 'group-hover:scale-[1.05]'
+              joue ? 'scale-105 brightness-90' : 'group-hover:scale-105'
             }`}
           />
         )}
-        <span className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
 
-        {/* La carte entière ouvre ce qu'elle annonce ; le play, lui, est dessus. */}
-        <button type="button" onClick={onClic} aria-label={`Ouvrir ${carte.titre}`} className="absolute inset-0 z-0" />
-
-        <span className="pointer-events-none absolute left-2.5 top-2.5 z-10 rounded-full bg-white/95 px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-black">
-          {carte.badge}
-        </span>
-        {carte.actif && (
-          <span className="pointer-events-none absolute right-2.5 top-2.5 z-10 rounded-full bg-black/75 px-2 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
-            Ici
+        {carte.badge && (
+          <span className="absolute left-2.5 top-2.5 rounded-full border border-white/10 bg-black/75 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-md">
+            {carte.badge}
           </span>
         )}
 
-        {/* Le nom, sur le visuel : la carte se lit même en petit */}
-        <span className="pointer-events-none absolute inset-x-2.5 bottom-2.5 z-10 block">
-          <span className="block text-[12.5px] font-bold uppercase leading-tight tracking-[0.06em] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
-            {carte.titre}
-          </span>
-          {carte.sousTitre && (
-            <span className="mt-0.5 block truncate text-[10.5px] text-white/70">{carte.sousTitre}</span>
-          )}
-        </span>
-
-        {/* Le play : le média se lance dans le hero */}
         {jouable && (
-          <button
-            type="button"
-            onClick={onJouer}
-            aria-label={joue ? `Arrêter ${carte.titre}` : `Lancer ${carte.titre}`}
-            className="absolute left-1/2 top-[42%] z-20 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/92 text-[#0B0C12] shadow-[0_10px_28px_rgba(0,0,0,0.45)] backdrop-blur transition hover:scale-105 active:scale-95"
-          >
-            {joue ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
-          </button>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <button
+              type="button"
+              onClick={onJouer}
+              aria-label={joue ? `Arrêter ${carte.titre}` : `Lancer ${carte.titre}`}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-2xl transition-transform duration-300 hover:scale-110"
+            >
+              {joue ? <Pause size={13} /> : <Play size={13} className="ml-0.5" />}
+            </button>
+          </div>
+        )}
+
+        {carte.etiquette && (
+          <span className="absolute inset-x-2.5 bottom-2 truncate font-mono text-[9px] uppercase tracking-wider text-white/80">
+            {carte.etiquette}
+          </span>
         )}
       </div>
 
-      {/* — la deuxième couche : le cœur et son nombre, sous la carte — */}
-      <div className="mt-1.5 flex items-center justify-between gap-2 px-1">
-        <span className="truncate font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/55">
-          {carte.badge ? `Avis · ${carte.sousTitre ? carte.sousTitre.split(' · ')[0] : ''}`.replace(/ · $/, '') : 'Avis'}
-        </span>
-        <button
-          type="button"
-          onClick={onAimer}
-          aria-pressed={aime}
-          aria-label={aime ? `Retirer mon avis sur ${carte.titre}` : `Aimer ${carte.titre}`}
-          className={`flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold transition ${
-            aime
-              ? 'border-white/60 bg-white text-[#0B0C12]'
-              : 'border-white/20 text-white/70 hover:border-white/50 hover:text-white'
-          }`}
-        >
-          <Heart size={10} className={aime ? 'fill-current' : ''} />
-          {avis}
+      {/* L'extrait qui avance : la barre suit la lecture */}
+      {joue && (
+        <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-black/8">
+          <div
+            className="h-full w-1/2 rounded-full transition-[width] duration-200"
+            style={{ background: carte.accent ?? '#0B0C12' }}
+          />
+        </div>
+      )}
+
+      {/* Le titre, la précision, et l'avis du public */}
+      <div className="mt-2.5">
+        <button type="button" onClick={onClic} className="block w-full truncate text-left">
+          <span className="block truncate text-[13px] font-bold leading-tight text-[#0B0C12]">{carte.titre}</span>
         </button>
+        {carte.sousTitre && (
+          <div className="mt-0.5 truncate text-[10.5px] text-black/55">{carte.sousTitre}</div>
+        )}
+        <div className="mt-2 flex items-center justify-between border-t border-black/8 pt-1.5">
+          <button
+            type="button"
+            onClick={onAimer}
+            aria-pressed={aime}
+            aria-label={aime ? `Retirer mon avis sur ${carte.titre}` : `Aimer ${carte.titre}`}
+            className={`flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold transition ${
+              aime
+                ? 'border-black/70 bg-[#0B0C12] text-white'
+                : 'border-black/12 text-black/55 hover:border-black/35 hover:text-black'
+            }`}
+          >
+            <Heart size={10} className={aime ? 'fill-current' : ''} />
+            {avis}
+          </button>
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: carte.accent ?? '#0B0C12' }} />
+        </div>
       </div>
     </div>
   );

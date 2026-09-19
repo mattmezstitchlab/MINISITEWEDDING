@@ -78,7 +78,6 @@ export default function Landing() {
   const bandeDesUnivers = (
     <BandeDuHero
       libelle="Les univers"
-      note={`${WEDDING_STYLES.length} univers · aimés par le public`}
       styleId={activeStyleOrFallback.id}
       cartes={[
         {
@@ -87,7 +86,8 @@ export default function Landing() {
           titre: 'Vue d’ensemble',
           sousTitre: 'Le site entier',
           badge: 'Tous',
-          accent: '#FFFFFF',
+          etiquette: 'Le site entier',
+          accent: '#0B0C12',
           media: {
             image: WEDDING_STYLES[0]!.image,
             audio: morceauDUneUnivers()?.src,
@@ -112,7 +112,7 @@ export default function Landing() {
 
       {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
       <div id="hero">
-      <HeroCycle activeStyleId={selectedStyle?.id} bas={bandeDesUnivers}>
+      <HeroCycle activeStyleId={selectedStyle?.id}>
         <div className="mx-auto flex flex-col items-center justify-center text-center">
           {selectedStyle ? (
             /* Le hero de l'univers choisi : son visuel, sa présentation, ses chiffres */
@@ -180,6 +180,10 @@ export default function Landing() {
         </div>
       </HeroCycle>
       </div>
+
+      {/* LA BANDE : sous le hero, sur blanc — la navigation du site, la carte de
+          la page centrée, l'avis du public et le play. */}
+      {bandeDesUnivers}
 
       {/* LA CARTE AVANT LE SITE : sous le hero, la carte — on voit ce qu'il
           reste à remplir. Les écrans de téléphone ont disparu : un univers se

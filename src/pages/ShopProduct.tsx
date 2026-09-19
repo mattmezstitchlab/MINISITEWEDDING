@@ -94,18 +94,15 @@ export default function ShopProduct() {
             </span>
           </div>
 
-          {/* La bande de la fiche : les pièces qui vont avec, en cartes
-              vivantes — le play les montre dans les conditions du Jour J. */}
-          <div className="mt-10">
-            <BandeDuHero
-              libelle="Dans le même univers"
-              note={`${similaires.length} pièces · avis du public`}
-              styleId="boutique"
-              cartes={cartesDesProduits(similaires)}
-            />
-          </div>
         </div>
       </header>
+
+      {/* La bande, sous le hero : les pièces du même univers. */}
+      <BandeDuHero
+        libelle="Dans le même univers"
+        styleId="boutique"
+        cartes={cartesDesProduits(similaires)}
+      />
 
       <main className="pb-16 pt-12">
         <div className="vp-page">

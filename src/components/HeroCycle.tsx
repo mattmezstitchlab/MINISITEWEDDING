@@ -24,11 +24,9 @@ const STEP_MS = 5600;
 interface HeroCycleProps {
   children?: ReactNode;
   activeStyleId?: string;
-  /** La bande de navigation, posée en bas du hero, toujours au même endroit. */
-  bas?: ReactNode;
 }
 
-export default function HeroCycle({ children, activeStyleId, bas }: HeroCycleProps) {
+export default function HeroCycle({ children, activeStyleId }: HeroCycleProps) {
   const [index, setIndex] = useState(0);
   const reduced = usePrefersReducedMotion();
   const tabVisible = useTabVisible();
@@ -47,11 +45,7 @@ export default function HeroCycle({ children, activeStyleId, bas }: HeroCyclePro
   }, [index, running]);
 
   return (
-    <header
-      className={`relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 pt-24 sm:px-8 ${
-        bas ? 'pb-[264px] sm:pb-[300px]' : 'pb-24'
-      }`}
-    >
+    <header className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 py-24 sm:px-8">
       {/* Visuels plein écran, en fondu enchaîné, avec un léger souffle */}
       <div className="absolute inset-0" aria-hidden="true">
         {WEDDING_STYLES.map((s, i) => (
@@ -87,13 +81,6 @@ export default function HeroCycle({ children, activeStyleId, bas }: HeroCyclePro
 
       {/* Titre centré */}
       <div className="relative z-10 mx-auto w-full max-w-4xl">{children}</div>
-
-      {/* La bande du hero : la navigation de la page, au même endroit partout. */}
-      {bas && (
-        <div className="absolute inset-x-0 bottom-0 z-20 pb-5 sm:pb-7">
-          <div className="vp-page">{bas}</div>
-        </div>
-      )}
     </header>
   );
 }

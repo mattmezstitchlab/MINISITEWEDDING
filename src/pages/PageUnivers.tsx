@@ -7,7 +7,7 @@ import UniversPagesGrid from '../components/UniversPagesGrid';
 import PlaylistCollaborative from '../components/PlaylistCollaborative';
 import RecapCourses from '../components/RecapCourses';
 import { contentFor } from '../lib/universeContent';
-import { ALL_STYLES, getComplementaryStyles } from '../lib/weddingStyles';
+import { getComplementaryStyles } from '../lib/weddingStyles';
 import { cartesDesUnivers } from '../lib/cartesVivantes';
 import { getScenesForStyle } from '../lib/themeTimelineScenarios';
 import { trackForText } from '../lib/weddingSoundtrack';
@@ -163,18 +163,15 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
             </button>
           </div>
 
-          {/* La bande du hero : les mêmes cartes vivantes que partout, et l'on
-              passe d'un univers à l'autre — ou l'on lance son média. */}
-          <div className="mt-10">
-            <BandeDuHero
-              libelle="Passer d’un univers à l’autre"
-              note={`${ALL_STYLES.length} univers · aimés par le public`}
-              styleId={style.id}
-              cartes={cartesDesUnivers((univers) => `/le-mariage/${univers.id}`, style.id)}
-            />
-          </div>
         </div>
       </header>
+
+      {/* La bande, sous le hero : les univers, en cartes de playlist. */}
+      <BandeDuHero
+        libelle="Passer d’un univers à l’autre"
+        styleId={style.id}
+        cartes={cartesDesUnivers((univers) => `/le-mariage/${univers.id}`, style.id)}
+      />
 
       {/* ═══════════ LA CARTE DE FIDÉLITÉ : le nom qui signe tout ═══════════ */}
       <section id="carte-fidelite" className="border-b border-black/10 bg-[#0A0A0A] py-4 text-white">

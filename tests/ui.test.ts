@@ -61,7 +61,7 @@ import Magazine from '../src/pages/Magazine';
 import MagazineArticle from '../src/pages/MagazineArticle';
 import Shop from '../src/pages/Shop';
 import ShopProduct from '../src/pages/ShopProduct';
-import { ALL_ARTICLES, UNIVERSE_ARTICLES, articleDUnivers, badgeDUnivers } from '../src/lib/magazine';
+import { ALL_ARTICLES, articleDUnivers, badgeDUnivers } from '../src/lib/magazine';
 import { cartesDesMoments, cartesDesProduits, cartesDesUnivers } from '../src/lib/cartesVivantes';
 import { appliquerGeste } from '../src/lib/liveRules';
 import { TERMINAL_VIDE } from '../src/lib/weddingTicket';
@@ -920,7 +920,8 @@ check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
 /* La bande du hero : les univers, à l'horizontale, en bas du hero de l'accueil. */
 check('la bande des univers est sur l’accueil', accueil.includes('Les univers'), true);
 check('elle propose la vue d’ensemble', accueil.includes('Vue d’ensemble'), true);
-check('elle annonce le nombre d’univers', accueil.includes(`${WEDDING_STYLES.length} univers · aimés par le public`), true);
+check('elle s’annonce sous le hero', accueil.indexOf('Les univers') > accueil.indexOf('</header>'), true);
+check('et se pose sur blanc', accueil.includes('border-b border-black/5 bg-white py-6'), true);
 /** Un nom peut contenir une esperluette : le HTML l'échappe. */
 const enHtml = (texte: string) => texte.replace(/&/g, '&amp;');
 check(
@@ -939,7 +940,8 @@ check(
   ALL_STYLES.every((u) => universBande.includes(enHtml(u.name))),
   true,
 );
-check('l’univers courant y est marqué', universBande.includes('>Ici<'), true);
+check('l’univers courant est marqué, pour être centré', universBande.includes('data-actif="true"'), true);
+check('aucune mention d’état sur la carte', universBande.includes('>Ici<'), false);
 
 /* Et sur la page d'un métier : la bande des métiers. */
 const metierBande = renderToStaticMarkup(
@@ -1176,12 +1178,15 @@ check('il reste dentelé', timbre.includes('border-dashed'), true);
 
 /* Les cartes de la bande reprennent la charte : visuel, badge blanc, majuscules. */
 const carteBande = accueil.slice(accueil.indexOf('Les univers'));
-check('les cartes vivantes ont leur taille', accueil.includes('w-[186px]') && accueil.includes('sm:w-[214px]'), true);
-check('elles portent le badge blanc du magazine', carteBande.includes('bg-white/95 px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase'), true);
-check('et le nom de l’univers en majuscules', carteBande.includes('font-bold uppercase'), true);
+check('les cartes sont celles de la playlist', accueil.includes('w-[172px]') && accueil.includes('sm:w-[188px]'), true);
+check('elles grossissent au centre', carteBande.includes('scale(') && carteBande.includes('-mx-1 flex items-center gap-4'), true);
+check('et se centrent sur la carte de la page', carteBande.includes('snap-center'), true);
+check('elles portent la pastille de la playlist', carteBande.includes('bg-black/75 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-white'), true);
 check('le badge est celui de l’univers', carteBande.includes('Urbain') || carteBande.includes('Sauvage'), true);
 check('chaque carte porte son play', carteBande.includes('Lancer '), true);
 check('et son cœur, avec le nombre d’avis', carteBande.includes('Aimer '), true);
+check('sans texte d’avis', carteBande.includes('Avis ·'), false);
+check('et sans compte de métiers', carteBande.includes('métiers ·'), false);
 
 /* Choisir un univers : le hero montre son titre, sans les badges, et Découvrir. */
 const accueilVegas = renderToStaticMarkup(
@@ -1191,7 +1196,7 @@ check('le hero prend le titre de l’univers', accueilVegas.includes(contentFor(
 check('il garde son chapô', accueilVegas.includes(contentFor(styleById('vegas')).hero.subtitle), true);
 check('les badges lieu, invités et programme ont disparu', />(Lieu|Invités|Programme)</.test(accueilVegas), false);
 check('et « Découvrir » reste', accueilVegas.includes('Découvrir'), true);
-check('l’univers choisi est marqué dans la bande', accueilVegas.includes('>Ici<'), true);
+check('l’univers choisi est marqué dans la bande', accueilVegas.includes('data-actif="true"'), true);
 
 /* « Découvrir » mène à l'article de l'univers : c'est là qu'on découvre. */
 check('l’article d’un univers se retrouve par son identifiant', articleDUnivers('vegas')?.slug, 'univers-vegas');
@@ -1214,7 +1219,11 @@ check(
 /* L'article porte la même bande, et l'on passe d'un article à l'autre. */
 /* Sur l'article d'un univers, la bande devient celle des moments du Jour J. */
 check('l’article porte la bande des moments', pageArticle.includes('Les moments du Jour J'), true);
-check('elle annonce les moments aimés', pageArticle.includes('moments · aimés par le public'), true);
+check(
+  'elle annonce les moments du Jour J',
+  pageArticle.includes('Les moments du Jour J') && pageArticle.indexOf('Les moments du Jour J') > pageArticle.indexOf('</header>'),
+  true,
+);
 const universArticle = ALL_ARTICLES[0].universeId!;
 const momentsArticle = cartesDesMoments(universArticle);
 check('un moment, c’est une heure sur la carte', momentsArticle[0]?.badge, getScenesForStyle(universArticle)[0]?.time);
@@ -1253,13 +1262,17 @@ check('son prix, et sa clé', [cartesProduits[0]?.sousTitre?.includes(SHOP_PRODU
 
 /* Le shop et la fiche produit portent la bande, et le play y est prêt. */
 check('le shop a sa bande de pièces', pageShop.includes('Les pièces, en conditions'), true);
-check('elle annonce les avis du public', pageShop.includes('pièces · avis du public'), true);
+check('le shop l’installe sous son hero', pageShop.indexOf('Les pièces, en conditions') > pageShop.indexOf('</header>'), true);
 check('la fiche produit a la sienne', pageProduit.includes('Dans le même univers'), true);
 check('et chaque pièce y porte son cœur', pageProduit.includes('Aimer '), true);
 
 /* L'espace prestataire : les métiers en cartes, les avis et le média. */
 check('l’espace prestataire a sa bande de métiers', pagePrestataire.includes('Les métiers de cet univers'), true);
-check('les cartes y disent leur domaine', pagePrestataire.includes('avis du public'), true);
+check(
+  'les cartes y portent le domaine du métier',
+  pagePrestataire.includes('Fleurs &amp; Jardins') || pagePrestataire.includes('Cuisine'),
+  true,
+);
 
 /* Le lecteur : il prend le hero, avec le morceau de la carte. */
 const lecteur = renderToStaticMarkup(

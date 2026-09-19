@@ -150,19 +150,16 @@ function PageMetierContenu({ page }: { page: Donnees }) {
             </Link>
           </div>
 
-          {/* La bande du hero : les métiers d'à côté, en cartes vivantes. Le
-              cœur y vaut pour un avis — la température du public sur le métier —
-              et le play montre son Jour J. */}
-          <div className="mt-10">
-            <BandeDuHero
-              libelle="Changer de métier"
-              note={`${voisins.length} métiers · avis du public`}
-              styleId={styleId}
-              cartes={cartesDesMetiers(page, voisins.length)}
-            />
-          </div>
         </div>
       </header>
+
+      {/* La bande, sous le hero : les métiers d'à côté. Le cœur y vaut pour un
+          avis — la température du public sur le métier. */}
+      <BandeDuHero
+        libelle="Changer de métier"
+        styleId={styleId}
+        cartes={cartesDesMetiers(page, voisins.length)}
+      />
 
       {/* ═══════════════ CE QUI VIENT DES MARIÉS : rien à ressaisir ═══════════════ */}
       <section className="border-b border-black/10 bg-white py-14 sm:py-16">

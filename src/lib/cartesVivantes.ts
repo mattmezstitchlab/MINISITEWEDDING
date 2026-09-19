@@ -37,8 +37,10 @@ export interface CarteVivante {
   cle: string;
   titre: string;
   sousTitre?: string;
-  /** Le badge de la carte : une heure, un domaine, une catégorie, un mode. */
+  /** La pastille du haut, sur la pochette : une heure, un mode, un domaine. */
   badge?: string;
+  /** La ligne du bas de la pochette : l'univers où l'on est, en petit. */
+  etiquette?: string;
   accent?: string;
   media: MediaDeCarte;
   /** La carte de la page où l'on est. */
@@ -83,7 +85,8 @@ export function cartesDesUnivers(lien: (style: WeddingStyle) => string | undefin
       id: style.id,
       cle: `univers|${style.id}`,
       titre: style.name,
-      sousTitre: `${style.humanMissions.length} métiers · ${style.tagline}`,
+      sousTitre: style.tagline,
+      etiquette: badgeDUnivers(style.id),
       badge: badgeDUnivers(style.id),
       accent: style.accent,
       media: {
@@ -114,6 +117,7 @@ export function cartesDesMoments(styleId: string): CarteVivante[] {
       titre: scene.title,
       sousTitre: track ? `${track.title} · ${track.artiste}` : scene.ambianceDetail,
       badge: scene.time,
+      etiquette: style.name,
       accent: style.accent,
       media: {
         image: scene.image || style.image,
@@ -154,6 +158,7 @@ export function cartesDesProduits(produits: ShopProduct[], accent = '#0B0C12'): 
       titre: produit.name,
       sousTitre: `${produit.price} · ${produit.unit}`,
       badge: modeLabel(produit.mode),
+      etiquette: 'Le Jour J',
       accent,
       media: {
         image: produit.image,
@@ -196,6 +201,7 @@ export function cartesDesMetiers(page: PageMetier, limite = 12): CarteVivante[] 
       titre: voisin.short,
       sousTitre: `Sur le mariage ${univers?.name ?? ''}`,
       badge: voisin.label,
+      etiquette: univers?.name ?? '',
       accent: univers?.accent ?? '#0B0C12',
       media: {
         image: univers?.image ?? '',
@@ -229,6 +235,7 @@ function cartesDesMetiersUnivers(styleId: string, limite: number): CarteVivante[
       titre: mission.role,
       sousTitre: mission.mission,
       badge: metier?.label ?? 'Métier',
+      etiquette: univers?.name ?? style.name,
       accent: univers?.accent ?? style.accent,
       media: {
         image: univers?.image ?? style.image,

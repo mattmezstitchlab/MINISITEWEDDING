@@ -93,18 +93,16 @@ export default function Shop() {
             ))}
           </div>
 
-          {/* La bande du shop : les pièces en cartes vivantes — leur mode, leur
-              prix, le cœur du public, et le play qui les montre en conditions. */}
-          <div className="mt-10">
-            <BandeDuHero
-              libelle="Les pièces, en conditions"
-              note={`${cartesDuShop.length} pièces · avis du public`}
-              styleId="boutique"
-              cartes={cartesDuShop}
-            />
-          </div>
         </div>
       </header>
+
+      {/* La bande, sous le hero : les pièces en cartes de playlist — leur mode,
+          leur prix, le cœur du public, et le play qui les montre en conditions. */}
+      <BandeDuHero
+        libelle="Les pièces, en conditions"
+        styleId="boutique"
+        cartes={cartesDuShop}
+      />
 
       {/* Les quatre modes */}
       <section className="pb-8 pt-10 sm:pt-14">
