@@ -188,7 +188,6 @@ export default function Landing() {
       <div id="univers">
         <ComplementaryThemes
           currentStyle={activeStyleOrFallback}
-          onSelectStyle={handleSelectStyle}
           onClaimRole={(role) => {
             if (role) window.sessionStorage.setItem('vows:role-revendique', role);
             navigate('/creer', { state: { preselectedStyle: activeStyleOrFallback.id } });
