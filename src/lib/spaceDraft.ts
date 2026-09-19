@@ -1,12 +1,12 @@
-import { CalendarDays, Heart, MapPin, UserRound, Sparkles } from 'lucide-react';
+import { Sparkles, UserRound } from 'lucide-react';
 import { FULL_ROLES_TAXONOMY } from './weddingTaxonomy';
 
 /**
  * L'ESPACE EN COURS DE CRÉATION
  *
- * Cinq étapes : qui vous êtes — d'après la taxonomie des rôles du site —, votre
- * nom, la date, le lieu, puis l'univers. Ce que l'on répond ici se retrouve
- * aussitôt dans le téléphone posé sous le hero.
+ * Deux questions, une à la fois : qui vous êtes — d'après la taxonomie des rôles
+ * du site — puis l'univers. Aucun champ à remplir pour l'instant : les prénoms,
+ * la date et le lieu seront demandés autrement.
  */
 
 export interface SpaceDraft {
@@ -32,10 +32,7 @@ export const EMPTY_DRAFT: SpaceDraft = {
 
 export const STEPS = [
   { id: 'role', title: 'Qui êtes-vous ?', hint: 'Chaque rôle voit le mariage à sa façon', icon: UserRound },
-  { id: 'names', title: 'Votre nom', hint: 'Il apparaîtra sur l’invitation', icon: Heart },
-  { id: 'date', title: 'La date', hint: 'Le compte à rebours se lance aussitôt', icon: CalendarDays },
-  { id: 'place', title: 'Le lieu', hint: 'Le lieu et la ville, même provisoires', icon: MapPin },
-  { id: 'style', title: 'L’univers', hint: 'Les 24 univers du catalogue', icon: Sparkles },
+  { id: 'style', title: 'Quel univers ?', hint: 'Les 24 univers, rangés par famille', icon: Sparkles },
 ] as const;
 
 /** Les rôles de la taxonomie, rangés par famille, protagonistes d'abord. */

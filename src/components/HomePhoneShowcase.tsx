@@ -67,7 +67,7 @@ export default function HomePhoneShowcase({ draft }: { draft?: SpaceDraft }) {
   // L'espace est considéré comme créé dès que l'univers est choisi et qu'il y a
   // quelque chose à afficher.
   const isCreating = Boolean(draft?.styleId);
-  const created = Boolean(draft?.styleId && draft.partner1);
+  const created = Boolean(draft?.styleId);
 
   useEffect(() => {
     if (isCreating) return;
@@ -79,13 +79,13 @@ export default function HomePhoneShowcase({ draft }: { draft?: SpaceDraft }) {
     if (draft?.styleId) {
       const chosen = styleById(draft.styleId);
       const base = contentFor(chosen);
-      const nom = draft.partner2 ? `${draft.partner1} & ${draft.partner2}` : draft.partner1;
+      // Pas encore de prénoms : c'est l'univers qui signe l'écran pour l'instant.
       return {
         style: chosen,
-        content: { ...withDraft(base, draft), couple: { ...withDraft(base, draft).couple, names: nom || chosen.name } },
+        content: withDraft(base, draft),
         // Le téléphone montre l'écran du rôle choisi : mariés, invité ou prestataire.
         role: roleToScreen(draft.roleId) as Role,
-        caption: created ? 'Votre espace' : 'Votre espace · en création',
+        caption: 'Votre espace',
       };
     }
 
@@ -102,7 +102,7 @@ export default function HomePhoneShowcase({ draft }: { draft?: SpaceDraft }) {
       role: step.role,
       caption: ROLE_LABELS[step.role],
     };
-  }, [draft, created, index]);
+  }, [draft, index]);
 
   return (
     <section className="relative z-20 bg-[#FAFAFC] px-5 pb-20 sm:px-8 sm:pb-28">
