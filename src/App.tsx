@@ -15,6 +15,7 @@ import Magazine from './pages/Magazine';
 import MagazineArticle from './pages/MagazineArticle';
 import Shop from './pages/Shop';
 import ShopProduct from './pages/ShopProduct';
+import PreviewSite from './pages/PreviewSite';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -52,6 +53,9 @@ export default function App() {
             <Route path="/generation" element={<Generating />} />
             <Route path="/editeur/:id" element={<Editor />} />
             <Route path="/p/:slug" element={<PublicSite />} />
+            {/* L'aperçu d'un mini-site : la même page que le site public, montée
+                dans une fenêtre à part pour l'accueil et l'éditeur. */}
+            <Route path="/apercu" element={<PreviewSite />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
