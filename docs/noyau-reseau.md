@@ -997,3 +997,41 @@ doublon, le hero traverse les mêmes ; les autres rôles visibles et non
 cliquables ; le hero demande qui vous êtes, présente le premier personnage, une
 seule porte « Entrer », les deux flèches, la phrase des autres rôles),
 `npm run build` OK.
+
+## 30. Le plateau : le rôle entre en scène, la carte fait entrer, le dock suit (passe 35)
+
+**Le picto est posé nu.** Plus de rond derrière : le picto du rôle, puis son
+nom, puis sa phrase — rien autour.
+
+**Le rôle entre en scène.** `HeroCycle` ne fond plus les visuels : il les
+présente comme un plateau de télévision. **Un rôle sur deux arrive par la
+gauche, puis par la droite** (le sens vient de la place dans la liste, jamais
+d'un état : `courant % 2`), il glisse jusqu'au centre (`x` de ±16 % vers 0), y
+respire, et sort du côté opposé (`AnimatePresence`). Le sens est écrit dans la
+page (`data-direction`), donc vérifiable.
+
+**Les rôles sont des cartes, exactement comme les univers.** `cartesDesPersonas`
+fabrique les mêmes cartes vivantes (visuel, famille en badge, nom, phrase qui
+défile, cœur, play) et la bande sous le hero les présente : **la carte du
+personnage du hero est au milieu**, un clic sur une carte montre son hero, et
+**le play fait entrer** — c'est lui le bouton (`libelleAction="Entrer"`,
+`onAction`). Les flèches et le bouton « Entrer » du hero ont donc disparu : la
+bande porte les deux gestes. Deux bandes se suivent : **les rôles** (à moitié sur
+le hero), puis **les univers**, le second axe du site.
+
+**Le dock suit le personnage.** `src/lib/personaCourant.ts` retient « qui vous
+êtes » et le propage par un événement — le hero écrit, le dock écoute, ni l'un
+ni l'autre ne se connaît. Le dock montre **les outils du rôle** (« Outils ·
+SUPER PHOTOGRAPHE » : Moments · Photos · Galerie · Livraison), déduits de ses
+entrées, avec un picto choisi par mot-clé et une route par sujet ; la capsule
+défile (`overflow-x-auto`, `no-scrollbar`) et ses outils **changent quand le
+personnage défile** dans le hero. Le socle du site (Accueil, La carte,
+Prestataires, Zéro contrainte, Playlist) reste à gauche, séparé par un filet.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+178 / 55 / **429** (le picto nu ; l'arrivée par un côté ; trois cartes par bande
+et deux bandes ; une carte marquée par bande ; les cartes des rôles avec clé,
+badge, phrase et média ; le play qui fait entrer, pour les trois cartes, et plus
+de bouton à part ; le dock qui porte les outils du personnage, les mêmes que ses
+entrées, qui garde la capsule du site, suit le personnage et défile),
+`npm run build` OK.

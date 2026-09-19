@@ -29,6 +29,8 @@ interface CarteVivanteProps {
   avis: number;
   /** Vrai quand c'est cette carte qui joue dans le hero. */
   joue?: boolean;
+  /** Ce que fait le play, quand ce n'est pas jouer : « Entrer », par exemple. */
+  libelleAction?: string;
   onClic: () => void;
   onAimer: () => void;
   onJouer: () => void;
@@ -40,6 +42,7 @@ export default function CarteVivanteUI({
   aime,
   avis,
   joue = false,
+  libelleAction,
   onClic,
   onAimer,
   onJouer,
@@ -83,7 +86,7 @@ export default function CarteVivanteUI({
             <button
               type="button"
               onClick={onJouer}
-              aria-label={joue ? `Arrêter ${carte.titre}` : `Lancer ${carte.titre}`}
+              aria-label={libelleAction ? `${libelleAction} ${carte.titre}` : joue ? `Arrêter ${carte.titre}` : `Lancer ${carte.titre}`}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-2xl transition-transform duration-300 hover:scale-110"
             >
               {joue ? <Pause size={13} /> : <Play size={13} className="ml-0.5 fill-current" />}

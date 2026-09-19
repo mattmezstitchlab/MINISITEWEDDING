@@ -57,14 +57,16 @@ import { ALL_STYLES } from '../src/lib/weddingStyles';
 import { totalCaisse } from '../src/lib/superMariage';
 import PreviewSite from '../src/pages/PreviewSite';
 import OuvertureSite from '../src/components/OuvertureSite';
+import BottomCapsuleNav from '../src/components/BottomCapsuleNav';
 import LecteurHero from '../src/components/LecteurHero';
 import Magazine from '../src/pages/Magazine';
 import MagazineArticle from '../src/pages/MagazineArticle';
 import Shop from '../src/pages/Shop';
 import ShopProduct from '../src/pages/ShopProduct';
 import { ALL_ARTICLES, articleDUnivers, badgeDUnivers } from '../src/lib/magazine';
-import { cartesDesMoments, cartesDesProduits, cartesDesUnivers } from '../src/lib/cartesVivantes';
+import { cartesDesMoments, cartesDesPersonas, cartesDesProduits, cartesDesUnivers } from '../src/lib/cartesVivantes';
 import { PERSONNAGES, VISUELS_DU_HERO } from '../src/lib/personas';
+import { personaCourant } from '../src/lib/personaCourant';
 import { FULL_ROLES_TAXONOMY } from '../src/lib/weddingTaxonomy';
 import { DUREE_OUVERTURE, DUREE_OUVERTURE_SANS_MOUVEMENT, ouvertureDejaVue } from '../src/lib/ouverture';
 import { appliquerGeste } from '../src/lib/liveRules';
@@ -257,13 +259,10 @@ check('le hero demande qui vous êtes', accueil.includes('Qui êtes-vous dans ce
 check('et il présente le premier personnage', accueil.includes(PERSONNAGES[0]!.nom), true);
 check('avec sa phrase', accueil.includes(PERSONNAGES[0]!.phrase.slice(0, 30)), true);
 check('et les entrées de son espace', PERSONNAGES[0]!.entrees.every((e) => accueil.includes(e)), true);
-check('on entre avec lui, et une seule fois', (accueil.match(/>Entrer</g) ?? []).length, 1);
-check('les flèches changent de personnage', ['Personnage précédent', 'Personnage suivant'].every((l) => accueil.includes(l)), true);
-check(
-  'et l’on n’entre qu’avec le sien',
-  accueil.includes('Les autres rôles se regardent — on n’entre qu’avec le sien'),
-  true,
-);
+/* Le picto est posé nu, au-dessus du titre. */
+check('le picto n’a plus de rond', accueil.includes('flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-white/10'), false);
+/* Le rôle entre en scène : de la gauche, puis de la droite. */
+check('le visuel arrive d’un côté', accueil.includes('data-direction="gauche"'), true);
 check('la bande d’iPhones a quitté l’accueil', accueil.includes('Mini-site · '), false);
 check('la playlist n’embarque plus le lecteur Spotify', accueil.includes('open.spotify.com/embed'), false);
 
@@ -945,14 +944,14 @@ check('la bande des univers est sur l’accueil', accueil.includes('Les univers'
 check('la bande ne montre que des univers', accueil.includes('Vue d’ensemble'), false);
 check('elle s’annonce sous le hero', accueil.indexOf('Les univers') > accueil.indexOf('</header>'), true);
 check('les cartes sont à moitié sur le hero', accueil.includes('-mt-32') && accueil.includes('sm:-mt-36'), true);
-check('et se posent sur blanc', accueil.includes('-mt-32 border-b border-black/5 bg-white'), true);
-/* Trois cartes au centre, celle du milieu plus grande, et les flèches. */
-check('la bande ne garde que trois cartes', (accueil.match(/Aimer /g) ?? []).length, 3);
+check('et se posent sur blanc', accueil.includes('bg-white pb-6 pt-5'), true);
+/* Trois cartes au centre par bande, celle du milieu plus grande, et les flèches. */
+check('chaque bande ne garde que trois cartes', (accueil.match(/Aimer /g) ?? []).length, 6);
+check('la bande des rôles annonce ce qu’elle fait', accueil.includes('Les rôles — cliquez pour voir, play pour entrer'), true);
 check('une flèche de chaque côté', ['Carte précédente', 'Carte suivante'].every((f) => accueil.includes(f)), true);
-check('le milieu est la carte de la page', accueil.includes('data-actif="true"'), true);
+check('deux bandes, une carte marquée chacune', (accueil.match(/data-actif="true"/g) ?? []).length, 2);
 /* Le hero annonce l'univers qu'il montre : la bande s'aligne, une seule carte. */
-check('une seule carte est celle de la page', (accueil.match(/data-actif="true"/g) ?? []).length, 1);
-check('c’est celle du premier univers montré', accueil.includes(`data-actif="true"`), true);
+check('une carte de la page par bande', (accueil.match(/data-actif="true"/g) ?? []).length, 2);
 /** Un nom peut contenir une esperluette : le HTML l'échappe. */
 const enHtml = (texte: string) => texte.replace(/&/g, '&amp;');
 check(
@@ -1358,19 +1357,55 @@ check(
 check('aucun personnage en double', new Set(PERSONNAGES.map((p) => p.id)).size, PERSONNAGES.length);
 check('et le hero traverse exactement les mêmes', VISUELS_DU_HERO.length, PERSONNAGES.length);
 
-/* Les autres rôles se regardent : ils sont écrits, et ne mènent nulle part. */
-const autres = PERSONNAGES.slice(1);
+/* LES CARTES DES RÔLES : les mêmes que les univers, et le play qui fait entrer. */
+check('les rôles sont des cartes vivantes', cartesDesPersonas().length, PERSONNAGES.length);
+check('avec leur clé d’avis', cartesDesPersonas()[1]?.cle, `persona|${PERSONNAGES[1]!.id}`);
+check('leur famille en badge', cartesDesPersonas()[1]?.badge, PERSONNAGES[1]!.famille);
+check('leur phrase en précision', cartesDesPersonas()[1]?.sousTitre, PERSONNAGES[1]!.phrase);
+check('et un média qui joue', String(cartesDesPersonas()[1]?.media.audio ?? '').startsWith('/audio/'), true);
 check(
-  'les autres rôles sont visibles',
-  autres.slice(0, 6).every((p) => accueil.includes(p.nom)),
-  true,
+  'le play de la bande des rôles fait entrer',
+  (accueil.match(/aria-label="Entrer /g) ?? []).length,
+  3,
 );
-check('et non cliquables', accueil.includes('aria-hidden="true" class="mt-4 hidden'), true);
+check('et pas seulement avec le milieu', accueil.includes(`aria-label="Entrer ${PERSONNAGES[1]!.nom}"`), true);
+check('plus de bouton « Entrer » à part', accueil.includes('>Entrer<'), false);
 
 /* L'univers reste le second axe : sa bande, et son propre défilé. */
 check('la bande des univers est toujours sous le hero', accueil.includes('Les univers'), true);
-check('elle montre trois cartes', (accueil.match(/Aimer /g) ?? []).length, 3);
-check('et son milieu est l’univers de la page', accueil.includes('data-actif="true"'), true);
+check('elle montre trois cartes', (accueil.match(/Aimer /g) ?? []).length, 6);
+check('et son milieu est la carte de la page', accueil.includes('data-actif="true"'), true);
+
+/* ------------------------- le dock suit le personnage courant -------------- */
+
+/* Sans choix, le dock montre les outils des mariés. */
+localStorage.removeItem('supermariage:persona');
+check('sans choix, on est les mariés', personaCourant(), 'maries');
+const dockDefaut = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/le-mariage/vegas'] }, createElement(BottomCapsuleNav as never)),
+);
+check('le dock porte les outils du personnage', dockDefaut.includes(`Outils · ${PERSONNAGES[0]!.nom}`), true);
+check(
+  'ceux des mariés, un par un',
+  PERSONNAGES[0]!.entrees.every((e) => dockDefaut.includes(e)),
+  true,
+);
+check('et il garde la capsule du site', ['Zéro contrainte', 'Playlist'].every((m) => dockDefaut.includes(m)), true);
+
+/* Le personnage change : le dock change d'outils. */
+localStorage.setItem('supermariage:persona', 'photographe');
+const photo = PERSONNAGES.find((p) => p.id === 'photographe')!;
+const dockPhoto = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(BottomCapsuleNav as never)),
+);
+check('le dock suit le personnage', dockPhoto.includes(`Outils · ${photo.nom}`), true);
+check(
+  'et montre ses outils à lui',
+  photo.entrees.every((e) => dockPhoto.includes(e)),
+  true,
+);
+check('c’est bien un autre jeu d’outils', dockPhoto.includes('Outils · ' + PERSONNAGES[0]!.nom), false);
+check('la capsule défile', dockPhoto.includes('overflow-x-auto') && dockPhoto.includes('no-scrollbar'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

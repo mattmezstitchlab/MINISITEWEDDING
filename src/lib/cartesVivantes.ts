@@ -3,6 +3,7 @@ import { getScenesForStyle } from './themeTimelineScenarios';
 import { CATALOGUE, morceauxDeLaPlaylist, PLAYLIST_DEPART, type Morceau } from './weddingPlaylist';
 import { SHOP_PRODUCTS, modeLabel, type ShopProduct } from './shopData';
 import { metiersVoisins, pageMetier, slugDeRole, tousLesMetiers, type PageMetier } from './metierPage';
+import { PERSONNAGES } from './personas';
 
 /**
  * LA CARTE VIVANTE — LA CARTE MULTIFONCTION, MULTICOUCHE
@@ -97,6 +98,31 @@ export function cartesDesUnivers(lien: (style: WeddingStyle) => string | undefin
       to: lien(style),
     };
   });
+}
+
+/* ————————————————————— les cartes des personnages ————————————————————— */
+
+/**
+ * Les personnages, en cartes vivantes — les mêmes cartes que les univers, pour
+ * la première question du site : « qui êtes-vous dans ce mariage ? ». Le clic
+ * montre le hero de ce rôle ; **le play, lui, entre avec lui**.
+ */
+export function cartesDesPersonas(actifId?: string): CarteVivante[] {
+  const track = morceauDUneUnivers();
+  return PERSONNAGES.map((persona) => ({
+    id: persona.id,
+    cle: `persona|${persona.id}`,
+    titre: persona.nom,
+    sousTitre: persona.phrase,
+    badge: persona.famille,
+    accent: '#0B0C12',
+    media: {
+      image: persona.image,
+      audio: track?.src,
+      legende: persona.entrees.join(' · '),
+    },
+    actif: actifId === persona.id,
+  }));
 }
 
 /* ——————————————————— les cartes des moments du Jour J ——————————————————— */

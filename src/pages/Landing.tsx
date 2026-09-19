@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 import { PERSONNAGES, VISUELS_DU_HERO } from '../lib/personas';
@@ -9,7 +8,8 @@ import HeroCycle from '../components/HeroCycle';
 import PictoPersonnage from '../components/PictoPersonnage';
 import OuvertureSite from '../components/OuvertureSite';
 import BandeDuHero from '../components/BandeDuHero';
-import { cartesDesUnivers } from '../lib/cartesVivantes';
+import { cartesDesPersonas, cartesDesUnivers } from '../lib/cartesVivantes';
+import { definirPersonaCourant } from '../lib/personaCourant';
 import SiteHeader from '../components/SiteHeader';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
@@ -49,8 +49,10 @@ export default function Landing() {
   const indexPersona = Math.max(0, PERSONNAGES.findIndex((p) => p.id === personaId));
   const persona = PERSONNAGES[indexPersona] ?? PERSONNAGES[0]!;
 
-  const personaSuivant = () => setPersonaId(PERSONNAGES[(indexPersona + 1) % PERSONNAGES.length]!.id);
-  const personaPrecedent = () => setPersonaId(PERSONNAGES[(indexPersona - 1 + PERSONNAGES.length) % PERSONNAGES.length]!.id);
+  // Le site s'accorde au personnage qui défile : le dock montre ses outils.
+  useEffect(() => {
+    definirPersonaCourant(persona.id);
+  }, [persona.id]);
 
   /** Le défilé des personnages : personne ne clique, et il avance tout seul. */
   useEffect(() => {
@@ -64,8 +66,27 @@ export default function Landing() {
   /** L'univers de la page : celui qui mène l'éditeur, la playlist et la bande. */
   const activeStyleOrFallback = selectedStyle ?? WEDDING_STYLES[0]!;
 
-  /** On entre avec le personnage du milieu : c'est la carte qu'on vient créer. */
-  const entrer = () => navigate('/creer', { state: { roleId: persona.id } });
+  /** On entre avec un personnage : c'est la carte qu'on vient créer. */
+  const entrer = (id: string) => navigate('/creer', { state: { roleId: id } });
+
+  /**
+   * LA BANDE DES RÔLES
+   *
+   * Les mêmes cartes que les univers, pour la première question du site : celle
+   * du milieu est le personnage du hero, un clic montre son hero, et **le play
+   * entre** — c'est lui le bouton. Pas de flèches, pas de bouton « Entrer ».
+   */
+  const bandeDesRoles = (
+    <BandeDuHero
+      libelle="Les rôles — cliquez pour voir, play pour entrer"
+      styleId="personas"
+      premiere
+      cartes={cartesDesPersonas(persona.id)}
+      onChoisir={(carte) => setPersonaId(carte.id)}
+      onAction={(carte) => entrer(carte.id)}
+      libelleAction="Entrer"
+    />
+  );
 
   const handleSelectStyle = (style: WeddingStyle | null) => {
     setSelectedStyle(style);
@@ -106,20 +127,20 @@ export default function Landing() {
             <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
 
             {/* Le personnage du milieu : son picto, son nom, sa phrase */}
-            <div key={persona.id} className="mt-5 flex flex-col items-center">
+            <div key={persona.id} className="mt-4 flex flex-col items-center">
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur"
+                className="text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]"
               >
-                <PictoPersonnage picto={persona.picto} size={24} />
+                <PictoPersonnage picto={persona.picto} size={30} />
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="vp-title mt-4 text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+                className="vp-title mt-3 text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
                 style={{ fontSize: 'clamp(2rem, 5.4vw, 4rem)', lineHeight: 1.04 }}
               >
                 {persona.nom}
@@ -140,53 +161,14 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-
-            {/* On entre avec ce personnage — et l'on regarde les autres */}
-            <div className="mt-7 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={personaPrecedent}
-                aria-label="Personnage précédent"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur transition hover:bg-white hover:text-[#0B0C12] active:scale-95"
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <button
-                type="button"
-                onClick={entrer}
-                className="vp-btn vp-press !bg-white !px-8 !py-3 !text-black shadow-2xl hover:!bg-white/90"
-              >
-                Entrer
-              </button>
-              <button
-                type="button"
-                onClick={personaSuivant}
-                aria-label="Personnage suivant"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur transition hover:bg-white hover:text-[#0B0C12] active:scale-95"
-              >
-                <ChevronRight size={17} />
-              </button>
-            </div>
-
-            <p className="mt-4 font-mono text-[9.5px] uppercase tracking-[0.2em] text-white/45">
-              Les autres rôles se regardent — on n’entre qu’avec le sien
-            </p>
-
-            {/* Les autres personnages, visibles et non cliquables : on découvre
-                le site entier sans jamais ouvrir l'espace de quelqu'un d'autre. */}
-            <div aria-hidden="true" className="mt-4 hidden max-w-3xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:flex">
-              {PERSONNAGES.filter((p) => p.id !== persona.id).map((p) => (
-                <span key={p.id} className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/30">
-                  {p.nom}
-                </span>
-              ))}
-            </div>
           </div>
         </HeroCycle>
       </div>
 
-      {/* LA BANDE : sous le hero, sur blanc — la navigation du site, la carte de
-          la page centrée, l'avis du public et le play. */}
+      {/* LES DEUX BANDES : les rôles sous le hero — les mêmes cartes que les
+          univers, et leur play qui fait entrer — puis les univers, le second
+          axe du site. */}
+      {bandeDesRoles}
       {bandeDesUnivers}
 
       {/* LA CARTE AVANT LE SITE : sous le hero, la carte — on voit ce qu'il

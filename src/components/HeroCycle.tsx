@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 import { usePrefersReducedMotion } from '../lib/useReducedMotion';
 import VisionImage from './vision/VisionImage';
@@ -8,12 +8,14 @@ import VisionImage from './vision/VisionImage';
  * LE HERO — UN VISUEL QUI SE FOND DANS LE SUIVANT
  *
  * Le hero ne sait rien de ce qu'il montre : on lui donne des **visuels**, et
- * celui qui est actif. Il les enchaîne en fondu, fait respirer doucement celui
- * qui est à l'écran, et pose le contenu de la page par-dessus.
+ * celui qui est actif. Il les présente comme un plateau de télévision : **le
+ * rôle arrive de la gauche, le suivant de la droite**, glisse jusqu'au centre et
+ * respire là, face à nous — puis il sort du côté opposé. On regarde un
+ * personnage entrer en scène, pas une image changer.
  *
  * Il ne décide de rien : ni de ce qui défile, ni quand. C'est la page qui mène
- * l'index — parce que c'est elle qui sait ce qui défile (les univers, les
- * personnages), et ce qui doit s'arrêter quand un média joue.
+ * l'index — parce que c'est elle qui sait ce qui défile (les personnages, les
+ * univers), et ce qui doit s'arrêter quand un média joue.
  */
 
 export interface VisuelHero {
@@ -42,37 +44,47 @@ export default function HeroCycle({
 }: HeroCycleProps) {
   const reduced = usePrefersReducedMotion();
   const courant = Math.max(0, visuels.findIndex((v) => v.id === actifId));
+  const visuel = visuels[courant] ?? visuels[0];
+
+  /**
+   * Le sens de l'arrivée : **un rôle sur deux entre par la gauche** (−1), puis
+   * par la droite (+1) — le défilé du plateau, gauche, droite, gauche. Il vient
+   * de la place dans la liste, jamais d'un état à tenir à jour.
+   */
+  const sens = courant % 2 === 0 ? -1 : 1;
 
   return (
     <header className={`relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 py-24 sm:px-8 ${className}`}>
-      {/* Les visuels plein cadre, en fondu enchaîné, avec un léger souffle */}
+      {/* Le rôle entre en scène : il glisse depuis un côté, puis respire */}
       <div className="absolute inset-0" aria-hidden="true">
-        {visuels.map((v, i) => (
+        <AnimatePresence initial={false} custom={sens} mode="popLayout">
           <motion.div
-            key={v.id}
+            key={visuel?.id ?? 'aucun'}
+            data-direction={sens > 0 ? 'droite' : 'gauche'}
             className="absolute inset-0"
-            initial={false}
-            animate={{ opacity: i === courant ? 1 : 0 }}
-            transition={{ duration: reduced ? 0.01 : 1.4, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ x: reduced ? 0 : `${sens * 16}%`, opacity: 0 }}
+            animate={{ x: '0%', opacity: 1 }}
+            exit={{ x: reduced ? 0 : `${sens * -12}%`, opacity: 0 }}
+            transition={{ duration: reduced ? 0.01 : 1.1, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Seul le visuel affiché respire */}
+            {/* Il respire tant qu'il est à l'écran */}
             <motion.div
               className="h-full w-full"
-              initial={false}
-              animate={{ scale: i === courant && !reduced ? 1.12 : 1.02 }}
-              transition={{ duration: i === courant ? 9 : 0.6, ease: 'linear' }}
+              initial={{ scale: 1.04 }}
+              animate={{ scale: reduced ? 1.02 : 1.12 }}
+              transition={{ duration: 9, ease: 'linear' }}
             >
               <VisionImage
-                src={v.image}
+                src={visuel?.image ?? ''}
                 alt=""
-                aura={v.aura}
-                fallbackLabel={v.nom}
-                loading={i === 0 ? 'eager' : 'lazy'}
+                aura={visuel?.aura}
+                fallbackLabel={visuel?.nom ?? ''}
+                loading="eager"
                 className="h-full w-full object-cover"
               />
             </motion.div>
           </motion.div>
-        ))}
+        </AnimatePresence>
         {/* Les voiles : ils tiennent la lisibilité du texte, quelle que soit la photo */}
         <div className="absolute inset-0 bg-black/55" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/65" />

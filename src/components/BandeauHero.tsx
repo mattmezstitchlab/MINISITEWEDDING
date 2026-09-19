@@ -33,6 +33,8 @@ interface BandeauHeroProps {
   onJouer?: (carte: CarteVivante) => void;
   /** Choisi : la page décide (naviguer, ou changer ce que le hero montre). */
   onChoisir?: (carte: CarteVivante) => void;
+  /** Ce que fait le play, quand ce n'est pas jouer : « Entrer ». */
+  libelleAction?: string;
 }
 
 export default function BandeauHero({
@@ -42,6 +44,7 @@ export default function BandeauHero({
   enLectureId = null,
   onJouer,
   onChoisir,
+  libelleAction,
 }: BandeauHeroProps) {
   const navigate = useNavigate();
   const { compte, aime, basculer } = useAvis(styleId);
@@ -72,6 +75,7 @@ export default function BandeauHero({
         aime={aime(carte.cle)}
         avis={compte(carte.cle)}
         joue={enLectureId === carte.id}
+        libelleAction={libelleAction}
         onClic={() => choisir(carte)}
         onAimer={() => basculer(carte.cle)}
         onJouer={() => onJouer?.(carte)}

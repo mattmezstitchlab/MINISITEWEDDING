@@ -22,8 +22,17 @@ interface BandeDuHeroProps {
   cartes: CarteVivante[];
   styleId: string;
   onChoisir?: (carte: CarteVivante) => void;
+  /**
+   * Le play fait autre chose que jouer : sur la bande des personnages, il
+   * **entre** avec le rôle. Quand il est là, aucun lecteur ne s'ouvre.
+   */
+  onAction?: (carte: CarteVivante) => void;
+  /** Le mot du play quand il n'entrouvre pas un média : « Entrer ». */
+  libelleAction?: string;
   /** Vrai quand un média occupe le hero : la page peut retenir son défilé. */
   onLecture?: (enLecture: boolean) => void;
+  /** Vrai pour la bande collée au hero : elle remonte à moitié dessus. */
+  premiere?: boolean;
 }
 
 export default function BandeDuHero({
@@ -31,13 +40,21 @@ export default function BandeDuHero({
   cartes,
   styleId,
   onChoisir,
+  onAction,
+  libelleAction,
   onLecture,
+  premiere = false,
 }: BandeDuHeroProps) {
   const [carte, setCarte] = useState<CarteVivante | null>(null);
   const [enLecture, setEnLecture] = useState(false);
 
   const jouer = useCallback(
     (c: CarteVivante) => {
+      // Le play n'ouvre pas un média : il fait l'action de la page (entrer).
+      if (onAction) {
+        onAction(c);
+        return;
+      }
       // La même carte : on met en pause ou on reprend. Une autre : elle prend
       // le hero, et l'ancienne se tait.
       if (carte?.id === c.id) {
@@ -50,7 +67,7 @@ export default function BandeDuHero({
       setEnLecture(true);
       onLecture?.(true);
     },
-    [carte, enLecture, onLecture],
+    [carte, enLecture, onLecture, onAction],
   );
 
   const basculer = useCallback(() => {
@@ -60,10 +77,14 @@ export default function BandeDuHero({
   }, [enLecture, onLecture]);
 
   return (
-    <section className="relative z-40 -mt-32 border-b border-black/5 bg-white pb-6 pt-5 sm:-mt-36 sm:pb-8 sm:pt-6">
+    <section
+      className={`relative z-40 border-b border-black/5 bg-white pb-6 pt-5 sm:pb-8 sm:pt-6 ${
+        premiere ? '-mt-32 sm:-mt-36' : ''
+      }`}
+    >
       {/* Le média prend le hero : le lecteur se pose au-dessus de la bande,
           sur la hauteur d'un écran. */}
-      {carte && (
+      {carte && !onAction && (
         <LecteurHero
           carte={carte}
           enLecture={enLecture}
@@ -84,6 +105,7 @@ export default function BandeDuHero({
           enLectureId={enLecture ? carte?.id ?? null : null}
           onJouer={jouer}
           onChoisir={onChoisir}
+          libelleAction={libelleAction}
         />
       </div>
     </section>
