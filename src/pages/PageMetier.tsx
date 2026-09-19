@@ -81,13 +81,6 @@ function PageMetierContenu({ page }: { page: Donnees }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-[#0A0A0A]/35" />
 
         <div className="relative mx-auto flex min-h-[80svh] max-w-[1180px] flex-col justify-end px-6 pb-16 pt-24">
-          <Link
-            to="/"
-            className="absolute left-6 top-8 font-mono text-[10px] uppercase tracking-[0.2em] text-white/55 no-underline transition hover:text-white"
-          >
-            ← VOWS
-          </Link>
-
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-black">
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: style.accent }} />
