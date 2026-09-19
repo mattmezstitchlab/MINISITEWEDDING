@@ -247,7 +247,13 @@ check(
   true,
 );
 check('l’accueil met la carte avant le site', accueil.includes('La carte d’abord.'), true);
-check('l’accueil ouvre sur « Découvrir »', accueil.includes('Découvrir'), true);
+check('l’accueil n’a plus de bouton « Découvrir »', accueil.includes('Découvrir'), false);
+/* Le hero de l'accueil porte le titre de l'univers qui défile. */
+check(
+  'le hero de l’accueil est celui d’un univers',
+  accueil.includes(contentFor(WEDDING_STYLES[0]!).hero.title),
+  true,
+);
 check('la bande d’iPhones a quitté l’accueil', accueil.includes('Mini-site · '), false);
 check('la playlist n’embarque plus le lecteur Spotify', accueil.includes('open.spotify.com/embed'), false);
 
@@ -915,6 +921,8 @@ check('l’étape courante s’inverse en blanc', chromeMetier.includes('bg-whit
 /* LA BARRE DU SITE : le nom au centre, le caddie et le magazine à droite. */
 const entete = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
 check('le site s’appelle Super Mariage', entete.includes('SUPER MARIAGE'), true);
+check('le nom s’écrit en blanc, sans capsule', entete.includes('text-white') && entete.includes('bg-gradient-to-b from-black/45'), true);
+check('la barre n’a plus de fond blanc', entete.includes('rounded-[26px] bg-white'), false);
 check('la barre ne garde que le nom', ['Métiers', 'Shop<', 'Magazine<'].every((m) => entete.includes(m)), false);
 check('et ses deux pictos', ['aria-label="Le Shop"', 'aria-label="Le Magazine"'].every((m) => entete.includes(m)), true);
 check('le caddie mène au shop', entete.includes('href="/shop"'), true);
@@ -924,10 +932,14 @@ check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
 
 /* La bande du hero : les univers, à l'horizontale, en bas du hero de l'accueil. */
 check('la bande des univers est sur l’accueil', accueil.includes('Les univers'), true);
-check('elle propose la vue d’ensemble', accueil.includes('Vue d’ensemble'), true);
+check('la bande ne montre que des univers', accueil.includes('Vue d’ensemble'), false);
 check('elle s’annonce sous le hero', accueil.indexOf('Les univers') > accueil.indexOf('</header>'), true);
-check('elle remonte un peu sur le hero', accueil.includes('-mt-14') && accueil.includes('sm:-mt-16'), true);
-check('et se pose sur blanc', accueil.includes('-mt-14 border-b border-black/5 bg-white'), true);
+check('elle remonte sur le bas du hero', accueil.includes('-mt-16') && accueil.includes('sm:-mt-20'), true);
+check('et se pose sur blanc', accueil.includes('-mt-16 border-b border-black/5 bg-white'), true);
+/* Trois cartes au centre, celle du milieu plus grande, et les flèches. */
+check('la bande ne garde que trois cartes', (accueil.match(/Aimer /g) ?? []).length, 3);
+check('une flèche de chaque côté', ['Carte précédente', 'Carte suivante'].every((f) => accueil.includes(f)), true);
+check('le milieu est la carte de la page', accueil.includes('data-actif="true"'), true);
 /* Le hero annonce l'univers qu'il montre : la bande s'aligne, une seule carte. */
 check('une seule carte est celle de la page', (accueil.match(/data-actif="true"/g) ?? []).length, 1);
 check('c’est celle du premier univers montré', accueil.includes(`data-actif="true"`), true);
@@ -1188,8 +1200,8 @@ check('il reste dentelé', timbre.includes('border-dashed'), true);
 /* Les cartes de la bande reprennent la charte : visuel, badge blanc, majuscules. */
 const carteBande = accueil.slice(accueil.indexOf('Les univers'));
 check('les cartes sont celles de la playlist', accueil.includes('w-[172px]') && accueil.includes('sm:w-[188px]'), true);
-check('elles grossissent au centre', carteBande.includes('scale(') && carteBande.includes('-mx-1 flex items-center gap-4'), true);
-check('et se centrent sur la carte de la page', carteBande.includes('snap-center'), true);
+check('elles grossissent au centre', carteBande.includes('scale('), true);
+check('et les cartes de côté sont en retrait', accueil.includes('hidden opacity-60'), true);
 check('elles portent la pastille de la playlist', carteBande.includes('bg-black/75 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-white'), true);
 check('le badge est celui de l’univers', carteBande.includes('Urbain') || carteBande.includes('Sauvage'), true);
 check('chaque carte porte son play', carteBande.includes('Lancer '), true);
@@ -1204,7 +1216,7 @@ const accueilVegas = renderToStaticMarkup(
 check('le hero prend le titre de l’univers', accueilVegas.includes(contentFor(styleById('vegas')).hero.title), true);
 check('il garde son chapô', accueilVegas.includes(contentFor(styleById('vegas')).hero.subtitle), true);
 check('les badges lieu, invités et programme ont disparu', />(Lieu|Invités|Programme)</.test(accueilVegas), false);
-check('et « Découvrir » reste', accueilVegas.includes('Découvrir'), true);
+check('et plus de bouton « Découvrir »', accueilVegas.includes('Découvrir'), false);
 check('l’univers choisi est marqué dans la bande', accueilVegas.includes('data-actif="true"'), true);
 
 /* « Découvrir » mène à l'article de l'univers : c'est là qu'on découvre. */

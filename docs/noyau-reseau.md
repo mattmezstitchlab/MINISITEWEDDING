@@ -892,3 +892,36 @@ de mots dans la barre ; la bande remonte sur le hero et se pose sur blanc ; une
 seule carte porte `data-actif` et c'est celle du premier univers montré ; le
 lecteur prend le hero et non l'écran ; le magasin porte le nom du site),
 `npm run build` OK.
+
+## 27. Le nom par-dessus le hero, trois cartes, et le titre de l'univers (passe 32)
+
+**La barre ne se pose plus sur un fond.** Elle est posée sur le hero : **le nom
+en blanc** à gauche, **le caddie et le magazine en haut à droite** — deux
+pastilles rondes, plus de capsule blanche. Un voile très doux
+(`from-black/45`, 96 px, `pointer-events-none`) tient la lisibilité du blanc
+quand la page défile.
+
+**Le bouton « Découvrir » a disparu** de l'accueil. Il racontait ce que la bande
+raconte mieux : c'est le hero lui-même, avec son titre, qui présente l'univers —
+et la carte du milieu montre où l'on est.
+
+**La bande ne montre que trois cartes** : celle de la page **au milieu, plus
+grande**, une de chaque côté (en retrait, `opacity-60`, cachées sur téléphone), et
+**une flèche dans l'espace laissé libre à chaque bout** (`ChevronLeft`,
+`ChevronRight`, `aria-label` « Carte précédente / suivante »). Les flèches et les
+cartes de côté font la même chose : elles mettent l'univers suivant au milieu.
+La bande remonte un peu plus sur le bas du hero (`-mt-16 sm:-mt-20`).
+
+**Le hero porte le titre de l'univers montré** — et il le porte *en direct* :
+`HeroCycle` annonce l'univers qui défile, l'accueil s'aligne, et le titre change
+avec le visuel, exactement au même moment que la carte du milieu. La carte
+« Vue d'ensemble » a disparu : la bande ne montre que des univers, chacun ayant
+son hero. Les trois phrases manifestes du hero partent avec elle (la phrase du
+site vit dans le pied de page).
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+178 / 55 / **390** (le nom blanc et le voile, plus de capsule, les deux pictos ;
+plus de bouton « Découvrir » ; le hero de l'accueil porte le titre du premier
+univers montré ; trois cartes exactement, les flèches, le milieu marqué, les
+cartes de côté en retrait ; la bande remonte sur le bas du hero),
+`npm run build` OK.

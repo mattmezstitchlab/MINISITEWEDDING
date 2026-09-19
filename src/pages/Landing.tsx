@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 import { contentFor } from '../lib/universeContent';
-import { articleDUnivers } from '../lib/magazine';
 import HeroCycle from '../components/HeroCycle';
 import BandeDuHero from '../components/BandeDuHero';
-import { cartesDesUnivers, morceauDUneUnivers } from '../lib/cartesVivantes';
+import { cartesDesUnivers } from '../lib/cartesVivantes';
 import SiteHeader from '../components/SiteHeader';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
@@ -17,13 +15,6 @@ import ComplementaryThemes from '../components/ComplementaryThemes';
 
 import ErrorBoundary from '../components/ErrorBoundary';
 import HomeCardShowcase from '../components/HomeCardShowcase';
-
-const HERO_ROTATING_TITLES = [
-  'Votre mariage. Votre histoire.\nUn seul endroit.',
-  'Une vision. Des missionnaires.\nL’impossible devient réel.',
-  'Mariés, invités, prestataires.\nLe même instant, sans fausse note.',
-];
-
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
 
@@ -37,7 +28,6 @@ export default function Landing() {
     const id = searchParams.get('univers');
     return id ? WEDDING_STYLES.find((s) => s.id === id) ?? null : null;
   });
-  const [titleIdx, setTitleIdx] = useState(0);
   /**
    * L'univers que le hero montre : il défile tout seul, et la bande s'aligne
    * dessus — chaque carte arrive au centre en même temps que son visuel.
@@ -46,30 +36,18 @@ export default function Landing() {
   /** Un média occupe le hero : le défilé attend, la carte joue. */
   const [lectureEnCours, setLectureEnCours] = useState(false);
 
+  /** L'univers que la page montre : celui qu'on a choisi, sinon celui qui défile. */
   const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
-  /** L'univers du hero : celui qu'on a choisi, sinon celui qui défile. */
   const afficheId = selectedStyle?.id ?? universMontre;
-
-  // Rotation douce des 3 phrases manifestes qui font comprendre le produit
-  useEffect(() => {
-    if (selectedStyle) return;
-    const interval = setInterval(() => {
-      setTitleIdx((prev) => (prev + 1) % HERO_ROTATING_TITLES.length);
-    }, 4800);
-    return () => clearInterval(interval);
-  }, [selectedStyle]);
-
   /**
-   * « DÉCOUVRIR » — le changement de paradigme
+   * LE TITRE DU HERO EST CELUI DE L'UNIVERS
    *
-   * On ne descend plus dans un écran : on va là où l'univers se raconte, son
-   * article de magazine. Sans univers choisi, c'est le magazine entier — le
-   * même bouton, la même promesse : découvrir.
+   * Le hero montre un univers et il en porte le titre : celui que la bande met
+   * au milieu, que l'univers défile tout seul ou qu'on l'ait choisi. Le site,
+   * lui, continue plus bas — la carte, l'éditeur, la playlist.
    */
-  const decouvrir = () => {
-    const article = selectedStyle ? articleDUnivers(selectedStyle.id) : null;
-    navigate(article ? `/magazine/${article.slug}` : '/magazine');
-  };
+  const universAffiche = WEDDING_STYLES.find((s) => s.id === afficheId) ?? WEDDING_STYLES[0]!;
+  const heroDeLUnivers = contentFor(universAffiche).hero;
 
   const handleSelectStyle = (style: WeddingStyle | null) => {
     setSelectedStyle(style);
@@ -89,27 +67,8 @@ export default function Landing() {
     <BandeDuHero
       libelle="Les univers"
       styleId={activeStyleOrFallback.id}
-      cartes={[
-        {
-          id: 'ensemble',
-          cle: 'univers|ensemble',
-          titre: 'Vue d’ensemble',
-          sousTitre: 'Le site entier',
-          badge: 'Tous',
-          etiquette: 'Le site entier',
-          accent: '#0B0C12',
-          media: {
-            image: WEDDING_STYLES[0]!.image,
-            audio: morceauDUneUnivers()?.src,
-            legende: 'Le site tel qu’on le parcourt, du hero au mini-site.',
-          },
-        },
-        ...cartesDesUnivers(() => undefined, afficheId),
-      ]}
-      onChoisir={(carte) => {
-        const univers = carte.id === 'ensemble' ? null : WEDDING_STYLES.find((s) => s.id === carte.id) ?? null;
-        handleSelectStyle(univers);
-      }}
+      cartes={cartesDesUnivers(() => undefined, afficheId)}
+      onChoisir={(carte) => handleSelectStyle(WEDDING_STYLES.find((s) => s.id === carte.id) ?? null)}
       onLecture={setLectureEnCours}
     />
   );
@@ -120,73 +79,30 @@ export default function Landing() {
           parcourent dans la bande en bas du hero. */}
       <SiteHeader />
 
-      {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
+      {/* Le hero : le visuel de l'univers qui défile, et son titre */}
       <div id="hero">
       <HeroCycle activeStyleId={selectedStyle?.id} pause={lectureEnCours} onChange={setUniversMontre}>
         <div className="mx-auto flex flex-col items-center justify-center text-center">
-          {selectedStyle ? (
-            /* Le hero de l'univers choisi : son visuel, sa présentation, ses chiffres */
-            <div key={selectedStyle.id} className="mx-auto max-w-3xl">
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          {/* Le titre de l'univers montré : il change quand le défilé passe à
+              l'univers suivant, exactement comme le visuel. */}
+          <div key={universAffiche.id} className="mx-auto max-w-3xl">
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <span className="vp-eyebrow !text-white/70">{heroDeLUnivers.kicker}</span>
+              <h1
+                className="vp-title mt-3 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+                style={{ fontSize: 'clamp(2.1rem, 5vw, 3.9rem)', lineHeight: 1.08 }}
               >
-                <span className="vp-eyebrow !text-white/70">
-                  {contentFor(selectedStyle).hero.kicker}
-                </span>
-                <h1
-                  className="vp-title mt-3 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
-                  style={{ fontSize: 'clamp(2.1rem, 5vw, 3.9rem)', lineHeight: 1.08 }}
-                >
-                  {contentFor(selectedStyle).hero.title}
-                </h1>
-                <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-white/80">
-                  {contentFor(selectedStyle).hero.subtitle}
-                </p>
-              </motion.div>
-            </div>
-          ) : (
-            /* Hauteur fixe : le bloc de création en dessous ne bouge plus quand
-               le titre tourne, et l'animation se fait dans un cadre stable. */
-            <div className="flex h-[118px] items-center justify-center overflow-hidden sm:h-[138px] lg:h-[158px]">
-              <AnimatePresence mode="wait">
-                <motion.h1
-                  key={titleIdx}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -14 }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className="vp-title max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] whitespace-pre-line"
-                  style={{ fontSize: 'clamp(1.75rem, 4.2vw, 3.2rem)', lineHeight: 1.06 }}
-                >
-                  {HERO_ROTATING_TITLES[titleIdx]}
-                </motion.h1>
-              </AnimatePresence>
-            </div>
-          )}
-
-          {/* L'ACTION UNIQUE DU HERO : un bouton, pas un formulaire. La carte se
-              compose sur la page de création — et l'univers se découvre après,
-              dans l'éditeur, une fois le mini-site ouvert. */}
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.8 }}
-            className="mt-4 w-full"
-          >
-            <ErrorBoundary>
-              <div id="hero-ai-container" className="mt-6 flex w-full flex-col items-center gap-3">
-                <button
-                  type="button"
-                  onClick={decouvrir}
-                  className="vp-btn vp-press !bg-white !px-8 !py-3.5 !text-black shadow-2xl hover:!bg-white/90"
-                >
-                  Découvrir <ArrowRight size={16} />
-                </button>
-              </div>
-            </ErrorBoundary>
-          </motion.div>
+                {heroDeLUnivers.title}
+              </h1>
+              <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-white/80">
+                {heroDeLUnivers.subtitle}
+              </p>
+            </motion.div>
+          </div>
         </div>
       </HeroCycle>
       </div>

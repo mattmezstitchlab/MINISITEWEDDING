@@ -48,7 +48,7 @@ export default function CarteVivanteUI({
     <div
       data-actif={carte.actif ? 'true' : undefined}
       style={{ transform: `scale(${echelle})` }}
-      className={`group relative w-[172px] shrink-0 snap-center rounded-[20px] p-2.5 text-left transition-transform duration-150 ease-out sm:w-[188px] ${
+      className={`group relative w-[172px] shrink-0 rounded-[20px] p-2.5 text-left transition-transform duration-150 ease-out sm:w-[188px] ${
         carte.actif
           ? 'z-20 border border-black/10 bg-white shadow-[0_16px_40px_-16px_rgba(0,0,0,0.28)]'
           : 'z-10 border border-black/6 bg-white'

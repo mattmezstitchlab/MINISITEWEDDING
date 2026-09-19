@@ -59,7 +59,7 @@ export default function BandeDuHero({
   }, [enLecture, onLecture]);
 
   return (
-    <section className="relative z-40 -mt-14 border-b border-black/5 bg-white pb-6 pt-5 sm:-mt-16 sm:pb-8 sm:pt-6">
+    <section className="relative z-40 -mt-16 border-b border-black/5 bg-white pb-6 pt-5 sm:-mt-20 sm:pb-8 sm:pt-6">
       {/* Le média prend le hero : le lecteur se pose au-dessus de la bande,
           sur la hauteur d'un écran. */}
       {carte && (
