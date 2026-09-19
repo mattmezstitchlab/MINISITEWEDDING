@@ -66,7 +66,7 @@ export function Timbre({
         </span>
         {date}
         <br />
-        VOWS · POSTE 22H
+        SUPER MARIAGE · POSTE 22H
       </figcaption>
     </figure>
   );
@@ -101,7 +101,7 @@ export function Sceau({ texte, centre, accent, taille = 112 }: SceauProps) {
         {centre}
       </text>
       <text x="60" y="70" textAnchor="middle" fill={accent} fontSize="7.5" fontWeight="700" letterSpacing="2">
-        VOWS
+        SUPER MARIAGE
       </text>
     </svg>
   );

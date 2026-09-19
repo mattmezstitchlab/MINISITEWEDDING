@@ -49,8 +49,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
 
   return (
     <>
-      {/* Sur l'accueil, la barre vient de la page : c'est elle qui change
-          l'univers montré dans le hero. Partout ailleurs, elle est ici. */}
+      {/* La barre est la même partout : le nom, le caddie, le magazine. Les
+          univers, eux, se parcourent dans la bande, sous le hero. */}
       {pathname !== '/' && <SiteHeader mention={mention} />}
       {/* Le dock est fixe : la page laisse la place au bas. */}
       <div className="pb-24">{children}</div>

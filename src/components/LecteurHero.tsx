@@ -14,6 +14,9 @@ import type { CarteVivante } from '../lib/cartesVivantes';
  * son ; sinon — c'est le cas aujourd'hui, le site n'a pas encore de rushes — le
  * visuel prend le mouvement et le morceau fait la bande sonore. Le lecteur ne
  * change pas : brancher une vidéo sur une carte suffit à l'allumer.
+ *
+ * Il se pose **dans le hero** : `bottom-full` de la bande, sur la hauteur d'un
+ * écran. La bande reste devant, pour relancer une carte sans rien fermer.
  */
 
 interface LecteurHeroProps {
@@ -65,7 +68,7 @@ export default function LecteurHero({ carte, enLecture, onBasculer, onFermer }: 
   }, [enLecture, carte.media.video]);
 
   return (
-    <div className="fixed inset-0 z-[45] bg-black/45 backdrop-blur-[2px]">
+    <div className="absolute inset-x-0 bottom-full z-30 h-[100svh] bg-[#0B0C12]">
       {/* Le média plein cadre */}
       {carte.media.video ? (
         <video
@@ -89,7 +92,8 @@ export default function LecteurHero({ carte, enLecture, onBasculer, onFermer }: 
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/45" />
 
       {/* Ce que le média raconte, et ses commandes */}
-      <div className="vp-page absolute inset-x-0 bottom-0 z-10 pb-8 sm:pb-10">
+      {/* Les commandes se posent au-dessus de la bande, qui remonte sur le hero. */}
+      <div className="vp-page absolute inset-x-0 bottom-0 z-10 pb-28 sm:pb-32">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
             <span className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-white/60">

@@ -68,7 +68,7 @@ import { TERMINAL_VIDE } from '../src/lib/weddingTicket';
 import { getScenesForStyle } from '../src/lib/themeTimelineScenarios';
 import { SHOP_PRODUCTS, modeLabel } from '../src/lib/shopData';
 import {
-  CONVIVES, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
+  CONVIVES, MAGASIN, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
 } from '../src/lib/superMariage';
 import { SIGNATURES, signatureFor, signatureLabel } from '../src/lib/themeSignatures';
 import SignatureBlock from '../src/components/themes/ThemeSignature';
@@ -265,7 +265,7 @@ const styleCorse = styleById('corse');
 const ecranInvite = renderToStaticMarkup(
   createElement(GuestPhoneScreen as never, { style: styleCorse, content: contentFor(styleCorse) }),
 );
-check('l’écran invité porte la capsule du site', ecranInvite.includes('VOWS'), true);
+check('l’écran invité porte la capsule du site', ecranInvite.includes('SUPER MARIAGE'), true);
 check('l’écran invité garde l’étiquette du rôle', ecranInvite.includes('Invitation privée'), true);
 check('l’écran invité ouvre sur la réponse', ecranInvite.includes('Répondre à l’invitation'), true);
 check('l’écran invité prend l’accent de l’univers', ecranInvite.includes(styleCorse.accent), true);
@@ -564,7 +564,8 @@ const inconnu = renderToStaticMarkup(
     ),
   ),
 );
-check('un univers inconnu retombe sur le Supermarché 22H', inconnu.includes('VOWS SUPERMARIAGE'), true);
+check('un univers inconnu retombe sur le Supermarché 22H', inconnu.includes('CAISSE 3'), true);
+check('et le magasin porte le nom du site', MAGASIN.nom, 'SUPER MARIAGE');
 
 /* Le moteur : chaque univers a son magasin, complet et cohérent. */
 const magasins = ALL_STYLES.map((s) => magasinFor(s.id));
@@ -882,9 +883,9 @@ const chromeMetier = renderToStaticMarkup(
     createElement(SiteChrome, null, createElement('div', null, 'contenu')),
   ),
 );
-check('le header du site est sur la page d’un métier', chromeMetier.includes('VOWS'), true);
-check('il annonce la page', chromeMetier.includes('Les métiers'), true);
-check('il porte le shop et le magazine', chromeMetier.includes('Shop') && chromeMetier.includes('Magazine'), true);
+check('la barre du site est sur la page d’un métier', chromeMetier.includes('SUPER MARIAGE'), true);
+check('elle annonce la page', chromeMetier.includes('Les métiers'), true);
+check('elle porte le caddie et le magazine', ['Le Shop', 'Le Magazine'].every((m) => chromeMetier.includes(m)), true);
 check('le dock est là aussi', chromeMetier.includes('Zéro contrainte') && chromeMetier.includes('Playlist'), true);
 const chromeAccueil = renderToStaticMarkup(
   createElement(
@@ -911,9 +912,13 @@ check('le dock est noir', chromeMetier.includes('bg-[#0B0C12]/95'), true);
 check('et ses pictos sont blancs', chromeMetier.includes('text-white/60'), true);
 check('l’étape courante s’inverse en blanc', chromeMetier.includes('bg-white text-[#0B0C12]'), true);
 
-/* Le header se libère du menu déroulant des univers. */
+/* LA BARRE DU SITE : le nom au centre, le caddie et le magazine à droite. */
 const entete = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
-check('le header garde les métiers, le shop et le magazine', ['Métiers', 'Shop', 'Magazine'].every((m) => entete.includes(m)), true);
+check('le site s’appelle Super Mariage', entete.includes('SUPER MARIAGE'), true);
+check('la barre ne garde que le nom', ['Métiers', 'Shop<', 'Magazine<'].every((m) => entete.includes(m)), false);
+check('et ses deux pictos', ['aria-label="Le Shop"', 'aria-label="Le Magazine"'].every((m) => entete.includes(m)), true);
+check('le caddie mène au shop', entete.includes('href="/shop"'), true);
+check('le magazine à son magazine', entete.includes('href="/magazine"'), true);
 check('le header n’a plus de bouton Univers', entete.includes('>Univers<'), false);
 check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
 
@@ -921,7 +926,11 @@ check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
 check('la bande des univers est sur l’accueil', accueil.includes('Les univers'), true);
 check('elle propose la vue d’ensemble', accueil.includes('Vue d’ensemble'), true);
 check('elle s’annonce sous le hero', accueil.indexOf('Les univers') > accueil.indexOf('</header>'), true);
-check('et se pose sur blanc', accueil.includes('border-b border-black/5 bg-white py-6'), true);
+check('elle remonte un peu sur le hero', accueil.includes('-mt-14') && accueil.includes('sm:-mt-16'), true);
+check('et se pose sur blanc', accueil.includes('-mt-14 border-b border-black/5 bg-white'), true);
+/* Le hero annonce l'univers qu'il montre : la bande s'aligne, une seule carte. */
+check('une seule carte est celle de la page', (accueil.match(/data-actif="true"/g) ?? []).length, 1);
+check('c’est celle du premier univers montré', accueil.includes(`data-actif="true"`), true);
 /** Un nom peut contenir une esperluette : le HTML l'échappe. */
 const enHtml = (texte: string) => texte.replace(/&/g, '&amp;');
 check(
@@ -1284,7 +1293,8 @@ const lecteur = renderToStaticMarkup(
   }),
 );
 check('le lecteur montre la carte', lecteur.includes(cartesUnivers[1]!.titre), true);
-check('il prend tout le cadre', lecteur.includes('fixed inset-0'), true);
+check('il prend le hero, pas tout l’écran', lecteur.includes('bottom-full') && lecteur.includes('h-[100svh]'), true);
+check('la bande reste devant lui', lecteur.includes('z-30'), true);
 check('il dit ce qu’il joue', lecteur.includes('Le morceau joue'), true);
 check('son plan est animé', lecteur.includes('hero-plan'), true);
 check('et il se ferme', lecteur.includes('Fermer le lecteur'), true);

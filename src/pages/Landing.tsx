@@ -31,15 +31,24 @@ const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0
 export default function Landing() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Par défaut : null = page principale générale d'atterrissage VOWS
+  // Par défaut : null = page principale générale d'atterrissage du site
   // Un article du magazine peut ouvrir directement un univers : « /?univers=corse »
   const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(() => {
     const id = searchParams.get('univers');
     return id ? WEDDING_STYLES.find((s) => s.id === id) ?? null : null;
   });
   const [titleIdx, setTitleIdx] = useState(0);
+  /**
+   * L'univers que le hero montre : il défile tout seul, et la bande s'aligne
+   * dessus — chaque carte arrive au centre en même temps que son visuel.
+   */
+  const [universMontre, setUniversMontre] = useState(WEDDING_STYLES[0]!.id);
+  /** Un média occupe le hero : le défilé attend, la carte joue. */
+  const [lectureEnCours, setLectureEnCours] = useState(false);
 
   const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
+  /** L'univers du hero : celui qu'on a choisi, sinon celui qui défile. */
+  const afficheId = selectedStyle?.id ?? universMontre;
 
   // Rotation douce des 3 phrases manifestes qui font comprendre le produit
   useEffect(() => {
@@ -73,7 +82,8 @@ export default function Landing() {
    * Les univers, en cartes musicales : elles grossissent au centre, portent le
    * nombre de personnes qui les aiment, et leur play allume le hero — le visuel
    * de l'univers et un morceau du Jour J. Un clic sur la carte choisit l'univers
-   * que le hero montre. C'est la navigation de l'accueil.
+   * que le hero montre — et sans choix, c'est la carte de l'univers qui défile
+   * qui se centre, au même rythme que le hero.
    */
   const bandeDesUnivers = (
     <BandeDuHero
@@ -93,14 +103,14 @@ export default function Landing() {
             audio: morceauDUneUnivers()?.src,
             legende: 'Le site tel qu’on le parcourt, du hero au mini-site.',
           },
-          actif: !selectedStyle,
         },
-        ...cartesDesUnivers(() => undefined, selectedStyle?.id),
+        ...cartesDesUnivers(() => undefined, afficheId),
       ]}
       onChoisir={(carte) => {
         const univers = carte.id === 'ensemble' ? null : WEDDING_STYLES.find((s) => s.id === carte.id) ?? null;
         handleSelectStyle(univers);
       }}
+      onLecture={setLectureEnCours}
     />
   );
 
@@ -112,7 +122,7 @@ export default function Landing() {
 
       {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
       <div id="hero">
-      <HeroCycle activeStyleId={selectedStyle?.id}>
+      <HeroCycle activeStyleId={selectedStyle?.id} pause={lectureEnCours} onChange={setUniversMontre}>
         <div className="mx-auto flex flex-col items-center justify-center text-center">
           {selectedStyle ? (
             /* Le hero de l'univers choisi : son visuel, sa présentation, ses chiffres */
@@ -247,7 +257,7 @@ export default function Landing() {
         <div className="vp-page">
         <div className="vp-glass vp-spec flex flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
           <div className="flex items-center gap-2">
-            <span className="vp-title text-[17px] font-bold italic tracking-wider text-[var(--vp-ink)]">VOWS</span>
+            <span className="vp-title text-[17px] font-bold italic tracking-wider text-[var(--vp-ink)]">SUPER MARIAGE</span>
           </div>
           <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
           <div className="flex flex-wrap items-center justify-center gap-5">

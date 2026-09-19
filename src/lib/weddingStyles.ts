@@ -662,7 +662,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
     tagline: 'Coup de tête. 48h chrono. Plan B héroïque.',
     category: 'concept',
     manifesto: 'Pourquoi attendre deux ans ? Deux billets de train, une place publique, des potes prévenus par SMS à 14h, des fleurs chopées au vol et un banquet improvisé sur le pouce.',
-    synopsis: 'L’amour spontané radical. Mariage éclair ou sauvetage de plan B en 48h. L’écosystème VOWS mobilise instantanément les prestataires disponibles à proximité.',
+    synopsis: 'L’amour spontané radical. Mariage éclair ou sauvetage de plan B en 48h. L’écosystème Super Mariage mobilise instantanément les prestataires disponibles à proximité.',
     ink: '#0F172A',
     muted: '#64748B',
     accent: '#F59E0B',

@@ -1,54 +1,57 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import VendorDomainMenu from './VendorDomainMenu';
+import { BookOpen, ShoppingCart } from 'lucide-react';
 
 /**
- * LE HEADER DU SITE
+ * LA BARRE DU SITE
  *
- * La même barre partout : VOWS à gauche, les Métiers, le Shop et le Magazine à
- * droite. Le menu déroulant des univers n'y est plus : les univers se
- * parcourent dans la bande du hero, toujours au même endroit, sur la page qui
- * les montre (`BandeauHero`). Le header reste une barre courte, et il ne
- * change plus de rôle selon la page.
+ * Une seule ligne, et rien de plus : **le nom au centre**, et deux pictos à
+ * droite — le caddie pour le Shop, le magazine pour le Magazine. Plus de menu
+ * déroulant : les univers se parcourent dans la bande, sous le hero, et les
+ * métiers sur la page qui les montre.
+ *
+ * Le site s'appelle **Super Mariage**.
  */
 
 interface SiteHeaderProps {
-  /** Une précision d'usage à droite du logo : « Invitation », « Prestataire »… */
+  /** Une précision d'usage à droite du nom : « Invitation », « Prestataire »… */
   mention?: string;
 }
 
-export default function SiteHeader({ mention }: SiteHeaderProps) {
-  const [menuOuvert, setMenuOuvert] = useState<'metiers' | null>(null);
+/** Le nom du site, tel qu'il s'écrit partout ailleurs. */
+export const NOM_DU_SITE = 'SUPER MARIAGE';
 
+export default function SiteHeader({ mention }: SiteHeaderProps) {
   return (
-    <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
-      <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+    <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-3xl -translate-x-1/2 sm:top-4">
+      <div className="relative flex items-center justify-center rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
+        <Link to="/" className="flex items-baseline gap-2">
+          <span className="vp-title text-[14px] font-bold italic tracking-[0.1em] text-[#0B0C12] sm:text-[17px] sm:tracking-[0.14em]">
+            {NOM_DU_SITE}
+          </span>
           {mention && (
-            <span className="hidden text-[11.5px] font-semibold uppercase tracking-[0.18em] text-[#0B0C12]/45 sm:inline">
+            <span className="hidden text-[11px] font-semibold uppercase tracking-[0.18em] text-[#0B0C12]/45 sm:inline">
               {mention}
             </span>
           )}
         </Link>
 
-        {/* La bande : les métiers, le shop, le magazine */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <VendorDomainMenu
-            open={menuOuvert === 'metiers'}
-            onOpenChange={(ouvert) => setMenuOuvert(ouvert ? 'metiers' : null)}
-          />
+        {/* À droite, les deux portes du site : le Shop, le Magazine. */}
+        <div className="absolute right-3 flex items-center gap-1.5 sm:right-4">
           <Link
             to="/shop"
-            className="hidden rounded-full border border-black/10 bg-white/95 px-3.5 py-1.5 text-[13px] font-semibold text-[#0B0C12] shadow-sm backdrop-blur-md transition hover:border-black/30 hover:bg-white sm:inline-block"
+            aria-label="Le Shop"
+            title="Le Shop"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white text-[#0B0C12] transition hover:border-black/30 hover:bg-black hover:text-white"
           >
-            Shop
+            <ShoppingCart size={15} />
           </Link>
           <Link
             to="/magazine"
-            className="rounded-full border border-black/10 bg-white/95 px-4 py-1.5 text-[13px] font-semibold text-[#0B0C12] shadow-sm backdrop-blur-md transition hover:border-black/30 hover:bg-white"
+            aria-label="Le Magazine"
+            title="Le Magazine"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white text-[#0B0C12] transition hover:border-black/30 hover:bg-black hover:text-white"
           >
-            Magazine
+            <BookOpen size={15} />
           </Link>
         </div>
       </div>

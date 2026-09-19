@@ -65,7 +65,7 @@ export default function PhoneShell({ hero, modules, style, initial = 0 }: PhoneS
           <div className="shrink-0 px-2.5 pt-2.5">
             <div className="flex items-center justify-between gap-2 rounded-full bg-white px-3 py-2 shadow-[0_6px_20px_rgba(0,0,0,0.10)] ring-1 ring-black/5">
               <span className="flex min-w-0 items-center gap-1.5">
-                <span className="vp-title text-[11.5px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+                <span className="vp-title text-[11.5px] font-bold italic tracking-wider text-[#0B0C12]">SUPER MARIAGE</span>
                 <span className="truncate text-[8.5px] font-semibold uppercase tracking-[0.16em] text-black/35">
                   {style.name}
                 </span>

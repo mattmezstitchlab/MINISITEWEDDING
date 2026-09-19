@@ -465,7 +465,7 @@ export default function SuperMariage() {
             <span className="font-mono text-[12px] font-bold tracking-[0.18em]">{MAGASIN.nom}</span>
           </div>
           <p className="max-w-[520px] text-[12px] leading-relaxed text-white/45">
-            Un rayon ouvert par les univers VOWS : les horaires viennent du programme du Supermarché
+            Un rayon ouvert par les univers Super Mariage : les horaires viennent du programme du Supermarché
             22H, les métiers des {RAYONS.length - 2} domaines, les menus des trois formules du
             magasin.
           </p>

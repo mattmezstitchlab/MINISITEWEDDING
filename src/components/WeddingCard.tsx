@@ -180,7 +180,7 @@ export default function WeddingCard({
               <div className="absolute inset-0 bg-gradient-to-t from-black/92 via-black/25 to-black/25" />
 
               <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3.5">
-                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/75">Carte VOWS</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/75">Carte SUPER MARIAGE</span>
                 {card.date && (
                   <span className="rounded-full bg-white/95 px-2.5 py-1 font-mono text-[9.5px] font-bold text-black">
                     J-{daysUntil(card.date)}
@@ -214,7 +214,7 @@ export default function WeddingCard({
 
               {/* Le seul repère du recto : la carte se retourne. */}
               <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
-                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/70">Carte VOWS</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/70">Carte SUPER MARIAGE</span>
                 <span className="flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-white/85 backdrop-blur-sm">
                   <RotateCcw size={11} /> Verso
                 </span>

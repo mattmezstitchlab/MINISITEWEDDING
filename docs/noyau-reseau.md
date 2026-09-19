@@ -853,3 +853,42 @@ ce qu'elle doit être : **la bande de la playlist, sous le hero, sur fond blanc.
   marquée `data-actif` pour être centrée, aucune mention d'état, aucun texte
   d'avis, aucun compte de métiers, les cartes ont la taille et la pastille de la
   playlist), `npm run build` OK.
+
+## 26. Le nom, la barre, et la bande qui remonte sur le hero (passe 31)
+
+**Le site s'appelle Super Mariage.** Le nom remplace Vows partout où il
+s'écrit — la barre, les pieds de page, les écrans des mini-sites, la carte, le
+timbre, le ticket de caisse, le magazine, le shop, les articles d'univers, le
+testament du théâtre. Les **codes** imprimés sur les billets (`VOWS-XXX-…`, le
+code-barres de la carte) ne changent pas : ce sont des identifiants, pas un nom,
+et les laisser tels quels garde les billets déjà émis lisibles.
+
+**La barre devient une ligne, et rien de plus** (`SiteHeader`) : **le nom au
+centre**, et deux pictos à droite — **le caddie** vers le Shop, **le magazine**
+vers le Magazine. Le menu déroulant des métiers disparaît de la barre (les
+métiers se parcourent dans la bande de leur page, et depuis `/prestataire`) ;
+`VendorDomainMenu` reste dans le dépôt, inutilisé pour l'instant.
+
+**La bande remonte un peu sur le hero.** Elle reste sous le hero, sur fond blanc
+(`-mt-14 sm:-mt-16`, `relative z-40`), mais elle en couvre le bas : elle est la
+continuité du hero, pas une section de plus.
+
+**Le média se joue dans le hero.** `LecteurHero` ne prend plus tout l'écran : il
+se pose au-dessus de la bande (`absolute inset-x-0 bottom-full h-[100svh]`), donc
+exactement sur le hero — et la bande reste devant lui (`z-40` sous la section),
+pour qu'on relance une autre carte sans rien fermer. Les commandes du lecteur se
+posent plus haut (`pb-28 sm:pb-32`) pour ne pas passer sous la bande.
+
+**La bande défile avec le hero.** `HeroCycle` annonce l'univers qu'il montre
+(`onChange`) ; l'accueil s'aligne dessus, et la bande centre la carte de cet
+univers, au même rythme que le visuel (5,6 s). On peut toujours faire défiler la
+bande à la main et **cliquer une carte pour montrer son hero** — le choix arrête
+le défilé, « Vue d'ensemble » le relance. Quand une carte joue, le défilé attend
+(`pause`).
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+178 / 55 / **384** (le nom sur la barre, les deux pictos et leurs adresses, plus
+de mots dans la barre ; la bande remonte sur le hero et se pose sur blanc ; une
+seule carte porte `data-actif` et c'est celle du premier univers montré ; le
+lecteur prend le hero et non l'écran ; le magasin porte le nom du site),
+`npm run build` OK.

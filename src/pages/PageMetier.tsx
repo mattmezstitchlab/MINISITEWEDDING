@@ -208,7 +208,7 @@ function PageMetierContenu({ page }: { page: Donnees }) {
       {/* ═══════════════════════ LE RÉCIT DU MÉTIER ═══════════════════════ */}
       <article className="vp-page py-20 sm:py-24">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#14130F] pb-3">
-          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.28em]">VOWS · Les métiers</span>
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.28em]">SUPER MARIAGE · Les métiers</span>
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
             {page.domaine.label} · {style.name}
           </span>

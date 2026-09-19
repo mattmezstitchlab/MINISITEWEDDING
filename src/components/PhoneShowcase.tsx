@@ -176,7 +176,7 @@ function MiniSite({ style }: { style: WeddingStyle }) {
       </Block>
 
       <div className="px-4 pb-7 pt-6 text-center text-[8px] uppercase tracking-[0.2em]" style={{ color: p.muted }}>
-        {COUPLE.p1} &amp; {COUPLE.p2} · VOWS
+        {COUPLE.p1} &amp; {COUPLE.p2} · SUPER MARIAGE
       </div>
     </div>
   );

@@ -49,7 +49,7 @@ export default function Magazine() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
 
         <div className="vp-page relative w-full pb-10 sm:pb-14">
-          <span className="vp-eyebrow !text-white/70">Le Magazine VOWS</span>
+          <span className="vp-eyebrow !text-white/70">Le Magazine Super Mariage</span>
           <h1
             className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
             style={{ fontSize: 'clamp(2.2rem, 5.4vw, 4.2rem)', lineHeight: 1.04 }}
@@ -189,7 +189,7 @@ export default function Magazine() {
 
       <footer className="border-t border-black/5 py-10">
         <div className="vp-page flex flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
-          <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">VOWS</span>
+          <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">SUPER MARIAGE</span>
           <span>
             {WEDDING_STYLES.length} univers · {UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length + INSOLITE_ARTICLES.length} articles
           </span>

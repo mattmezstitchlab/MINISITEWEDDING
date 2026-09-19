@@ -101,7 +101,7 @@ export default function EditorShowcase({ styleId }: { styleId: string }) {
           {/* La barre de l'éditeur, en capsule comme le reste du site */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 sm:px-6">
             <div className="flex min-w-0 items-center gap-2.5">
-              <span className="vp-title text-[15px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+              <span className="vp-title text-[15px] font-bold italic tracking-wider text-[#0B0C12]">SUPER MARIAGE</span>
               <span className="truncate text-[12px] font-semibold uppercase tracking-[0.18em] text-black/35">
                 {themeActif.name}
               </span>

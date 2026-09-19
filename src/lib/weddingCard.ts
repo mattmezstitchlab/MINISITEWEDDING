@@ -2,7 +2,7 @@ import { BLANK_STYLE_ID } from './weddingStyles';
 import { roleToScreen, roleTitle } from './spaceDraft';
 
 /**
- * LA CARTE VOWS — recto / verso
+ * LA CARTE SUPER MARIAGE — recto / verso
  *
  * Une carte par personne, et une seule source de vérité : la personne, son
  * rôle dans le mariage, ses coordonnées, ses disponibilités, son repas, sa

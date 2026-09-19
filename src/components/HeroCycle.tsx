@@ -24,9 +24,13 @@ const STEP_MS = 5600;
 interface HeroCycleProps {
   children?: ReactNode;
   activeStyleId?: string;
+  /** Le défilé s'arrête : un média occupe le hero. */
+  pause?: boolean;
+  /** L'univers montré change : la bande s'aligne dessus, carte par carte. */
+  onChange?: (styleId: string) => void;
 }
 
-export default function HeroCycle({ children, activeStyleId }: HeroCycleProps) {
+export default function HeroCycle({ children, activeStyleId, pause = false, onChange }: HeroCycleProps) {
   const [index, setIndex] = useState(0);
   const reduced = usePrefersReducedMotion();
   const tabVisible = useTabVisible();
@@ -36,13 +40,19 @@ export default function HeroCycle({ children, activeStyleId }: HeroCycleProps) {
   const impose = activeStyleId ? WEDDING_STYLES.findIndex((s) => s.id === activeStyleId) : -1;
   const courant = impose === -1 ? index : impose;
 
-  const running = !reduced && tabVisible && !activeStyleId;
+  const running = !reduced && tabVisible && !activeStyleId && !pause;
 
   useEffect(() => {
     if (!running) return;
     const timer = setTimeout(() => setIndex((i) => (i + 1) % WEDDING_STYLES.length), STEP_MS);
     return () => clearTimeout(timer);
   }, [index, running]);
+
+  // L'univers montré est annoncé : la bande s'aligne sur le hero, toute seule.
+  useEffect(() => {
+    const montre = WEDDING_STYLES[courant];
+    if (montre) onChange?.(montre.id);
+  }, [courant, onChange]);
 
   return (
     <header className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 py-24 sm:px-8">

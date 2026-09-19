@@ -186,14 +186,14 @@ export default function Theater() {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-black text-[#0B0C12] select-none font-sans">
       
-      {/* 1. BARRE FLOTTANTE DISCRÈTE EN HAUT : CAPSULE GLASS VOWS & PICTOS */}
+      {/* 1. BARRE FLOTTANTE DISCRÈTE EN HAUT : CAPSULE GLASS SUPER MARIAGE & PICTOS */}
       <header className="absolute top-3 inset-x-0 z-40 px-3 sm:px-6 pointer-events-none">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
           
           {/* Logo & Modes (100% pictos) */}
           <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-xl px-3 py-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-black/5">
             <Link to="/" className="flex items-center gap-1.5 pr-2 border-r border-black/10" title="Retour à l'accueil">
-              <span className="vp-title text-[17px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+              <span className="vp-title text-[17px] font-bold italic tracking-wider text-[#0B0C12]">SUPER MARIAGE</span>
             </Link>
 
             {/* Pictos des 3 Modes */}
@@ -326,7 +326,7 @@ export default function Theater() {
                 <div className="max-w-xl space-y-3 text-center">
                   <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3.5 py-1 text-[11px] font-mono font-bold uppercase">
                     <CheckCircle2 size={13} />
-                    <span>Document Scellé Registre VOWS</span>
+                    <span>Document Scellé Registre Super Mariage</span>
                   </div>
                   <h2 className="text-[26px] sm:text-[32px] font-bold text-white">{selectedItem?.docBadge}</h2>
                   <p className="text-[13.5px] text-white/70 leading-relaxed">

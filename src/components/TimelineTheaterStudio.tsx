@@ -436,7 +436,7 @@ export default function TimelineTheaterStudio({
                 Inspecteur de Scène &amp; Médias
               </div>
               <span className="rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-0.5 text-[10px] font-mono font-bold">
-                Synchronisé VOWS
+                Synchronisé Super Mariage
               </span>
             </div>
 

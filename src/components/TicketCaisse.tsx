@@ -65,7 +65,7 @@ export default function TicketCaisse({
   const aDesLignes = lignes.length > 0;
 
   const enTete = dj
-    ? { titre: 'VOWS · TERMINAL DJ', sous: 'Playlist complète à emporter' }
+    ? { titre: 'SUPER MARIAGE · TERMINAL DJ', sous: 'Playlist complète à emporter' }
     : metier
       ? { titre: magasin.nom, sous: `Bon de commande · ${sousTitre ?? 'Métier'}` }
       : invite

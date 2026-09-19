@@ -104,7 +104,7 @@ export default function UnifiedUniverseMenu({
                   <div className="flex items-center gap-3">
                     <span className="h-2 w-2 rounded-full bg-[#0B0C12]" />
                     <span className="text-[12.5px] font-bold uppercase tracking-[0.2em] text-[#0B0C12]/80">
-                      Les {WEDDING_STYLES.length} univers VOWS
+                      Les {WEDDING_STYLES.length} univers
                     </span>
                     {selectedStyle && (
                       <button

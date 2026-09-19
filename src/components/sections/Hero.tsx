@@ -38,7 +38,7 @@ export default function Hero() {
           }`}
         >
           <a href="#sec-hero" className="flex min-w-0 items-center gap-2">
-            <span className="vp-title text-[17px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+            <span className="vp-title text-[17px] font-bold italic tracking-wider text-[#0B0C12]">SUPER MARIAGE</span>
             <span className="hidden truncate text-[12px] font-semibold uppercase tracking-[0.18em] text-black/35 sm:inline">
               {names}
             </span>
@@ -132,7 +132,7 @@ export default function Hero() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex flex-col bg-white/92 backdrop-blur-3xl" style={{ color: ink }}>
             <div className="relative flex h-16 items-center justify-between px-5">
               <span className="flex items-center gap-2">
-                <span className="vp-title text-[17px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+                <span className="vp-title text-[17px] font-bold italic tracking-wider text-[#0B0C12]">SUPER MARIAGE</span>
                 <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-black/35">{names}</span>
               </span>
               <button onClick={() => setMenuOpen(false)} className="vp-press flex h-10 w-10 items-center justify-center rounded-full bg-black/5" aria-label="Fermer"><X size={20} /></button>

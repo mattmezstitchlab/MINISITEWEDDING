@@ -26,7 +26,7 @@ export default function PhoneFrame({ children, className = '' }: PhoneFrameProps
         {/* Dynamic Island */}
         <div className="absolute left-1/2 top-2.5 z-30 flex h-[19px] w-[80px] -translate-x-1/2 items-center justify-between rounded-full bg-black px-2.5">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          <span className="text-[8px] font-mono text-white/50">VOWS</span>
+          <span className="text-[8px] font-mono text-white/50">SUPER MARIAGE</span>
           <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
         </div>
 

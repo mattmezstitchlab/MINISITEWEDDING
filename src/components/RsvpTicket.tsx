@@ -98,7 +98,7 @@ export default function RsvpTicket({
 
           <div className="p-5">
             <div className="text-center">
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-black/45">VOWS · {noms}</div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-black/45">SUPER MARIAGE · {noms}</div>
               <div className="mt-1.5 text-[13px] uppercase tracking-[0.14em] text-black/60">
                 {formatDateLong(date)} · {venue}
               </div>

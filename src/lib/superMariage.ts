@@ -52,7 +52,7 @@ const CONTENU = contentFor(styleById('supermarche'));
 
 /** Le magasin : son nom, son rayon, sa caisse. */
 export const MAGASIN = {
-  nom: 'VOWS SUPERMARIAGE',
+  nom: 'SUPER MARIAGE',
   rayon: 'RAYON 7 · TOUT POUR LE JOUR J',
   ville: `${CONTENU.couple.venue} · ${CONTENU.couple.city}`,
   caisse: 'CAISSE 3',
