@@ -10,14 +10,12 @@ import VendorDomainMenu from '../components/VendorDomainMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import EditorShowcase from '../components/EditorShowcase';
-import VendorEditorsShowcase from '../components/VendorEditorsShowcase';
 import SuperMariageTeaser from '../components/SuperMariageTeaser';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 
 import UniversePhoneScreens from '../components/UniversePhoneScreens';
 import ErrorBoundary from '../components/ErrorBoundary';
 import BottomCapsuleNav from '../components/BottomCapsuleNav';
-import MiniSiteRail from '../components/MiniSiteRail';
 import HomeCardShowcase from '../components/HomeCardShowcase';
 
 const HERO_ROTATING_TITLES = [
@@ -214,15 +212,6 @@ export default function Landing() {
         <EditorShowcase key={activeStyleOrFallback.id} styleId={activeStyleOrFallback.id} />
       </div>
 
-      {/* L'ÉDITEUR DES PRESTATAIRES : le même, dans la langue de chaque métier */}
-      <div id="metiers">
-        <VendorEditorsShowcase />
-      </div>
-
-      {/* LE DÉFILÉ DES MINI-SITES : sous l'éditeur, les univers dans la main */}
-      <div id="direction">
-        <MiniSiteRail />
-      </div>
 
       {/* LE MAGASIN : on coche ses horaires et ses métiers, le ticket suit */}
       <div id="supermarriage">
@@ -285,6 +274,9 @@ export default function Landing() {
             </Link>
             <Link to="/prestataire" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
               Espace prestataire
+            </Link>
+            <Link to="/le-mariage" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
+              Le mariage, en entier
             </Link>
             <Link to="/supermarriage" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
               SuperMariage

@@ -21,6 +21,7 @@ import WeddingPeople from './pages/WeddingPeople';
 import Invitation from './pages/Invitation';
 import VendorStudio from './pages/VendorStudio';
 import SuperMariage from './pages/SuperMariage';
+import LeMariage from './pages/LeMariage';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -59,6 +60,8 @@ export default function App() {
             <Route path="/prestataire" element={<VendorStudio />} />
             {/* SuperMariage : le magasin où l'on coche son mariage, et le ticket suit. */}
             <Route path="/supermarriage" element={<SuperMariage />} />
+            {/* Le mariage, en entier : l'article, la playlist, le récap — une seule page. */}
+            <Route path="/le-mariage" element={<LeMariage />} />
             <Route path="/mariage/:slug" element={<WeddingPeople />} />
             <Route path="/rejoindre/:slug" element={<Invitation />} />
             <Route path="/generer" element={<Generating />} />

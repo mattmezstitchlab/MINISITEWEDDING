@@ -32,7 +32,11 @@ export default function MusicCard({ track, dark = false, accent = '#16171A', com
     };
   }, [track.src]);
 
+  /** Un morceau suggéré n'a pas d'extrait : il s'ajoute, il ne se joue pas ici. */
+  const jouable = Boolean(track.src);
+
   const toggle = () => {
+    if (!jouable) return;
     if (typeof window === 'undefined') return;
     if (playing) {
       audioRef.current?.pause();
@@ -69,15 +73,24 @@ export default function MusicCard({ track, dark = false, accent = '#16171A', com
             <div className="h-full rounded-full transition-[width] duration-200" style={{ width: `${Math.round(progress * 100)}%`, background: accent }} />
           </div>
         </div>
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={playing ? `Mettre en pause ${track.title}` : `Écouter ${track.title}`}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition hover:scale-105 active:scale-95"
-          style={{ background: accent, color: dark ? '#0B0C12' : '#FFFFFF' }}
-        >
-          {playing ? <Pause size={13} /> : <Play size={13} className="ml-0.5" />}
-        </button>
+        {jouable ? (
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={playing ? `Mettre en pause ${track.title}` : `Écouter ${track.title}`}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition hover:scale-105 active:scale-95"
+            style={{ background: accent, color: dark ? '#0B0C12' : '#FFFFFF' }}
+          >
+            {playing ? <Pause size={13} /> : <Play size={13} className="ml-0.5" />}
+          </button>
+        ) : (
+          <span
+            className="shrink-0 rounded-full px-2 py-1 font-mono text-[9px] uppercase tracking-wider"
+            style={{ border: `1px solid ${dark ? 'rgba(255,255,255,0.2)' : 'rgba(12,14,24,0.15)'}` }}
+          >
+            Suggéré
+          </span>
+        )}
       </div>
     );
   }
@@ -99,15 +112,24 @@ export default function MusicCard({ track, dark = false, accent = '#16171A', com
           <div className="h-full rounded-full transition-[width] duration-200" style={{ width: `${Math.round(progress * 100)}%`, background: accent }} />
         </div>
       </div>
-      <button
-        type="button"
-        onClick={toggle}
-        aria-label={playing ? `Mettre en pause ${track.title}` : `Écouter ${track.title}`}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition hover:scale-105 active:scale-95"
-        style={{ background: accent, color: dark ? '#0B0C12' : '#FFFFFF' }}
-      >
-        {playing ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
-      </button>
+      {jouable ? (
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={playing ? `Mettre en pause ${track.title}` : `Écouter ${track.title}`}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition hover:scale-105 active:scale-95"
+          style={{ background: accent, color: dark ? '#0B0C12' : '#FFFFFF' }}
+        >
+          {playing ? <Pause size={14} /> : <Play size={14} className="ml-0.5" />}
+        </button>
+      ) : (
+        <span
+          className="shrink-0 rounded-full px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-wider opacity-70"
+          style={{ border: `1px solid ${dark ? 'rgba(255,255,255,0.2)' : 'rgba(12,14,24,0.15)'}` }}
+        >
+          Suggéré
+        </span>
+      )}
     </div>
   );
 }

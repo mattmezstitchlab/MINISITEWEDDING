@@ -312,8 +312,9 @@ Plus une : **l'annonce** du couple, une seule, en haut.
   le module prennent la couleur du lieu. Quand la signature est un néon
   (`lueur`), les titres s'allument (`.vp-sg-lueur`). Le module se pose juste
   après le hero, dans le flux des sections.
-- **Le défilé montre les gestes.** La bande d'iPhones ouvre les univers les plus
-  reconnaissables et nomme le geste sous chaque écran. Les aperçus se montent
+- **Le défilé montre les gestes.** La bande d'iPhones (accueil jusqu'à la passe
+  20, désormais dans `/le-mariage`) ouvre les univers les plus reconnaissables
+  et nomme le geste sous chaque écran. Les aperçus se montent
   avec `entete=0` : la capsule de navigation du site disparaît, parce que la
   Dynamic Island occupe déjà le haut du châssis (`hideHeader` dans
   `PublicSiteView` et `sections/Hero.tsx`).
@@ -328,3 +329,52 @@ Plus une : **l'annonce** du couple, une seule, en haut.
   prestataire a perdu son jargon (« Onglet · », « Titre au-dessus », « Phrase du
   bas »). Le pied de page garde les trois portes : carte, espace prestataire,
   SuperMariage.
+
+## 14. Alléger l'accueil, rassembler le mariage sur une page (passe 20)
+
+- **Deux bandes en moins sur l'accueil.** La bande d'iPhones (`MiniSiteRail`) et
+  la bande des éditeurs prestataire (`VendorEditorsShowcase`, fichier supprimé)
+  quittent `/`. L'accueil va désormais : hero → la carte → le mini-site complet →
+  le Supermarché 22H → les métiers (`ComplementaryThemes`) → « Zéro contrainte »
+  → la playlist. Les étapes `metiers` et `direction` disparaissent de
+  `BottomCapsuleNav`, qui ne pointe plus que vers des ancres existantes.
+- **Harmonies & Affinités, en une bande.** La section devient **une seule ligne**
+  de cartes de prestataires qui **défile lentement** toute seule
+  (`requestAnimationFrame`, 0,4 px/image, boucle en fin de bande, pause au
+  survol et au toucher, bouton pause/reprise, respect de
+  `prefers-reduced-motion`). Le portrait animé, la pastille live, la localisation
+  et « Revendiquer » sont conservés.
+- **La playlist ne s'embarque plus dans Spotify.** `DjPlaylistStudio` perd
+  l'iframe et l'état `activeSpotifyTrack` : le bouton lit le **vrai extrait**
+  (`previewUrl`, fichiers de `public/audio/`), affiche une barre de progression
+  réelle, coupe le morceau précédent et s'arrête au démontage. L'original reste
+  joignable par un simple lien `open.spotify.com/track/<id>` — un lien, jamais
+  un cadre.
+- **`/le-mariage` — le mariage, en entier.** Une seule page verticale, très
+  espacée, montée sur l'univers **Supermarché 22H** (celui qui porte le ticket) :
+  1. le hero — univers, noms, date, lieu, invités, trois portes (article,
+     playlist, récap) ;
+  2. **l'article de magazine** — manchette, lettrine, chapô, photo légendée,
+     encadré « En bref », colonne latérale « L'univers choisi » et « Les univers
+     voisins » (liens vers `/apercu?style=…`) ; le texte vient de
+     `THEME_CONFIGS[id].editorial` et de `contentFor(style)` — rien n'est inventé ;
+  3. **le programme** — les scènes de `getScenesForStyle`, chaque moment avec sa
+     carte musicale réelle (`trackForText` + `MusicCard`) ;
+  4. **la playlist collaborative** — champ de recherche + catalogue
+     (`src/lib/weddingPlaylist.ts`) : ajout/retrait, playlist en cartes musicales
+     de la même forme que partout ailleurs, répartition par moment, persistance
+     dans `localStorage` (`vows:playlist`), lien Spotify sur les extraits ;
+  5. **les métiers** — `ComplementaryThemes`, la bande qui défile ;
+  6. **le récap** — la checklist de `superMariage.ts` (rayons cochables + menu)
+     et le ticket de caisse qui se recalcule, « Valider » pour le tampon PAYÉ ;
+  7. **les autres univers** — `MiniSiteRail`, le vrai site écran par écran.
+- **`MusicCard` accepte les morceaux sans extrait.** Un morceau du catalogue sans
+  fichier local (`src` vide) ne ment pas : la carte affiche « Suggéré » au lieu
+  d'un bouton de lecture. Le catalogue sépare donc les **extraits réels**
+  (`GLOBAL_WEDDING_PLAYLIST_FULL`, 11 morceaux) des **suggestions** (20 titres de
+  mariage, sans audio libre), et la recherche (`chercherMorceaux`) cherche dans
+  le titre, l'artiste, le moment et l'humeur, sans accent ni casse.
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm test`
+  143 / 55 / 135 (les checks de l'accueil portent désormais « la bande d'iPhones
+  a quitté l'accueil », « la bande des éditeurs a quitté l'accueil » et
+  « la playlist n'embarque plus le lecteur Spotify »), `npm run build` OK.

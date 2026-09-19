@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, ThumbsUp, Volume2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Pause, ThumbsUp, Volume2, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import {
   GLOBAL_WEDDING_PLAYLIST_FULL,
   type WeddingDjTrack,
@@ -13,7 +12,14 @@ interface DjPlaylistStudioProps {
 
 export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
   const [playlist, setPlaylist] = useState<WeddingDjTrack[]>(GLOBAL_WEDDING_PLAYLIST_FULL);
-  const [activeSpotifyTrack, setActiveSpotifyTrack] = useState<WeddingDjTrack | null>(null);
+  /**
+   * La lecture est locale : chaque morceau a son extrait dans `public/audio/`.
+   * Le lecteur Spotify intégré a été retiré — l'embed s'affichait mal, et un
+   * vrai son vaut mieux qu'un cadre cassé.
+   */
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [userVotedIds, setUserVotedIds] = useState<string[]>([]);
   const [containerCenter, setContainerCenter] = useState(0);
 
@@ -50,15 +56,39 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
     };
   }, [handleScroll]);
 
-  // Clic Play pour activer le VRAI morceau officiel via le player Spotify intégré
+  /** Arrête le son quand la page se ferme ou que l'onglet passe en arrière-plan. */
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  /**
+   * Le play joue l'extrait réel du morceau (`previewUrl`), pas un cadre
+   * embarqué. Un seul morceau à la fois : le précédent se tait.
+   */
   const handlePlayOfficial = (track: WeddingDjTrack, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (activeSpotifyTrack?.id === track.id) {
-      // Toggle off si déjà actif
-      setActiveSpotifyTrack(null);
-    } else {
-      setActiveSpotifyTrack(track);
+    if (playingId === track.id) {
+      audioRef.current?.pause();
+      setPlayingId(null);
+      return;
     }
+
+    audioRef.current?.pause();
+    const el = new Audio(track.previewUrl);
+    el.preload = 'auto';
+    el.addEventListener('timeupdate', () => {
+      if (el.duration) setProgress(el.currentTime / el.duration);
+    });
+    el.addEventListener('ended', () => {
+      setPlayingId(null);
+      setProgress(0);
+    });
+    audioRef.current = el;
+    setProgress(0);
+    void el.play().then(() => setPlayingId(track.id)).catch(() => setPlayingId(null));
   };
 
   const voteTrack = (id: string, e?: React.MouseEvent) => {
@@ -129,49 +159,6 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
         </div>
       </div>
 
-      {/* BANDEAU DU LECTEUR OFFICIEL ACTIF (Quand on clique sur Play) */}
-      <AnimatePresence>
-        {activeSpotifyTrack && (
-          <motion.div
-            initial={{ opacity: 0, y: -16, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -16, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-5 overflow-hidden rounded-[20px] bg-black/[0.03] border border-emerald-600/25 p-3.5"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
-              <div className="flex items-center gap-2.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11.5px] font-mono uppercase tracking-wider text-emerald-700 font-bold">
-                  Lecture Officielle : {activeSpotifyTrack.title} — {activeSpotifyTrack.artist}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveSpotifyTrack(null)}
-                className="text-[11px] font-mono text-black/45 hover:text-black underline"
-              >
-                Fermer le lecteur
-              </button>
-            </div>
-
-            {/* IFRAME OFFICIELLE SPOTIFY : Le vrai master audio original garanti */}
-            <div className="w-full rounded-[14px] overflow-hidden bg-white shadow-inner">
-              <iframe
-                title={`Spotify player ${activeSpotifyTrack.title}`}
-                src={`https://open.spotify.com/embed/track/${activeSpotifyTrack.spotifyTrackId}?utm_source=generator&theme=0`}
-                width="100%"
-                height="80"
-                frameBorder="0"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                loading="lazy"
-                className="rounded-[16px]"
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* DOCK HORIZONTAL TYPE APPLE / IOS : MAGNIFIER DYNAMIQUE CONTINU AU GLISSER */}
       <div className="mt-5 pt-2 pb-1">
         <div
@@ -179,7 +166,7 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
           className="no-scrollbar flex items-center gap-4 overflow-x-auto px-8 sm:px-20 py-6 scroll-smooth"
         >
           {playlist.map((track, idx) => {
-            const isPlayingThis = activeSpotifyTrack?.id === track.id;
+            const isPlayingThis = playingId === track.id;
 
             // Calcul dynamique de la distance au centre du viewport pendant le scroll
             const cardEl = cardRefs.current[idx];
@@ -249,7 +236,7 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                           ? 'bg-emerald-400 text-black shadow-emerald-500/50 ring-2 ring-emerald-400/30'
                           : 'bg-white text-black hover:bg-neutral-100'
                       }`}
-                      title={isPlayingThis ? 'Pause' : 'Écouter le vrai morceau'}
+                      title={isPlayingThis ? 'Pause' : 'Écouter l’extrait'}
                     >
                       {isPlayingThis ? (
                         <Pause size={isDominant ? 16 : 13} className="fill-black" />
@@ -266,6 +253,16 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                     </span>
                   </div>
                 </div>
+
+                {/* L'extrait qui avance : la barre suit la lecture réelle */}
+                {isPlayingThis && (
+                  <div className="mt-2 h-[3px] w-full overflow-hidden rounded-full bg-black/8">
+                    <div
+                      className="h-full rounded-full bg-emerald-500 transition-[width] duration-200"
+                      style={{ width: `${Math.round(progress * 100)}%` }}
+                    />
+                  </div>
+                )}
 
                 {/* Contenu textuel de la carte */}
                 <div className="mt-2.5 space-y-0.5">
@@ -302,8 +299,21 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
                       <span>{track.votes}</span>
                     </button>
 
-                    <span className="text-[9px] font-mono text-black/35">
-                      {idx + 1} / {playlist.length}
+                    <span className="flex items-center gap-1.5">
+                      {/* L'original, chez Spotify : un lien, pas un cadre. */}
+                      <a
+                        href={`https://open.spotify.com/track/${track.spotifyTrackId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        title={`${track.title} — l’original sur Spotify`}
+                        className="text-black/35 transition hover:text-black"
+                      >
+                        <ExternalLink size={11} />
+                      </a>
+                      <span className="text-[9px] font-mono text-black/35">
+                        {idx + 1} / {playlist.length}
+                      </span>
                     </span>
                   </div>
                 </div>

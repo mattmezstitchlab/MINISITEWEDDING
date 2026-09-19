@@ -27,6 +27,10 @@ import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
 import Landing from '../src/pages/Landing';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
+import LeMariage from '../src/pages/LeMariage';
+import {
+  PLAYLIST_DEPART, chercherMorceaux, morceauParId, morceauxDeLaPlaylist, repartitionParMoment,
+} from '../src/lib/weddingPlaylist';
 import PreviewSite from '../src/pages/PreviewSite';
 import {
   CONVIVES, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
@@ -209,10 +213,8 @@ check(
 );
 check('l’accueil met la carte avant le site', accueil.includes('La carte d’abord.'), true);
 check('l’accueil ouvre sur « Découvrir »', accueil.includes('Découvrir'), true);
-check('le défilé montre les vrais mini-sites', accueil.includes('Mini-site · '), true);
-check('le défilé passe aussi côté prestataire', accueil.includes('Écran prestataire'), true);
-check('l’aperçu du défilé ne garde que le hero', accueil.includes('sans=histoire'), true);
-check('l’aperçu du défilé porte le titre de l’univers', accueil.includes('titre='), true);
+check('la bande d’iPhones a quitté l’accueil', accueil.includes('Mini-site · '), false);
+check('la playlist n’embarque plus le lecteur Spotify', accueil.includes('open.spotify.com/embed'), false);
 
 /* L'univers vierge : les sections classiques, un visuel floral, personne sur
    les images — pour les mariés qui n'ont rien choisi, ou prévu autre chose. */
@@ -323,9 +325,8 @@ const pont = renderToStaticMarkup(
 check('les mariés voient les métiers de leur univers', pont.includes('Les métiers du mariage'), true);
 check('et la porte de leur éditeur', pont.includes('/prestataire?role='), true);
 
-/* L'accueil annonce l'éditeur des métiers, intermittents compris. */
-check('l’accueil ouvre l’éditeur des métiers', accueil.includes('Le même éditeur, un par métier'), true);
-check('l’accueil distingue les intermittents', accueil.includes('Intermittent du Spectacle'), true);
+/* La bande des éditeurs a quitté l'accueil : les métiers vivent sur leur page. */
+check('la bande des éditeurs a quitté l’accueil', accueil.includes('Le même éditeur, un par métier'), false);
 
 /* ----------------------- SuperMariage : on coche, et le ticket se calcule */
 
@@ -432,9 +433,39 @@ check('et garde l’étiquette du rôle', ecranLaverie.includes('Écran prestata
 check('la carte met le nom par-dessus le visuel', accueil.includes('Votre nom'), true);
 check('et son rôle', accueil.includes(cardRoleLabel(EMPTY_CARD)), true);
 
-/* Les cartes des métiers de l'accueil : le titre par-dessus le visuel. */
-check('les éditeurs se présentent en visuel', accueil.includes('/images/prestataires/'), true);
-check('avec le titre du métier par-dessus', accueil.includes('Photo &amp; Vidéo'), true);
+
+/* --------------------- le mariage en entier : une page, tout dedans */
+
+const mariage = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/le-mariage'] }, createElement(LeMariage as never)),
+);
+const mariageDecode = mariage.replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, "'");
+
+check('la page du mariage s’ouvre', mariage.length > 30_000, true);
+check('elle porte leur univers', mariageDecode.includes('Leur univers · Supermarché 22h'), true);
+check('elle tient l’article de magazine', mariageDecode.includes('On s’est dit oui entre les céréales'), true);
+check(
+  'avec l’univers choisi et ses voisins',
+  mariageDecode.includes('L’univers choisi') && mariageDecode.includes('Les univers voisins'),
+  true,
+);
+check('elle porte le programme et ses cartes musicales', mariageDecode.includes('Cinq moments, cinq morceaux'), true);
+check('elle porte la playlist collaborative', mariageDecode.includes('Cherchez un morceau, ajoutez-le'), true);
+check('avec un champ de recherche', mariageDecode.includes('Un titre, un artiste, un moment'), true);
+check('et le récap en ticket', mariageDecode.includes('Tout ce qui est préparé, sur un ticket'), true);
+check('le défilé des univers y vit encore', mariageDecode.includes('Mini-site · ') && mariage.includes('sans=histoire'), true);
+check('et passe aussi côté prestataire', mariageDecode.includes('Écran prestataire'), true);
+check('les métiers y défilent', mariageDecode.includes('Les métiers qui font tourner ces univers'), true);
+check('le ticket du récap est en cours', mariageDecode.includes('Ticket en cours'), true);
+
+/* La recherche de morceaux et la playlist. */
+check('la recherche trouve un artiste', chercherMorceaux('sinatra').length >= 1, true);
+check('elle trouve un moment', chercherMorceaux('bal').length >= 3, true);
+check('sans requête, les extraits passent devant', chercherMorceaux('')[0]?.suggere, undefined);
+check('un morceau suggéré n’a pas d’extrait local', Boolean(chercherMorceaux('piaf')[0]?.src), false);
+check('la playlist de départ est dans le catalogue', morceauxDeLaPlaylist(PLAYLIST_DEPART).length, 3);
+check('les morceaux enregistrés se relisent', morceauParId('track-c1')?.title, "Can't Help Falling in Love");
+check('la répartition compte les moments', repartitionParMoment(morceauxDeLaPlaylist(PLAYLIST_DEPART)).length >= 1, true);
 
 /* ------------------------------------------------------------------- bilan */
 
