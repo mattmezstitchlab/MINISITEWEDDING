@@ -48,7 +48,7 @@ export default function Magazine() {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
 
-        <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 sm:px-8 sm:pb-14">
+        <div className="vp-page relative w-full pb-10 sm:pb-14">
           <span className="vp-eyebrow !text-white/70">Le Magazine VOWS</span>
           <h1
             className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
@@ -82,8 +82,8 @@ export default function Magazine() {
       </header>
 
       {/* Les filtres */}
-      <section className="px-5 pb-8 pt-10 sm:px-8 sm:pt-12">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2">
+      <section className="pb-8 pt-10 sm:pt-12">
+        <div className="vp-page flex flex-wrap items-center gap-2">
           {([
             ['tout', 'Tout le magazine'],
             ['univers', `Les ${UNIVERSE_ARTICLES.length} univers`],
@@ -108,8 +108,8 @@ export default function Magazine() {
 
       {/* L'article à la une */}
       {filtre === 'tout' && (
-        <section className="px-5 pb-14 sm:px-8">
-          <div className="mx-auto max-w-6xl">
+        <section className="pb-14">
+          <div className="vp-page">
             <Link
               to={`/magazine/${aLaUne.slug}`}
               className="group grid overflow-hidden rounded-[30px] border border-black/8 bg-[#FAFAFC] lg:grid-cols-2"
@@ -149,8 +149,8 @@ export default function Magazine() {
       ]
         .filter((bloc) => bloc.visible)
         .map((bloc) => (
-          <section key={bloc.titre} className="px-5 pb-16 sm:px-8">
-            <div className="mx-auto max-w-6xl">
+          <section key={bloc.titre} className="pb-16">
+            <div className="vp-page">
               <h2 className="vp-title text-[22px] sm:text-[26px]">{bloc.titre}</h2>
               <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {bloc.liste.map((article) => (
@@ -187,8 +187,8 @@ export default function Magazine() {
           </section>
         ))}
 
-      <footer className="border-t border-black/5 px-5 py-10 sm:px-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
+      <footer className="border-t border-black/5 py-10">
+        <div className="vp-page flex flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
           <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">VOWS</span>
           <span>
             {WEDDING_STYLES.length} univers · {UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length + INSOLITE_ARTICLES.length} articles

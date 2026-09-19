@@ -703,7 +703,7 @@ export default function CardStudio() {
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 sm:px-8 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:gap-12">
+      <div className="vp-page grid gap-8 py-10 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:gap-12">
         {/* La carte, qui se retourne */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <WeddingCard card={card} />

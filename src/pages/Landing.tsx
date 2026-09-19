@@ -210,14 +210,15 @@ export default function Landing() {
       </div>
 
       {/* PLAYLIST COLLABORATIVE : en bas de page, tout de suite avant la capsule */}
-      <section id="bande-son" className="bg-white px-5 py-16 sm:px-8">
-        <div className="mx-auto max-w-6xl">
+      <section id="bande-son" className="bg-white py-16">
+        <div className="vp-page">
           <DjPlaylistStudio style={activeStyleOrFallback} />
         </div>
       </section>
 
-      <footer className="px-5 pb-24">
-        <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
+      <footer className="pb-24">
+        <div className="vp-page">
+        <div className="vp-glass vp-spec flex flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
           <div className="flex items-center gap-2">
             <span className="vp-title text-[17px] font-bold italic tracking-wider text-[var(--vp-ink)]">VOWS</span>
           </div>
@@ -239,6 +240,7 @@ export default function Landing() {
               SuperMariage
             </Link>
           </div>
+        </div>
         </div>
       </footer>
     </div>

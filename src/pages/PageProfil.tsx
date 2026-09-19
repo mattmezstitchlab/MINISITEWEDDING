@@ -101,7 +101,7 @@ export default function PageProfil() {
 
   if (etatAffiche === 'absent' || !person || !carte) {
     return (
-      <div className="vp-env flex min-h-[70vh] flex-col items-center justify-center px-6 pb-24 pt-28 text-center">
+      <div className="vp-env vp-page flex min-h-[70vh] flex-col items-center justify-center pb-24 pt-28 text-center">
         <span className="vp-eyebrow">Page d’une personne</span>
         <h1 className="vp-title mt-3 text-[clamp(1.7rem,4vw,2.4rem)]">Cette page n’existe pas encore</h1>
         <p className="mt-3 max-w-md text-[14.5px] leading-relaxed text-[var(--vp-muted)]">
@@ -126,7 +126,7 @@ export default function PageProfil() {
         <div className="relative h-[240px] overflow-hidden bg-[#0B0C12] sm:h-[320px]">
           {visuel && <img src={visuel} alt="" className="absolute inset-0 h-full w-full object-cover" />}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C12] via-[#0B0C12]/55 to-[#0B0C12]/25" />
-          <div className="relative mx-auto flex h-full max-w-[1100px] flex-col justify-end px-5 pb-5 sm:px-8">
+          <div className="vp-page relative flex h-full flex-col justify-end pb-5">
             <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.24em] text-white/60">
               {style.name} · {style.tagline}
             </span>
@@ -155,7 +155,7 @@ export default function PageProfil() {
         </div>
 
         {/* LE TIMBRE : la photo de profil du réseau, posée sur la couverture */}
-        <div className="mx-auto flex max-w-[1100px] flex-wrap items-end gap-4 px-5 sm:px-8">
+        <div className="vp-page flex flex-wrap items-end gap-4">
           <div className="-mt-14 sm:-mt-16">
             <Timbre
               photo={person.photo}
@@ -186,7 +186,7 @@ export default function PageProfil() {
         </div>
 
         {(person.bio || person.trade) && (
-          <div className="mx-auto max-w-[1100px] px-5 pt-6 sm:px-8">
+          <div className="vp-page pt-6">
             {person.trade && (
               <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">
                 {person.trade}
@@ -197,7 +197,7 @@ export default function PageProfil() {
         )}
       </header>
 
-      <main className="mx-auto w-full max-w-[1100px] px-5 py-12 sm:px-8">
+      <main className="vp-page py-12">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)] lg:items-start">
           <div className="space-y-10">
             {/* — SON UNIVERS — */}

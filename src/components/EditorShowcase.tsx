@@ -82,8 +82,8 @@ export default function EditorShowcase({ styleId }: { styleId: string }) {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-28">
-      <div className="mx-auto max-w-6xl">
+    <section className="relative overflow-hidden bg-white py-20 sm:py-28">
+      <div className="vp-page">
         <div className="mx-auto max-w-2xl text-center">
           <div className="vp-eyebrow">Après l’onboarding</div>
           <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3.2rem)' }}>

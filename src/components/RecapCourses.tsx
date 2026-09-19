@@ -94,12 +94,12 @@ export default function RecapCourses({
   const prix = (n: number) => (n === 0 ? 'Offert' : euros(n));
 
   return (
-    <section id="recap" className="border-t border-black/10 px-6 py-20 sm:py-24" style={{ background: fond }}>
-      <div className="mx-auto max-w-[1080px]">
+    <section id="recap" className="border-t border-black/10 py-20 sm:py-24" style={{ background: fond }}>
+      <div className="vp-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">Le récap</span>
-            <h2 className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.02em] sm:text-[40px]">
+            <h2 className="vp-h2 mt-3 text-[30px] sm:text-[40px]">
               {magasin.registre === 'table'
                 ? 'Les invités dressent la table.'
                 : magasin.registre === 'billet'

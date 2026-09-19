@@ -55,6 +55,12 @@ import {
 import { ALL_STYLES } from '../src/lib/weddingStyles';
 import { totalCaisse } from '../src/lib/superMariage';
 import PreviewSite from '../src/pages/PreviewSite';
+import Magazine from '../src/pages/Magazine';
+import MagazineArticle from '../src/pages/MagazineArticle';
+import Shop from '../src/pages/Shop';
+import ShopProduct from '../src/pages/ShopProduct';
+import { ALL_ARTICLES } from '../src/lib/magazine';
+import { SHOP_PRODUCTS } from '../src/lib/shopData';
 import {
   CONVIVES, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
 } from '../src/lib/superMariage';
@@ -906,6 +912,39 @@ const pageMetierHtml = renderToStaticMarkup(
   ),
 );
 check('la page d’un métier non plus', pageMetierHtml.includes('Georgia'), false);
+
+/* --------- le contenant éditorial : la même marge de chaque côté -------------- */
+
+/* La mise en page d'un article de magazine — une colonne centrée, une marge de
+   chaque côté — est celle de toutes les pages. */
+const rendrePage = (chemin: string, element: unknown, route?: string) =>
+  renderToStaticMarkup(
+    createElement(
+      MemoryRouter,
+      { initialEntries: [chemin] },
+      route
+        ? createElement(Routes, null, createElement(Route, { path: route, element: createElement(element as never) }))
+        : createElement(element as never),
+    ),
+  ).replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, "'");
+
+const pageMagazine = rendrePage('/magazine', Magazine);
+const pageArticle = rendrePage(`/magazine/${ALL_ARTICLES[0].slug}`, MagazineArticle, '/magazine/:slug');
+const pageShop = rendrePage('/shop', Shop);
+const pageProduit = rendrePage(`/shop/${SHOP_PRODUCTS[0].slug}`, ShopProduct, '/shop/:slug');
+const pageSupermarriage = rendrePage('/supermarriage', SuperMariage);
+const pagePrestataire = rendrePage('/prestataire?role=DJ%20R%C3%A9sident%20Clubbing%20%2F%20Sound%20Engineer', VendorStudio);
+
+check('l’article de magazine garde sa colonne de lecture', pageArticle.includes('vp-page-read'), true);
+check(
+  'il montre bien son tableau en dessous du hero',
+  pageArticle.includes('lg:grid-cols-4') && pageArticle.includes('Métiers mobilisés'),
+  true,
+);
+check('les pages prennent le même contenant', [pageMagazine, pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageUniversHtml, pageMetierHtml].every((h) => h.includes('vp-page')), true);
+check('le magazine ne recopie plus ses propres largeurs', pageMagazine.includes('mx-auto max-w-6xl'), false);
+check('le shop non plus', pageShop.includes('mx-auto max-w-6xl'), false);
+check('le contenant est posé une fois, pas deux', pageShop.split('vp-page').length <= 9, true);
 
 /* Le dos de la carte : le papier du ticket de caisse, plus de nuit. */
 const carteDos = renderToStaticMarkup(

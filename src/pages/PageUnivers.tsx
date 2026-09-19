@@ -95,7 +95,7 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
         <img src={style.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-[#0A0A0A]/35" />
 
-        <div className="relative mx-auto flex min-h-[88svh] max-w-[1180px] flex-col justify-end px-6 pb-16 pt-24">
+        <div className="vp-page relative flex min-h-[88svh] flex-col justify-end pb-16 pt-24">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-black">
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: style.accent }} />
@@ -164,8 +164,8 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
       </header>
 
       {/* ═══════════ LA CARTE DE FIDÉLITÉ : le nom qui signe tout ═══════════ */}
-      <section id="carte-fidelite" className="border-b border-black/10 bg-[#0A0A0A] px-6 py-4 text-white">
-        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-5 gap-y-3">
+      <section id="carte-fidelite" className="border-b border-black/10 bg-[#0A0A0A] py-4 text-white">
+        <div className="vp-page flex flex-wrap items-center gap-x-5 gap-y-3">
           <span className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
             Carte de fidélité
           </span>
@@ -202,7 +202,7 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
       </section>
 
       {/* ═══════════════════════ 1 · L'ARTICLE DU MAGAZINE ═══════════════════════ */}
-      <article id="article" className="mx-auto max-w-[1080px] px-6 py-20 sm:py-28">
+      <article id="article" className="vp-page py-20 sm:py-28">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#14130F] pb-3">
           <span className="font-mono text-[10px] font-bold uppercase tracking-[0.28em]">VOWS · Le magazine</span>
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
@@ -324,8 +324,8 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
       </article>
 
       {/* ═══════════════════════ 2 · LE PROGRAMME DU JOUR ═══════════════════════ */}
-      <section id="programme" className="border-t border-black/10 px-6 py-20 sm:py-24" style={{ background: tons.carte }}>
-        <div className="mx-auto max-w-[1080px]">
+      <section id="programme" className="border-t border-black/10 py-20 sm:py-24" style={{ background: tons.carte }}>
+        <div className="vp-page">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">Le programme</span>
@@ -413,8 +413,8 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
       <UniversPagesGrid currentStyleId={styleId} />
 
       {/* ═══════════════════════ LE PIED ═══════════════════════ */}
-      <footer className="bg-[#0A0A0A] px-6 pb-20 text-white">
-        <div className="mx-auto max-w-[1080px] border-t border-white/10 pt-10">
+      <footer className="bg-[#0A0A0A] pb-20 text-white">
+        <div className="vp-page border-t border-white/10 pt-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2.5">
               <Sparkles size={15} className="text-white/50" />

@@ -31,18 +31,9 @@ export default function VendorStudio() {
         <img src={style.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C12] via-[#0B0C12]/85 to-[#0B0C12]/40" />
 
-        <div className="relative mx-auto max-w-[1180px] px-6 pb-10 pt-20">
+        <div className="vp-page relative pb-10 pt-20">
           {/* Le retour occupe sa propre ligne : rien ne vient se poser dessus. */}
-          <div>
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/55 no-underline transition hover:text-white"
-            >
-              ← VOWS
-            </Link>
-          </div>
-
-          <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 font-mono text-[9.5px] font-bold uppercase tracking-[0.16em] text-black">
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: style.accent }} />
               Espace prestataire
@@ -80,14 +71,14 @@ export default function VendorStudio() {
       </header>
 
       {/* ——————————————————————— l'éditeur ——————————————————————— */}
-      <main id="editeur" className="mx-auto max-w-[1240px] px-6 py-10">
+      <main id="editeur" className="vp-page py-10">
         {/* La clé remonte l'éditeur quand on change de métier par un lien. */}
         <VendorSiteStudio key={`${role}|${styleId}`} initialRole={role} initialStyleId={styleId} />
       </main>
 
       {/* ——————————————————————— les autres métiers ——————————————————————— */}
-      <footer className="border-t border-black/8 px-6 py-8">
-        <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-x-4 gap-y-3">
+      <footer className="border-t border-black/8 py-8">
+        <div className="vp-page flex flex-wrap items-center gap-x-4 gap-y-3">
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/40">
             Autres métiers · {style.name}
           </span>

@@ -18,8 +18,8 @@ const CARTE_DEMO: CardData = { ...EMPTY_CARD };
 
 export default function HomeCardShowcase() {
   return (
-    <section className="relative z-20 bg-white px-5 pb-20 sm:px-8 sm:pb-28">
-      <div className="mx-auto grid max-w-6xl items-center gap-10 pt-16 sm:pt-20 lg:grid-cols-2 lg:gap-16">
+    <section className="relative z-20 bg-white pb-20 sm:pb-28">
+      <div className="vp-page grid items-center gap-10 pt-16 sm:pt-20 lg:grid-cols-2 lg:gap-16">
         <div className="mx-auto max-w-md text-center lg:mx-0 lg:text-left">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--vp-muted)]">
             Votre carte

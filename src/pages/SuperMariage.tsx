@@ -65,7 +65,7 @@ export default function SuperMariage() {
       {/* ————————————————— la ligne de caisse, toujours à portée ————————————————— */}
       {/* La ligne de caisse passe sous le header du site, jamais dessous lui. */}
       <div className="sticky top-[68px] z-40 border-b border-white/10 bg-[#0A0A0A]/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-5 py-3 sm:px-8">
+        <div className="vp-page flex items-center justify-between gap-3 py-3">
           <div className="flex items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full" style={{ background: VERT }}>
               <ShoppingCart size={16} className="text-black" />
@@ -104,16 +104,9 @@ export default function SuperMariage() {
           }}
           aria-hidden="true"
         />
-        <div className="relative mx-auto max-w-[1180px] px-5 pb-14 pt-14 sm:px-8 sm:pb-20 sm:pt-20">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-white/50 no-underline transition hover:text-white"
-          >
-            ← VOWS
-          </Link>
-
+        <div className="vp-page relative pb-14 pt-14 sm:pb-20 sm:pt-20">
           <span
-            className="mt-8 inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-black"
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-black"
             style={{ background: VERT }}
           >
             <Store size={12} /> Nouveau rayon
@@ -166,13 +159,13 @@ export default function SuperMariage() {
       </header>
 
       {/* ————————————————————————— les rayons ————————————————————————— */}
-      <main id="rayons" className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8">
+      <main id="rayons" className="vp-page py-14">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: VERT }}>
               Dans les rayons
             </span>
-            <h2 className="mt-2 max-w-[620px] text-[26px] font-semibold leading-tight tracking-[-0.02em] sm:text-[32px]">
+            <h2 className="vp-h2 mt-2 max-w-[620px] text-[26px] sm:text-[32px]">
               Cochez ce qui se passe, on s’occupe du ticket.
             </h2>
           </div>
@@ -332,7 +325,7 @@ export default function SuperMariage() {
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: VERT }}>
               En caisse
             </span>
-            <h2 className="mt-2 max-w-[520px] text-[26px] font-semibold leading-tight tracking-[-0.02em] sm:text-[32px]">
+            <h2 className="vp-h2 mt-2 max-w-[520px] text-[26px] sm:text-[32px]">
               {paye ? 'Ticket payé. Le mariage est à vous.' : 'Le ticket se calcule à mesure que vous cochez.'}
             </h2>
             <p className="mt-4 max-w-[540px] text-[13px] leading-relaxed text-white/60">
@@ -463,8 +456,8 @@ export default function SuperMariage() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 px-5 py-12 sm:px-8">
-        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4">
+      <footer className="border-t border-white/10 py-12">
+        <div className="vp-page flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ background: VERT }}>
               <ShoppingCart size={14} className="text-black" />

@@ -149,7 +149,7 @@ export default function WeddingPeople() {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-8">
+      <div className="vp-page py-10">
         {membres.length > 1 && (
           <div className="mb-8 flex flex-wrap gap-2">
             {familles.map((f) => (

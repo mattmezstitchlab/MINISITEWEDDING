@@ -15,8 +15,8 @@ import { aPartirDe, gesteDe } from '../lib/weddingPage';
 
 export default function UniversPagesGrid({ currentStyleId }: { currentStyleId: string }) {
   return (
-    <section id="univers" className="border-t border-white/10 bg-[#0A0A0A] px-6 py-20 text-white sm:py-24">
-      <div className="mx-auto max-w-[1180px]">
+    <section id="univers" className="border-t border-white/10 bg-[#0A0A0A] py-20 text-white sm:py-24">
+      <div className="vp-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">

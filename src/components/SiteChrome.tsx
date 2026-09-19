@@ -35,6 +35,7 @@ const MENTIONS: Array<[string, string]> = [
   ['/shop', 'Shop'],
   ['/le-mariage', 'Le mariage'],
   ['/metiers/', 'Les métiers'],
+  ['/profil/', 'Une page du réseau'],
   ['/prestataire', 'Espace prestataire'],
   ['/supermarriage', 'SuperMariage'],
 ];

@@ -58,7 +58,7 @@ export default function Shop() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
 
-        <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 sm:px-8 sm:pb-14">
+        <div className="vp-page relative w-full pb-10 sm:pb-14">
           <span className="vp-eyebrow !text-white/70">Le Shop VOWS</span>
           <h1
             className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
@@ -91,8 +91,8 @@ export default function Shop() {
       </header>
 
       {/* Les quatre modes */}
-      <section className="px-5 pb-8 pt-10 sm:px-8 sm:pt-14">
-        <div className="mx-auto max-w-6xl">
+      <section className="pb-8 pt-10 sm:pt-14">
+        <div className="vp-page">
           <div className="flex flex-wrap gap-2">
             {SHOP_MODES.map((mode) => {
               const Icone = ICONES_MODE[mode.id];
@@ -118,8 +118,8 @@ export default function Shop() {
       </section>
 
       {/* Les filtres de catégorie */}
-      <section className="sticky top-[70px] z-30 border-y border-black/5 bg-white/95 px-5 py-3 backdrop-blur sm:px-8">
-        <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto no-scrollbar">
+      <section className="sticky top-[70px] z-30 border-y border-black/5 bg-white/95 py-3 backdrop-blur">
+        <div className="vp-page flex items-center gap-2 overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setCategorie('tout')}
@@ -148,8 +148,8 @@ export default function Shop() {
       </section>
 
       {/* La grille de produits */}
-      <section className="px-5 py-12 sm:px-8">
-        <div className="mx-auto max-w-6xl">
+      <section className="py-12">
+        <div className="vp-page">
           <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="vp-title text-[20px]">
               {categorie === 'tout'
@@ -220,8 +220,8 @@ export default function Shop() {
       </section>
 
       {/* Le bandeau de service */}
-      <section className="px-5 pb-16 sm:px-8">
-        <div className="mx-auto grid max-w-6xl gap-4 rounded-[28px] bg-[#FAFAFC] p-6 sm:grid-cols-3 sm:p-8">
+      <section className="pb-16">
+        <div className="vp-page grid gap-4 rounded-[28px] bg-[#FAFAFC] p-6 sm:grid-cols-3 sm:p-8">
           {[
             { titre: 'Livré, monté, repris', texte: 'Le mobilier arrive la veille et repart le lundi. Vous ne portez rien.' },
             { titre: 'Ce qui reste circule', texte: 'Ce que nous ne stockons plus est prêté gratuitement ou donné à des associations.' },
@@ -235,8 +235,8 @@ export default function Shop() {
         </div>
       </section>
 
-      <footer className="border-t border-black/5 px-5 py-10 sm:px-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
+      <footer className="border-t border-black/5 py-10">
+        <div className="vp-page flex flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
           <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">VOWS</span>
           <span>
             {SHOP_PRODUCTS.length} pièces · {SHOP_CATEGORIES.length} catégories · location, achat, prêt et don

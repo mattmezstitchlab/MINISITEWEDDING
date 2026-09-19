@@ -206,7 +206,7 @@ export default function Invitation() {
         />
       </header>
 
-      <main className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-8">
+      <main className="vp-page vp-page-read py-12">
         {/* — déjà des nôtres — */}
         {etat === 'deja' && (
           <section className="rounded-[26px] border border-black/8 bg-white p-6 text-center sm:p-8">

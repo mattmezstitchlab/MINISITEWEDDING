@@ -27,8 +27,8 @@ export default function MagazineArticle() {
       <header className="relative h-[52vh] min-h-[340px] w-full overflow-hidden">
         <img src={article.cover} alt={article.title} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/40 to-black/30" />
-        <div className="absolute inset-x-0 bottom-0 px-5 pb-10 sm:px-8">
-          <div className="mx-auto max-w-3xl">
+        <div className="absolute inset-x-0 bottom-0 pb-10">
+          <div className="vp-page vp-page-read">
             <span className="rounded-full bg-white/95 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-black">
               {article.kicker}
             </span>
@@ -51,8 +51,8 @@ export default function MagazineArticle() {
         </div>
       </header>
 
-      <main className="px-5 py-12 sm:px-8">
-        <div className="mx-auto max-w-3xl">
+      <main className="py-12">
+        <div className="vp-page vp-page-read">
           {/* L'essentiel de l'article, en chiffres — le réflexe magazine */}
           <div className="grid gap-px overflow-hidden rounded-[20px] border border-black/8 bg-black/8 sm:grid-cols-2 lg:grid-cols-4">
             {article.essentiel.map((bloc) => (
@@ -173,8 +173,8 @@ export default function MagazineArticle() {
         </div>
       </main>
 
-      <footer className="border-t border-black/5 px-5 py-10 sm:px-8">
-        <div className="mx-auto flex max-w-3xl items-center justify-between text-[12.5px] text-black/50">
+      <footer className="border-t border-black/5 py-10">
+        <div className="vp-page vp-page-read flex items-center justify-between text-[12.5px] text-black/50">
           <Link to="/magazine" className="underline transition hover:text-black">
             Tous les articles
           </Link>

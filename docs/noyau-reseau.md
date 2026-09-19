@@ -661,3 +661,38 @@ carte devient une page, et les pages se répondent.
   fabrique et se relit — accent, numéro, nom inconnu —, la page ne montre que
   les mariages publiés, le timbre annonce son propriétaire ou ses initiales),
   `npm run build` OK.
+
+## 21. Le contenant éditorial, sur toutes les pages (passe 26)
+
+La mise en page d'un article de magazine — une colonne centrée, une marge de
+chaque côté — devient celle du site entier : c'est elle qui fait une page
+propre et structurée, quelle que soit la page.
+
+- **Deux classes, une seule règle.** `src/index.css` :
+  `.vp-page` — largeur 100 %, `max-width: 1180px`, `margin-inline: auto`,
+  gouttières `1.25rem` puis `2rem` à partir de 640 px ; et `.vp-page-read` —
+  la même chose à `820px`, la largeur de lecture d'un article. Le fond et les
+  visuels restent plein cadre : ce sont les textes et les blocs qui prennent
+  la marge, pas l'image.
+- **Toutes les pages y passent.** Chaque page abandonne ses largeurs à elle
+  (`max-w-6xl`, `max-w-[1180px]`, `max-w-[1080px]`, `max-w-[1100px]`,
+  `max-w-[1240px]`) et son `px-5 sm:px-8` : le contenant est posé une fois, à
+  l'endroit où commençait le contenu. Accueil (bande son, pied), univers,
+  métier, profil, magazine, article, shop, fiche produit, SuperMariage, espace
+  prestataire, invitation, personnes du mariage, atelier de la carte — plus les
+  blocs de l'accueil qui portaient les leurs (cartes de l'accueil, défilé des
+  écrans, éditeur, thèmes complémentaires, grille des univers, onglet du
+  magasin, playlist, récap). L'article de magazine garde sa colonne de lecture
+  (`vp-page vp-page-read`), les autres pages prennent la large.
+- **La typographie suit.** Les sous-titres de sections qui se donnaient un
+  `font-semibold tracking-[-0.02em]` à la main prennent `vp-h2`, comme les
+  mini-sites : une seule échelle de titres. Le hero de l'espace prestataire
+  passe à `vp-title` comme partout ailleurs.
+- **Les hero se libèrent.** Plus de « ← VOWS » dans le hero du SuperMariage ni
+  dans celui de l'espace prestataire : le header les porte. Le bandeau du
+  SuperMariage se cale sous le header (`top-[68px]`), et le chrome annonce
+  aussi la page d'une personne (« Une page du réseau »).
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+  173 / 55 / **309** (l'article garde sa colonne de lecture et son tableau de
+  chiffres, les pages partagent le même contenant, aucune page ne recopie ses
+  largeurs à la main, aucun contenant dans un contenant), `npm run build` OK.

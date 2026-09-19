@@ -29,9 +29,9 @@ export default function PageMetier() {
 
   if (!page) {
     return (
-      <div className="flex min-h-[70svh] flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="vp-page flex min-h-[70svh] flex-col items-center justify-center gap-4 text-center">
         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-black/40">Métiers</span>
-        <h1 className="text-[26px] font-semibold">Ce métier n’existe pas encore</h1>
+        <h1 className="vp-title text-[26px]">Ce métier n’existe pas encore</h1>
         <p className="max-w-[420px] text-[14px] leading-relaxed text-black/55">
           Chaque métier du catalogue a sa page — celle-ci n’est pas au répertoire.
         </p>
@@ -80,7 +80,7 @@ function PageMetierContenu({ page }: { page: Donnees }) {
         <img src={style.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-[#0A0A0A]/35" />
 
-        <div className="relative mx-auto flex min-h-[80svh] max-w-[1180px] flex-col justify-end px-6 pb-16 pt-24">
+        <div className="vp-page relative flex min-h-[80svh] flex-col justify-end pb-16 pt-24">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-black">
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: style.accent }} />
@@ -151,14 +151,14 @@ function PageMetierContenu({ page }: { page: Donnees }) {
       </header>
 
       {/* ═══════════════ CE QUI VIENT DES MARIÉS : rien à ressaisir ═══════════════ */}
-      <section className="border-b border-black/10 bg-white px-6 py-14 sm:py-16">
-        <div className="mx-auto max-w-[1180px]">
+      <section className="border-b border-black/10 bg-white py-14 sm:py-16">
+        <div className="vp-page">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">
                 Venu des mariés
               </span>
-              <h2 className="mt-3 text-[24px] font-semibold leading-tight tracking-[-0.02em] sm:text-[30px]">
+              <h2 className="vp-h2 mt-3 text-[24px] sm:text-[30px]">
                 Vous ne ressaisissez rien.
               </h2>
             </div>
@@ -195,7 +195,7 @@ function PageMetierContenu({ page }: { page: Donnees }) {
       </section>
 
       {/* ═══════════════════════ LE RÉCIT DU MÉTIER ═══════════════════════ */}
-      <article className="mx-auto max-w-[1080px] px-6 py-20 sm:py-24">
+      <article className="vp-page py-20 sm:py-24">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#14130F] pb-3">
           <span className="font-mono text-[10px] font-bold uppercase tracking-[0.28em]">VOWS · Les métiers</span>
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
@@ -289,14 +289,14 @@ function PageMetierContenu({ page }: { page: Donnees }) {
       </article>
 
       {/* ═══════════════════════ LE JOUR J, CHEZ LUI ═══════════════════════ */}
-      <section className="border-t border-black/10 bg-white px-6 py-20 sm:py-24">
-        <div className="mx-auto max-w-[1080px]">
+      <section className="border-t border-black/10 bg-white py-20 sm:py-24">
+        <div className="vp-page">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">
                 Le jour J
               </span>
-              <h2 className="mt-3 text-[26px] font-semibold leading-tight tracking-[-0.02em] sm:text-[34px]">
+              <h2 className="vp-h2 mt-3 text-[26px] sm:text-[34px]">
                 Ses moments dans la journée.
               </h2>
             </div>
@@ -358,8 +358,8 @@ function PageMetierContenu({ page }: { page: Donnees }) {
 
       {/* ═══════════ LA MUSIQUE : la playlist, en direct depuis le comptoir ═══════════ */}
       {musique && (
-        <section id="playlist" className="border-t border-black/10 px-6 py-20 sm:py-24">
-          <div className="mx-auto max-w-[1080px]">
+        <section id="playlist" className="border-t border-black/10 py-20 sm:py-24">
+          <div className="vp-page">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">
@@ -464,14 +464,14 @@ function PageMetierContenu({ page }: { page: Donnees }) {
       )}
 
       {/* ═══════════ LE TICKET : ses lignes sur le mariage ═══════════ */}
-      <section id="ticket" className="border-t border-black/10 px-6 py-20 sm:py-24">
-        <div className="mx-auto max-w-[1080px]">
+      <section id="ticket" className="border-t border-black/10 py-20 sm:py-24">
+        <div className="vp-page">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">
                 Le ticket
               </span>
-              <h2 className="mt-3 text-[26px] font-semibold leading-tight tracking-[-0.02em] sm:text-[34px]">
+              <h2 className="vp-h2 mt-3 text-[26px] sm:text-[34px]">
                 Ce qui est prévu pour vous {sommeDirecte > 1 ? 's' : ''}.
               </h2>
             </div>
@@ -529,8 +529,8 @@ function PageMetierContenu({ page }: { page: Donnees }) {
       </section>
 
       {/* ═══════════════════════ LES MÉTIERS D'À CÔTÉ ═══════════════════════ */}
-      <section className="border-t border-black/10 bg-[#0A0A0A] px-6 py-20 text-white sm:py-24">
-        <div className="mx-auto max-w-[1180px]">
+      <section className="border-t border-black/10 bg-[#0A0A0A] py-20 text-white sm:py-24">
+        <div className="vp-page">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">
@@ -574,8 +574,8 @@ function PageMetierContenu({ page }: { page: Donnees }) {
       </section>
 
       {/* ═══════════════════════ LE PIED ═══════════════════════ */}
-      <footer className="bg-[#0A0A0A] px-6 pb-20 text-white">
-        <div className="mx-auto max-w-[1080px] border-t border-white/10 pt-10">
+      <footer className="bg-[#0A0A0A] pb-20 text-white">
+        <div className="vp-page border-t border-white/10 pt-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2.5">
               <Sparkles size={15} className="text-white/50" />

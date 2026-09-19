@@ -21,8 +21,8 @@ export default function SuperMariageTeaser() {
   const articles = RAYONS.reduce((n, r) => n + r.articles.length, 0);
 
   return (
-    <section className="bg-[#0A0A0A] px-5 py-16 text-white sm:px-8">
-      <div className="mx-auto grid max-w-[1180px] gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
+    <section className="bg-[#0A0A0A] py-16 text-white">
+      <div className="vp-page grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
         <div>
           <span
             className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-black"

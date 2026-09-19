@@ -68,7 +68,7 @@ export default function ShopProduct() {
           </span>
         </span>
 
-        <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 sm:px-8 sm:pb-14">
+        <div className="vp-page relative w-full pb-10 sm:pb-14">
           <Link
             to="/shop"
             className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-white/60 transition hover:text-white"
@@ -94,8 +94,8 @@ export default function ShopProduct() {
         </div>
       </header>
 
-      <main className="px-5 pb-16 pt-12 sm:px-8">
-        <div className="mx-auto max-w-6xl">
+      <main className="pb-16 pt-12">
+        <div className="vp-page">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
             {/* L'argumentaire */}
             <div>
@@ -236,8 +236,8 @@ export default function ShopProduct() {
         </div>
       </main>
 
-      <footer className="border-t border-black/5 px-5 py-10 sm:px-8">
-        <div className="mx-auto flex max-w-6xl items-center justify-between text-[12.5px] text-black/50">
+      <footer className="border-t border-black/5 py-10">
+        <div className="vp-page flex items-center justify-between text-[12.5px] text-black/50">
           <Link to="/shop" className="underline transition hover:text-black">
             Retour au shop
           </Link>

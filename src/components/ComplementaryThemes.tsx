@@ -60,7 +60,7 @@ export default function ComplementaryThemes({ currentStyle, onClaimRole }: Compl
 
   return (
     <section className="relative border-t border-black/5 bg-[#FAFAFA] py-16 sm:py-24">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      <div className="vp-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full bg-black/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--vp-muted)]">
