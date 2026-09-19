@@ -6,10 +6,12 @@ import {
 import MusicCard from '../components/MusicCard';
 import TicketCaisse from '../components/TicketCaisse';
 import { contentFor } from '../lib/universeContent';
+import { styleById } from '../lib/weddingStyles';
 import { euros, lignesDuTicket, numeroDeTicket, totalCaisse } from '../lib/superMariage';
 import { chargerPlaylist, morceauParId, morceauxDeLaPlaylist } from '../lib/weddingPlaylist';
 import { planDj } from '../lib/weddingTicket';
 import { useComptoir } from '../lib/terminalLive';
+import BandeauHero from '../components/BandeauHero';
 import { metiersVoisins, pageMetier, resumeMetier, slugDeRole, type PageMetier as Donnees } from '../lib/metierPage';
 import { formatDateLong } from '../lib/format';
 import { DJ_CHRONOLOGICAL_PHASES } from '../lib/weddingDjPlaylist';
@@ -53,6 +55,27 @@ function PageMetierContenu({ page }: { page: Donnees }) {
   const content = useMemo(() => contentFor(style), [style]);
   const [copie, setCopie] = useState(false);
   const voisins = useMemo(() => metiersVoisins(page), [page]);
+
+  /**
+   * La bande du hero : les métiers de cet univers d'abord, puis ceux du même
+   * domaine dans les autres univers. Chaque carte dit son domaine, et porte
+   * l'accent de l'univers où l'on arriverait.
+   */
+  const bandeDesMetiers = useMemo(
+    () =>
+      voisins.map((voisin) => {
+        const univers = styleById(voisin.styleId);
+        return {
+          id: voisin.slug,
+          titre: voisin.short,
+          sousTitre: voisin.styleId === page?.styleId ? voisin.label : `${univers?.name ?? ''} · ${voisin.label}`,
+          accent: univers?.accent ?? style.accent,
+          actif: voisin.slug === slugDeRole(page.role),
+          to: `/metiers/${voisin.slug}`,
+        };
+      }),
+    [voisins, page.styleId, page.role, style.accent],
+  );
 
   /* —————— le comptoir : ce que les invités ont demandé —————— */
   const comptoir = useComptoir(styleId);
@@ -146,6 +169,16 @@ function PageMetierContenu({ page }: { page: Donnees }) {
             >
               Le mini-site
             </Link>
+          </div>
+
+          {/* La bande du hero : les métiers d'à côté, au même endroit que sur
+              la page d'un univers — on change de métier d'un geste. */}
+          <div className="mt-10">
+            <BandeauHero
+              libelle="Changer de métier"
+              note={`${voisins.length} métiers · cliquez pour changer`}
+              cartes={bandeDesMetiers}
+            />
           </div>
         </div>
       </header>

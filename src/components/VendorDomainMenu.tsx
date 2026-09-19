@@ -19,7 +19,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { metiersParDomaine } from '../lib/weddingVendors';
 import { slugDeRole } from '../lib/metierPage';
 import { styleById, type WeddingStyle } from '../lib/weddingStyles';
@@ -49,12 +49,14 @@ const ICONES: Record<string, LucideIcon> = {
 };
 
 interface VendorDomainMenuProps {
-  onSelectStyle: (style: WeddingStyle) => void;
+  /** Choisir un univers : sur l'accueil il change le hero. Sinon, on navigue. */
+  onSelectStyle?: (style: WeddingStyle) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export default function VendorDomainMenu({ onSelectStyle, open, onOpenChange }: VendorDomainMenuProps) {
+  const navigate = useNavigate();
   const domaines = metiersParDomaine();
   const [domaineOuvert, setDomaineOuvert] = useState<string | null>(null);
 
@@ -62,7 +64,8 @@ export default function VendorDomainMenu({ onSelectStyle, open, onOpenChange }: 
   const ouvert = domaines.find((d) => d.key === domaineOuvert) ?? null;
 
   const ouvrirUnivers = (styleId: string) => {
-    onSelectStyle(styleById(styleId));
+    if (onSelectStyle) onSelectStyle(styleById(styleId));
+    else navigate(`/le-mariage/${styleId}`);
     onOpenChange(false);
   };
 

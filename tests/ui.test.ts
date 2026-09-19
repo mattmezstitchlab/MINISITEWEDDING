@@ -37,6 +37,7 @@ import { magasinFor } from '../src/lib/weddingPage';
 import RecapCourses from '../src/components/RecapCourses';
 import PageMetier from '../src/pages/PageMetier';
 import SiteChrome from '../src/components/SiteChrome';
+import SiteHeader from '../src/components/SiteHeader';
 import RsvpTicket from '../src/components/RsvpTicket';
 import CartePostale from '../src/components/CartePostale';
 import PageProfil from '../src/pages/PageProfil';
@@ -897,6 +898,55 @@ const chromeSite = renderToStaticMarkup(
   ),
 );
 check('le site des mariés reste sans header ni dock', chromeSite.includes('Zéro contrainte'), false);
+
+/* --------- le dock noir, la bande du hero, le header sans menu d'univers ------- */
+
+/* Le dock passe en noir, pictos en blanc : il se voit sur toutes les pages. */
+check('le dock est noir', chromeMetier.includes('bg-[#0B0C12]/95'), true);
+check('et ses pictos sont blancs', chromeMetier.includes('text-white/60'), true);
+check('l’étape courante s’inverse en blanc', chromeMetier.includes('bg-white text-[#0B0C12]'), true);
+
+/* Le header se libère du menu déroulant des univers. */
+const entete = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
+check('le header garde les métiers, le shop et le magazine', ['Métiers', 'Shop', 'Magazine'].every((m) => entete.includes(m)), true);
+check('le header n’a plus de bouton Univers', entete.includes('>Univers<'), false);
+check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
+
+/* La bande du hero : les univers, à l'horizontale, en bas du hero de l'accueil. */
+check('la bande des univers est sur l’accueil', accueil.includes('Les univers'), true);
+check('elle propose la vue d’ensemble', accueil.includes('Vue d’ensemble'), true);
+check('elle annonce le nombre d’univers', accueil.includes(`${WEDDING_STYLES.length} univers · faites défiler`), true);
+/** Un nom peut contenir une esperluette : le HTML l'échappe. */
+const enHtml = (texte: string) => texte.replace(/&/g, '&amp;');
+check(
+  'elle porte les cartes des univers, visuel compris',
+  accueil.includes('/images/') && WEDDING_STYLES.every((u) => accueil.includes(enHtml(u.name))),
+  true,
+);
+
+/* La même bande sur la page d'un univers, pour changer d'univers d'un geste. */
+const universBande = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/le-mariage/vegas'] }, createElement(LeMariage as never)),
+);
+check('la page d’un univers porte la bande', universBande.includes('Passer d’un univers à l’autre'), true);
+check(
+  'avec toutes les cartes, dont l’univers vierge',
+  ALL_STYLES.every((u) => universBande.includes(enHtml(u.name))),
+  true,
+);
+check('l’univers courant y est marqué', universBande.includes('>Ici<'), true);
+
+/* Et sur la page d'un métier : la bande des métiers. */
+const metierBande = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/metiers/dj-resident-clubbing-sound-engineer'] },
+    createElement(Routes, null, createElement(Route, { path: '/metiers/:slug', element: createElement(PageMetier as never) })),
+  ),
+);
+check('la page d’un métier porte la bande des métiers', metierBande.includes('Changer de métier'), true);
+check('les cartes mènent aux autres métiers', (metierBande.match(/\/metiers\//g) ?? []).length > 4, true);
+check('et disent où l’on est', metierBande.includes('DJ Résident Clubbing / Sound Engineer'), true);
 
 /* La typo du site : plus de serif d’emprunt sur les pages d’univers et de métier. */
 const pageUniversHtml = renderToStaticMarkup(

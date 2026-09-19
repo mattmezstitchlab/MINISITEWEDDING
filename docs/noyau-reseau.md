@@ -696,3 +696,44 @@ propre et structurée, quelle que soit la page.
   173 / 55 / **309** (l'article garde sa colonne de lecture et son tableau de
   chiffres, les pages partagent le même contenant, aucune page ne recopie ses
   largeurs à la main, aucun contenant dans un contenant), `npm run build` OK.
+
+## 22. Le dock noir, la bande du hero, un header libéré (passe 27)
+
+La navigation se resserre encore : ce qui était un menu déroulant devient une
+bande qu'on fait défiler, au même endroit sur toutes les pages, et le dock prend
+le noir du site.
+
+- **Le dock passe en noir, pictos en blanc.** `BottomCapsuleNav` : la capsule est
+  `bg-[#0B0C12]/95` avec un liseré blanc à 12 %, les pictos sont blancs
+  (`text-white/60`, blanc franc au survol), l'étape courante s'inverse — pastille
+  blanche, picto noir — et l'infobulle devient blanche sur texte noir. Même
+  forme, même place, même comportement : seul le papier change.
+- **Le header se libère du menu déroulant des univers.**
+  `UnifiedUniverseMenu` disparaît du header (il reste au théâtre, qui en a
+  besoin) : la barre ne garde que VOWS, les Métiers, le Shop et le Magazine, et
+  elle ne change plus de rôle selon la page. Le menu Métiers sait naviguer seul
+  (`onSelectStyle` devient facultatif : sans lui, il ouvre
+  `/le-mariage/<univers>`).
+- **La bande du hero.** `src/components/BandeauHero.tsx` : une bande
+  horizontale de cartes, toujours en bas du hero, sur la page qui les montre.
+  Chaque carte porte son visuel (ou son registre), son accent, et la mention
+  « Ici » quand c'est celle de la page. Elle ne pose aucun contenant : la page
+  l'installe dans le sien. `HeroCycle` reçoit une place pour elle (`bas`) et
+  laisse la hauteur nécessaire (`pb-44`).
+- **Les univers.** Sur l'accueil, la bande remplace le menu déroulant : les
+  vingt-quatre univers en cartes — dont « Vue d'ensemble », qui revient au site
+  entier — changent l'univers montré dans le hero d'un seul geste. Sur la page
+  d'un univers, la même bande (`Passer d'un univers à l'autre`, les vingt-cinq,
+  univers vierge compris) mène à la page de l'univers voisin. Le hero se cale
+  sur l'univers choisi sans effet de synchronisation : l'index se déduit du
+  choix.
+- **Les métiers.** Sur la page d'un métier, la même bande liste les métiers
+  d'à côté (`metiersVoisins`) : ceux de son univers d'abord, puis ceux du même
+  domaine ailleurs — chaque carte annonce son domaine, porte l'accent de
+  l'univers où l'on arriverait, et mène à `/metiers/<slug>`. On change de métier
+  sans remonter la page.
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé (et `HeroCycle`
+  nettoyé de son effet de synchronisation), `npm test` 173 / 55 / **325** (dock
+  noir et pictos blancs, header sans bouton Univers, bande des univers sur
+  l'accueil et sur la page d'un univers avec l'univers courant marqué, bande des
+  métiers sur la page d'un métier), `npm run build` OK.

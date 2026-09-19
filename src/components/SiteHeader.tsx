@@ -1,42 +1,24 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import UnifiedUniverseMenu from './UnifiedUniverseMenu';
+import { Link } from 'react-router-dom';
 import VendorDomainMenu from './VendorDomainMenu';
-import type { WeddingStyle } from '../lib/weddingStyles';
 
 /**
  * LE HEADER DU SITE
  *
- * La même barre partout : VOWS à gauche, UNIVERS & MÉTIERS, le Shop et le
- * Magazine à droite. Elle sert de navigation au site — chaque page se contente
- * donc de son contenu, et son hero peut se libérer des rappels de navigation.
- *
- * Sur l'accueil, choisir un univers change le hero (`onSelectStyle`) ; ailleurs,
- * le choix ouvre la page entière de cet univers (`/le-mariage/<univers>`).
+ * La même barre partout : VOWS à gauche, les Métiers, le Shop et le Magazine à
+ * droite. Le menu déroulant des univers n'y est plus : les univers se
+ * parcourent dans la bande du hero, toujours au même endroit, sur la page qui
+ * les montre (`BandeauHero`). Le header reste une barre courte, et il ne
+ * change plus de rôle selon la page.
  */
 
 interface SiteHeaderProps {
-  /** L'univers actuellement montré, s'il y en a un. */
-  selectedStyleId?: string | null;
-  /** Choisir un univers sans quitter la page (l'accueil). Sinon, on navigue. */
-  onSelectStyle?: (style: WeddingStyle | null) => void;
   /** Une précision d'usage à droite du logo : « Invitation », « Prestataire »… */
   mention?: string;
 }
 
-export default function SiteHeader({ selectedStyleId = null, onSelectStyle, mention }: SiteHeaderProps) {
-  const navigate = useNavigate();
-  // Un seul panneau de menu ouvert à la fois : Univers ou Métiers.
-  const [menuOuvert, setMenuOuvert] = useState<'univers' | 'metiers' | null>(null);
-
-  const choisir = (style: WeddingStyle | null) => {
-    if (onSelectStyle) {
-      onSelectStyle(style);
-      return;
-    }
-    // Ailleurs, un univers s'ouvre en entier : sa page, sa playlist, son ticket.
-    if (style) navigate(`/le-mariage/${style.id}`);
-  };
+export default function SiteHeader({ mention }: SiteHeaderProps) {
+  const [menuOuvert, setMenuOuvert] = useState<'metiers' | null>(null);
 
   return (
     <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
@@ -50,16 +32,9 @@ export default function SiteHeader({ selectedStyleId = null, onSelectStyle, ment
           )}
         </Link>
 
-        {/* La bande : les univers, les métiers, le magazine */}
+        {/* La bande : les métiers, le shop, le magazine */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
-          <UnifiedUniverseMenu
-            selectedStyleId={selectedStyleId}
-            onSelectStyle={choisir}
-            open={menuOuvert === 'univers'}
-            onOpenChange={(ouvert) => setMenuOuvert(ouvert ? 'univers' : null)}
-          />
           <VendorDomainMenu
-            onSelectStyle={choisir}
             open={menuOuvert === 'metiers'}
             onOpenChange={(ouvert) => setMenuOuvert(ouvert ? 'metiers' : null)}
           />

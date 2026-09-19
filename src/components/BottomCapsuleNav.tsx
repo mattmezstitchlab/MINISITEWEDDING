@@ -122,7 +122,7 @@ export default function BottomCapsuleNav() {
 
   return (
     <div className="pointer-events-none fixed bottom-4 left-1/2 z-40 -translate-x-1/2">
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-black/8 bg-white/90 p-1.5 shadow-[0_15px_35px_rgba(0,0,0,0.1)] backdrop-blur-xl">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/12 bg-[#0B0C12]/95 p-1.5 shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
         {STEPS.map((step) => {
           const Icon = step.icon;
           const isActive = activeId === step.id;
@@ -134,13 +134,15 @@ export default function BottomCapsuleNav() {
               aria-label={step.label}
               aria-current={isActive ? 'page' : undefined}
               className={`group relative flex h-9 w-9 items-center justify-center rounded-full transition-all sm:h-10 sm:w-10 ${
-                isActive ? 'scale-105 bg-black text-white shadow-md' : 'text-black/50 hover:bg-neutral-100 hover:text-black'
+                isActive
+                  ? 'scale-105 bg-white text-[#0B0C12] shadow-[0_6px_16px_rgba(0,0,0,0.45)]'
+                  : 'text-white/60 hover:bg-white/12 hover:text-white'
               }`}
             >
               <Icon size={16} />
 
               {/* Le nom, au survol */}
-              <span className="pointer-events-none absolute bottom-12 whitespace-nowrap rounded-lg bg-black px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+              <span className="pointer-events-none absolute bottom-12 whitespace-nowrap rounded-lg bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0B0C12] opacity-0 shadow-md transition-opacity group-hover:opacity-100">
                 {step.short}
               </span>
             </button>

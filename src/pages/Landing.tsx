@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 import { contentFor } from '../lib/universeContent';
 import HeroCycle from '../components/HeroCycle';
+import BandeauHero from '../components/BandeauHero';
 import SiteHeader from '../components/SiteHeader';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
@@ -60,15 +61,47 @@ export default function Landing() {
     if (searchParams.has('univers')) setSearchParams({}, { replace: true });
   };
 
+  /**
+   * LA BANDE DU HERO
+   *
+   * Les vingt-cinq univers, à l'horizontale, en bas du hero : d'un geste on
+   * change celui qui se montre — et « Vue d'ensemble » revient au site entier.
+   * C'est la navigation de l'accueil, à la place du menu déroulant du header.
+   */
+  const bandeDesUnivers = (
+    <BandeauHero
+      libelle="Les univers"
+      note={`${WEDDING_STYLES.length} univers · faites défiler`}
+      cartes={[
+        {
+          id: 'ensemble',
+          titre: 'Vue d’ensemble',
+          sousTitre: 'Le site entier',
+          accent: 'rgba(255,255,255,0.8)',
+          actif: !selectedStyle,
+          onChoisir: () => handleSelectStyle(null),
+        },
+        ...WEDDING_STYLES.map((univers) => ({
+          id: univers.id,
+          titre: univers.name,
+          image: univers.image,
+          accent: univers.accent,
+          actif: selectedStyle?.id === univers.id,
+          onChoisir: () => handleSelectStyle(univers),
+        })),
+      ]}
+    />
+  );
+
   return (
     <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
-      {/* Le header du site : la même barre que partout, et sur l'accueil il
-          change l'univers montré dans le hero. */}
-      <SiteHeader selectedStyleId={selectedStyle?.id ?? null} onSelectStyle={handleSelectStyle} />
+      {/* Le header du site : la même barre que partout. Les univers, eux, se
+          parcourent dans la bande en bas du hero. */}
+      <SiteHeader />
 
       {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
       <div id="hero">
-      <HeroCycle activeStyleId={selectedStyle?.id}>
+      <HeroCycle activeStyleId={selectedStyle?.id} bas={bandeDesUnivers}>
         <div className="mx-auto flex flex-col items-center justify-center text-center">
           {selectedStyle ? (
             /* Le hero de l'univers choisi : son visuel, sa présentation, ses chiffres */

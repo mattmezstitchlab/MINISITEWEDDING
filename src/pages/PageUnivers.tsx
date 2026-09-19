@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Check, Copy, Music2, Sparkles, Ticket } from 'lucide-react';
+import BandeauHero from '../components/BandeauHero';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 import UniversPagesGrid from '../components/UniversPagesGrid';
 import PlaylistCollaborative from '../components/PlaylistCollaborative';
 import RecapCourses from '../components/RecapCourses';
 import { contentFor } from '../lib/universeContent';
-import { getComplementaryStyles } from '../lib/weddingStyles';
+import { ALL_STYLES, getComplementaryStyles } from '../lib/weddingStyles';
 import { getScenesForStyle } from '../lib/themeTimelineScenarios';
 import { trackForText } from '../lib/weddingSoundtrack';
 import { daysUntil, formatDateLong } from '../lib/format';
@@ -159,6 +160,22 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
               {copie ? <Check size={14} /> : <Copy size={14} />}
               {copie ? 'Lien copié' : 'Envoyer aux invités'}
             </button>
+          </div>
+
+          {/* La bande du hero : tous les univers, au même endroit, d'un geste. */}
+          <div className="mt-10">
+            <BandeauHero
+              libelle="Passer d’un univers à l’autre"
+              note={`${ALL_STYLES.length} univers · cliquez pour changer`}
+              cartes={ALL_STYLES.map((univers) => ({
+                id: univers.id,
+                titre: univers.name,
+                image: univers.image,
+                accent: univers.accent,
+                actif: univers.id === style.id,
+                to: `/le-mariage/${univers.id}`,
+              }))}
+            />
           </div>
         </div>
       </header>
