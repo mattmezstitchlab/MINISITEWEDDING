@@ -201,6 +201,8 @@ export default function RecapCourses({
                   </span>
                 </div>
 
+                <p className="mt-1.5 text-[11.5px] leading-relaxed text-black/50">{rayon.sousTitre}</p>
+
                 <div className="mt-3 space-y-1.5">
                   {rayon.articles.map((article) => {
                     const preneur = preneurDe(terminal, article.id);

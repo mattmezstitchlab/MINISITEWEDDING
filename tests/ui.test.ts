@@ -507,6 +507,35 @@ check('et chacun prend une ligne', vegasDecode.includes('Chacun prend une ligne'
 check('le reçu de l’invité s’imprime à côté', vegasDecode.includes('Mon reçu'), true);
 check('un reçu vide n’a pas de bouton d’envoi', vegasDecode.includes('Copier le lien du reçu'), false);
 
+/* L'univers vierge a sa page comme les autres : c'est sa promesse. */
+const pageVierge = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/le-mariage/vierge'] },
+    createElement(
+      Routes,
+      null,
+      createElement(Route, { path: '/le-mariage/:styleId', element: createElement(LeMariage as never) }),
+    ),
+  ),
+).replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, "'");
+check('l’univers vierge a sa page, pas celle du Supermarché', pageVierge.includes('VOWS SUPERMARIAGE'), false);
+check('et sa page dit qu’il n’impose rien', pageVierge.includes('n’impose rien'), true);
+
+/* Un univers inconnu retombe sur le Supermarché 22H. */
+const inconnu = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/le-mariage/pas-un-univers'] },
+    createElement(
+      Routes,
+      null,
+      createElement(Route, { path: '/le-mariage/:styleId', element: createElement(LeMariage as never) }),
+    ),
+  ),
+);
+check('un univers inconnu retombe sur le Supermarché 22H', inconnu.includes('VOWS SUPERMARIAGE'), true);
+
 /* Le moteur : chaque univers a son magasin, complet et cohérent. */
 const magasins = ALL_STYLES.map((s) => magasinFor(s.id));
 check('toutes les pages ont un magasin', magasins.length, ALL_STYLES.length);

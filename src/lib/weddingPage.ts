@@ -244,7 +244,7 @@ export function magasinFor(styleId: string): MagasinUnivers {
     key: 'rayon-metiers',
     label: 'Rayon Métiers',
     sousTitre: metiersVoisins.length > 0
-      ? `Cet univers n'impose rien : voici les trois métiers de ${styleById(voisinDeSecours!).name}.`
+      ? `Cet univers n’impose rien : voici les trois métiers de ${styleById(voisinDeSecours!).name}.`
       : `Les trois métiers qui font tourner ${style.name}.`,
     emoji: '🛠',
     articles: rolesDeLUnivers.map((metier, i) => {

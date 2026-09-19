@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import PageUnivers from './PageUnivers';
-import { WEDDING_STYLES } from '../lib/weddingStyles';
+import { ALL_STYLES } from '../lib/weddingStyles';
 
 /**
  * LE MARIAGE, EN ENTIER — LA PAGE DE CHAQUE UNIVERS
@@ -16,6 +16,6 @@ const UNIVERS_PAR_DEFAUT = 'supermarche';
 
 export default function LeMariage() {
   const { styleId } = useParams<{ styleId?: string }>();
-  const connu = WEDDING_STYLES.some((s) => s.id === styleId);
+  const connu = ALL_STYLES.some((s) => s.id === styleId);
   return <PageUnivers styleId={styleId && connu ? styleId : UNIVERS_PAR_DEFAUT} />;
 }
