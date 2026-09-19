@@ -38,8 +38,6 @@ const CARTES = metiersParDomaine().map((domaine) => {
   };
 });
 
-const ARTISTES = CARTES.filter((c) => c.intermittent).map((c) => c.label.toLowerCase());
-
 export default function VendorEditorsShowcase() {
   return (
     <section className="bg-[#F6F4F0] px-5 py-16 sm:px-8 sm:py-24">
@@ -116,9 +114,6 @@ export default function VendorEditorsShowcase() {
           <div className="flex items-center gap-3">
             <BadgeEuro size={18} className="text-white/60" />
             <span className="text-[13.5px] font-semibold">Intermittent du Spectacle</span>
-            <span className="hidden text-[12.5px] text-white/55 lg:inline">
-              — cachets, GUSO, droits, 507 heures ({ARTISTES.join(', ')}).
-            </span>
           </div>
           <Link
             to="/prestataire?role=Groupe%20Polyphonique%20Corse&style=corse"

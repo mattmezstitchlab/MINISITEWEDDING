@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  BadgeEuro, Check, ExternalLink, Info, Plus, RotateCcw, Trash2, Users,
+  BadgeEuro, Check, ExternalLink, Info, Plus, RotateCcw, Trash2,
 } from 'lucide-react';
 import PhoneFrame from './phone/PhoneFrame';
 import VendorPhoneScreen from './phone/VendorPhoneScreen';
 import { contentFor } from '../lib/universeContent';
 import { styleById, type WeddingStyle } from '../lib/weddingStyles';
 import { DOMAINES, domaineDe, metiersParDomaine } from '../lib/weddingVendors';
-import { donneesMetier, estIntermittent, missionPourStyle, modulesDuMetier } from '../lib/vendorModules';
+import { donneesMetier, estIntermittent, missionPourStyle } from '../lib/vendorModules';
 import { previewPath } from '../lib/previewSite';
 import { signatureFor } from '../lib/themeSignatures';
 import {
@@ -108,16 +108,6 @@ export default function VendorSiteStudio({
   const domaine = DOMAINES[domaineDe(role)] ?? DOMAINES.polyvalent;
   const heures = { declarees: heuresCachets(draft.cachets), seuil: HEURES_INTERMITTENCE };
 
-  /** Les autres métiers de ce mariage, et ce qu'on lit en commun avec eux. */
-  const voisins = style.humanMissions
-    .filter((m) => m.role !== role)
-    .slice(0, 3)
-    .map((m) => {
-      const leurs = modulesDuMetier(donneesMetier(style, m.role)).map((mod) => mod.id);
-      const communs = draft.modules.filter((mod) => leurs.includes(mod.id)).map((mod) => mod.nav);
-      return { role: m.role, communs };
-    });
-
   return (
     <div className="grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-start">
       {/* ————————————————— l'écran, en vrai ————————————————— */}
@@ -150,47 +140,26 @@ export default function VendorSiteStudio({
           </p>
         </div>
 
-        {/* Les voisins de journée : ce qu'on lit en commun avec les autres métiers */}
-        {voisins.length > 0 && (
-          <div className="mt-4 rounded-[24px] border border-black/8 bg-white p-5">
-            <div className="flex items-center gap-2">
-              <Users size={14} className="text-black/45" />
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
-                Vos voisins de journée
-              </span>
-            </div>
-            <div className="mt-3 space-y-2.5">
-              {voisins.map((v) => (
-                <div key={v.role} className="text-[12px] leading-snug">
-                  <span className="font-semibold text-black">{v.role}</span>
-                  <span className="text-black/50">
-                    {v.communs.length > 0 ? ` · ${v.communs.join(', ')} en commun` : ' · un autre regard'}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 text-[11px] leading-relaxed text-black/45">
-              Tous les métiers de ce mariage lisent le même programme.
-            </p>
-          </div>
-        )}
       </div>
 
       {/* ————————————————— l'écriture ————————————————— */}
       <div>
         <div className="rounded-[24px] border border-black/8 bg-white p-5">
-          <div className="text-[13px] font-semibold text-black">
-            {role} · {domaine.label}
+          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+            <span className="text-[14px] font-semibold text-black">{role}</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/40">
+              {domaine.label}
+            </span>
           </div>
-          <p className="mt-1 text-[12px] leading-relaxed text-black/55">
-            {signature
-              ? `Univers ${style.name} — ${signature.nom.toLowerCase()}.`
-              : `Univers ${style.name}.`}{' '}
-            Vos textes s’écrivent ici, et changer d’univers ne les réécrit pas.
+          <p className="mt-1 text-[12px] text-black/50">
+            {signature ? `${style.name} — ${signature.nom.toLowerCase()}.` : `${style.name}.`}
           </p>
 
           {/* Le domaine */}
-          <div className="mt-4 flex flex-wrap gap-1.5">
+          <div className="mt-4 flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-black/35">
+              Domaine
+            </span>
             {DOMAINES_METIERS.map((d) => (
               <button
                 key={d.key}
@@ -208,8 +177,11 @@ export default function VendorSiteStudio({
           </div>
 
           {/* Le métier précis */}
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {(DOMAINES_METIERS.find((d) => d.key === domaineDe(role))?.metiers ?? []).slice(0, 12).map((m) => (
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-black/35">
+              Métier
+            </span>
+            {(DOMAINES_METIERS.find((d) => d.key === domaineDe(role))?.metiers ?? []).slice(0, 8).map((m) => (
               <button
                 key={m.role}
                 type="button"
@@ -226,24 +198,22 @@ export default function VendorSiteStudio({
           </div>
 
           {/* L'univers du mariage */}
-          <div className="mt-4 border-t border-black/8 pt-4">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-black/40">
-              L’univers du mariage
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-black/8 pt-3.5">
+            <span className="mr-1 font-mono text-[9.5px] uppercase tracking-[0.16em] text-black/35">
+              Univers
             </span>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {universPourRole(role).map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => changerStyle(s.id)}
-                  className={`rounded-full px-3 py-1.5 text-[11px] font-medium transition ${
-                    s.id === styleId ? 'bg-black/85 text-white' : 'bg-black/5 text-black/60 hover:bg-black/10'
-                  }`}
-                >
-                  {s.name}
-                </button>
-              ))}
-            </div>
+            {universPourRole(role).map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => changerStyle(s.id)}
+                className={`rounded-full px-3 py-1.5 text-[11px] font-medium transition ${
+                  s.id === styleId ? 'bg-black/85 text-white' : 'bg-black/5 text-black/60 hover:bg-black/10'
+                }`}
+              >
+                {s.name}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -509,23 +479,13 @@ export default function VendorSiteStudio({
             </Link>
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 divide-y divide-black/8">
             {partageAvecLesMaries(donneesMetier(style, role)).map((bloc) => (
-              <div key={bloc.id} className="rounded-[18px] bg-white p-4">
-                <div className="text-[12.5px] font-semibold text-black">{bloc.titre}</div>
-                <div className="mt-0.5 text-[10.5px] leading-snug text-black/45">{bloc.origine}</div>
-                <div className="mt-2.5 space-y-1.5">
-                  {bloc.lignes.slice(0, 4).map((ligne) => (
-                    <div key={`${bloc.id}-${ligne.label}`} className="flex items-start justify-between gap-3">
-                      <span className="font-mono text-[9px] uppercase tracking-wider text-black/35">
-                        {ligne.label}
-                      </span>
-                      <span className="text-right text-[11px] font-medium leading-snug text-black/80">
-                        {ligne.valeur}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              <div key={bloc.id} className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 py-2.5">
+                <span className="text-[12.5px] font-semibold text-black">{bloc.titre}</span>
+                <span className="min-w-0 flex-1 truncate text-[11.5px] text-black/55">
+                  {bloc.lignes.slice(0, 3).map((l) => l.valeur).join(' · ')}
+                </span>
               </div>
             ))}
           </div>
