@@ -4,6 +4,13 @@
 > Il répond à la consigne des deux cahiers des charges : *« avant de coder,
 > définis le modèle de données, les relations, les permissions et les flux »*.
 
+**État — première brique posée.** La carte recto-verso existe : `/carte`
+(`src/pages/CardStudio.tsx`), le composant `src/components/WeddingCard.tsx` et le
+modèle `src/lib/weddingCard.ts`. Elle porte le rôle, la disponibilité, le repas,
+la mobilité, les prestations et les documents — et elle n'affiche que ce qui
+concerne le rôle tenu. Elle vit encore dans le navigateur : **la table `people`
+et les comptes restent la prochaine décision** (§8).
+
 ## 1. Le renversement
 
 Aujourd'hui, **tout pend au site**. `supabase/schema.sql` le montre : dix tables,

@@ -1,4 +1,5 @@
-import { Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { UserRound, Users } from 'lucide-react';
 import { formatDateShort } from '../../lib/format';
 import { useSiteView } from './context';
 
@@ -16,6 +17,13 @@ export default function Footer() {
           <span>{site.phase === 'apres' ? 'Merci d’avoir partagé ce jour avec nous' : site.phase === 'pendant' ? 'C’est aujourd’hui — à tout à l’heure' : 'Nous avons hâte de vous retrouver'}</span>
         </div>
         <div className="mt-8 border-t pt-7 text-[11px] uppercase tracking-[0.2em]" style={{ borderColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(12,14,24,0.08)', color: muted }}>Créé avec VOWS</div>
+        <Link
+          to="/carte"
+          className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold transition-opacity hover:opacity-70"
+          style={{ color: muted }}
+        >
+          <UserRound size={13} /> Créer ma carte
+        </Link>
       </div>
     </footer>
   );

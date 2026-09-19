@@ -6,16 +6,17 @@ import {
 } from 'lucide-react';
 import { seedSite } from '../lib/defaults';
 import StylePicker from '../components/StylePicker';
-import CardPreview from '../components/CardPreview';
+import WeddingCard from '../components/WeddingCard';
 import { roleToScreen } from '../lib/spaceDraft';
 import {
   CARD_ACCESS,
   DAY_EVENTS,
   MUSIC_MOODS,
   accessHint,
+  saveCard,
   savedOrEmpty,
   type CardAccess,
-  type WeddingCard,
+  type CardData,
 } from '../lib/weddingCard';
 
 /**
@@ -48,7 +49,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const entree = useEntryState();
   const [step, setStep] = useState(0);
-  const [card, setCard] = useState<WeddingCard>(() => {
+  const [card, setCard] = useState<CardData>(() => {
     const base = savedOrEmpty();
     return {
       ...base,
@@ -59,7 +60,12 @@ export default function Onboarding() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
 
-  const set = (patch: Partial<WeddingCard>) => setCard((prev) => ({ ...prev, ...patch }));
+  /** Chaque réponse est enregistrée : la carte ouverte ensuite est celle-ci. */
+  const set = (patch: Partial<CardData>) => {
+    const suivant = { ...card, ...patch };
+    saveCard(suivant);
+    setCard(suivant);
+  };
 
   const steps = useMemo(
     () => [
@@ -453,8 +459,11 @@ export default function Onboarding() {
             <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--vp-muted)]">
               Votre carte
             </div>
-            <CardPreview card={card} />
+            <WeddingCard card={card} compact />
             <p className="mt-3 text-[12px] leading-snug text-[var(--vp-muted)]">{accessHint(card.access)}</p>
+            <Link to="/carte" className="vp-btn vp-btn-glass vp-press mt-3 w-full justify-center">
+              Ouvrir ma carte <ArrowRight size={15} />
+            </Link>
           </aside>
         </div>
       </div>

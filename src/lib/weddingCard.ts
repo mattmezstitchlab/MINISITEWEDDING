@@ -1,12 +1,23 @@
 import { WEDDING_STYLES } from './weddingStyles';
+import { roleToScreen, roleTitle } from './spaceDraft';
 
 /**
- * LA CARTE VOWS
+ * LA CARTE VOWS — recto / verso
  *
- * Ce que l'onboarding compose, et ce que chacun reçoit : un accès, un rôle, une
- * disponibilité, l'accès aux événements de la journée et une empreinte
- * musicale. La carte résume tout, et c'est elle qu'on montre pendant les
- * questions — « votre carte, votre univers ».
+ * Une carte par personne, et une seule source de vérité : la personne, son
+ * rôle dans le mariage, ses coordonnées, ses disponibilités, son repas, sa
+ * mobilité — et, si elle est prestataire, ses prestations et ses documents.
+ *
+ * Le **recto** montre qui l'on est : la photo, le nom, le rôle, la ville, le
+ * métier, l'univers musical et le mariage. Le **verso** porte le détail, et il
+ * n'affiche que ce qui concerne le rôle tenu (`cardSections`) : un invité n'a
+ * rien à faire d'un tarif, un photographe n'a rien à faire d'un régime
+ * alimentaire. C'est la règle du « seulement les champs pertinents », appliquée
+ * ici une fois pour toutes.
+ *
+ * La carte reste locale tant que les comptes n'existent pas : elle vit dans le
+ * stockage du navigateur, et elle est prête à devenir la table `people` du
+ * réseau (voir `docs/noyau-reseau.md`).
  */
 
 export type CardAccess = 'couple' | 'famille' | 'amis' | 'prestataire';
@@ -57,21 +68,132 @@ export const MUSIC_MOODS: MusicMoodDef[] = [
   { id: 'classique', label: 'Classique & cérémonie', hint: 'Cordes, piano, silence tenu pendant les vœux.' },
 ];
 
-/** Ce que l'onboarding garde en mémoire : la carte elle-même. */
-export interface WeddingCard {
+/* ------------------------------------------------------- verso · les listes */
+
+export type ContactVisibility = 'maries' | 'participants' | 'carte';
+
+export interface ContactVisibilityDef {
+  id: ContactVisibility;
+  label: string;
+  hint: string;
+}
+
+/** Qui voit mes coordonnées. Le défaut est « les participants », jamais public. */
+export const CONTACT_VISIBILITY: ContactVisibilityDef[] = [
+  { id: 'maries', label: 'Les mariés', hint: 'Vos coordonnées ne quittent pas le couple.' },
+  { id: 'participants', label: 'Les participants', hint: 'Famille, amis, témoins et prestataires du mariage.' },
+  { id: 'carte', label: 'Sur ma carte', hint: 'Quiconque voit ma carte peut me joindre.' },
+];
+
+export const DIETS: string[] = [
+  'Végétarien',
+  'Végétalien',
+  'Sans gluten',
+  'Sans lactose',
+  'Halal',
+  'Casher',
+  'Sans porc',
+  'Sans alcool',
+];
+
+export const ALLERGENS: string[] = [
+  'Gluten',
+  'Arachides',
+  'Fruits à coque',
+  'Lait',
+  'Œufs',
+  'Soja',
+  'Poisson',
+  'Crustacés',
+  'Sésame',
+];
+
+/** Les pièces qu'un prestataire a intérêt à tenir prêtes. */
+export const DEFAULT_DOCUMENTS: string[] = [
+  'Devis',
+  'Contrat signé',
+  'Facture',
+  'Attestation d’assurance',
+  'Conditions générales',
+];
+
+export interface CardDocument {
+  id: string;
+  label: string;
+  done: boolean;
+}
+
+/* ------------------------------------------------------------ la carte */
+
+export interface CardData {
+  /* — la personne — */
+  firstName: string;
+  lastName: string;
+  photo: string;
+  homeCity: string;
+  trade: string;
+  bio: string;
+  /** Un identifiant de `FULL_ROLES_TAXONOMY` ('' tant qu'aucun rôle n'est choisi). */
+  roleId: string;
   access: CardAccess;
+
+  /* — le mariage — */
   partner1: string;
   partner2: string;
   date: string;
   venue: string;
+  /** La ville du mariage. */
   city: string;
   styleId: string;
   events: string[];
   music: string;
+
+  /* — verso · coordonnées — */
+  email: string;
+  phone: string;
+  website: string;
+  social: string;
+  contactVisibility: ContactVisibility;
+
+  /* — verso · disponibilité — */
+  from: string;
+  to: string;
+  travel: string;
+  blackout: string;
+
+  /* — verso · repas — */
+  diet: string[];
+  allergens: string[];
+
+  /* — verso · mobilité — */
+  vehicle: string;
+  seats: string;
+  needsRide: boolean;
+
+  /* — verso · prestations — */
+  service: string;
+  rate: string;
+  area: string;
+  minimum: string;
+
+  /* — verso · documents — */
+  documents: CardDocument[];
+  iban: string;
 }
 
-export const EMPTY_CARD: WeddingCard = {
+/** L'ancien nom, gardé pour ne rien casser. */
+export type WeddingCard = CardData;
+
+export const EMPTY_CARD: CardData = {
+  firstName: '',
+  lastName: '',
+  photo: '',
+  homeCity: '',
+  trade: '',
+  bio: '',
+  roleId: '',
   access: 'couple',
+
   partner1: '',
   partner2: '',
   date: '',
@@ -80,12 +202,38 @@ export const EMPTY_CARD: WeddingCard = {
   styleId: WEDDING_STYLES[0].id,
   events: DAY_EVENTS.map((e) => e.id),
   music: MUSIC_MOODS[0].id,
+
+  email: '',
+  phone: '',
+  website: '',
+  social: '',
+  contactVisibility: 'participants',
+
+  from: '',
+  to: '',
+  travel: '',
+  blackout: '',
+
+  diet: [],
+  allergens: [],
+
+  vehicle: '',
+  seats: '',
+  needsRide: false,
+
+  service: '',
+  rate: '',
+  area: '',
+  minimum: '',
+
+  documents: DEFAULT_DOCUMENTS.map((label, i) => ({ id: `piece-${i}`, label, done: false })),
+  iban: '',
 };
 
 const CLE = 'vows:carte';
 
-/** La carte composée dans l'onboarding, relue au retour sur le site. */
-export function saveCard(card: WeddingCard): void {
+/** La carte composée par son propriétaire, relue au retour sur le site. */
+export function saveCard(card: CardData): void {
   try {
     window.localStorage.setItem(CLE, JSON.stringify(card));
   } catch {
@@ -93,16 +241,157 @@ export function saveCard(card: WeddingCard): void {
   }
 }
 
-export function readCard(): WeddingCard | null {
+export function readCard(): CardData | null {
   try {
     const brut = window.localStorage.getItem(CLE);
     if (!brut) return null;
-    const carte = JSON.parse(brut) as Partial<WeddingCard>;
-    return { ...EMPTY_CARD, ...carte, events: carte.events ?? EMPTY_CARD.events };
+    const carte = JSON.parse(brut) as Partial<CardData>;
+    return {
+      ...EMPTY_CARD,
+      ...carte,
+      events: carte.events ?? EMPTY_CARD.events,
+      diet: carte.diet ?? [],
+      allergens: carte.allergens ?? [],
+      documents: carte.documents ?? EMPTY_CARD.documents,
+    };
   } catch {
     return null;
   }
 }
+
+/** La carte d'une session précédente, ou une carte vierge. */
+export function savedOrEmpty(): CardData {
+  return readCard() ?? EMPTY_CARD;
+}
+
+/* --------------------------------------------------------- ce qu'elle dit */
+
+export type CardKind = 'couple' | 'invite' | 'prestataire';
+
+/** Ce que la carte est : celle des mariés, d'un invité, ou d'un prestataire. */
+export function cardKind(card: Pick<CardData, 'roleId' | 'access'>): CardKind {
+  if (card.roleId) {
+    const ecran = roleToScreen(card.roleId);
+    return ecran === 'maries' ? 'couple' : ecran;
+  }
+  if (card.access === 'couple') return 'couple';
+  return card.access === 'prestataire' ? 'prestataire' : 'invite';
+}
+
+export type CardSectionId =
+  | 'place'
+  | 'contact'
+  | 'dispo'
+  | 'repas'
+  | 'mobilite'
+  | 'prestations'
+  | 'documents'
+  | 'musique';
+
+export interface CardSectionDef {
+  id: CardSectionId;
+  label: string;
+}
+
+const SECTIONS: Record<CardSectionId, CardSectionDef> = {
+  place: { id: 'place', label: 'Ma place dans le mariage' },
+  contact: { id: 'contact', label: 'Mes coordonnées' },
+  dispo: { id: 'dispo', label: 'Ma disponibilité' },
+  repas: { id: 'repas', label: 'Le repas' },
+  mobilite: { id: 'mobilite', label: 'Ma mobilité' },
+  prestations: { id: 'prestations', label: 'Mes prestations' },
+  documents: { id: 'documents', label: 'Mes documents' },
+  musique: { id: 'musique', label: 'Ma musique' },
+};
+
+/**
+ * Le verso, dans l'ordre, **selon le rôle** : c'est la seule règle qui empêche
+ * la carte de devenir un formulaire universel que personne ne remplit.
+ */
+export function cardSections(card: Pick<CardData, 'roleId' | 'access'>): CardSectionDef[] {
+  const kind = cardKind(card);
+  const ids: CardSectionId[] =
+    kind === 'prestataire'
+      ? ['place', 'prestations', 'dispo', 'contact', 'documents', 'musique']
+      : kind === 'couple'
+        ? ['place', 'contact', 'dispo', 'repas', 'mobilite', 'documents', 'musique']
+        : ['place', 'contact', 'dispo', 'repas', 'mobilite', 'musique'];
+  return ids.map((id) => SECTIONS[id]);
+}
+
+export function sectionLabel(id: CardSectionId): string {
+  return SECTIONS[id].label;
+}
+
+/** Le nom affiché : « Clara Mez », ou les initiales tant qu'il n'y a rien. */
+export function cardName(card: CardData): string {
+  return [card.firstName, card.lastName].map((s) => s.trim()).filter(Boolean).join(' ');
+}
+
+export function initials(card: CardData): string {
+  const a = card.firstName.trim().charAt(0);
+  const b = card.lastName.trim().charAt(0);
+  return (a + b).toUpperCase() || '·';
+}
+
+/** Le rôle précis, s'il est choisi ; sinon le rôle de l'accès. */
+export function cardRoleLabel(card: Pick<CardData, 'roleId' | 'access'>): string {
+  return (card.roleId ? roleTitle(card.roleId) : null) ?? accessRole(card.access);
+}
+
+export function cardKindLabel(card: Pick<CardData, 'roleId' | 'access'>): string {
+  const kind = cardKind(card);
+  if (kind === 'couple') return 'Les mariés';
+  if (kind === 'prestataire') return 'Prestataire';
+  return 'Invité·e';
+}
+
+/** Un IBAN ne s'affiche jamais en clair : début, fin, et rien au milieu. */
+export function maskIban(iban: string): string {
+  const clean = iban.replace(/\s+/g, '').toUpperCase();
+  if (clean.length < 8) return '•••• ••••';
+  return `${clean.slice(0, 4)} •••• •••• ${clean.slice(-4)}`;
+}
+
+/** L'avancement de la carte : ce qui reste à remplir, sans culpabiliser. */
+export function cardCompletion(card: CardData): number {
+  const kind = cardKind(card);
+  const champs: Array<string | boolean> = [
+    card.firstName,
+    card.photo,
+    card.homeCity,
+    card.trade,
+    card.bio,
+    card.email || card.phone,
+    card.from && card.to,
+    card.music,
+    card.date,
+    card.venue,
+  ];
+  if (kind === 'prestataire') champs.push(card.service, card.rate, card.area);
+  else {
+    champs.push(card.diet.length > 0 || card.allergens.length > 0);
+    champs.push(card.vehicle || card.needsRide);
+  }
+  const remplis = champs.filter((c) => (typeof c === 'string' ? c.trim().length > 0 : c)).length;
+  return Math.round((remplis / champs.length) * 100);
+}
+
+/** De quoi se présenter en un message, pour un partage honnête (pas de faux lien). */
+export function cardSummary(card: CardData): string {
+  const lignes: string[] = [];
+  const nom = cardName(card);
+  if (nom) lignes.push(`${nom} — ${cardRoleLabel(card)}`);
+  else lignes.push(`Ma carte — ${cardRoleLabel(card)}`);
+  const lieu = [card.homeCity, card.trade].filter((s) => s.trim()).join(' · ');
+  if (lieu) lignes.push(lieu);
+  if (card.from && card.to) lignes.push(`Disponible de ${card.from} à ${card.to}`);
+  const mariage = [card.partner1, card.partner2].filter((s) => s.trim()).join(' & ');
+  if (mariage) lignes.push(`${mariage}${card.date ? ` — ${card.date}` : ''}`);
+  return lignes.join('\n');
+}
+
+/* ------------------------------------------------------- les mêmes qu'avant */
 
 export function accessLabel(access: CardAccess): string {
   return CARD_ACCESS.find((a) => a.id === access)?.label ?? CARD_ACCESS[0].label;
@@ -112,17 +401,16 @@ export function accessHint(access: CardAccess): string {
   return CARD_ACCESS.find((a) => a.id === access)?.hint ?? CARD_ACCESS[0].hint;
 }
 
-/** La carte d'une session précédente, ou une carte vierge. */
-export function savedOrEmpty(): WeddingCard {
-  return readCard() ?? EMPTY_CARD;
-}
-
 export function accessRole(access: CardAccess): string {
   return CARD_ACCESS.find((a) => a.id === access)?.role ?? CARD_ACCESS[0].role;
 }
 
 export function musicLabel(music: string): string {
   return MUSIC_MOODS.find((m) => m.id === music)?.label ?? MUSIC_MOODS[0].label;
+}
+
+export function visibilityLabel(id: ContactVisibility): string {
+  return CONTACT_VISIBILITY.find((v) => v.id === id)?.label ?? CONTACT_VISIBILITY[1].label;
 }
 
 /** Les temps retenus, dans l'ordre de la journée. */
