@@ -278,6 +278,18 @@ export function cardKind(card: Pick<CardData, 'roleId' | 'access'>): CardKind {
   return card.access === 'prestataire' ? 'prestataire' : 'invite';
 }
 
+/**
+ * L'accès que donne un rôle de la taxonomie. Écrit une fois ici : l'écran de
+ * la carte et la collection des personnes doivent répondre pareil.
+ */
+export function accessForRole(roleId: string): CardAccess {
+  if (!roleId) return 'couple';
+  const ecran = roleToScreen(roleId);
+  if (ecran === 'maries') return 'couple';
+  if (ecran === 'prestataire') return 'prestataire';
+  return roleId === 'temoin' ? 'famille' : 'amis';
+}
+
 export type CardSectionId =
   | 'place'
   | 'contact'
@@ -389,6 +401,81 @@ export function cardSummary(card: CardData): string {
   const mariage = [card.partner1, card.partner2].filter((s) => s.trim()).join(' & ');
   if (mariage) lignes.push(`${mariage}${card.date ? ` — ${card.date}` : ''}`);
   return lignes.join('\n');
+}
+
+/* --------------------------------------------------- le verso, côté serveur */
+
+/**
+ * Le détail du verso, tel qu'il voyage vers `people.card`.
+ *
+ * Ce qui distingue une personne — sa disponibilité, son repas, sa mobilité,
+ * ses prestations, ses pièces — n'a pas à occuper une colonne par champ dans
+ * la base : ça ne se filtre pas, ça appartient à la carte. Le reste (identité,
+ * coordonnées, ville, métier) est bien en colonnes : c'est ce sur quoi on
+ * cherche et on filtre.
+ *
+ * Les deux fonctions ci-dessous font le pont dans les deux sens, et **aucune
+ * autre** : une information saisie une fois ne se recopie pas ailleurs.
+ */
+export interface CardDetail {
+  from: string;
+  to: string;
+  travel: string;
+  blackout: string;
+  diet: string[];
+  allergens: string[];
+  vehicle: string;
+  seats: string;
+  needsRide: boolean;
+  service: string;
+  rate: string;
+  area: string;
+  minimum: string;
+  documents: CardDocument[];
+  iban: string;
+}
+
+export function cardDetail(card: CardData): CardDetail {
+  return {
+    from: card.from,
+    to: card.to,
+    travel: card.travel,
+    blackout: card.blackout,
+    diet: card.diet,
+    allergens: card.allergens,
+    vehicle: card.vehicle,
+    seats: card.seats,
+    needsRide: card.needsRide,
+    service: card.service,
+    rate: card.rate,
+    area: card.area,
+    minimum: card.minimum,
+    documents: card.documents,
+    iban: card.iban,
+  };
+}
+
+/** Reconstruit une carte locale à partir du verso reçu du serveur. */
+export function withDetail(card: CardData, detail: Partial<CardDetail> | null | undefined): CardData {
+  if (!detail || typeof detail !== 'object') return card;
+  return {
+    ...card,
+    from: typeof detail.from === 'string' ? detail.from : card.from,
+    to: typeof detail.to === 'string' ? detail.to : card.to,
+    travel: typeof detail.travel === 'string' ? detail.travel : card.travel,
+    blackout: typeof detail.blackout === 'string' ? detail.blackout : card.blackout,
+    diet: Array.isArray(detail.diet) ? detail.diet : card.diet,
+    allergens: Array.isArray(detail.allergens) ? detail.allergens : card.allergens,
+    vehicle: typeof detail.vehicle === 'string' ? detail.vehicle : card.vehicle,
+    seats: typeof detail.seats === 'string' ? detail.seats : card.seats,
+    needsRide: typeof detail.needsRide === 'boolean' ? detail.needsRide : card.needsRide,
+    service: typeof detail.service === 'string' ? detail.service : card.service,
+    rate: typeof detail.rate === 'string' ? detail.rate : card.rate,
+    area: typeof detail.area === 'string' ? detail.area : card.area,
+    minimum: typeof detail.minimum === 'string' ? detail.minimum : card.minimum,
+    documents: Array.isArray(detail.documents) ? detail.documents : card.documents,
+    iban: typeof detail.iban === 'string' ? detail.iban : card.iban,
+  };
 }
 
 /* ------------------------------------------------------- les mêmes qu'avant */

@@ -4,12 +4,26 @@
 > Il répond à la consigne des deux cahiers des charges : *« avant de coder,
 > définis le modèle de données, les relations, les permissions et les flux »*.
 
-**État — première brique posée.** La carte recto-verso existe : `/carte`
-(`src/pages/CardStudio.tsx`), le composant `src/components/WeddingCard.tsx` et le
-modèle `src/lib/weddingCard.ts`. Elle porte le rôle, la disponibilité, le repas,
-la mobilité, les prestations et les documents — et elle n'affiche que ce qui
-concerne le rôle tenu. Elle vit encore dans le navigateur : **la table `people`
-et les comptes restent la prochaine décision** (§8).
+**État — les comptes sont ouverts, la première brique est posée.**
+
+La carte recto-verso existe : `/carte` (`src/pages/CardStudio.tsx`), le composant
+`src/components/WeddingCard.tsx`, le modèle `src/lib/weddingCard.ts`. Elle porte
+le rôle, la disponibilité, le repas, la mobilité, les prestations et les
+documents — **et elle n'affiche que ce qui concerne le rôle tenu**.
+
+Elle est devenue **une personne du réseau** : `people` + `person_secrets` +
+`wedding_members` sont en base (`supabase/schema.sql`), servis par
+`api/people.js` et `api/wedding-members.js`, avec le miroir navigateur dans
+`src/lib/localApi.ts`. La clé personnelle suit exactement le modèle des clés
+d'édition — jeton aléatoire, empreinte SHA-256 en base, clair renvoyé une seule
+fois, saisissable à la main pour retrouver sa carte ailleurs. Les permissions
+sont appliquées **côté serveur** (`server/people.js`) et vérifiées par 141
+contrôles d'API : `maries` / `participants` / `carte` pour les coordonnées,
+IBAN et pièces réservés à la personne et aux mariés du mariage concerné.
+
+Reste à faire : les médias collectifs, le fil, l'invitation par QR code, le
+film. Et la fusion des réponses RSVP (`rsvp_responses`) dans `people` — deux
+systèmes côte à côte aujourd'hui, un seul demain.
 
 ## 1. Le renversement
 

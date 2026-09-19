@@ -1,19 +1,36 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   Camera,
   Check,
+  Copy,
+  KeyRound,
+  Loader2,
   Lock,
   Share2,
   Sparkles,
   Trash2,
+  UserPlus,
 } from 'lucide-react';
 import WeddingCard from '../components/WeddingCard';
 import StylePicker from '../components/StylePicker';
 import { prepareCardPhoto } from '../lib/cardPhoto';
 import { styleById } from '../lib/weddingStyles';
-import { ROLE_GROUPS, roleToScreen } from '../lib/spaceDraft';
+import { ROLE_GROUPS, roleTitle } from '../lib/spaceDraft';
+import {
+  adoptPersonKey,
+  createCard,
+  forgetKey,
+  hasPersonKey,
+  joinWedding,
+  leaveWedding,
+  listMyMemberships,
+  loadMyCard,
+  personToCard,
+  updateCard,
+  type Membership,
+} from '../lib/people';
 import {
   ALLERGENS,
   CARD_ACCESS,
@@ -21,6 +38,7 @@ import {
   DAY_EVENTS,
   DIETS,
   MUSIC_MOODS,
+  accessForRole,
   accessRole,
   cardCompletion,
   cardKind,
@@ -28,7 +46,6 @@ import {
   maskIban,
   savedOrEmpty,
   saveCard,
-  type CardAccess,
   type CardData,
 } from '../lib/weddingCard';
 
@@ -43,13 +60,6 @@ import {
  * la table `people` du réseau quand les comptes s'ouvriront ; d'ici là, elle
  * n'invente rien et ne part nulle part.
  */
-
-function accessFromRoleId(roleId: string): CardAccess {
-  const ecran = roleToScreen(roleId);
-  if (ecran === 'maries') return 'couple';
-  if (ecran === 'prestataire') return 'prestataire';
-  return roleId === 'temoin' ? 'famille' : 'amis';
-}
 
 /* ------------------------------------------------------------ les morceaux */
 
@@ -126,19 +136,67 @@ function Choix({ label, options, value, onChange }: { label: string; options: st
 export default function CardStudio() {
   const [card, setCard] = useState<CardData>(() => savedOrEmpty());
   const [message, setMessage] = useState('');
+  const [cle, setCle] = useState(() => hasPersonKey());
+  const [cleNouvelle, setCleNouvelle] = useState('');
+  const [cleSaisie, setCleSaisie] = useState('');
+  const [reprendre, setReprendre] = useState(false);
+  const [enregistrement, setEnregistrement] = useState<'repos' | 'encours' | 'ok' | 'erreur'>('repos');
+  const [publication, setPublication] = useState(false);
+  const [mariages, setMariages] = useState<Membership[]>([]);
+  const [slug, setSlug] = useState('');
+  const [roleJoint, setRoleJoint] = useState('');
+  const [rejoint, setRejoint] = useState(false);
   const fichier = useRef<HTMLInputElement>(null);
+  const minuteur = useRef<number | null>(null);
   const style = styleById(card.styleId);
   const kind = cardKind(card);
   const completion = cardCompletion(card);
   const estPrestataire = kind === 'prestataire';
   const estInvite = kind !== 'prestataire';
 
+  /**
+   * L'enregistrement en ligne attend une seconde et demie : on ne lance pas
+   * une requête par lettre, et on n'attend pas non plus la fin de la saisie.
+   */
+  const planifier = (suivant: CardData) => {
+    if (!hasPersonKey()) return;
+    if (minuteur.current) window.clearTimeout(minuteur.current);
+    setEnregistrement('encours');
+    minuteur.current = window.setTimeout(() => {
+      updateCard(suivant)
+        .then(() => setEnregistrement('ok'))
+        .catch(() => setEnregistrement('erreur'));
+    }, 1500);
+  };
+
   /** Chaque frappe est enregistrée : la carte ne se perd pas. */
   const set = (patch: Partial<CardData>) => {
     const suivant = { ...card, ...patch };
     saveCard(suivant);
     setCard(suivant);
+    planifier(suivant);
   };
+
+  /** Au retour : ce que le réseau garde fait autorité sur le brouillon local. */
+  useEffect(() => {
+    if (!hasPersonKey()) return;
+    let vivant = true;
+    void (async () => {
+      try {
+        const person = await loadMyCard();
+        if (!vivant || !person) return;
+        setCard((base) => personToCard(person, base));
+        const mes = await listMyMemberships();
+        if (vivant) setMariages(mes);
+      } catch {
+        if (vivant) setEnregistrement('erreur');
+      }
+    })();
+    return () => {
+      vivant = false;
+      if (minuteur.current) window.clearTimeout(minuteur.current);
+    };
+  }, []);
 
   const choisirPhoto = async (file?: File) => {
     if (!file) return;
@@ -149,6 +207,67 @@ export default function CardStudio() {
       setMessage('Cette image n’a pas pu être lue.');
       window.setTimeout(() => setMessage(''), 2600);
     }
+  };
+
+  const publier = async () => {
+    setPublication(true);
+    setMessage('');
+    try {
+      const { key } = await createCard(card);
+      setCle(true);
+      setCleNouvelle(key);
+      setEnregistrement('ok');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'La publication a échoué.');
+    } finally {
+      setPublication(false);
+    }
+  };
+
+  const reprendreAvecCle = async () => {
+    if (!cleSaisie.trim()) return;
+    adoptPersonKey(cleSaisie.trim());
+    setCle(true);
+    setCleSaisie('');
+    setReprendre(false);
+    try {
+      const person = await loadMyCard();
+      if (person) setCard((base) => personToCard(person, base));
+      setMariages(await listMyMemberships());
+    } catch {
+      setMessage('Cette clé n’a pas été reconnue.');
+      forgetKey();
+      setCle(false);
+    }
+  };
+
+  const rejoindre = async () => {
+    setRejoint(true);
+    setMessage('');
+    try {
+      await joinWedding({ slug: slug.trim() }, roleJoint || card.roleId || 'invites');
+      setMariages(await listMyMemberships());
+      setSlug('');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Ce mariage n’a pas été trouvé.');
+    } finally {
+      setRejoint(false);
+    }
+  };
+
+  const quitter = async (memberId: number) => {
+    await leaveWedding(memberId);
+    setMariages(await listMyMemberships());
+  };
+
+  const copierCle = async () => {
+    try {
+      await navigator.clipboard.writeText(cleNouvelle);
+      setMessage('Clé copiée — gardez-la dans un endroit sûr.');
+    } catch {
+      setMessage('Copiez la clé à la main : elle ne sera plus affichée.');
+    }
+    window.setTimeout(() => setMessage(''), 3000);
   };
 
   const partager = async () => {
@@ -240,7 +359,7 @@ export default function CardStudio() {
                           key={role.id}
                           type="button"
                           aria-pressed={actif}
-                          onClick={() => set({ roleId: actif ? '' : role.id, access: accessFromRoleId(role.id) })}
+                          onClick={() => set({ roleId: actif ? '' : role.id, access: accessForRole(role.id) })}
                           className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold transition ${
                             actif ? 'bg-[var(--vp-ink)] text-white' : 'bg-black/[0.045] text-[var(--vp-ink)] hover:bg-black/[0.08]'
                           }`}
@@ -610,6 +729,195 @@ export default function CardStudio() {
 
         {/* Les blocs, filtrés par le rôle */}
         <div className="min-w-0 space-y-4">
+          {/* En ligne : la carte devient une personne du réseau */}
+          <section className="rounded-[22px] border border-black/8 bg-white p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-[15.5px] font-bold text-[var(--vp-ink)]">En ligne</h2>
+                <p className="mt-1 max-w-md text-[12.5px] leading-snug text-[var(--vp-muted)]">
+                  {cle
+                    ? 'Votre carte est publiée : elle a une clé, et elle peut rejoindre un mariage.'
+                    : 'Votre carte vit encore dans ce navigateur. Publiez-la pour qu’elle rejoigne le réseau.'}
+                </p>
+              </div>
+              {cle ? (
+                <span className="flex shrink-0 items-center gap-2 text-[12px] font-semibold text-[var(--vp-muted)]">
+                  {enregistrement === 'encours' && (
+                    <>
+                      <Loader2 size={13} className="animate-spin" /> Enregistrement…
+                    </>
+                  )}
+                  {enregistrement === 'ok' && (
+                    <>
+                      <Check size={13} className="text-emerald-600" /> À jour
+                    </>
+                  )}
+                  {enregistrement === 'erreur' && 'Enregistrement impossible'}
+                  {enregistrement === 'repos' && (
+                    <>
+                      <Check size={13} className="text-emerald-600" /> En ligne
+                    </>
+                  )}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={publier}
+                  disabled={!card.firstName.trim() || publication}
+                  className="vp-btn vp-press shrink-0"
+                >
+                  {publication ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
+                  Publier ma carte
+                </button>
+              )}
+            </div>
+
+            {cleNouvelle && (
+              <div className="mt-4 rounded-[18px] bg-[#0B0C12] p-4 text-white">
+                <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/50">
+                  <KeyRound size={12} /> Votre clé personnelle
+                </div>
+                <p className="mt-1.5 text-[12.5px] leading-snug text-white/70">
+                  Elle s’affiche une seule fois. Sans elle, personne ne peut modifier votre carte — ni vous, sur un
+                  autre appareil. C’est aussi ce qui permet de la retrouver ailleurs.
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <code className="min-w-0 flex-1 truncate rounded-[12px] bg-white/10 px-3 py-2 font-mono text-[12px]">
+                    {cleNouvelle}
+                  </code>
+                  <button type="button" onClick={copierCle} className="vp-btn vp-press shrink-0">
+                    <Copy size={14} /> Copier
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCleNouvelle('')}
+                  className="mt-3 text-[11.5px] text-white/50 underline transition hover:text-white/80"
+                >
+                  Je l’ai notée
+                </button>
+              </div>
+            )}
+
+            {!cle && (
+              <div className="mt-4 border-t border-black/8 pt-4">
+                {reprendre ? (
+                  <div className="grid gap-2">
+                    <label className="block">
+                      <span className="vp-label">Collez votre clé personnelle</span>
+                      <input
+                        className="vp-field font-mono text-[13px]"
+                        value={cleSaisie}
+                        placeholder="ex. 3vT…"
+                        onChange={(e) => setCleSaisie(e.target.value)}
+                      />
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={reprendreAvecCle}
+                        disabled={!cleSaisie.trim()}
+                        className="vp-btn vp-press"
+                      >
+                        Reprendre ma carte
+                      </button>
+                      <button type="button" onClick={() => setReprendre(false)} className="vp-btn vp-btn-glass vp-press">
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setReprendre(true)}
+                    className="text-[12.5px] font-semibold text-[var(--vp-ink)] underline transition hover:opacity-70"
+                  >
+                    J’ai déjà une clé — retrouver ma carte
+                  </button>
+                )}
+              </div>
+            )}
+
+            {cle && (
+              <div className="mt-4 border-t border-black/8 pt-4">
+                <span className="vp-label">Ma place dans les mariages</span>
+                {mariages.length > 0 && (
+                  <div className="space-y-2">
+                    {mariages.map(({ member, site }) => (
+                      <div
+                        key={member.id}
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] bg-black/[0.035] px-3.5 py-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate text-[13px] font-semibold text-[var(--vp-ink)]">
+                            {site ? `${site.partner1} & ${site.partner2}` : `Mariage #${member.site_id}`}
+                          </div>
+                          <div className="text-[11.5px] text-[var(--vp-muted)]">
+                            {roleTitle(member.role_id) ?? member.role_id}
+                            {site?.wedding_date ? ` · ${site.wedding_date}` : ''}
+                          </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          {site?.slug && (
+                            <Link to={`/mariage/${site.slug}`} className="vp-btn vp-btn-glass vp-press">
+                              Les personnes
+                            </Link>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => quitter(member.id)}
+                            aria-label="Quitter ce mariage"
+                            className="vp-btn vp-btn-glass vp-press"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="mt-3 grid gap-2">
+                  <label className="block">
+                    <span className="vp-label">Rejoindre un mariage</span>
+                    <input
+                      className="vp-field"
+                      value={slug}
+                      placeholder="paul-emma — l’adresse du mini-site"
+                      onChange={(e) => setSlug(e.target.value)}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="vp-label">Mon rôle dans ce mariage</span>
+                    <select
+                      className="vp-field"
+                      value={roleJoint || card.roleId}
+                      onChange={(e) => setRoleJoint(e.target.value)}
+                    >
+                      {ROLE_GROUPS.map((groupe) => (
+                        <optgroup key={groupe.label} label={groupe.label}>
+                          {groupe.roles.map((role) => (
+                            <option key={role.id} value={role.id}>
+                              {role.title}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={rejoindre}
+                    disabled={!slug.trim() || rejoint}
+                    className="vp-btn vp-press justify-center"
+                  >
+                    {rejoint ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
+                    Rejoindre ce mariage
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
+
           {visibles.map((bloc) => (
             <Bloc key={bloc.id} titre={bloc.titre} indice={bloc.indice}>
               {bloc.contenu}

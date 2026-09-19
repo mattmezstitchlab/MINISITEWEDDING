@@ -17,6 +17,7 @@ import Shop from './pages/Shop';
 import ShopProduct from './pages/ShopProduct';
 import PreviewSite from './pages/PreviewSite';
 import CardStudio from './pages/CardStudio';
+import WeddingPeople from './pages/WeddingPeople';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/taxonomie" element={<Aime />} />
             <Route path="/creer" element={<Onboarding />} />
             <Route path="/carte" element={<CardStudio />} />
+            <Route path="/mariage/:slug" element={<WeddingPeople />} />
             <Route path="/generer" element={<Generating />} />
             <Route path="/generation" element={<Generating />} />
             <Route path="/editeur/:id" element={<Editor />} />

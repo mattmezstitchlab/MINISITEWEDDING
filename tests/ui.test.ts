@@ -15,13 +15,25 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import PublicSiteView from '../src/components/PublicSiteView';
 import SharePanel from '../src/components/SharePanel';
-import { setActiveToken } from '../src/lib/auth';
+import { forgetPersonToken, setActiveToken } from '../src/lib/auth';
 import { apiSend } from '../src/lib/http';
 import { seedSite } from '../src/lib/defaults';
 import { loadSiteData } from '../src/lib/siteData';
 import { setRemote } from '../src/lib/dataSource';
 import { resetDb } from '../src/lib/localStore';
 import { MemStorage } from './memStorage';
+import WeddingCard from '../src/components/WeddingCard';
+import { EMPTY_CARD, type CardData } from '../src/lib/weddingCard';
+import {
+  adoptPersonKey,
+  createCard,
+  hasPersonKey,
+  joinWedding,
+  listMyMemberships,
+  listWeddingPeople,
+  loadMyCard,
+  personToCard,
+} from '../src/lib/people';
 
 let pass = 0;
 const failures: string[] = [];
@@ -84,6 +96,79 @@ const partage = rendre(SharePanel, { site: data.site, data, onPublishedChange: (
 check('Partage : la publication est expliquée', partage.includes('Publier pour vos invités'), true);
 check('Partage : le dossier de dépôt est indiqué', partage.includes('public/sites/'), true);
 check('Partage : le nom de fichier attendu est donné', partage.includes(`${created.site.slug}.json`), true);
+
+/* -------------------------------------- la carte et le réseau, base du navigateur */
+
+/**
+ * Le même parcours que sur l'API, mais sur la base du navigateur : publier sa
+ * carte, la relire, rejoindre un mariage, et vérifier que la liste ne laisse
+ * pas fuiter ce qui est réservé. Les deux chemins doivent être indiscernables.
+ */
+forgetPersonToken();
+
+const maCarte: CardData = {
+  ...EMPTY_CARD,
+  firstName: 'Test',
+  lastName: 'Personne',
+  homeCity: 'Auxerre',
+  trade: 'Fleuriste',
+  email: 'test@exemple.fr',
+  from: '18:30',
+  to: '23:00',
+  diet: ['Végétarien'],
+  allergens: ['Gluten'],
+  iban: 'FR7630006000011234567890189',
+};
+
+check('sans clé, il n’y a pas de carte en ligne', hasPersonKey(), false);
+check('sans clé, ma carte est introuvable', await loadMyCard(), null);
+
+const { key: maCle } = await createCard(maCarte);
+check('publier sa carte donne une clé', hasPersonKey(), true);
+
+const relue = await loadMyCard();
+check('ma carte se relit avec son prénom', relue?.first_name, 'Test');
+check('ma carte garde sa ville', relue?.home_city, 'Auxerre');
+check('le verso garde l’IBAN pour son propriétaire', (relue?.card as { iban?: string })?.iban, 'FR7630006000011234567890189');
+
+const reconstruite = personToCard(relue ?? ({} as never), EMPTY_CARD);
+check('la carte se reconstruit à l’identique', [reconstruite.firstName, reconstruite.from, reconstruite.to], ['Test', '18:30', '23:00']);
+check('et son régime la suit', reconstruite.diet, ['Végétarien']);
+
+const place = await joinWedding({ slug: created.site.slug }, 'fleuriste');
+check('rejoindre un mariage depuis la base locale', place.role_id, 'fleuriste');
+check('la place se retrouve dans mes mariages', (await listMyMemberships()).length, 1);
+
+const enCollection = await listWeddingPeople({ slug: created.site.slug });
+check('la collection rend une carte', enCollection.length, 1);
+check(
+  'le propriétaire retrouve son IBAN dans sa propre collection',
+  (enCollection[0].card as { iban?: string })?.iban,
+  'FR7630006000011234567890189',
+);
+
+/* — le même mariage, lu par quelqu’un qui n’a pas de clé */
+forgetPersonToken();
+const anonyme = await listWeddingPeople({ slug: created.site.slug });
+check('la collection reste lisible quand le mariage est publié', anonyme.length, 1);
+check('la collection rend une carte', anonyme[0].trade, 'Fleuriste');
+check('l’IBAN ne sort pas vers un lecteur qui n’y a pas droit', 'iban' in (anonyme[0].card ?? {}), false);
+check('les pièces non plus', 'documents' in (anonyme[0].card ?? {}), false);
+check('les coordonnées « participants » non plus', anonyme[0].email, '');
+adoptPersonKey(maCle);
+check('la clé se reprend ailleurs', hasPersonKey(), true);
+
+/* — ce que la carte affiche quand une donnée a été retirée par le serveur */
+const masquee = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    null,
+    createElement(WeddingCard, { card: reconstruite, redacted: { contacts: true, prive: true } } as never),
+  ),
+);
+check('une carte masquée le dit au lieu de mentir', masquee.includes('Coordonnées réservées'), true);
+check('les pièces masquées aussi', masquee.includes('Pièces et IBAN réservés'), true);
+check('aucun IBAN, même tronqué, n’apparaît', masquee.includes('FR76'), false);
 
 /* ------------------------------------------------------------------- bilan */
 

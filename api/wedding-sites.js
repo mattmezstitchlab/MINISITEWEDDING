@@ -26,7 +26,7 @@ function parseBody(req) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-site-token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-site-token, x-person-token');
   if (req.method === 'OPTIONS') return res.status(204).end();
   // POST volontairement absent : la création passe par `api/create-site.js`.
   if (!['GET', 'PUT', 'DELETE'].includes(req.method)) {

@@ -18,7 +18,7 @@ const work = mkdtempSync(join(tmpdir(), 'wedding-api-'));
 
 cpSync(join(repoRoot, 'api'), join(work, 'api'), { recursive: true });
 mkdirSync(join(work, 'server'));
-for (const f of ['auth.js', 'crud.js', 'errors.js']) {
+for (const f of ['auth.js', 'crud.js', 'errors.js', 'people.js']) {
   cpSync(join(repoRoot, 'server', f), join(work, 'server', f));
 }
 cpSync(new URL('./mock-db-client.js', import.meta.url), join(work, 'server/db-client.js'));
@@ -39,6 +39,8 @@ const rsvpEvents = await load('api/rsvp-events.js');
 const rsvp = await load('api/rsvp.js');
 const media = await load('api/media.js');
 const upload = await load('api/upload.js');
+const people = await load('api/people.js');
+const members = await load('api/wedding-members.js');
 
 let pass = 0;
 const failures = [];
@@ -58,9 +60,12 @@ function mkRes() {
   return res;
 }
 
-async function call(handler, { method = 'GET', query = {}, body = null, token = null } = {}) {
+async function call(handler, { method = 'GET', query = {}, body = null, token = null, person = null } = {}) {
   const res = mkRes();
-  const req = { method, query, body, headers: token ? { 'x-site-token': token } : {} };
+  const headers = {};
+  if (token) headers['x-site-token'] = token;
+  if (person) headers['x-person-token'] = person;
+  const req = { method, query, body, headers };
   await handler(req, res);
   return res;
 }
@@ -284,6 +289,153 @@ check('site sans clé : édition impossible → 403', (await call(weddingSites, 
     );
     check(`${f} : les sections sont ordonnées`, snap.sections.every((s, i) => i === 0 || s.position >= snap.sections[i - 1].position), true);
   }
+}
+
+
+/* ------------------------------------------------------- 10. les personnes */
+
+/**
+ * Le cœur de l'affaire : qui peut lire quoi. Trois cartes, trois niveaux de
+ * confidentialité, et un mariage où chacun tient un rôle différent — c'est la
+ * matrice que le serveur doit appliquer, et que le navigateur ne doit jamais
+ * décider seul.
+ */
+{
+  const ouvert = await call(createSite, { method: 'POST', body: sitePayload('paul-emma-tests', true) });
+  const brouillon = await call(createSite, { method: 'POST', body: sitePayload('brouillon-tests', false) });
+  const slugOuvert = ouvert.body.site.slug;
+
+  const nouvelle = (prenom, extra = {}) =>
+    call(people, {
+      method: 'POST',
+      body: { first_name: prenom, last_name: 'Test', home_city: 'Provins', trade: 'Fleuriste', ...extra },
+    });
+
+  const mariee = await nouvelle('Alice', { contact_visibility: 'participants' });
+  const invite = await nouvelle('Bruno', { contact_visibility: 'participants' });
+  const photographe = await nouvelle('Claire', {
+    contact_visibility: 'maries',
+    email: 'claire@exemple.test',
+    phone: '0600000000',
+    card: { rate: '550 €', iban: 'FR7630006000011234567890189', documents: [{ id: 'd1', label: 'Devis', done: true }] },
+  });
+
+  const cleAlice = mariee.body.person_token;
+  const cleBruno = invite.body.person_token;
+  const cleClaire = photographe.body.person_token;
+
+  check('créer une carte sans prénom → 400', (await call(people, { method: 'POST', body: { last_name: 'X' } })).statusCode, 400);
+  check('créer une carte → 201', mariee.statusCode, 201);
+  check('la clé n’est renvoyée qu’à la création', typeof cleAlice === 'string' && cleAlice.length > 20, true);
+  check('la réponse de création ne contient que des champs connus', Object.keys(mariee.body).sort(), ['person', 'person_token']);
+  check('le verso suit la carte', photographe.body.person.card.rate, '550 €');
+
+  /* — la carte de quelqu’un d’autre ne s’écrit pas */
+  check('lire sans clé ni cible → 400', (await call(people, {})).statusCode, 400);
+  check('lire sa carte avec sa clé → 200', (await call(people, { person: cleAlice })).statusCode, 200);
+  check('ma carte arrive complète', (await call(people, { person: cleClaire })).body.person.card.iban, 'FR7630006000011234567890189');
+  check('écrire sans clé → 403', (await call(people, { method: 'PUT', body: { first_name: 'Nul' } })).statusCode, 403);
+  check('écrire avec une clé inventée → 403', (await call(people, { method: 'PUT', body: { first_name: 'Nul' }, person: 'inventee' })).statusCode, 403);
+
+  const maj = await call(people, { method: 'PUT', body: { trade: 'Fleuriste floral', id: invite.body.person.id }, person: cleClaire });
+  check('écrire avec sa clé → 200', maj.statusCode, 200);
+  check('l’identifiant envoyé ne détourne pas l’écriture', maj.body.person.id, photographe.body.person.id);
+  check('le champ est bien modifié', maj.body.person.trade, 'Fleuriste floral');
+  check(
+    'un champ hors liste est ignoré',
+    (await call(people, { method: 'PUT', body: { role_id: 'maries', first_name: 'Claire' }, person: cleClaire })).body.person
+      .role_id,
+    undefined,
+  );
+
+  /* — rejoindre un mariage */
+  check('rejoindre sans clé → 403', (await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'invites' } })).statusCode, 403);
+  check(
+    'rejoindre avec un rôle mal formé → 400',
+    (await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'NOPE !' }, person: cleBruno })).statusCode,
+    400,
+  );
+  check(
+    'rejoindre un mariage inconnu → 404',
+    (await call(members, { method: 'POST', body: { slug: 'inconnu-tests', role_id: 'invites' }, person: cleBruno })).statusCode,
+    404,
+  );
+
+  const aliceRejoint = await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'maries' }, person: cleAlice });
+  check('rejoindre → 201', aliceRejoint.statusCode, 201);
+  check('la place porte le rôle', aliceRejoint.body.member.role_id, 'maries');
+  check('rejoindre deux fois → 200, même place', (await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'maries' }, person: cleAlice })).statusCode, 200);
+  await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'invites' }, person: cleBruno });
+  await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'photographe' }, person: cleClaire });
+
+  /* — la liste dépend de qui regarde */
+  check('les membres d’un mariage publié se lisent sans clé', (await call(members, { query: { slug: slugOuvert } })).body.count, 3);
+  check('un brouillon reste introuvable', (await call(members, { query: { slug: brouillon.body.site.slug } })).statusCode, 404);
+  check(
+    'les mariés du brouillon le voient',
+    (await call(members, { query: { slug: brouillon.body.site.slug }, token: brouillon.body.edit_token })).statusCode,
+    200,
+  );
+  check(
+    'mes mariages se lisent avec ma clé',
+    (await call(members, { person: cleBruno })).body.memberships.length,
+    1,
+  );
+  check('mes mariages sans clé → 400', (await call(members, {})).statusCode, 400);
+
+  /* — ce que chacun voit sur la carte d’un autre */
+  const lire = async (person, lecteur = null) => {
+    const res = await call(people, { query: { id: person.body.person.id, slug: slugOuvert }, person: lecteur });
+    return res.body.person;
+  };
+
+  const claireParInconnu = await lire(photographe);
+  check('un inconnu ne reçoit aucun contact réservé aux mariés', claireParInconnu.email, '');
+  check('un inconnu ne reçoit jamais l’IBAN', claireParInconnu.card.iban, undefined);
+  check('un inconnu ne reçoit aucun document', 'documents' in claireParInconnu.card, false);
+  check('le masquage est annoncé', claireParInconnu.redacted.contacts && claireParInconnu.redacted.prive, true);
+  check('la carte de Claire reste lisible : elle montre son rôle et sa ville', claireParInconnu.home_city, 'Provins');
+
+  const claireParInvite = await lire(photographe, cleBruno);
+  check('un invité ne voit pas les coordonnées réservées aux mariés', claireParInvite.email, '');
+  check('un invité ne voit pas l’IBAN', claireParInvite.card.iban, undefined);
+
+  const claireParMariee = await lire(photographe, cleAlice);
+  check('les mariés voient les coordonnées', claireParMariee.email, 'claire@exemple.test');
+  check('les mariés voient l’IBAN', claireParMariee.card.iban, 'FR7630006000011234567890189');
+  check('les mariés voient les pièces', claireParMariee.card.documents.length, 1);
+
+  /* — le niveau « participants » : fermé aux inconnus, ouvert aux membres */
+  const diane = await nouvelle('Diane', { contact_visibility: 'participants', email: 'diane@exemple.test' });
+  await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'invites' }, person: diane.body.person_token });
+  check('un inconnu ne voit pas une carte « participants »', (await lire(diane)).email, '');
+  check('un membre voit une carte « participants »', (await lire(diane, cleBruno)).email, 'diane@exemple.test');
+  check('la personne voit la sienne, quoi qu’il arrive', (await lire(diane, diane.body.person_token)).email, 'diane@exemple.test');
+
+  await call(people, { method: 'PUT', body: { contact_visibility: 'carte', email: 'bruno@exemple.test' }, person: cleBruno });
+  check('une carte « sur ma carte » se lit par tous', (await lire(invite)).email, 'bruno@exemple.test');
+  check(
+    'l’IBAN reste réservé même quand tout le reste est ouvert',
+    (await call(people, { method: 'PUT', body: { card: { iban: 'FR0000000000000000000000000' } }, person: cleBruno })).body.person.card
+      .iban,
+    'FR0000000000000000000000000',
+  );
+
+  /* — la liste du mariage applique les mêmes règles */
+  const liste = await call(people, { query: { slug: slugOuvert } });
+  check('la liste du mariage rend une carte par membre', liste.body.people.length, 4);
+  check(
+    'la liste ne laisse fuiter aucun IBAN',
+    liste.body.people.some((p) => p.card && p.card.iban),
+    false,
+  );
+
+  /* — quitter */
+  const place = aliceRejoint.body.member.id;
+  check('quitter la place d’un autre → 403', (await call(members, { method: 'DELETE', query: { id: place }, person: cleBruno })).statusCode, 403);
+  check('quitter sans clé → 403', (await call(members, { method: 'DELETE', query: { id: place } })).statusCode, 403);
+  check('quitter sa place → 200', (await call(members, { method: 'DELETE', query: { id: place }, person: cleAlice })).statusCode, 200);
+  check('la place a bien disparu', (await call(members, { query: { slug: slugOuvert } })).body.count, 3);
 }
 
 /* ------------------------------------------------------------------ bilan */

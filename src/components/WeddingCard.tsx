@@ -49,6 +49,11 @@ interface WeddingCardProps {
   compact?: boolean;
   /** Ouvre sur le verso quand on sait ce que l'on vient voir. */
   startFlipped?: boolean;
+  /**
+   * Ce que le serveur a masqué pour ce lecteur. La carte le dit — « réservé
+   * aux participants » — au lieu d'afficher « à compléter », qui serait faux.
+   */
+  redacted?: { contacts: boolean; prive: boolean };
   className?: string;
 }
 
@@ -109,7 +114,13 @@ function Pastille({ children, actif = true }: { children: React.ReactNode; actif
   );
 }
 
-export default function WeddingCard({ card, compact = false, startFlipped = false, className = '' }: WeddingCardProps) {
+export default function WeddingCard({
+  card,
+  compact = false,
+  startFlipped = false,
+  redacted,
+  className = '',
+}: WeddingCardProps) {
   const [flipped, setFlipped] = useState(startFlipped);
   const reduire = useReducedMotion();
   const style = styleById(card.styleId);
@@ -252,16 +263,26 @@ export default function WeddingCard({ card, compact = false, startFlipped = fals
                     </>
                   )}
 
-                  {section.id === 'contact' && (
-                    <>
-                      <LigneSombre icon={Mail} label="E-mail" value={card.email} />
-                      <LigneSombre icon={Phone} label="Téléphone" value={card.phone} />
-                      <LigneSombre icon={Link2} label="Site & réseaux" value={[card.website, card.social].filter(Boolean).join(' · ')} />
-                      <p className="pt-0.5 text-[10.5px] text-white/40">
-                        Visible par : {visibilityLabel(card.contactVisibility).toLowerCase()}
+                  {section.id === 'contact' &&
+                    (redacted?.contacts ? (
+                      <p className="flex items-start gap-2 text-[11.5px] leading-snug text-white/45">
+                        <Lock size={12} className="mt-0.5 shrink-0" />
+                        Coordonnées réservées — visibles par : {visibilityLabel(card.contactVisibility).toLowerCase()}.
                       </p>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <LigneSombre icon={Mail} label="E-mail" value={card.email} />
+                        <LigneSombre icon={Phone} label="Téléphone" value={card.phone} />
+                        <LigneSombre
+                          icon={Link2}
+                          label="Site & réseaux"
+                          value={[card.website, card.social].filter(Boolean).join(' · ')}
+                        />
+                        <p className="pt-0.5 text-[10.5px] text-white/40">
+                          Visible par : {visibilityLabel(card.contactVisibility).toLowerCase()}
+                        </p>
+                      </>
+                    ))}
 
                   {section.id === 'dispo' && (
                     <>
@@ -312,7 +333,14 @@ export default function WeddingCard({ card, compact = false, startFlipped = fals
                     </>
                   )}
 
-                  {section.id === 'documents' && (
+                  {section.id === 'documents' && redacted?.prive && (
+                    <p className="flex items-start gap-2 text-[11.5px] leading-snug text-white/45">
+                      <Lock size={12} className="mt-0.5 shrink-0" />
+                      Pièces et IBAN réservés — la personne, et les mariés du mariage.
+                    </p>
+                  )}
+
+                  {section.id === 'documents' && !redacted?.prive && (
                     <>
                       <ul className="space-y-1.5">
                         {card.documents.map((doc) => (

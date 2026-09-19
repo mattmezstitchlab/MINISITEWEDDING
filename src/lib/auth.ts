@@ -61,6 +61,42 @@ export function forgetEditToken(ref: SiteRef) {
 }
 
 /* ------------------------------------------------------------------------- *
+ * La clé personnelle
+ *
+ * La carte d'une personne lui appartient, et rien d'autre ne l'identifie : sa
+ * clé est ce qu'elle est. Elle vit donc dans ce navigateur, et elle est
+ * saisissable à la main sur l'écran « Ma carte » — c'est aussi la façon de
+ * retrouver sa carte sur un autre appareil.
+ * --------------------------------------------------------------------------- */
+
+const PERSON_KEY = 'vows:person-key';
+
+export function savePersonToken(token: string) {
+  try {
+    localStorage.setItem(PERSON_KEY, token);
+  } catch {
+    // stockage indisponible : la clé reste valable le temps de la page
+  }
+}
+
+export function getPersonToken(): string | null {
+  try {
+    const token = localStorage.getItem(PERSON_KEY);
+    return token && token.trim() ? token.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+export function forgetPersonToken() {
+  try {
+    localStorage.removeItem(PERSON_KEY);
+  } catch {
+    // rien à oublier
+  }
+}
+
+/* ------------------------------------------------------------------------- *
  * Clé active de la session
  *
  * Les appels de l’éditeur sont nombreux et éparpillés (chaque champ sauvegardé
