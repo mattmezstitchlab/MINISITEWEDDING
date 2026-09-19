@@ -309,7 +309,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
     muted: '#7E8294',
     accent: '#E65C00',
     dark: false,
-    image: '/images/couple-paris.jpg',
+    image: '/images/last-minute.jpg',
     aura: ['#FFF0E6', '#FBE5D6', '#EAD0BE'],
     humanMissions: [
       { role: 'Mixologue Signature Golden Hour', mission: 'Bar panoramique avec créations de cocktails aux teintes orangées du crépuscule', essentialSkill: 'Service cocktails en terrasse' },

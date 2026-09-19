@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { WEDDING_STYLES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
+import { contentFor } from '../lib/universeContent';
 import HeroCycle from '../components/HeroCycle';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
 import ParallaxSection from '../components/ParallaxSection';
@@ -10,7 +11,7 @@ import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 import HeroAiPrompt from '../components/HeroAiPrompt';
 
-import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
+import UniversePhoneScreens from '../components/UniversePhoneScreens';
 import ErrorBoundary from '../components/ErrorBoundary';
 import BottomCapsuleNav from '../components/BottomCapsuleNav';
 import HomePhoneShowcase from '../components/HomePhoneShowcase';
@@ -82,23 +83,60 @@ export default function Landing() {
       <div id="hero">
       <HeroCycle activeStyleId={selectedStyle?.id}>
         <div className="mx-auto flex flex-col items-center justify-center text-center">
-          <div className="min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.h1
-                key={selectedStyle ? selectedStyle.id : titleIdx}
-                initial={{ opacity: 0, y: 16 }}
+          {selectedStyle ? (
+            /* Le hero de l'univers choisi : son visuel, sa présentation, ses chiffres */
+            <div key={selectedStyle.id} className="mx-auto max-w-3xl">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="vp-title max-w-4xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] whitespace-pre-line"
-                style={{ fontSize: 'clamp(2.4rem, 6vw, 4.6rem)', lineHeight: 1.08 }}
               >
-                {selectedStyle
-                  ? `${selectedStyle.name} · ${selectedStyle.tagline}`
-                  : HERO_ROTATING_TITLES[titleIdx]}
-              </motion.h1>
-            </AnimatePresence>
-          </div>
+                <span className="vp-eyebrow !text-white/70">
+                  {contentFor(selectedStyle).hero.kicker}
+                </span>
+                <h1
+                  className="vp-title mt-3 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+                  style={{ fontSize: 'clamp(2.1rem, 5vw, 3.9rem)', lineHeight: 1.08 }}
+                >
+                  {contentFor(selectedStyle).hero.title}
+                </h1>
+                <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-white/80">
+                  {contentFor(selectedStyle).hero.subtitle}
+                </p>
+
+                {/* Les informations propres à cet univers */}
+                <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-2.5">
+                  {contentFor(selectedStyle).hero.facts.map((fact) => (
+                    <span
+                      key={fact.label}
+                      className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12px] text-white backdrop-blur-sm"
+                    >
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-white/55">
+                        {fact.label}
+                      </span>
+                      <span className="ml-1.5 font-semibold">{fact.value}</span>
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+          ) : (
+            <div className="min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.h1
+                  key={titleIdx}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="vp-title max-w-4xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] whitespace-pre-line"
+                  style={{ fontSize: 'clamp(2.4rem, 6vw, 4.6rem)', lineHeight: 1.08 }}
+                >
+                  {HERO_ROTATING_TITLES[titleIdx]}
+                </motion.h1>
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* Saisie de l'Agent IA connecté à tous les thèmes */}
           <motion.div
@@ -126,10 +164,7 @@ export default function Landing() {
         {!selectedStyle ? (
           <HomePhoneShowcase />
         ) : (
-          <ThemePhoneShowcase
-            currentStyle={selectedStyle}
-            onOpenVendorApplication={() => scrollToHero()}
-          />
+          <UniversePhoneScreens currentStyle={selectedStyle} />
         )}
         </div>
       </ErrorBoundary>
