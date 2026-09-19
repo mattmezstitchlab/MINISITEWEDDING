@@ -63,7 +63,7 @@ export default function UniversePhoneScreens({ currentStyle }: { currentStyle: W
   };
 
   return (
-    <section className="relative overflow-hidden border-b border-black/5 bg-[#FBFBFD] px-5 py-16 text-[#0B0C12] sm:px-8 sm:py-24">
+    <section className="relative overflow-hidden border-b border-black/5 bg-white px-5 py-16 text-[#0B0C12] sm:px-8 sm:py-24">
       <div className="mx-auto max-w-5xl">
         {/* Le pitch des trois écrans */}
         <div className="mx-auto max-w-2xl text-center">

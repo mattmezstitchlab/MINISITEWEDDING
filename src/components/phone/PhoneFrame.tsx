@@ -24,7 +24,7 @@ export default function PhoneFrame({ children, className = '' }: PhoneFrameProps
       <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[40px] bg-white text-[#0B0C12]">
         {/* Dynamic Island */}
         <div className="absolute left-1/2 top-2.5 z-30 flex h-[19px] w-[80px] -translate-x-1/2 items-center justify-between rounded-full bg-black px-2.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           <span className="text-[8px] font-mono text-white/50">VOWS</span>
           <span className="h-1.5 w-1.5 rounded-full bg-white/20" />
         </div>
@@ -52,7 +52,9 @@ export function PhoneModule({
   className?: string;
 }) {
   return (
-    <div className={`rounded-[14px] border border-black/6 bg-white p-3 shadow-sm ${className}`}>
+    <div
+      className={`rounded-[16px] border border-black/8 bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`}
+    >
       {eyebrow && (
         <div className="mb-1.5 text-[8.5px] font-mono font-bold uppercase tracking-wider text-black/40">
           {eyebrow}

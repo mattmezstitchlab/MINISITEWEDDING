@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Clock, Sparkles } from 'lucide-react';
-import { GUIDE_ARTICLES, INSOLITE_ARTICLES, UNIVERSE_ARTICLES } from '../lib/magazine';
+import { ArrowRight, Clock } from 'lucide-react';
+import {
+  GUIDE_ARTICLES,
+  INSOLITE_ARTICLES,
+  MAGAZINE_HERO,
+  MAGAZINE_HERO_REPLI,
+  UNIVERSE_ARTICLES,
+} from '../lib/magazine';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 
 /**
@@ -20,7 +26,9 @@ const fadeUp = {
 
 export default function Magazine() {
   const [filtre, setFiltre] = useState<'tout' | 'univers' | 'guide' | 'insolite'>('tout');
+  const [visuelHero, setVisuelHero] = useState(true);
   const aLaUne = UNIVERSE_ARTICLES[0];
+  const total = UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length + INSOLITE_ARTICLES.length;
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
@@ -40,46 +48,78 @@ export default function Magazine() {
         </div>
       </nav>
 
-      {/* L'ouverture du magazine */}
-      <header className="px-5 pb-10 pt-28 sm:px-8 sm:pt-36">
-        <div className="mx-auto max-w-6xl">
-          <span className="vp-eyebrow">Le Magazine VOWS</span>
+      {/* Le hero : le visuel, puis ce que contient le magazine */}
+      <header className="relative flex min-h-[62vh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
+        {visuelHero && (
+          <img
+            src={MAGAZINE_HERO}
+            alt=""
+            onError={() => setVisuelHero(false)}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
+        {!visuelHero && (
+          <img src={MAGAZINE_HERO_REPLI} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
+
+        <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 sm:px-8 sm:pb-14">
+          <span className="vp-eyebrow !text-white/70">Le Magazine VOWS</span>
           <h1
-            className="vp-title mt-4 max-w-3xl"
-            style={{ fontSize: 'clamp(2.4rem, 6vw, 4.4rem)', lineHeight: 1.04 }}
+            className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+            style={{ fontSize: 'clamp(2.2rem, 5.4vw, 4.2rem)', lineHeight: 1.04 }}
           >
             Ce qu’il faut savoir avant de choisir.
           </h1>
-          <p className="mt-5 max-w-2xl text-[16.5px] leading-relaxed text-black/60">
+          <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-white/75">
             {UNIVERSE_ARTICLES.length} univers racontés en détail — le lieu, la journée heure par heure, les métiers
             qui la font tourner — et {GUIDE_ARTICLES.length} guides sur ce qui vaut pour tous les mariages :
             rétroplanning, budget, cagnotte, RSVP, allergènes.
           </p>
 
-          {/* Les filtres */}
-          <div className="mt-7 flex flex-wrap items-center gap-2">
-            {([
-              ['tout', 'Tout le magazine'],
-              ['univers', `Les ${UNIVERSE_ARTICLES.length} univers`],
-              ['guide', `Les ${GUIDE_ARTICLES.length} guides`],
-              ['insolite', `Insolite (${INSOLITE_ARTICLES.length})`],
-            ] as const).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setFiltre(id)}
-                className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition ${
-                  filtre === id
-                    ? 'border-black bg-black text-white'
-                    : 'border-black/12 bg-white text-[#0B0C12] hover:border-black/40'
-                }`}
+          <div className="mt-6 flex flex-wrap gap-2.5">
+            {[
+              { label: 'Articles', value: String(total) },
+              { label: 'Univers', value: String(UNIVERSE_ARTICLES.length) },
+              { label: 'Guides', value: String(GUIDE_ARTICLES.length) },
+              { label: 'Insolite', value: String(INSOLITE_ARTICLES.length) },
+            ].map((fait) => (
+              <span
+                key={fait.label}
+                className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12px] text-white backdrop-blur-sm"
               >
-                {label}
-              </button>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-white/55">{fait.label}</span>
+                <span className="ml-1.5 font-semibold">{fait.value}</span>
+              </span>
             ))}
           </div>
         </div>
       </header>
+
+      {/* Les filtres */}
+      <section className="px-5 pb-8 pt-10 sm:px-8 sm:pt-12">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2">
+          {([
+            ['tout', 'Tout le magazine'],
+            ['univers', `Les ${UNIVERSE_ARTICLES.length} univers`],
+            ['guide', `Les ${GUIDE_ARTICLES.length} guides`],
+            ['insolite', `Insolite (${INSOLITE_ARTICLES.length})`],
+          ] as const).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setFiltre(id)}
+              className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition ${
+                filtre === id
+                  ? 'border-black bg-black text-white'
+                  : 'border-black/12 bg-white text-[#0B0C12] hover:border-black/40'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* L'article à la une */}
       {filtre === 'tout' && (
@@ -97,8 +137,7 @@ export default function Magazine() {
                 />
               </div>
               <div className="flex flex-col justify-center p-6 sm:p-10">
-                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-black/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-black/55">
-                  <Sparkles size={11} />
+                <span className="inline-flex w-fit items-center rounded-full bg-black/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-black/55">
                   À la une · {aLaUne.kicker}
                 </span>
                 <h2 className="vp-title mt-4 text-[26px] leading-tight sm:text-[34px]">{aLaUne.title}</h2>

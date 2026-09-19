@@ -105,7 +105,7 @@ export default function HomePhoneShowcase({ draft }: { draft?: SpaceDraft }) {
   }, [draft, index]);
 
   return (
-    <section className="relative z-20 bg-[#FAFAFC] px-5 pb-20 sm:px-8 sm:pb-28">
+    <section className="relative z-20 bg-white px-5 pb-20 sm:px-8 sm:pb-28">
       <div className="relative mx-auto max-w-6xl">
         <div className="flex flex-col items-center pt-16 sm:pt-20">
           <motion.div

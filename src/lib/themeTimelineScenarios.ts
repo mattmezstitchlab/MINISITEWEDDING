@@ -234,6 +234,16 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
         { role: 'Chef Haute Cuisine Marine', mission: 'Menu 5 temps algues fraîches et ormeaux sauvages', status: 'open', compensationHint: 'Service d’exception 20 couverts' },
       ],
     },
+    {
+      time: '23h30',
+      title: 'La Remontée & Le Vin Chaud des Profondeurs',
+      narrativeScript: 'Retour lent vers la surface, gilets thermiques et couvertures de laine. Sur le pont, un dernier verre face au phare et quarante personnes qui parlent bas.',
+      ambianceDetail: 'Air marin, silence préservé, fin à quarante convives.',
+      image: '/images/phare-vows.jpg',
+      vendorRoles: [
+        { role: 'Veilleur de Nuit & Bar à Vins', mission: 'Vin chaud, couvertures et remontée sécurisée des convives', status: 'open', compensationHint: 'Service de nuit' },
+      ],
+    },
   ],
 
   // 9. TRAIN DE NUIT IMPÉRIAL
@@ -254,9 +264,19 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
       title: 'Dîner Étoilé au Rythme du Rail',
       narrativeScript: 'Argenterie scintillante, verres en cristal qui tintent doucement avec le dévers des virages. Toasts sous les lustres Art Déco.',
       ambianceDetail: 'Élégance suprême des grands voyages, velours et champagne millésimé.',
-      image: '/images/champagne.jpg',
+      image: '/images/table-noir.jpg',
       vendorRoles: [
         { role: 'Chef Gastronome Rame Étoilée', mission: 'Menu gastronomique en cuisine étroite embarquée', status: 'filled' },
+      ],
+    },
+    {
+      time: '19h15',
+      title: 'Cocktail en Voiture-Bar',
+      narrativeScript: 'Entre deux tunnels, le bar se remplit : coupes de cristal, olives de Ligurie et boiseries qui craquent doucement. Le piano accompagne le balancement de la rame.',
+      ambianceDetail: 'Laiton poli, velours vert, nuit qui tombe sur les Alpes.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Barman de Voiture-Bar', mission: 'Cocktails classiques servis dans un espace de quatre mètres', status: 'filled' },
       ],
     },
   ],
@@ -282,6 +302,16 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
       image: '/images/champagne.jpg',
       vendorRoles: [
         { role: 'Photographe Sniper Spontané', mission: 'Reportage live argentique instinctif sans poses', status: 'open', compensationHint: 'Mission express 4h' },
+      ],
+    },
+    {
+      time: '23h00',
+      title: 'Le Dîner Commandé le Matin Même',
+      narrativeScript: 'Four mobile sur le trottoir, bar à huîtres monté en une heure, bouteilles apportées par les invités. On mange debout, on danse avant le dessert.',
+      ambianceDetail: 'Cuisine de rue, ville qui s’allume, aucun plan de table.',
+      image: '/images/last-minute.jpg',
+      vendorRoles: [
+        { role: 'Chef Guérilla / Pop-Up', mission: 'Dîner debout monté en trois heures avec four mobile autonome', status: 'open', compensationHint: 'Service express' },
       ],
     },
   ],

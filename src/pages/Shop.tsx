@@ -4,12 +4,15 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Gift, Handshake, ShoppingBag, Tag, Truck } from 'lucide-react';
 import {
   SHOP_CATEGORIES,
+  SHOP_HERO,
+  SHOP_HERO_REPLI,
   SHOP_MODES,
   SHOP_PRODUCTS,
   modeLabel,
   productsByCategory,
   type ShopMode,
 } from '../lib/shopData';
+import ShopImage from '../components/ShopImage';
 
 /**
  * LE SHOP
@@ -36,6 +39,7 @@ const ICONES_MODE: Record<ShopMode, typeof Tag> = {
 export default function Shop() {
   const [categorie, setCategorie] = useState<string>('tout');
   const [modeActif, setModeActif] = useState<ShopMode | null>(null);
+  const [visuelHero, setVisuelHero] = useState(SHOP_HERO);
 
   const produits = useMemo(() => {
     const parCategorie = productsByCategory(categorie);
@@ -68,21 +72,52 @@ export default function Shop() {
         </div>
       </nav>
 
-      {/* L'ouverture */}
-      <header className="px-5 pb-8 pt-28 sm:px-8 sm:pt-36">
-        <div className="mx-auto max-w-6xl">
-          <span className="vp-eyebrow">Le Shop VOWS</span>
-          <h1 className="vp-title mt-4 max-w-3xl" style={{ fontSize: 'clamp(2.3rem, 5.6vw, 4.2rem)', lineHeight: 1.05 }}>
+      {/* Le hero du shop : le visuel, puis tout ce qui s'y trouve */}
+      <header className="relative flex min-h-[64vh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
+        <img
+          src={visuelHero}
+          alt=""
+          onError={() => setVisuelHero((actuel) => (actuel === SHOP_HERO_REPLI ? actuel : SHOP_HERO_REPLI))}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
+
+        <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 sm:px-8 sm:pb-14">
+          <span className="vp-eyebrow !text-white/70">Le Shop VOWS</span>
+          <h1
+            className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+            style={{ fontSize: 'clamp(2.2rem, 5.2vw, 4rem)', lineHeight: 1.05 }}
+          >
             Tout ce qu’il faut, sans rien acheter pour une seule journée.
           </h1>
-          <p className="mt-5 max-w-2xl text-[16.5px] leading-relaxed text-black/60">
+          <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-white/75">
             {SHOP_PRODUCTS.length} pièces à louer, acheter, emprunter ou recevoir : mobilier, vaisselle, décor,
             lumière, tenues, papeterie — et quelques objets qu’on ne trouve nulle part ailleurs. Le mobilier est
             livré, monté et repris ; ce qui ne sert plus est prêté ou donné.
           </p>
 
-          {/* Les quatre modes */}
-          <div className="mt-7 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2.5">
+            {[
+              { label: 'Pièces', value: String(SHOP_PRODUCTS.length) },
+              { label: 'Modes', value: SHOP_MODES.map((m) => m.label).join(' · ') },
+              { label: 'Catégories', value: String(SHOP_CATEGORIES.length) },
+            ].map((fait) => (
+              <span
+                key={fait.label}
+                className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12px] text-white backdrop-blur-sm"
+              >
+                <span className="font-mono text-[10px] uppercase tracking-wider text-white/55">{fait.label}</span>
+                <span className="ml-1.5 font-semibold">{fait.value}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      {/* Les quatre modes */}
+      <section className="px-5 pb-8 pt-10 sm:px-8 sm:pt-14">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-wrap gap-2">
             {SHOP_MODES.map((mode) => {
               const Icone = ICONES_MODE[mode.id];
               const actif = modeActif === mode.id;
@@ -104,7 +139,7 @@ export default function Shop() {
             })}
           </div>
         </div>
-      </header>
+      </section>
 
       {/* Les filtres de catégorie */}
       <section className="sticky top-[70px] z-30 border-y border-black/5 bg-white/95 px-5 py-3 backdrop-blur sm:px-8">
@@ -157,7 +192,7 @@ export default function Shop() {
               Aucune pièce dans cette combinaison. Essayez un autre mode ou une autre catégorie.
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6">
+            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
               {produits.map((produit, i) => {
                 const Icone = ICONES_MODE[produit.mode];
                 return (
@@ -167,9 +202,8 @@ export default function Shop() {
                       className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-black/10 bg-white p-2.5 transition-all hover:-translate-y-1 hover:border-black/20 hover:shadow-xl"
                     >
                       <div className="relative aspect-[4/3] overflow-hidden rounded-[18px]">
-                        <img
-                          src={produit.image}
-                          alt={produit.name}
+                        <ShopImage
+                          produit={produit}
                           className="h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.03]"
                         />
                         <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 backdrop-blur-sm">

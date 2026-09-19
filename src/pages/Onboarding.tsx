@@ -82,6 +82,25 @@ export default function Onboarding() {
         </div>
       </nav>
 
+      {/* Le hero de la création */}
+      <header className="relative mx-4 mt-4 overflow-hidden rounded-[28px] bg-[#0B0C12] sm:mx-8">
+        <img
+          src="/images/hero-wedding.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-75"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/45 to-black/30" />
+        <div className="relative px-6 py-10 text-white sm:px-10 sm:py-14">
+          <span className="vp-eyebrow !text-white/70">Créer votre espace</span>
+          <h1 className="vp-title mt-3 max-w-2xl text-white" style={{ fontSize: 'clamp(1.9rem, 4.6vw, 3rem)' }}>
+            Trois écrans pour un seul mariage.
+          </h1>
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/75">
+            L’invité, les mariés, le prestataire : le même jour, lu par chacun. On commence par vous deux.
+          </p>
+        </div>
+      </header>
+
       <div className="flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
         <div className="w-full max-w-5xl">
           <AnimatePresence mode="wait">

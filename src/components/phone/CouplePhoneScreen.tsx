@@ -62,10 +62,7 @@ export default function CouplePhoneScreen({
         <PhoneModule eyebrow="Cagnotte">
           <div className="text-[10.5px] font-semibold leading-snug text-black">{content.cagnotte.purpose}</div>
           <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-black/8">
-            <div
-              className="h-full rounded-full"
-              style={{ width: `${cagnotteProgress}%`, background: style.accent }}
-            />
+            <div className="h-full rounded-full bg-emerald-500" style={{ width: `${cagnotteProgress}%` }} />
           </div>
           <div className="mt-1.5 flex items-baseline justify-between">
             <span className="text-[16px] font-bold text-black">{euros(content.cagnotte.raised)}</span>
@@ -93,8 +90,10 @@ export default function CouplePhoneScreen({
                 </div>
               ))}
             </div>
-            <div className="mt-2.5 flex items-center gap-1.5 rounded-[10px] bg-emerald-50 px-2 py-1.5 text-[9.5px] text-emerald-800">
-              <Check size={11} className="shrink-0" />
+            <div className="mt-2.5 flex items-center gap-1.5 rounded-[10px] bg-black/[0.03] px-2 py-1.5 text-[9.5px] text-black/60">
+              <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-emerald-500/12">
+                <Check size={9} className="text-emerald-600" />
+              </span>
               <span>Envoyé au traiteur le 12 du mois · accusé reçu</span>
             </div>
           </PhoneModule>
@@ -160,7 +159,7 @@ export default function CouplePhoneScreen({
 
   return (
     <PhoneShell
-      accent={style.accent}
+      style={style}
       modules={modules}
       hero={
         <PhoneHero

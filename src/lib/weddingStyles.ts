@@ -59,7 +59,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
     muted: '#8A8378',
     accent: '#B08D57',
     dark: false,
-    image: '/images/traditionnel.jpg',
+    image: '/images/chateau-tilleuls.jpg',
     aura: ['#FBF7F0', '#F0E6D6', '#DEC9A8'],
     humanMissions: [
       { role: 'Wedding Planner Cérémonie & Réception', mission: 'Orchestration complète : église, cortège, banquet, brunch du lendemain', essentialSkill: 'Chef d’orchestre du jour J' },
@@ -184,7 +184,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
     muted: '#777777',
     accent: '#111111',
     dark: false,
-    image: '/images/noir-blanc-large.jpg',
+    image: '/images/noir-blanc.jpg',
     aura: ['#FFFFFF', '#EAEAEA', '#CCCCCC'],
     humanMissions: [
       { role: 'Photographe Mode / Studio', mission: 'Portraits posés noir & blanc grand format, lumière flash parapluie', essentialSkill: 'Mise en scène éditoriale' },
@@ -634,7 +634,7 @@ export const WEDDING_STYLES: WeddingStyle[] = [
     muted: '#64748B',
     accent: '#F59E0B',
     dark: false,
-    image: '/images/couple-paris-large.jpg',
+    image: '/images/couple-paris.jpg',
     aura: ['#FEF3C7', '#FDE68A', '#F59E0B'],
     humanMissions: [
       { role: 'Régisseur Urgence Plan B / 48H', mission: 'Dégoter un spot d’exception disponible le soir-même et régler les assurances', essentialSkill: 'Réseau d’accès instantané' },

@@ -58,7 +58,7 @@ export default function GuestPhoneScreen({
         <PhoneModule eyebrow="Cagnotte des invités">
           <div className="text-[11.5px] font-bold leading-snug text-black">{content.cagnotte.purpose}</div>
           <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-black/8">
-            <div className="h-full rounded-full" style={{ width: `${progress}%`, background: style.accent }} />
+            <div className="h-full rounded-full bg-emerald-500" style={{ width: `${progress}%` }} />
           </div>
           <div className="mt-1.5 flex items-baseline justify-between">
             <span className="text-[14px] font-bold text-black">{euros(content.cagnotte.raised)}</span>
@@ -146,7 +146,7 @@ export default function GuestPhoneScreen({
 
   return (
     <PhoneShell
-      accent={style.accent}
+      style={style}
       modules={modules}
       hero={
         <PhoneHero

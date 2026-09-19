@@ -468,58 +468,7 @@ body {
  *  Divers
  * ------------------------------------------------------------------ */
 
-@keyframes rainbowGlow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
 
-/* Le bouton noir cerclé d'un arc-en-ciel qui tourne et qui brille.
-   Deux épaisseurs : un liseré net au bord, et un halo flou tout autour. */
-.vp-rainbow {
-  position: relative;
-  isolation: isolate;
-}
-
-.vp-rainbow::before,
-.vp-rainbow::after {
-  content: '';
-  position: absolute;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    #ff4d6d, #ff9f4d, #ffe14d, #4de1a4, #4db4ff, #a24dff, #ff4d6d
-  );
-  background-size: 300% 100%;
-  animation: rainbowGlow 5.5s linear infinite;
-  z-index: -1;
-  pointer-events: none;
-}
-
-/* Le halo, flou, qui déborde autour */
-.vp-rainbow::before {
-  inset: -4px;
-  filter: blur(9px);
-  opacity: 0.75;
-}
-
-/* Le liseré, net, collé au bord */
-.vp-rainbow::after {
-  inset: -1.5px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .vp-rainbow::before,
-  .vp-rainbow::after {
-    animation: none;
-  }
-}
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -2,15 +2,17 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, Gift, Handshake, ShoppingBag, Truck } from 'lucide-react';
 import { SHOP_CATEGORIES, modeLabel, productBySlug, similarProducts, type ShopMode } from '../lib/shopData';
+import ShopImage from '../components/ShopImage';
 import { UNIVERSE_ARTICLES } from '../lib/magazine';
 import { styleById } from '../lib/weddingStyles';
 
 /**
  * LA PAGE D'UN PRODUIT
  *
- * Une vraie page de vente : ce que c'est, ce que ça comprend, les
- * caractéristiques, les ambiances auxquelles ça appartient, ce qui va avec — et
- * les articles du magazine qui racontent ces univers.
+ * Une vraie page de vente : le visuel en hero plein écran, puis ce que c'est,
+ * ce que ça comprend, les caractéristiques, les ambiances auxquelles ça
+ * appartient, ce qui va avec — et les articles du magazine qui racontent ces
+ * univers.
  */
 
 const ICONES_MODE: Record<ShopMode, typeof Truck> = {
@@ -58,52 +60,61 @@ export default function ShopProduct() {
         </div>
       </nav>
 
-      <main className="px-5 pb-16 pt-24 sm:px-8 sm:pt-32">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-            {/* Le visuel */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="relative overflow-hidden rounded-[28px] border border-black/8"
-            >
-              <div className="aspect-[4/3]">
-                <img src={produit.image} alt={produit.name} className="h-full w-full object-cover object-center" />
-              </div>
-              <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 backdrop-blur-sm">
-                <Icone size={12} className="text-white/90" />
-                <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-white/90">
-                  {modeLabel(produit.mode)}
-                </span>
-              </span>
-            </motion.div>
+      {/* Le hero : le visuel de la pièce, en plein cadre */}
+      <header className="relative flex min-h-[68vh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
+        <motion.img
+          key={produit.slug}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+          src={produit.image}
+          alt={produit.name}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/50 to-black/30" />
 
+        <span className="absolute right-3 top-24 z-10 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1 backdrop-blur-sm sm:right-8 sm:top-28">
+          <Icone size={12} className="text-white/90" />
+          <span className="font-mono text-[9.5px] font-bold uppercase tracking-wider text-white/90">
+            {modeLabel(produit.mode)}
+          </span>
+        </span>
+
+        <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 sm:px-8 sm:pb-14">
+          <Link
+            to="/shop"
+            className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-white/60 transition hover:text-white"
+          >
+            Shop · {categorie?.label}
+            {produit.insolite ? ' · insolite' : ''}
+          </Link>
+          <h1
+            className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+            style={{ fontSize: 'clamp(2.1rem, 5vw, 3.8rem)', lineHeight: 1.06 }}
+          >
+            {produit.name}
+          </h1>
+          <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-white/80">{produit.tagline}</p>
+
+          <div className="mt-6 flex flex-wrap items-end gap-x-4 gap-y-2">
+            <span className="text-[30px] font-bold leading-none text-white">{produit.price}</span>
+            <span className="pb-1 text-[13px] text-white/65">{produit.unit}</span>
+            <span className="pb-1 text-[13px] text-white/65">
+              · {produit.modes.map((mode) => modeLabel(mode)).join(' · ')}
+            </span>
+          </div>
+        </div>
+      </header>
+
+      <main className="px-5 pb-16 pt-12 sm:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
             {/* L'argumentaire */}
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-black/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-black/55">
-                  {categorie?.label}
-                </span>
-                {produit.insolite && (
-                  <span className="rounded-full border border-black/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-black/70">
-                    Insolite
-                  </span>
-                )}
-              </div>
+              <span className="vp-eyebrow">La pièce</span>
+              <p className="mt-3 text-[16px] leading-relaxed text-black/70">{produit.description}</p>
 
-              <h1 className="vp-title mt-4 text-[30px] leading-tight sm:text-[40px]">{produit.name}</h1>
-              <p className="mt-2 text-[17px] text-black/60">{produit.tagline}</p>
-
-              <div className="mt-6 flex items-end gap-3">
-                <span className="text-[32px] font-bold leading-none">{produit.price}</span>
-                <span className="pb-1 text-[13px] text-black/50">{produit.unit}</span>
-              </div>
-
-              <p className="mt-6 text-[15.5px] leading-relaxed text-black/70">{produit.description}</p>
-
-              {/* Les modes disponibles */}
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-7 flex flex-wrap gap-2">
                 {produit.modes.map((mode) => {
                   const IconeMode = ICONES_MODE[mode];
                   return (
@@ -130,27 +141,13 @@ export default function ShopProduct() {
                 Livraison, montage et reprise compris dans le prix indiqué.
               </p>
             </div>
-          </div>
 
-          {/* Ce que comprend la pièce, et ses caractéristiques */}
-          <div className="mt-14 grid gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <h2 className="vp-title text-[22px]">Ce que ça comprend</h2>
-              <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
-                {produit.includes.map((item) => (
-                  <li key={item} className="flex items-start gap-2 rounded-[16px] bg-[#FAFAFC] px-4 py-3">
-                    <Check size={14} className="mt-[3px] shrink-0 text-emerald-600" />
-                    <span className="text-[14px] leading-snug text-black/75">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="vp-title text-[22px]">Caractéristiques</h2>
+            {/* Les caractéristiques */}
+            <div className="rounded-[24px] border border-black/8 bg-[#FAFAFC] p-5 sm:p-6">
+              <h2 className="vp-title text-[20px]">Caractéristiques</h2>
               <dl className="mt-4 space-y-3">
                 {produit.specs.map((spec) => (
-                  <div key={spec.label} className="border-b border-black/6 pb-2.5 last:border-none">
+                  <div key={spec.label} className="border-b border-black/6 pb-2.5 last:border-none last:pb-0">
                     <dt className="font-mono text-[10.5px] uppercase tracking-wider text-black/40">{spec.label}</dt>
                     <dd className="text-[14px] leading-snug text-black">{spec.value}</dd>
                   </div>
@@ -158,6 +155,19 @@ export default function ShopProduct() {
               </dl>
             </div>
           </div>
+
+          {/* Ce que comprend la pièce */}
+          <section className="mt-14">
+            <h2 className="vp-title text-[22px]">Ce que ça comprend</h2>
+            <ul className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+              {produit.includes.map((item) => (
+                <li key={item} className="flex items-start gap-2 rounded-[16px] bg-white px-4 py-3 ring-1 ring-black/8">
+                  <Check size={14} className="mt-[3px] shrink-0 text-emerald-600" />
+                  <span className="text-[14px] leading-snug text-black/75">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
 
           {/* Les ambiances */}
           <div className="mt-12">
@@ -187,9 +197,8 @@ export default function ShopProduct() {
                   className="group flex h-full flex-col overflow-hidden rounded-[22px] border border-black/10 bg-white p-2.5 transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <div className="aspect-[4/3] overflow-hidden rounded-[16px]">
-                    <img
-                      src={item.image}
-                      alt={item.name}
+                    <ShopImage
+                      produit={item}
                       className="h-full w-full object-cover object-center transition duration-700 group-hover:scale-[1.03]"
                     />
                   </div>

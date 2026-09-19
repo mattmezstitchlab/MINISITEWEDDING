@@ -65,7 +65,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '28 €',
     unit: 'la table, par jour',
-    image: '/images/shop/mobilier.jpg',
+    image: '/images/shop/table-trestle-chene.jpg',
     tagline: 'La grande table de banquet, brute et solide.',
     description:
       'Trois mètres de chêne massif, pieds trestle démontables, plateau non traité — elle prend les traces du repas et c’est tant mieux. C’est la table des banquets champêtres, des bergeries et des granges. Douze convives dessus, sans se serrer.',
@@ -87,7 +87,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '6 €',
     unit: 'la chaise',
-    image: '/images/shop/mobilier.jpg',
+    image: '/images/shop/chaise-paille-tressee.jpg',
     tagline: 'La chaise de ferme, toutes légèrement différentes.',
     description:
       'Assise paille tressée, structure hêtre. Nous en avons 240 en stock, toutes chinées, aucune identique — c’est exactement ce qui fait le charme d’un banquet dépareillé. À la location pour un week-end, ou à l’achat à partir de dix pièces.',
@@ -110,7 +110,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '90 €',
     unit: 'l’ensemble de 4 m',
-    image: '/images/shop/mobilier.jpg',
+    image: '/images/shop/banquette-capiton.jpg',
     tagline: 'Pour asseoir la famille sans la séparer.',
     description:
       'Quatre modules de banquette capitonnée velours, à aligner le long d’un mur ou autour d’un arbre. Elle crée un vrai salon dehors, et se marie très bien avec des tables basses pour le cocktail.',
@@ -131,7 +131,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '18 €',
     unit: 'la pièce',
-    image: '/images/shop/mobilier.jpg',
+    image: '/images/shop/table-basse-brute.jpg',
     tagline: 'Le coin salon qui manque toujours au cocktail.',
     description:
       'Plateau en orme brut sur piètement acier noir, 90 × 90 cm. Elles sont données en fin de saison aux couples qui les ont louées : nous ne stockons pas ce qui peut continuer à vivre ailleurs.',
@@ -152,7 +152,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '3,50 €',
     unit: 'le couvert',
-    image: '/images/shop/vaisselle.jpg',
+    image: '/images/shop/vaisselle-gres-blanc.jpg',
     tagline: 'Le couvert qui va avec tout.',
     description:
       'Assiettes plates et creuses en grès émaillé blanc mat, fabriquées par un atelier français. Épaisses, donc elles survivent au service par des amis, et assez belles pour du dressage à l’assiette.',
@@ -175,7 +175,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '2,80 €',
     unit: 'le verre',
-    image: '/images/shop/vaisselle.jpg',
+    image: '/images/shop/verrerie-fin-gold.jpg',
     tagline: 'Trois verres par personne, et rien de moins.',
     description:
       'Flûte, verre à eau et verre à vin, fin liseré doré peint à la main. Ce liseré s’abîme, forcément : c’est pour ça qu’on ne vous facture pas sa disparition au-delà de dix pièces par centaine.',
@@ -196,7 +196,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '1,90 €',
     unit: 'le couvert',
-    image: '/images/shop/vaisselle.jpg',
+    image: '/images/shop/couvert-metal-brosse.jpg',
     tagline: 'Acier brossé, forme simple, service rapide.',
     description:
       'Cuillère, fourchette, couteau, petite cuillère : acier inoxydable brossé, prise en main large. Ils ne glissent pas des mains des serveurs, ce qui compte plus qu’on ne croit sur cent couverts.',
@@ -217,7 +217,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '12 €',
     unit: 'la nappe de 3 m',
-    image: '/images/shop/vaisselle.jpg',
+    image: '/images/shop/nappe-lin-lave.jpg',
     tagline: 'Le lin froissé qui va avec tout le reste.',
     description:
       'Lin lavé 100 %, 3 m × 90 cm, dans quatre teintes naturelles : écrue, sable, gris perle, vert sauge. Le lin ne se repasse pas — plus il froisse, plus il est juste à sa place dans un banquet.',
@@ -239,7 +239,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '5 €',
     unit: 'le chemin de 4 m',
-    image: '/images/shop/vaisselle.jpg',
+    image: '/images/shop/chemin-lit-affine.jpg',
     tagline: 'Six mètres de lin plutôt que six bouquets.',
     description:
       'Bandes de lin lavé de 40 cm de large, posées en travers ou dans la longueur, à plat sur la table brute. C’est la version la plus économique d’un décor de table qui tient debout, et celle qui fonctionne le mieux en photo.',
@@ -260,7 +260,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '85 €',
     unit: 'l’ensemble',
-    image: '/images/champagne.jpg',
+    image: '/images/shop/fontaine-champagne.jpg',
     tagline: 'Un peu kitsch, parfaitement assumé.',
     description:
       'Fontaine en verre en sept étages, coupe supérieure, éclairage intégré. On a longtemps hésité à la proposer : puis on a vu l’effet qu’elle produit sur un cocktail, à 20h, quand les lumières baissent. Elle est louée presque chaque week-end.',
@@ -283,7 +283,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '110 €',
     unit: 'la journée',
-    image: '/images/table-noir.jpg',
+    image: '/images/shop/bar-mobile.jpg',
     tagline: 'Un vrai bar, monté en quinze minutes.',
     description:
       'Bar de 2 m en planches de palettes rabotées, avec étagère arrière, plan de travail inox et paillage pour les bacs. Il arrive démonté dans deux caisses, se monte à deux en un quart d’heure, et accepte les glacières professionnelles.',
@@ -304,7 +304,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '22 €',
     unit: 'la pièce',
-    image: '/images/shop/mobilier.jpg',
+    image: '/images/shop/mange-debout-tonneau.jpg',
     tagline: 'Cent personnes debout, et tout le monde s’assoit.',
     description:
       'Tonneau de chêne recyclé surmonté d’un plateau rond, hauteur 110 cm. Le mange-debout est l’objet qui sauve un cocktail : il permet de poser un verre, donc de tenir une conversation, donc de rester plus longtemps.',
@@ -325,7 +325,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '35 €',
     unit: 'la pièce',
-    image: '/images/terrasse.jpg',
+    image: '/images/shop/parasol-toile-ecrue.jpg',
     tagline: 'De l’ombre véritable, au bon endroit.',
     description:
       'Parasol déporté de 3 m en toile écrue brute, mât aluminium, base lestable. À 32 °C, l’ombre n’est pas un détail de décoration : c’est ce qui permet aux grands-parents de rester au cocktail.',
@@ -346,7 +346,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '180 €',
     unit: 'la cérémonie',
-    image: '/images/shop/arche.jpg',
+    image: '/images/shop/arche-grasses-sechees.jpg',
     tagline: 'L’arche qui ne fanera pas avant la fin de la soirée.',
     description:
       'Structure en fer patiné et graminées séchées — blé noir, lagurus, pampas, eucalyptus stabilisé. Elle se monte en quinze minutes, se déplace à deux, et reste identique sur toutes les photos, ce que les fleurs fraîches ne garantissent pas.',
@@ -369,7 +369,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '45 €',
     unit: 'le tapis, par jour',
-    image: '/images/shop/arche.jpg',
+    image: '/images/shop/tapis-berbere.jpg',
     tagline: 'Dix tapis, et le lieu change de pays.',
     description:
       'Tapis anciens d’origine, laine et poils de chèvre, formats 2 × 3 m, chinés au fil des années. Posés en zone cocktail ou sous l’arche, ils règlent en une heure le problème des sols ingrats : béton, gravier, pelouse tondue.',
@@ -390,7 +390,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '2,50 €',
     unit: 'la pièce',
-    image: '/images/shop/lumieres.jpg',
+    image: '/images/shop/photophore-laiton.jpg',
     tagline: 'La bougie qui ne s’éteint pas au premier courant d’air.',
     description:
       'Verres en laiton cerclés, pour bougies chauffe-plat. Ils se disposent en ligne le long des tables ou en tapis au sol, et la lumière du laiton vieilli est incomparablement plus chaude qu’une LED.',
@@ -412,7 +412,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '14 €',
     unit: 'la pièce',
-    image: '/images/shop/lumieres.jpg',
+    image: '/images/shop/chandelier-fer-forge.jpg',
     tagline: 'Cinq bougies, une grande ombre portée.',
     description:
       'Chandelier à cinq branches en fer forgé noir, hauteur 60 cm. Le noir et le fer se marient aussi bien avec du chêne brut qu’avec du béton banché, ce qui le rend utile dans presque tous les univers.',
@@ -433,7 +433,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '40 €',
     unit: 'les 20 mètres',
-    image: '/images/shop/lumieres.jpg',
+    image: '/images/shop/guirlande-ampoules.jpg',
     tagline: 'La lumière qui fait tout tenir.',
     description:
       'Vingt mètres de câble noir avec ampoules culot E27 à filament, tous les 80 cm. Compte une guirlande pour dix mètres de table : tendue au-dessus du banquet, elle transforme une cour ou un pré en salle à manger à la nuit tombée.',
@@ -456,7 +456,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '65 €',
     unit: 'le projecteur, par nuit',
-    image: '/images/shop/lumieres.jpg',
+    image: '/images/shop/projecteur-rasant.jpg',
     tagline: 'Pour révéler un mur au lieu de l’éclairer.',
     description:
       'Projecteur LED 200 W orientable, faisceau réglable de 10° à 45°, avec gélatines ambrées et bleutées. Posé au sol rasant contre un mur de pierre ou une dalle de béton, il sculpte l’architecture et laisse le reste dans l’ombre.',
@@ -479,7 +479,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '55 €',
     unit: 'la soirée',
-    image: '/images/danse.jpg',
+    image: '/images/shop/machine-fumee.jpg',
     tagline: 'La brume qui fait marcher les photos de danse.',
     description:
       'Machine à fumée lourde, réservoir 2,5 L, avec minuterie et télécommande. La fumée reste au sol : elle accroche les faisceaux, découpe les silhouettes sur la piste, et c’est souvent ce qui transforme une photo de danse ordinaire en image de concert.',
@@ -502,7 +502,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '48 €',
     unit: 'la soirée',
-    image: '/images/danse.jpg',
+    image: '/images/shop/boule-a-facettes.jpg',
     tagline: 'Cinquante centimètres de nostalgie.',
     description:
       'Boule à facettes 50 cm, moteur silencieux et projecteur dédié. Elle a besoin d’obscurité totale et d’un plafond à 4 m minimum — chez nous, elle part surtout pour les soirées après 01h00, quand il ne reste plus que les vrais.',
@@ -525,7 +525,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '120 €',
     unit: 'la commande',
-    image: '/images/club-amour.jpg',
+    image: '/images/shop/enseigne-neon-prenoms.jpg',
     tagline: 'Deux prénoms, un tube, et tout le monde se photographie.',
     description:
       'Néon LED souple sur plexiglas transparent, en écriture liée, dans seize couleurs. Fabriqué à vos prénoms en quinze jours. À la location pour le week-end, ou à l’achat si vous savez déjà où il finira chez vous.',
@@ -549,7 +549,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '340 €',
     unit: 'la location 3 jours',
-    image: '/images/shop/robe-large.jpg',
+    image: '/images/shop/robe-simple-soie.jpg',
     tagline: 'Une seule ligne, aucune broderie.',
     description:
       'Robe fluide en soie sauvage, bretelles fines, dos nu, traîne courte. Coupe droite sans baleinage, taille 34 à 42, retouches possibles par notre atelier. La version la plus calme de la robe de mariée, celle qui laisse toute la place au lieu et à la lumière.',
@@ -572,7 +572,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '190 €',
     unit: 'la location 3 jours',
-    image: '/images/shop/robe-large.jpg',
+    image: '/images/shop/costume-laine-imperiale.jpg',
     tagline: 'Un costume qui respire, même en juillet.',
     description:
       'Laine froide 240 g, coupe demi-mesure, veston deux boutons et pantalon à pinces. Pour les mariages d’été, c’est la seule matière qui tient la journée entière sans transpirer dans les photos de 18h.',
@@ -594,7 +594,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '85 €',
     unit: 'la location',
-    image: '/images/shop/robe-large.jpg',
+    image: '/images/shop/voile-cathedral-tulle.jpg',
     tagline: 'Trois mètres de tulle, et la cérémonie change de ton.',
     description:
       'Voile cathédrale en tulle de soie, 3 m, bords non ourlés, peigne en corne. Il se porte à l’église puis se retire d’un geste pour le cocktail — et il se prête volontiers entre mariées quand il a servi une fois.',
@@ -616,7 +616,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '45 €',
     unit: 'la pièce',
-    image: '/images/shop/robe-large.jpg',
+    image: '/images/shop/noeud-papillon-soie.jpg',
     tagline: 'Le détail qui sauve un costume loué.',
     description:
       'Nœud papillon à nouer, soie sauvage teintée à la main, onze coloris. Le nœud pré-noué se voit à vingt mètres sur une photo ; celui-ci non. Un atelier de la Drôme les coud un par un.',
@@ -638,7 +638,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '38 €',
     unit: 'la location',
-    image: '/images/shop/robe-large.jpg',
+    image: '/images/shop/chaussures-cuir-souple.jpg',
     tagline: 'Belles à la cérémonie, tenables jusqu’à 3h.',
     description:
       'Derby en cuir souple, semelle cuir cousue, talon 2 cm. Le pire ennemi d’un mariage n’est pas la pluie, c’est la mariée qui enlève ses chaussures à 21h. Celles-ci sont faites pour danser.',
@@ -660,7 +660,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '680 €',
     unit: 'la paire',
-    image: '/images/alliances.jpg',
+    image: '/images/shop/alliances-or-blanc.jpg',
     tagline: 'De l’or qui existe déjà, refondu pour vous.',
     description:
       'Or blanc 18 carats issu de bijoux recyclés, finition satinée, gravure intérieure offerte. Nous travaillons avec un atelier qui ne mine rien : la matière vient de rachats, ce qui divise l’empreinte par six sans rien changer au métal.',
@@ -683,7 +683,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '2,40 €',
     unit: 'le faire-part, à partir de 50',
-    image: '/images/punk-papier.jpg',
+    image: '/images/shop/faire-part-risographie.jpg',
     tagline: 'Deux passages, trois couleurs, des hasards heureux.',
     description:
       'Risographie en deux passages, papier 160 g recyclé, trois teintes d’encre (noir, vermillon, vert prairie). Chaque exemplaire est légèrement décalé — l’imperfection fait partie du procédé, et personne n’a jamais fait un mariage identique.',
@@ -705,7 +705,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '4,50 €',
     unit: 'le menu',
-    image: '/images/table-noir.jpg',
+    image: '/images/shop/menu-calligraphie.jpg',
     tagline: 'Un menu par table, écrit à la plume.',
     description:
       'Encres de couleur, plume et calligraphie à la main, un menu par table et deux affiches pour le buffet. Il existe une police qui imite l’écriture ; au dos d’une porte de grange, on voit immédiatement la différence.',
@@ -727,7 +727,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '25 €',
     unit: 'l’ardoise',
-    image: '/images/table-noir.jpg',
+    image: '/images/shop/plan-table-ardoise.jpg',
     tagline: 'On écrit, on efface, on recommence.',
     description:
       'Ardoise naturelle de 80 × 60 cm sur support bois, avec craies et chiffon. Trois semaines avant un mariage, un plan de table change toujours deux fois : l’ardoise évite de réimprimer le travail de la veille.',
@@ -748,7 +748,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '2,90 €',
     unit: 'le livret, à partir de 60',
-    image: '/images/noir-blanc-entree.jpg',
+    image: '/images/shop/livre-messe-imprime.jpg',
     tagline: 'Les chants, les lectures, et de quoi suivre.',
     description:
       'Livret 16 pages, papier bouffant, reliure piqûre à cheval, typographie classique. Il contient les chants, les textes choisis, la liste des témoins et un mot de remerciement — ce que la moitié de l’assemblée cherchera pendant la messe.',
@@ -770,7 +770,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '3,20 €',
     unit: 'la pièce, gravée',
-    image: '/images/table-noir.jpg',
+    image: '/images/shop/etiquettes-place-cuir.jpg',
     tagline: 'Un prénom gravé, que les invités gardent.',
     description:
       'Chutes de cuir tanné végétal récupérées chez un maroquinier, gravées au fer à vos prénoms. Les invités les emportent une fois sur deux — c’est même le but, et c’est aussi ce qui rend le prêt possible entre couples.',
@@ -792,7 +792,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '85 €',
     unit: 'le bouquet',
-    image: '/images/bouquet.jpg',
+    image: '/images/shop/bouquet-champetre-seche.jpg',
     tagline: 'Il sèche, il reste, il finit sur une étagère.',
     description:
       'Composé de fleurs de saison séchées naturellement, tige par tige, dans les tons paille et terracotta. Le bouquet de mariée se jette ; celui-ci se garde. Les bouquets revenus sont donnés à un service de soins palliatifs de la région.',
@@ -814,7 +814,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'vente',
     price: '9 €',
     unit: 'la pièce',
-    image: '/images/bouquet.jpg',
+    image: '/images/shop/boutonniere-sechee.jpg',
     tagline: 'Pour les témoins, les papas et les grands-pères.',
     description:
       'Une tige de blé noir, un eucalyptus stabilisé, un lien de raphia. Elle ne s’effondre pas à la chaleur, contrairement aux fleurs fraîches — et après le mariage, elle se prête ou se donne à un autre couple.',
@@ -835,7 +835,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '32 €',
     unit: 'la couronne',
-    image: '/images/bouquet.jpg',
+    image: '/images/shop/couronne-cheveux-sechee.jpg',
     tagline: 'Pour la demoiselle d’honneur, ou pour vous.',
     description:
       'Couronne montée sur fil garni, diamètre ajustable, fleurs séchées et graminées. À la location, nous la remontons entre chaque mariage ; à l’achat, elle finit sa vie en décoration murale.',
@@ -856,7 +856,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '8 €',
     unit: 'le coussin',
-    image: '/images/shop/arche.jpg',
+    image: '/images/shop/coussin-sol-fabrique.jpg',
     tagline: 'Pour les enfants, et pour ceux qui n’en sont plus.',
     description:
       'Coussins 50 × 50 en tissus recyclés, garnis de mousse densité 30. Disposés sous l’arche ou autour des tables basses, ils règlent le problème des petits invités et des grands-parents en même temps.',
@@ -878,7 +878,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'pret',
     price: 'Gratuit',
     unit: 'au prêt, caution 20 €',
-    image: '/images/shop/robe-large.jpg',
+    image: '/images/shop/chemise-lin-invites.jpg',
     tagline: 'Un mariage à 38 °C, on vous prête de quoi tenir.',
     description:
       'Quarante chemises en lin lavé, du S au XXL, dans quatre teintes claires. Elles circulent gratuitement depuis trois ans entre les mariages de l’été : on les emprunte, on les rend lavées, elles repartent ailleurs. C’est notre manière de faire circuler ce qui ne sert qu’une fois.',
@@ -900,7 +900,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'pret',
     price: 'Gratuit',
     unit: 'au prêt',
-    image: '/images/danse.jpg',
+    image: '/images/shop/confort-danse-semelles.jpg',
     tagline: 'Pour finir la soirée debout.',
     description:
       'Semelles adhésives et coussinets d’avant-pied, à coller sous n’importe quelle chaussure. On en donne une paire à chaque mariée et à chaque invité qui demande après 22h : c’est le geste le plus apprécié de tout notre stock.',
@@ -922,7 +922,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '260 €',
     unit: 'la soirée complète',
-    image: '/images/danse.jpg',
+    image: '/images/shop/juke-box-vinyle.jpg',
     tagline: 'Cent 45 tours, et les invités font le DJ.',
     description:
       'Juke-box restauré de 1963, fonctionnant à la pièce ou en mode libre, avec cent quarante 45 tours sélectionnés (Soul, Rock, Chanson). On l’allume après le dîner : les oncles y passent la soirée, et c’est souvent la meilleure playlist de la nuit.',
@@ -946,7 +946,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '75 €',
     unit: 'l’ensemble',
-    image: '/images/table-noir.jpg',
+    image: '/images/shop/franche-bise-decapsuleur.jpg',
     tagline: 'Pour les mariages où les bouteilles ne font pas semblant.',
     description:
       'Franche-bise montée sur billot de chêne de 90 kg, avec décapsuleur mural en fonte et seau à bouteilles. Posée près du bar, elle devient l’attraction de la soirée — et elle encaisse sans bouger.',
@@ -968,7 +968,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '95 €',
     unit: 'le support complet',
-    image: '/images/shop/vaisselle.jpg',
+    image: '/images/shop/photo-support-laiton.jpg',
     tagline: 'Un arc-en-ciel de photos, à faire tourner.',
     description:
       'Structure en laiton et pin massif en forme d’arche, cinquante pinces en laiton et un banc pour les invités. Les photos instantanées s’accrochent au fil au fur et à mesure, et à minuit le mur est plein : c’est ce que les mariés regardent le plus, après.',
@@ -991,7 +991,7 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
     mode: 'location',
     price: '320 €',
     unit: 'la soirée, pellicules incluses',
-    image: '/images/shop/lumieres.jpg',
+    image: '/images/shop/cabine-instantanee-argentique.jpg',
     tagline: 'Pas de numérique, pas de filtre, pas d’écran.',
     description:
       'Une cabine en bois habillée de tissu, un appareil argentique à déclenchement mécanique, un flash de studio et deux cents poses. Les invités entrent, sortent trois minutes plus tard avec une photo humide qu’ils accrochent au mur. Le rendu est imparfait, et c’est tant mieux.',
@@ -1036,3 +1036,29 @@ export function similarProducts(product: ShopProduct, limit = 4): ShopProduct[] 
 export function modeLabel(mode: ShopMode): string {
   return SHOP_MODES.find((m) => m.id === mode)?.label ?? mode;
 }
+
+/**
+ * L'IMAGE DE REPLI
+ *
+ * Chaque pièce a son propre visuel. Si un fichier n'est pas encore livré, la
+ * carte retombe sur le visuel de sa catégorie plutôt que d'afficher un vide.
+ */
+const REPLI_PAR_CATEGORIE: Record<string, string> = {
+  mobilier: '/images/shop/mobilier.jpg',
+  reception: '/images/shop/vaisselle.jpg',
+  deco: '/images/shop/arche.jpg',
+  lumiere: '/images/shop/lumieres.jpg',
+  tenues: '/images/shop/robe.jpg',
+  papeterie: '/images/table-noir.jpg',
+  insolite: '/images/danse.jpg',
+};
+
+export function imageDeRepli(produit: ShopProduct): string {
+  return REPLI_PAR_CATEGORIE[produit.category] ?? '/images/shop/mobilier.jpg';
+}
+
+/** Le visuel d'ouverture du shop. */
+export const SHOP_HERO = '/images/shop/hero-shop.jpg';
+
+/** Le repli du hero, si son visuel n'est pas encore livré. */
+export const SHOP_HERO_REPLI = '/images/shop/mobilier.jpg';

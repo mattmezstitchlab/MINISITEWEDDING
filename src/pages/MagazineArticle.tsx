@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Clock } from 'lucide-react';
 import { articleBySlug, relatedArticles } from '../lib/magazine';
 import { styleById } from '../lib/weddingStyles';
+import RichText from '../components/RichText';
 
 /**
  * UN ARTICLE DU MAGAZINE
@@ -64,7 +65,17 @@ export default function MagazineArticle() {
 
       <main className="px-5 py-12 sm:px-8">
         <div className="mx-auto max-w-3xl">
-          <p className="text-[18px] leading-relaxed text-black/75">{article.intro}</p>
+          {/* L'essentiel de l'article, en chiffres — le réflexe magazine */}
+          <div className="grid gap-px overflow-hidden rounded-[20px] border border-black/8 bg-black/8 sm:grid-cols-2 lg:grid-cols-4">
+            {article.essentiel.map((bloc) => (
+              <div key={bloc.label} className="bg-white p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/40">{bloc.label}</div>
+                <div className="mt-1.5 text-[15px] font-bold leading-snug text-[#0B0C12]">{bloc.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-10 text-[18px] leading-relaxed text-black/75">{article.intro}</p>
 
           <div className="mt-10 space-y-10">
             {article.sections.map((section, i) => (
@@ -75,17 +86,39 @@ export default function MagazineArticle() {
                 <h2 className="vp-title mt-2 text-[24px] leading-tight sm:text-[28px]">{section.heading}</h2>
                 <div className="mt-3 space-y-3">
                   {section.body.map((paragraphe) => (
-                    <p key={paragraphe} className="text-[15.5px] leading-relaxed text-black/70">
-                      {paragraphe}
-                    </p>
+                    <RichText
+                      key={paragraphe}
+                      text={paragraphe}
+                      className="text-[15.5px] leading-relaxed text-black/70"
+                    />
                   ))}
                 </div>
+
+                {/* Le déroulé horaire, traité comme une page de magazine */}
+                {section.schedule && (
+                  <div className="mt-5 border-y border-black/8">
+                    {section.schedule.map((etape) => (
+                      <div
+                        key={`${etape.time}-${etape.title}`}
+                        className="grid grid-cols-[72px_1fr] gap-4 border-b border-black/6 py-4 last:border-none"
+                      >
+                        <span className="font-mono text-[12.5px] font-bold tracking-wide text-[#0B0C12]">
+                          {etape.time}
+                        </span>
+                        <div>
+                          <div className="text-[15.5px] font-bold leading-snug text-[#0B0C12]">{etape.title}</div>
+                          <p className="mt-1 text-[14px] leading-relaxed text-black/60">{etape.detail}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {section.bullets && (
                   <ul className="mt-4 space-y-2 rounded-[18px] bg-[#FAFAFC] p-4">
                     {section.bullets.map((point) => (
                       <li key={point} className="flex items-start gap-2 text-[14px] leading-relaxed text-black/70">
                         <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-black/30" />
-                        {point}
+                        <span><RichText text={point} className="text-[14px] leading-relaxed text-black/70" /></span>
                       </li>
                     ))}
                   </ul>
@@ -98,7 +131,7 @@ export default function MagazineArticle() {
           {univers && (
             <Link
               to={`/?univers=${univers.id}`}
-              className="group mt-12 flex items-center justify-between gap-4 rounded-[24px] border border-black/10 bg-[#FAFAFC] p-5 transition hover:border-black/25 hover:bg-white hover:shadow-lg"
+              className="group mt-12 flex items-center justify-between gap-4 rounded-[24px] border border-black/10 bg-white p-5 ring-1 ring-black/5 transition hover:border-black/25 hover:shadow-lg"
             >
               <span className="flex items-center gap-4">
                 <img

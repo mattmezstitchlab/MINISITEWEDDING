@@ -33,22 +33,19 @@ export default function VendorPhoneScreen({
       label: 'Mission',
       icon: BriefcaseBusiness,
       content: (
-        <div className="rounded-[14px] bg-black p-3 text-white shadow-sm">
-          <div className="font-mono text-[8.5px] uppercase tracking-wider text-white/50">
-            Fiche mission · {style.name}
-          </div>
-          <div className="mt-1 text-[13px] font-bold leading-tight">{role}</div>
-          <div className="mt-1.5 text-[10px] leading-snug text-white/70">{mission?.mission}</div>
-          <div className="mt-2.5 rounded-[10px] bg-white/10 px-2 py-1.5 text-[9.5px] text-white/85">
-            Compétence attendue · {mission?.essentialSkill}
+        <PhoneModule eyebrow={`Fiche mission · ${style.name}`}>
+          <div className="text-[13px] font-bold leading-tight text-black">{role}</div>
+          <div className="mt-1.5 text-[10.5px] leading-snug text-black/70">{mission?.mission}</div>
+          <div className="mt-2.5 rounded-[10px] bg-black/[0.03] px-2 py-1.5 text-[9.5px] text-black/60">
+            Compétence attendue · <span className="font-semibold text-black">{mission?.essentialSkill}</span>
           </div>
           <button
             type="button"
-            className="mt-3 w-full rounded-full bg-white py-1.5 text-[10px] font-bold text-black"
+            className="mt-2.5 w-full rounded-full bg-black py-1.5 text-[10px] font-bold text-white transition hover:bg-neutral-800"
           >
             Confirmer ma mission
           </button>
-        </div>
+        </PhoneModule>
       ),
     },
     {
@@ -143,7 +140,7 @@ export default function VendorPhoneScreen({
 
   return (
     <PhoneShell
-      accent={style.accent}
+      style={style}
       modules={modules}
       hero={
         <PhoneHero

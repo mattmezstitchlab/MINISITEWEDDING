@@ -98,7 +98,7 @@ export default function SpaceBuilder({ draft, onDraftChange, onCreated }: SpaceB
               <span
                 key={s.id}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === step ? 'w-5 bg-white' : i < step ? 'w-1.5 bg-emerald-400' : 'w-1.5 bg-white/15'
+                  i === step ? 'w-5 bg-white' : i < step ? 'w-1.5 bg-emerald-500' : 'w-1.5 bg-white/15'
                 }`}
               />
             ))}
@@ -235,7 +235,7 @@ export default function SpaceBuilder({ draft, onDraftChange, onCreated }: SpaceB
             type="button"
             onClick={next}
             disabled={!canAdvance}
-            className="vp-rainbow flex items-center gap-1.5 rounded-full bg-black px-5 py-2 text-[12.5px] font-bold text-white transition hover:bg-neutral-900 disabled:opacity-30"
+            className="flex items-center gap-1.5 rounded-full bg-white px-5 py-2 text-[12.5px] font-bold text-[#0B0C12] shadow-[0_6px_20px_rgba(0,0,0,0.28)] transition hover:bg-white/90 disabled:opacity-30"
           >
             {lastStep ? 'Créer notre espace' : 'Continuer'}
             <ArrowRight size={13} />
