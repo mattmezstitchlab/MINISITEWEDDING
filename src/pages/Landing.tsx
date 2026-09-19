@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart } from 'lucide-react';
-import { WEDDING_STYLES, PHASES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
-import { TiltCard } from '../components/vision/VisionImage';
+import { ArrowRight } from 'lucide-react';
+import { WEDDING_STYLES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
 import HeroCycle from '../components/HeroCycle';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
-import UnifiedEventOsMenu from '../components/UnifiedEventOsMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import ThemeManifestoWhite from '../components/ThemeManifestoWhite';
@@ -15,10 +13,6 @@ import HeroAiPrompt from '../components/HeroAiPrompt';
 
 import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
 import ErrorBoundary from '../components/ErrorBoundary';
-import TimelineBand from '../components/TimelineBand';
-import type { BandMoment } from '../components/TimelineBand';
-import { INITIAL_TIMELINE_ITEMS } from '../lib/timelineTheaterEngine';
-import { trackForText } from '../lib/weddingSoundtrack';
 import HomePhoneShowcase from '../components/HomePhoneShowcase';
 
 const HERO_ROTATING_TITLES = [
@@ -27,43 +21,14 @@ const HERO_ROTATING_TITLES = [
   'Mariés, invités, prestataires.\nLe même instant, sans fausse note.',
 ];
 
-const MODULES = [
-  { icon: MailCheck, title: 'RSVP élégant', text: 'Présences, régimes, hébergement. Des statistiques limpides, jamais de tableaux austères.' },
-  { icon: Gift, title: 'Liste & cagnotte', text: 'Voyage de noces, cagnotte, liste de cadeaux. Objectifs, progression, bouton Participer.' },
-  { icon: Images, title: 'Bibliothèque média', text: 'Des collections cohérentes, vos propres images en un glisser-déposer.' },
-  { icon: MapPin, title: 'Infos pratiques', text: 'Adresses, parking, hébergements, dress code. Des cartes de verre, toujours claires.' },
-  { icon: CalendarDays, title: 'Programme Jour J', text: 'Une timeline spatiale : cérémonie, cocktail, dîner, bal. Heure, lieu, photo.' },
-  { icon: QrCode, title: 'Partage magique', text: 'Un lien à vos prénoms, un QR code à imprimer, partage WhatsApp, Messages, Email.' },
-];
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
 
-/**
- * La journée de démonstration posée sur la bande du bas : les cinq moments du
- * moteur temporel, avec le métier qui les porte et leur morceau.
- */
-function demoDayMoments(): BandMoment[] {
-  const used: string[] = [];
-  return INITIAL_TIMELINE_ITEMS.filter((m) => m.mode === 'jour-j').map((m) => {
-    const track = trackForText(`${m.title} ${m.subtitle} ${m.chapter}`, used);
-    if (track) used.push(track.src);
-    return {
-      id: m.id,
-      time: m.startTime,
-      title: m.title,
-      detail: m.coupleNote ?? m.description,
-      place: m.subtitle,
-      role: m.alignedRole,
-      track,
-    };
-  });
-}
 
 export default function Landing() {
   // Par défaut : null = page principale générale d'atterrissage VOWS
   const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(null);
   const [titleIdx, setTitleIdx] = useState(0);
-  const [dayMoments] = useState<BandMoment[]>(() => demoDayMoments());
 
   const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
 
@@ -90,11 +55,7 @@ export default function Landing() {
   };
 
   return (
-    <div
-      className="vp-env min-h-screen overflow-x-clip text-[#0B0C12]"
-      // La bande du bas annonce sa hauteur : on lui laisse la place.
-      style={{ paddingBottom: 'calc(var(--vows-daybar, 72px) + 1rem)' }}
-    >
+    <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
       {/* Barre de navigation unifiée : Logo à gauche, UNIVERS & MÉTIERS à droite */}
       <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
         <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
@@ -106,10 +67,8 @@ export default function Landing() {
             <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
           </Link>
 
-          {/* Accès discret aux modules techniques Event OS & menu univers */}
+          {/* Le menu des univers : les vingt environnements du catalogue */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <UnifiedEventOsMenu />
-
             <UnifiedUniverseMenu
               selectedStyleId={selectedStyle?.id || null}
               onSelectStyle={handleSelectStyle}
@@ -237,57 +196,6 @@ export default function Landing() {
         onSelectStyle={handleSelectStyle}
       />
 
-      {/* Modules — environnement clair */}
-      <section id="modules" className="relative mx-3 overflow-hidden rounded-[40px] border border-black/6 bg-white px-5 py-20 sm:mx-6 sm:px-8 sm:py-28">
-        <div className="relative mx-auto max-w-6xl">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-2xl text-center">
-            <div className="vp-eyebrow">Tout est inclus</div>
-            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Un objet complet, en couches</h2>
-            <p className="vp-body mt-4">RSVP, cagnotte, galerie, programme, FAQ — chaque module naît déjà rempli. Vous ajustez, c’est tout.</p>
-          </motion.div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {MODULES.map((m, i) => (
-              <motion.div key={m.title} {...fadeUp} transition={{ duration: 0.6, delay: (i % 3) * 0.09 }}>
-                <TiltCard className="h-full">
-                  <div className="vp-glass vp-spec vp-lift h-full rounded-[26px] p-7">
-                    <span className="vp-glyph h-11 w-11 rounded-[15px]">
-                      <m.icon size={19} strokeWidth={1.8} />
-                    </span>
-                    <div className="vp-h2 mt-5 text-[20px]">{m.title}</div>
-                    <p className="vp-caption mt-2 leading-relaxed">{m.text}</p>
-                  </div>
-                </TiltCard>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Phases */}
-      <section className="px-5 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto max-w-5xl">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="text-center">
-            <div className="vp-eyebrow">Avant · Pendant · Après</div>
-            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Un site qui vit avec vous</h2>
-          </motion.div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-3">
-            {PHASES.map((p, i) => (
-              <motion.div key={p.id} {...fadeUp} transition={{ duration: 0.6, delay: i * 0.09 }} className="h-full">
-                <div className="vp-glass vp-spec vp-lift relative h-full overflow-hidden rounded-[26px] p-7">
-                  <span className="absolute inset-x-0 top-0 h-[3px] bg-[var(--vp-ink)]" style={{ opacity: 0.1 + i * 0.14 }} />
-                  <div className="vp-eyebrow">Phase {i + 1}</div>
-                  <div className="vp-h2 mt-2 text-[26px]">{p.name}</div>
-                  <p className="vp-caption mt-2">{p.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          <motion.p {...fadeUp} transition={{ duration: 0.7 }} className="vp-body mx-auto mt-8 max-w-xl text-center !text-[var(--vp-muted)] italic">
-            « Après le mariage, il devient la mémoire numérique de votre jour. »
-          </motion.p>
-        </div>
-      </section>
-
       {/* SECTION PARALLAX 2 : Zéro contrainte */}
       <ParallaxSection image="/images/zero-contrainte-wedding.jpg" overlayOpacity={0.65} heightClass="min-h-[70vh]">
         <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl">
@@ -306,38 +214,6 @@ export default function Landing() {
         </motion.div>
       </ParallaxSection>
 
-      {/* Appel final */}
-      <section className="px-5 pb-24 sm:px-8">
-        <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="vp-glass vp-spec mx-auto max-w-4xl overflow-hidden rounded-[38px] px-8 py-16 text-center sm:py-20">
-          <div className="relative">
-            <span className="vp-glyph mx-auto h-14 w-14 rounded-[20px]">
-              <Heart size={24} strokeWidth={1.8} />
-            </span>
-            <h2 className="vp-h2 mt-6" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>
-              Et si c’était vraiment
-              <br />
-              le site de votre mariage ?
-            </h2>
-            <p className="vp-body mx-auto mt-4 max-w-md">Trente secondes pour commencer. Une émotion pour longtemps.</p>
-            <button
-              type="button"
-              onClick={scrollToHero}
-              className="vp-btn vp-press mt-8 !px-9 !py-4"
-            >
-              Générer notre projet <ArrowRight size={16} />
-            </button>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* LA BANDE DU BAS : la timeline du Jour J, toujours affichée, toute la largeur */}
-      <TimelineBand
-        moments={dayMoments}
-        title="Le Jour J, heure par heure"
-        subtitle="Cérémonie, cocktail, dîner, bal — chacun y voit ce qui le concerne"
-        pill="Un seul écran pour tous"
-      />
-
       <footer className="px-5 pb-10">
         <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
           <div className="flex items-center gap-2">
@@ -345,15 +221,6 @@ export default function Landing() {
           </div>
           <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
           <div className="flex items-center gap-4">
-            <Link to="/features" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Event OS</Link>
-            <Link to="/aime" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Taxonomie</Link>
-            <button
-              type="button"
-              onClick={scrollToHero}
-              className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]"
-            >
-              Créer
-            </button>
           </div>
         </div>
       </footer>

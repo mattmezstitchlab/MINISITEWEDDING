@@ -8,7 +8,6 @@ import { SiteViewContext } from './sections/context';
 import type { SiteViewValue } from './sections/context';
 import { SECTION_COMPONENTS } from './sections';
 import SupermarcheTicket from './themes/SupermarcheTicket';
-import WeddingDayBar from './WeddingDayBar';
 
 /**
  * Rendu d’un site de mariage — utilisé tel quel par la page publique, et en
@@ -25,14 +24,9 @@ interface Props {
   preview?: boolean;
   selectedKey?: string | null;
   onSelectSection?: (key: string) => void;
-  /**
-   * Barre du bas sur le site du couple : le Jour J et son calendrier.
-   * Désactivée dans l'aperçu de l'éditeur, où elle masquerait les sections.
-   */
-  dayBar?: boolean;
 }
 
-export default function PublicSiteView({ data, degraded = false, preview = false, selectedKey, onSelectSection, dayBar = false }: Props) {
+export default function PublicSiteView({ data, degraded = false, preview = false, selectedKey, onSelectSection }: Props) {
   const { site, sections } = data;
   const theme = styleById(site.style);
   const fonts = fontsFor(site.typography);
@@ -110,20 +104,12 @@ export default function PublicSiteView({ data, degraded = false, preview = false
       ) : (
         <div
           className={`vp-env min-h-screen ${dark ? 'vp-env-dark' : ''}`}
-          style={{
-            fontFamily: fonts.body,
-            color: value.ink,
-            // La barre du bas annonce sa hauteur : la page lui laisse la place,
-            // sinon le pied de page passerait dessous.
-            paddingBottom: dayBar ? 'var(--vows-daybar, 0px)' : undefined,
-            ...envVars(theme, accent),
-          } as CSSProperties}
+          style={{ fontFamily: fonts.body, color: value.ink, ...envVars(theme, accent) } as CSSProperties}
         >
           {ordered.map((s) => {
             const Section = SECTION_COMPONENTS[s.section_key];
             return <div key={s.section_key}>{wrap(s.section_key, Section ? <Section /> : null)}</div>;
           })}
-          {dayBar && <WeddingDayBar />}
           {ordered.length === 0 && (
             <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center" style={{ color: value.muted }}>
               <Camera size={32} strokeWidth={1.5} />

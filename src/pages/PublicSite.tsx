@@ -45,8 +45,7 @@ export default function PublicSite() {
 
   return (
     <>
-      {/* Le site du couple, avec sa barre du bas : le Jour J et son calendrier. */}
-      <PublicSiteView data={data} degraded={degraded} dayBar />
+      <PublicSiteView data={data} degraded={degraded} />
 
       {demo && (
         <div className="vp-glass-dark vp-spec-dark fixed bottom-20 left-1/2 z-[60] -translate-x-1/2 rounded-full px-4 py-1.5 text-[11px] font-medium text-white shadow-lg">

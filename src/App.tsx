@@ -10,7 +10,6 @@ import Onboarding from './pages/Onboarding';
 import Generating from './pages/Generating';
 import Editor from './pages/Editor';
 import PublicSite from './pages/PublicSite';
-import Features from './pages/Features';
 import Theater from './pages/Theater';
 
 const Aime = lazy(() => import('./pages/Aime'));
@@ -35,8 +34,9 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/theater" element={<Theater />} />
             <Route path="/timeline" element={<Theater />} />
-            <Route path="/modules" element={<Features />} />
-            <Route path="/features" element={<Features />} />
+            {/* Event OS retiré du produit : ses anciennes adresses ramènent à l'accueil. */}
+            <Route path="/modules" element={<Navigate to="/" replace />} />
+            <Route path="/features" element={<Navigate to="/" replace />} />
             <Route path="/aime" element={<Aime />} />
             <Route path="/taxonomie" element={<Aime />} />
             <Route path="/creer" element={<Onboarding />} />

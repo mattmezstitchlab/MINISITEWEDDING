@@ -29,7 +29,6 @@ import {
   TIMELINE_TOTAL_MINUTES,
   minutesToTimeString,
 } from '../lib/timelineTheaterEngine';
-import UnifiedEventOsMenu from '../components/UnifiedEventOsMenu';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
 import SaxophonistProfileModal from '../components/SaxophonistProfileModal';
 
@@ -274,10 +273,9 @@ export default function Theater() {
               <span>{minutesToTimeString(currentPlayheadMin)}</span>
             </div>
 
-            {/* Menus unifiés Event OS & Univers */}
+            {/* Menu des univers */}
             <div className="hidden md:flex items-center gap-1.5 pl-2 border-l border-black/10">
-              <UnifiedEventOsMenu />
-              <UnifiedUniverseMenu
+                <UnifiedUniverseMenu
                 selectedStyleId={null}
                 onSelectStyle={() => {
                   window.location.href = '/';
