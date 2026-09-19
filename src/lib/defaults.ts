@@ -4,6 +4,7 @@ import { slugify } from './format';
 import { styleById } from './weddingStyles';
 import { getThemeConfig } from './themeConfigs';
 import { getScenesForStyle } from './themeTimelineScenarios';
+import { keepScenesForEvents } from './weddingCard';
 import type { WeddingSite } from './types';
 
 /**
@@ -177,7 +178,13 @@ async function runBatched(tasks: Array<() => Promise<unknown>>, batchSize = 5) {
  * Crée un site complet thématisé : sections avec titres du thème,
  * programme, infos, FAQ, RSVP, cagnotte issus de THEME_CONFIGS.
  */
-export async function seedSite(input: NewSiteInput): Promise<CreatedSite> {
+/** Ce que l'onboarding ajoute au site : les temps de la journée retenus. */
+export interface SeedOptions {
+  events?: string[];
+  music?: string;
+}
+
+export async function seedSite(input: NewSiteInput, options: SeedOptions = {}): Promise<CreatedSite> {
   const theme = styleById(input.style);
   const config = getThemeConfig(input.style);
 
@@ -211,7 +218,7 @@ export async function seedSite(input: NewSiteInput): Promise<CreatedSite> {
 
   // SYNCHRONISATION TRANSVERSALE MIROIR :
   // Le programme réel hérite directement des scènes scénarisées du thème (THEME_TIMELINE_SCENARIOS)
-  const themeScenes = getScenesForStyle(input.style);
+  const themeScenes = keepScenesForEvents(getScenesForStyle(input.style), options.events ?? []);
   const programme = themeScenes && themeScenes.length > 0
     ? themeScenes.map(sc => ({
         time: sc.time,

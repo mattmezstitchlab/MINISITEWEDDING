@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Type, Palette, Layout, Smartphone, Monitor, Check, ArrowRight, Sliders, Eye } from 'lucide-react';
+import { Type, Palette, Layout, Smartphone, Monitor, Check, ArrowRight, Sliders } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SECTION_DEFAULTS } from '../lib/defaults';
+
+/** Les sections réellement composées dans un mini-site VOWS. */
+const SITE_SECTIONS = SECTION_DEFAULTS.map((section) => section.title);
 
 const TYPO_PREVIEWS = [
   { id: 'editorial', name: 'Éditorial Serif', font: 'Georgia, serif', sample: 'Sarah & Gabriel', note: 'Magazine & haute couture' },
@@ -25,17 +28,20 @@ export default function EditorShowcase() {
   const [activeTab, setActiveTab] = useState<'style' | 'modules'>('style');
 
   return (
-    <section className="relative overflow-hidden px-5 py-20 sm:px-8 sm:py-28 bg-[#FBFBFA]">
+    <section className="relative overflow-hidden bg-white px-5 py-20 sm:px-8 sm:py-28">
       <div className="mx-auto max-w-6xl">
         {/* En-tête */}
         <div className="mx-auto max-w-2xl text-center">
-          <div className="vp-eyebrow">L'expérience post-onboarding</div>
+          <div className="vp-eyebrow">Après l’onboarding</div>
           <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3.2rem)' }}>
-            Un studio de personnalisation.<br />
-            Sans complexité.
+            Votre mini-site complet,<br />
+            modifiable section par section.
           </h2>
-          <p className="vp-body mt-4 max-w-lg mx-auto">
-            Dès vos réponses validées, accédez à votre éditeur en direct. Ajustez la typographie, les nuances chromatiques et les modules en observant le résultat instantané.
+          <p className="vp-body mt-4 max-w-xl mx-auto">
+            Dès que votre carte est créée, l’éditeur s’ouvre sur le site entier : {SITE_SECTIONS.length} sections
+            déjà remplies avec votre univers — le programme heure par heure, les lieux, le RSVP, la cagnotte, la
+            galerie, la FAQ. Vous ajustez la typographie, la couleur signature et l’ordre des sections, et vous
+            voyez le résultat instantanément, au bureau comme sur téléphone.
           </p>
         </div>
 
@@ -44,9 +50,9 @@ export default function EditorShowcase() {
           {/* Topbar de l'éditeur */}
           <div className="flex items-center justify-between border-b border-black/5 bg-[#FAFAFA] px-5 py-3.5 sm:px-7">
             <div className="flex items-center gap-3">
-              <span className="h-3 w-3 rounded-full bg-red-400" />
-              <span className="h-3 w-3 rounded-full bg-amber-400" />
-              <span className="h-3 w-3 rounded-full bg-emerald-400" />
+              <span className="h-3 w-3 rounded-full bg-black/12" />
+              <span className="h-3 w-3 rounded-full bg-black/18" />
+              <span className="h-3 w-3 rounded-full bg-black/24" />
               <span className="ml-3 hidden text-[13px] font-semibold text-[#0B0C12] sm:inline">
                 Studio VOWS · Éditeur de site
               </span>
@@ -80,11 +86,8 @@ export default function EditorShowcase() {
               </button>
             </div>
 
-            <Link
-              to="/"
-              className="vp-btn vp-press !px-4 !py-1.5 !text-[12.5px]"
-            >
-              Publier <ArrowRight size={13} />
+            <Link to="/creer" className="vp-btn vp-press !px-4 !py-1.5 !text-[12.5px]">
+              Créer notre site <ArrowRight size={13} />
             </Link>
           </div>
 
@@ -353,6 +356,32 @@ export default function EditorShowcase() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Les sections réellement écrites, et le passage à l'acte */}
+        <div className="mt-10 flex flex-wrap justify-center gap-2">
+          {SITE_SECTIONS.map((titre) => (
+            <span
+              key={titre}
+              className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0B0C12]"
+            >
+              <Check size={12} className="text-emerald-600" />
+              {titre}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link to="/creer" className="vp-btn vp-press !px-7">
+            Créer notre site <ArrowRight size={15} />
+          </Link>
+          <button
+            type="button"
+            onClick={() => document.getElementById('hero-ai-container')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+            className="vp-btn vp-btn-glass vp-press !px-7"
+          >
+            Choisir notre univers <Sliders size={15} />
+          </button>
         </div>
       </div>
     </section>

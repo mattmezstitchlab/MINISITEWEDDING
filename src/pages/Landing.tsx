@@ -9,6 +9,7 @@ import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
 import VendorDomainMenu from '../components/VendorDomainMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
+import EditorShowcase from '../components/EditorShowcase';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 import SpaceBuilder from '../components/SpaceBuilder';
 import { EMPTY_DRAFT, type SpaceDraft } from '../lib/spaceDraft';
@@ -189,7 +190,11 @@ export default function Landing() {
                     draft={draft}
                     onDraftChange={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
                     onCreated={() => {
-                      document.getElementById('ecran')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      // Dernier clic du hero : on ouvre l'onboarding, qui compose la
+                      // carte puis ouvre l'éditeur du mini-site.
+                      navigate('/creer', {
+                        state: { preselectedStyle: draft.styleId, roleId: draft.roleId },
+                      });
                     }}
                   />
                 </div>
@@ -211,6 +216,11 @@ export default function Landing() {
         )}
         </div>
       </ErrorBoundary>
+
+      {/* LE MINI-SITE COMPLET : l'éditeur, ses sections, et ce qu'il contient */}
+      <div id="site">
+        <EditorShowcase />
+      </div>
 
       {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}
       <div id="direction">

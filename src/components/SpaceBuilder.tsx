@@ -237,7 +237,7 @@ export default function SpaceBuilder({ draft, onDraftChange, onCreated }: SpaceB
             disabled={!canAdvance}
             className="flex items-center gap-1.5 rounded-full bg-white px-5 py-2 text-[12.5px] font-bold text-[#0B0C12] shadow-[0_6px_20px_rgba(0,0,0,0.28)] transition hover:bg-white/90 disabled:opacity-30"
           >
-            {lastStep ? 'Créer notre espace' : 'Continuer'}
+            {lastStep ? 'Créer notre site' : 'Continuer'}
             <ArrowRight size={13} />
           </button>
         </div>
