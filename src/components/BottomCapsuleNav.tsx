@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Heart, Home, Images, Layers, Music2, Smartphone } from 'lucide-react';
+import { Heart, Home, Images, Layers, Music2, Smartphone, Wrench } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -21,6 +21,7 @@ interface Step {
 const STEPS: Step[] = [
   { id: 'hero', label: 'Le visuel plein écran et la création de l’espace', short: 'Accueil', icon: Home },
   { id: 'ecran', label: 'La carte, avant le mini-site', short: 'La carte', icon: Smartphone },
+  { id: 'metiers', label: 'L’éditeur des prestataires, un par métier', short: 'Métiers', icon: Wrench },
   { id: 'direction', label: 'Les univers dans la main : le vrai mini-site, écran par écran', short: 'Le mini-site', icon: Images },
   { id: 'univers', label: 'Prestataires & univers complémentaires', short: 'Prestataires', icon: Layers },
   { id: 'contrainte', label: 'Le plus beau jour se vit', short: 'Zéro contrainte', icon: Heart },

@@ -19,6 +19,7 @@ import PreviewSite from './pages/PreviewSite';
 import CardStudio from './pages/CardStudio';
 import WeddingPeople from './pages/WeddingPeople';
 import Invitation from './pages/Invitation';
+import VendorStudio from './pages/VendorStudio';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -53,6 +54,8 @@ export default function App() {
             <Route path="/taxonomie" element={<Aime />} />
             <Route path="/creer" element={<Onboarding />} />
             <Route path="/carte" element={<CardStudio />} />
+            {/* L'espace du prestataire : le même éditeur, dans la langue du métier. */}
+            <Route path="/prestataire" element={<VendorStudio />} />
             <Route path="/mariage/:slug" element={<WeddingPeople />} />
             <Route path="/rejoindre/:slug" element={<Invitation />} />
             <Route path="/generer" element={<Generating />} />

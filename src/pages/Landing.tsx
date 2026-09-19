@@ -10,6 +10,7 @@ import VendorDomainMenu from '../components/VendorDomainMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import EditorShowcase from '../components/EditorShowcase';
+import VendorEditorsShowcase from '../components/VendorEditorsShowcase';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 
 import UniversePhoneScreens from '../components/UniversePhoneScreens';
@@ -222,6 +223,11 @@ export default function Landing() {
         <EditorShowcase key={activeStyleOrFallback.id} styleId={activeStyleOrFallback.id} />
       </div>
 
+      {/* L'ÉDITEUR DES PRESTATAIRES : le même, dans la langue de chaque métier */}
+      <div id="metiers">
+        <VendorEditorsShowcase />
+      </div>
+
       {/* LE DÉFILÉ DES MINI-SITES : sous l'éditeur, les univers dans la main */}
       <div id="direction">
         <MiniSiteRail />
@@ -274,7 +280,13 @@ export default function Landing() {
             <span className="vp-title text-[17px] font-bold italic tracking-wider text-[var(--vp-ink)]">VOWS</span>
           </div>
           <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-5">
+            <Link to="/creer" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
+              Créer ma carte
+            </Link>
+            <Link to="/prestataire" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
+              Espace prestataire
+            </Link>
           </div>
         </div>
       </footer>

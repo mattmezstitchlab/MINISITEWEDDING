@@ -25,7 +25,11 @@ import { MemStorage } from './memStorage';
 import WeddingCard from '../src/components/WeddingCard';
 import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
 import Landing from '../src/pages/Landing';
+import VendorStudio from '../src/pages/VendorStudio';
+import VendorBridges from '../src/components/VendorBridges';
 import { contentFor } from '../src/lib/universeContent';
+import { donneesMetier, estIntermittent, modulesDuMetier } from '../src/lib/vendorModules';
+import { CACHETS_DEFAUT, heuresCachets } from '../src/lib/vendorDraft';
 import { ALL_STYLES, WEDDING_STYLES, styleById } from '../src/lib/weddingStyles';
 import { EMPTY_CARD, type CardData } from '../src/lib/weddingCard';
 import {
@@ -249,6 +253,70 @@ const cartePresta = renderToStaticMarkup(
 );
 check('la carte d’un prestataire affiche son tarif', cartePresta.includes('Tarif'), true);
 check('la carte d’un prestataire ignore le repas', cartePresta.includes('Rien de particulier'), false);
+
+/* ------------------------------- l'éditeur des prestataires, un par métier */
+
+/*
+ * Le même éditeur que celui des mariés, monté pour un métier : le hero reste le
+ * visuel de l'univers, les modules parlent le métier, et le programme du
+ * mariage arrive tout seul.
+ */
+const studioDe = (role: string, styleId: string) =>
+  renderToStaticMarkup(
+    createElement(
+      MemoryRouter,
+      { initialEntries: [`/prestataire?role=${encodeURIComponent(role)}&style=${styleId}`] },
+      createElement(VendorStudio as never),
+    ),
+  );
+
+const studioChef = studioDe('Traiteur Haute Gastronomie', 'chateau-moderne');
+check('l’éditeur du métier s’ouvre sur l’espace prestataire', studioChef.includes('Espace prestataire'), true);
+check('les modules parlent la cuisine', studioChef.includes('Ce qui passe en cuisine'), true);
+check('les onglets portent les mots du métier', studioChef.includes('Nav · Menus') && studioChef.includes('Nav · Régimes'), true);
+check('la fiche mission vient de la carte', studioChef.includes('La même fiche que celle de votre carte'), true);
+check('rien n’est à ressaisir du site des mariés', studioChef.includes('Ce qui vient des mariés'), true);
+
+const studioPhoto = studioDe('Photographe Néon', 'vegas');
+check('un autre métier parle une autre langue', studioPhoto.includes('Nav · Repérages'), true);
+check('le déroulé du jour J suit le programme', studioPhoto.includes('Nav · Déroulé'), true);
+
+const studioCachets = studioDe('Groupe Polyphonique Corse', 'corse');
+check('les artistes ont leur volet à part', studioCachets.includes('Intermittent du Spectacle'), true);
+check('les cachets se déclarent', studioCachets.includes('GUSO'), true);
+check('les heures comptent pour les 507', studioCachets.includes('507'), true);
+
+/* Le vocabulaire des métiers, éprouvé sans passer par React. */
+check(
+  'un chef lit sa cuisine, jamais les fleurs',
+  modulesDuMetier(donneesMetier(styleById('chateau-moderne'), 'Traiteur Haute Gastronomie'))
+    .map((m) => m.nav)
+    .join(' · '),
+  'Mission · Menus · Régimes · Créneaux',
+);
+check('un musicien ajoute ses cachets', estIntermittent('Saxophoniste Deep House Live'), true);
+check('un technicien du spectacle aussi', estIntermittent('Light Designer Architectural'), true);
+check('un traiteur n’est pas intermittent', estIntermittent('Traiteur Haute Gastronomie'), false);
+check(
+  'les cachets comptent pour les 507 heures',
+  heuresCachets({ ...CACHETS_DEFAUT, cachets: 2, heuresParCachet: 12, heuresAcquises: 300 }),
+  324,
+);
+
+/* L'espace des mariés ouvre l'éditeur de chacun de leurs métiers. */
+const pont = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    null,
+    createElement(VendorBridges as never, { style: styleById('corse') } as never),
+  ),
+);
+check('les mariés voient les métiers de leur univers', pont.includes('Les métiers du mariage'), true);
+check('et la porte de leur éditeur', pont.includes('/prestataire?role='), true);
+
+/* L'accueil annonce l'éditeur des métiers, intermittents compris. */
+check('l’accueil ouvre l’éditeur des métiers', accueil.includes('Le même éditeur, un par métier'), true);
+check('l’accueil distingue les intermittents', accueil.includes('Intermittent du Spectacle'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

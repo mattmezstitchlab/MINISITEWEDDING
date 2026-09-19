@@ -12,12 +12,13 @@ import { getEditToken, setActiveToken } from '../lib/auth';
 import { useSiteData } from '../lib/siteData';
 import { isRemote } from '../lib/dataSource';
 import NoAccess from '../components/editor/NoAccess';
-import { PHASES } from '../lib/weddingStyles';
+import { PHASES, styleById } from '../lib/weddingStyles';
 import PublicSiteView from '../components/PublicSiteView';
 import MediaLibrary from '../components/MediaLibrary';
 import AppearancePanel from '../components/AppearancePanel';
 import RsvpManager from '../components/RsvpManager';
 import SharePanel from '../components/SharePanel';
+import VendorBridges from '../components/VendorBridges';
 import SectionEditor from '../components/editor/SectionEditor';
 import type { EditorContext } from '../components/editor/SectionEditor';
 
@@ -226,6 +227,8 @@ function EditorShell({ id }: { id?: string }) {
             </div>
             <p className="vp-caption mt-2.5 !text-[11.5px] leading-relaxed">{PHASES.find((p) => p.id === site.phase)?.desc}</p>
           </div>
+          {/* La porte des prestataires : chaque métier de l'univers a son éditeur. */}
+          <VendorBridges style={styleById(site.style)} />
         </aside>
 
         <main className="flex-1 min-w-0 overflow-y-auto" onClick={() => setDrawer(null)}>

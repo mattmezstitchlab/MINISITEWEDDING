@@ -234,3 +234,36 @@ Plus une : **l'annonce** du couple, une seule, en haut.
 - **Ce que la carte dit, le mini-site l'écrit.** Le parcours est carte → mini-site :
   les informations composées sur la carte sont celles que le site affiche, on ne
   les demande pas deux fois.
+
+## 11. L'éditeur des métiers
+
+- **Un éditeur par métier, pas un par prestataire.** `/prestataire?role=…&style=…`
+  monte le même éditeur que celui des mariés
+  (`src/components/VendorSiteStudio.tsx`, page `src/pages/VendorStudio.tsx`) :
+  l'aperçu en vrai dans le châssis du téléphone, les champs de l'autre côté.
+  Le hero ne bouge pas — c'est le visuel de l'univers — ce sont les modules qui
+  changent de langue.
+- **La langue du métier vit dans un seul fichier.** `src/lib/vendorModules.ts`
+  écrit les modules des douze domaines (`PAR_DOMAINE`) : un chef lit « Ce qui
+  passe en cuisine », un photographe « La lumière et les lieux », un fleuriste
+  « Ce qui pousse dans cet univers ». Le domaine vient de `domaineDe()` — le
+  même découpage que le menu Métiers de l'accueil. Le premier module est toujours
+  la fiche mission de la carte (`moduleMission`), donc ce que le prestataire a
+  lu sur sa carte, il le retrouve dans sa page.
+- **Intermittent du Spectacle.** `estIntermittent(role)` reconnaît les artistes
+  et les techniciens du spectacle (musiciens, DJ, régie, lumière, son — plus
+  quelques mots-métiers). Pour eux, un module de plus (`moduleCachets`) et un
+  volet privé dans l'éditeur : cachets prévus, heures par cachet, GUSO, SACEM /
+  SPRE, défraiement, et le compteur des 507 heures (`src/lib/vendorDraft.ts`).
+  Rien de tout cela ne part sur le site public, ni dans le bucket média.
+- **Les deux éditeurs sont branchés l'un sur l'autre.** Ce que le prestataire ne
+  ressaisit jamais — le programme, les régimes, les accès, les chiffres, le
+  décor — s'affiche chez lui comme « Ce qui vient des mariés »
+  (`partageAvecLesMaries`), lu dans le même `contentFor` / `getScenesForStyle`
+  que le site. Côté mariés, l'espace d'édition ouvre l'éditeur de chacun de leurs
+  métiers (`src/components/VendorBridges.tsx`), et l'accueil les présente par
+  domaine (`src/components/VendorEditorsShowcase.tsx`, ancre `#metiers`).
+- **Le brouillon reste sur l'appareil.** `vows:vendor-draft:<role>` dans le
+  navigateur, comme le reste de la base locale : on écrit, on recharge, on
+  retrouve ses textes. Publier un site de prestataire est une étape à part,
+  encore à écrire.
