@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, Printer, ShoppingCart, Ticket, UserRound } from 'lucide-react';
+import { Check, Printer, RefreshCw, RotateCcw, ShoppingCart, Ticket, UserRound } from 'lucide-react';
 import TicketCaisse from './TicketCaisse';
 import { EnvoiRecu, QrPage } from './PlaylistCollaborative';
 import { euros, lignesDuTicket, numeroDeTicket, prixDeLArticle, totalCaisse } from '../lib/superMariage';
@@ -38,13 +38,20 @@ interface Props {
   fond: string;
   /** Le point de vue d'ouverture : les invités, ou les mariés (utile aux tests). */
   vueInitiale?: Vue;
+  /** Où en est le comptoir partagé, et comment le relire ou le vider. */
+  comptoir?: {
+    partage: boolean;
+    invites: string[];
+    rafraichir: () => void;
+    remettreAZero: () => void;
+  };
 }
 
 type Vue = 'invites' | 'maries';
 
 export default function RecapCourses({
   styleId, style, magasin, couple, dateLabel, heureLabel, morceaux, terminal, onTerminal, nom, fond,
-  vueInitiale = 'invites',
+  vueInitiale = 'invites', comptoir,
 }: Props) {
   /* La provision du couple : ce qui est prévu, coché, chiffré. */
   const [coches, setCoches] = useState<string[]>(magasin.panierDeDepart);
@@ -138,10 +145,30 @@ export default function RecapCourses({
                   <div className="font-mono text-[11px] font-bold uppercase tracking-[0.18em]">
                     Le comptoir · {avance.phrase}
                   </div>
-                  <span className="font-mono text-[10.5px] text-black/45">
-                    {prisParInvite.length} invité{prisParInvite.length > 1 ? 's' : ''} passé{prisParInvite.length > 1 ? 's' : ''}
-                    {' '}· {terminal.demandes.length} demande{terminal.demandes.length > 1 ? 's' : ''} de morceau
-                  </span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="font-mono text-[10.5px] text-black/45">
+                      {prisParInvite.length} invité{prisParInvite.length > 1 ? 's' : ''} passé{prisParInvite.length > 1 ? 's' : ''}
+                      {' '}· {terminal.demandes.length} demande{terminal.demandes.length > 1 ? 's' : ''} de morceau
+                    </span>
+                    {comptoir && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={comptoir.rafraichir}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-black/12 px-3 py-1.5 text-[11px] font-semibold text-black/60 transition hover:border-black/35 hover:text-black"
+                        >
+                          <RefreshCw size={11} /> Rafraîchir
+                        </button>
+                        <button
+                          type="button"
+                          onClick={comptoir.remettreAZero}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-black/12 px-3 py-1.5 text-[11px] font-semibold text-black/60 transition hover:border-black/35 hover:text-black"
+                        >
+                          <RotateCcw size={11} /> Vider le comptoir
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-black/8">

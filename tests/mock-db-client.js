@@ -18,6 +18,7 @@ export const store = {
   people: [],
   person_secrets: [],
   wedding_members: [],
+  wedding_live: [],
 };
 
 /** `{ table, message }` : force l’échec du prochain insert sur cette table. */

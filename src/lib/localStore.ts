@@ -53,6 +53,8 @@ export interface LocalDb {
   people: Person[];
   members: WeddingMember[];
   personSecrets: PersonSecret[];
+  /** Le comptoir partagé, une ligne par univers (voir `liveRules.ts`). */
+  live: Array<{ style_id: string; payload: unknown; updated_at: string }>;
 }
 
 /** Écriture refusée faute de place : l’éditeur l’affiche telle quelle. */
@@ -84,6 +86,7 @@ function emptyDb(): LocalDb {
     people: [],
     members: [],
     personSecrets: [],
+    live: [],
   };
 }
 

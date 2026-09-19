@@ -18,7 +18,7 @@ const work = mkdtempSync(join(tmpdir(), 'wedding-api-'));
 
 cpSync(join(repoRoot, 'api'), join(work, 'api'), { recursive: true });
 mkdirSync(join(work, 'server'));
-for (const f of ['auth.js', 'crud.js', 'errors.js', 'people.js']) {
+for (const f of ['auth.js', 'crud.js', 'errors.js', 'people.js', 'live.js']) {
   cpSync(join(repoRoot, 'server', f), join(work, 'server', f));
 }
 cpSync(new URL('./mock-db-client.js', import.meta.url), join(work, 'server/db-client.js'));
@@ -41,6 +41,7 @@ const media = await load('api/media.js');
 const upload = await load('api/upload.js');
 const people = await load('api/people.js');
 const members = await load('api/wedding-members.js');
+const live = await load('api/wedding-live.js');
 
 let pass = 0;
 const failures = [];
@@ -452,6 +453,115 @@ check('site sans clé : édition impossible → 403', (await call(weddingSites, 
   check('quitter sans clé → 403', (await call(members, { method: 'DELETE', query: { id: place } })).statusCode, 403);
   check('quitter sa place → 200', (await call(members, { method: 'DELETE', query: { id: place }, person: cleAlice })).statusCode, 200);
   check('la place a bien disparu', (await call(members, { query: { slug: slugOuvert } })).body.count, 3);
+}
+
+/* --------------------------------------- 9. le comptoir partagé (wedding-live) */
+
+{
+  reset();
+
+  /* — le comptoir d'un univers, vide au départ */
+  const vide = await call(live, { query: { style_id: 'vegas' } });
+  check('le comptoir s’ouvre sans ligne en base', vide.statusCode, 200);
+  check('le comptoir vide n’a rien', vide.body.payload.prises.length, 0);
+  check('le comptoir vide n’a pas d’invité', vide.body.invites.length, 0);
+  check('sans univers → 400', (await call(live, { query: {} })).statusCode, 400);
+
+  /* — une prise : le premier arrivé la garde */
+  const prise = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'prendre', articleId: 'horaire-22h00', nom: 'Camille' } },
+  });
+  check('une prise est appliquée', prise.body.applique, true);
+  check('elle porte le nom de l’invité', prise.body.payload.prises[0].nom, 'Camille');
+  check('le comptoir connaît son invité', prise.body.invites, ['Camille']);
+
+  const seconde = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'prendre', articleId: 'horaire-22h00', nom: 'Bastien' } },
+  });
+  check('une ligne déjà prise ne se reprend pas', seconde.body.applique, false);
+  check('et la ligne reste à son premier preneur', seconde.body.payload.prises[0].nom, 'Camille');
+
+  const sansNom = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'prendre', articleId: 'horaire-23h00', nom: '   ' } },
+  });
+  check('un geste sans nom ne fait rien', sansNom.body.applique, false);
+
+  /* — on ne lâche que ce qu'on a pris */
+  const pasAMoi = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'lacher', articleId: 'horaire-22h00', nom: 'Bastien' } },
+  });
+  check('lâcher la ligne d’un autre ne fait rien', pasAMoi.body.payload.prises.length, 1);
+  const aMoi = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'lacher', articleId: 'horaire-22h00', nom: 'Camille' } },
+  });
+  check('lâcher sa ligne la libère', aMoi.body.payload.prises.length, 0);
+
+  /* — une demande de morceau, et le refus du doublon */
+  const musique = {
+    type: 'demander', cle: 'sug-1', titre: 'Thinkin’ Out Loud', artiste: 'Ed Sheeran',
+    phaseId: 'premiere_danse', nom: 'Camille',
+  };
+  const demande = await call(live, { method: 'POST', body: { style_id: 'vegas', geste: musique } });
+  check('une demande est appliquée', demande.body.payload.demandes.length, 1);
+  check('elle garde son moment', demande.body.payload.demandes[0].phaseId, 'premiere_danse');
+  const doublon = await call(live, { method: 'POST', body: { style_id: 'vegas', geste: musique } });
+  check('on ne demande pas deux fois la même chose', doublon.body.applique, false);
+  const autre = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { ...musique, nom: 'Bastien' } },
+  });
+  check('un autre invité peut demander le même morceau', autre.body.payload.demandes.length, 2);
+  const retrait = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'retirerDemande', cle: 'sug-1', nom: 'Camille' } },
+  });
+  check('retirer sa demande la retire', retrait.body.payload.demandes.length, 1);
+
+  /* — le reçu d'un invité, posé par son lien */
+  const journaliser = {
+    type: 'journaliser',
+    code: 'CODE-CAMILLE',
+    nom: 'Camille',
+    articles: ['horaire-22h00', 'horaire-22h17'],
+    demandes: [
+      { cle: 'sug-1', titre: 'Thinkin’ Out Loud', artiste: 'Ed Sheeran', phaseId: 'premiere_danse' },
+      { cle: 'libre:la-vie-en-rose', titre: 'La Vie en rose', artiste: 'Édith Piaf', phaseId: 'diner_toasts', libre: true },
+    ],
+  };
+  const recu = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { ...journaliser, recu: { nom: 'Camille' } } },
+  });
+  check('le reçu remonte ses deux lignes', recu.body.payload.prises.length, 2);
+  check('et entre au journal', recu.body.payload.journal.length, 1);
+  check('le journal garde les morceaux du catalogue', recu.body.payload.journal[0].morceaux, ['sug-1']);
+  check('et les titres proposés à part', recu.body.payload.journal[0].titres[0].titre, 'La Vie en rose');
+  const rejoue = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { ...journaliser, recu: { nom: 'Camille' } } },
+  });
+  check('rouvrir le lien ne compte pas double', rejoue.body.applique, false);
+  check('ni les lignes ni le journal ne bougent', rejoue.body.payload.prises.length, 2);
+
+  /* — un univers voisin garde son comptoir à lui */
+  const autreUnivers = await call(live, { query: { style_id: 'corse' } });
+  check('chaque univers a son comptoir', autreUnivers.body.payload.prises.length, 0);
+
+  /* — la remise à zéro, côté mariés */
+  const remis = await call(live, { method: 'PUT', body: { style_id: 'vegas', payload: { prises: [], demandes: [], journal: [] } } });
+  check('les mariés peuvent vider le comptoir', remis.body.payload.prises.length, 0);
+  check('le comptoir vidé est bien relu', (await call(live, { query: { style_id: 'vegas' } })).body.payload.journal.length, 0);
+  check('PUT sans payload → 400', (await call(live, { method: 'PUT', body: { style_id: 'vegas' } })).statusCode, 400);
+  check('POST sans geste → 200 sans écriture', (await call(live, { method: 'POST', body: { style_id: 'vegas' } })).body.applique, false);
+  check('DELETE refusé', (await call(live, { method: 'DELETE', query: { style_id: 'vegas' } })).statusCode, 405);
+
+  /* — ce qui est stocké : une ligne par univers, rien de plus */
+  check('une seule ligne en base pour Vegas', store.wedding_live.filter((r) => r.style_id === 'vegas').length, 1);
 }
 
 /* ------------------------------------------------------------------ bilan */

@@ -228,6 +228,21 @@ create index if not exists wedding_members_site_idx on public.wedding_members (s
 create index if not exists wedding_members_person_idx on public.wedding_members (person_id);
 
 -- ----------------------------------------------------------------------------
+--  Le comptoir partagé (la page « le mariage, en entier »)
+--
+--  Une ligne par univers : ce que les invités ont pris, les morceaux qu’ils ont
+--  demandés et le journal des reçus. Le couple n’a rien à faire : la page des
+--  mariés lit cette ligne et se remplit toute seule (voir server/live.js et
+--  api/wedding-live.js). Sans base distante, la même mécanique tourne dans le
+--  navigateur (`src/lib/localApi.ts`) : aucune ligne de front ne change.
+-- ----------------------------------------------------------------------------
+create table if not exists public.wedding_live (
+  style_id   text primary key,
+  payload    jsonb not null default '{"prises":[],"demandes":[],"journal":[]}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+-- ----------------------------------------------------------------------------
 --  Clés d’édition
 --
 --  Un jeton aléatoire par site, stocké sous forme d’empreinte SHA-256 : la
@@ -269,7 +284,8 @@ begin
   foreach t in array array[
     'wedding_sites', 'site_sections', 'programme_events', 'infos_pratiques',
     'gallery_photos', 'faqs', 'rsvp_events', 'rsvp_responses', 'gift_options',
-    'media_assets', 'site_secrets', 'people', 'person_secrets', 'wedding_members'
+    'media_assets', 'site_secrets', 'people', 'person_secrets', 'wedding_members',
+    'wedding_live'
   ]
   loop
     execute format('alter table public.%I enable row level security', t);

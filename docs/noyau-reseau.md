@@ -470,3 +470,36 @@ sa part, repart avec son reçu, et le DJ emporte la playlist.
   143 / 55 / **189** — la boucle complète est testée en pur (prise, conflit,
   lâcher, reçu encodé/décodé, import idempotent, plan du DJ, deux invités sur le
   même morceau) et le récap est rendu dans les deux vues — `npm run build` OK.
+
+## 17. Le comptoir partagé (passe 23)
+
+Les invités prenaient leurs lignes, mais il fallait leur envoyer le reçu pour que
+les mariés le voient. Maintenant la page des mariés **se remplit toute seule**.
+
+- **Une table, une route.** `public.wedding_live` (`style_id` en clé primaire,
+  `payload` jsonb, `updated_at`) et `api/wedding-live.js` :
+  `GET ?style_id=…` lit le comptoir, `POST { style_id, geste }` applique un geste
+  d'invité, `PUT { style_id, payload }` remet à zéro (les mariés). RLS reste
+  fermée : le navigateur ne parle qu'à `/api/*`.
+- **Cinq gestes, pas un de plus.** `prendre`, `lacher`, `demander`,
+  `retirerDemande`, `journaliser` — les règles vivent dans `server/live.js`, qui
+  refuse tout ce qui n'est pas l'un de ces cinq : pas de reprise d'une ligne
+  prise, pas de lâcher celle d'un autre, pas de doublon de reçu (idempotent par
+  code). Un geste qui ne change rien n'écrit pas en base : la réponse le dit
+  (`applique: false`).
+- **La même règle dans le navigateur.** `src/lib/liveRules.ts` applique les
+  gestes côté front — pour répondre tout de suite (affichage optimiste) et pour
+  le **mode sans base** : `localApi.ts` sert `/api/wedding-live` avec les mêmes
+  règles, sur `localStorage`. Aucune ligne d'écran ne sait laquelle des deux
+  chemins elle emprunte.
+- **`useComptoir` (`src/lib/terminalLive.ts`)** : lecture au montage, relecture
+  toutes les quinze secondes et à chaque retour sur l'onglet, file d'attente des
+  gestes si le réseau tombe, et un indicateur en haut de page — « En direct · 3
+  invités au comptoir », « Sur cet appareil » sans base. Le bouton « Rafraîchir »
+  et « Vider le comptoir » sont dans la vue des mariés.
+- **Le reçu reste possible.** `?recu=…` entre dans la file comme les autres
+  gestes : le lien d'un invité dépose son reçu au comptoir, où qu'il soit.
+- **Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **173** / 55 / **210**
+  (la route testée dans `tests/api.test.mjs` : prise, conflit, lâcher d'autrui,
+  demande et doublon, reçu idempotent, cloisons entre univers, remise à zéro ; la
+  route locale et les gestes testés côté interface), `npm run build` OK.

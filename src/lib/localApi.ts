@@ -1,6 +1,8 @@
 import type { LocalDb } from './localStore';
 import { createToken, nextId, readDb, withDb } from './localStore';
 import type { Person, WeddingMember, WeddingSite } from './types';
+import { appliquerGeste, invitesAuComptoir, type Geste } from './liveRules';
+import type { EtatTerminal } from './weddingTicket';
 import {
   cleanPersonPatch,
   isValidRoleId,
@@ -101,6 +103,72 @@ function sortBy(rows: Row[], column: string, ascending: boolean): Row[] {
     const cmp = av > bv ? 1 : -1;
     return ascending ? cmp : -cmp;
   });
+}
+
+/* ------------------------------------------------------------- le comptoir */
+
+/**
+ * Le comptoir partagé, servi comme les autres routes.
+ *
+ *   GET  ?style_id=…            -> l'état du comptoir
+ *   POST { style_id, geste }    -> un geste d'invité, appliqué et renvoyé
+ *   PUT  { style_id, payload }  -> remise à zéro, par les mariés
+ *
+ * Les règles sont celles de `liveRules.ts` — les mêmes que celles de
+ * `server/live.js` quand une base est branchée. Sans base, la page se comporte
+ * donc exactement pareil : ici, le « partagé » s'arrête au navigateur.
+ */
+function weddingLive(method: string, query: Record<string, string>, payload: Record<string, unknown>): LocalResponse {
+  const styleId = String(query.style_id || payload.style_id || '').trim();
+  if (!styleId) return fail(400, 'style_id requis');
+  if (!['GET', 'POST', 'PUT'].includes(method)) return fail(405, 'Method not allowed');
+
+  const db = readDb();
+  const ligne = db.live.find((l) => l.style_id === styleId);
+  const courant = normaliserEtat(ligne?.payload);
+
+  const enveloppe = (etat: EtatTerminal, updatedAt: string, applique?: boolean) => ({
+    style_id: styleId,
+    payload: etat,
+    updated_at: updatedAt,
+    invites: invitesAuComptoir(etat),
+    ...(applique === undefined ? {} : { applique }),
+  });
+
+  if (method === 'GET') return ok(enveloppe(courant, ligne?.updated_at ?? ''));
+
+  if (method === 'POST') {
+    const suivant = appliquerGeste(courant, payload.geste as Geste);
+    // Le geste ne change rien : on renvoie l'état tel quel, sans écrire.
+    if (!suivant) return ok(enveloppe(courant, ligne?.updated_at ?? '', false));
+    return withDb((live) => {
+      const index = live.live.findIndex((l) => l.style_id === styleId);
+      const updatedAt = new Date().toISOString();
+      if (index < 0) live.live.push({ style_id: styleId, payload: suivant, updated_at: updatedAt });
+      else live.live[index] = { ...live.live[index], payload: suivant, updated_at: updatedAt };
+      return ok(enveloppe(suivant, updatedAt, true));
+    });
+  }
+
+  const remis = payload.payload && typeof payload.payload === 'object' ? normaliserEtat(payload.payload) : null;
+  if (!remis) return fail(400, 'payload requis');
+  return withDb((live) => {
+    const index = live.live.findIndex((l) => l.style_id === styleId);
+    const updatedAt = new Date().toISOString();
+    if (index < 0) live.live.push({ style_id: styleId, payload: remis, updated_at: updatedAt });
+    else live.live[index] = { ...live.live[index], payload: remis, updated_at: updatedAt };
+    return ok(enveloppe(remis, updatedAt, true));
+  });
+}
+
+/** Un état relu depuis le stockage : jamais de champ manquant. */
+function normaliserEtat(payload: unknown): EtatTerminal {
+  const etat = (payload ?? {}) as Partial<EtatTerminal>;
+  return {
+    prises: Array.isArray(etat.prises) ? etat.prises : [],
+    demandes: Array.isArray(etat.demandes) ? etat.demandes : [],
+    journal: Array.isArray(etat.journal) ? etat.journal : [],
+  };
 }
 
 /* --------------------------------------------------------------------- CRUD */
@@ -532,6 +600,7 @@ export async function localRequest(
 
   try {
     if (pathname === '/api/create-site') return createSite(method, payload);
+    if (pathname === '/api/wedding-live') return weddingLive(method, query, payload);
     if (pathname === '/api/wedding-sites') return weddingSites(method, query, payload, token);
     if (pathname === '/api/upload') return await upload(method, payload, token);
     if (pathname === '/api/people') return peopleRoutes(method, query, payload, token, personToken);

@@ -13,10 +13,9 @@ import { daysUntil, formatDateLong } from '../lib/format';
 import { chargerPlaylist, enregistrerPlaylist, morceauxDeLaPlaylist } from '../lib/weddingPlaylist';
 import MusicCard from '../components/MusicCard';
 import { aPartirDe, pageFor, type PageUnivers as PageDonnees } from '../lib/weddingPage';
-import {
-  chargerNom, chargerTerminal, decoderRecu, enregistrerNom, enregistrerTerminal, entrerRecu,
-  signataire, type EtatTerminal,
-} from '../lib/weddingTicket';
+import { chargerNom, enregistrerNom, signataire, type EtatTerminal } from '../lib/weddingTicket';
+import { etatDuComptoir, useComptoir } from '../lib/terminalLive';
+import { gesteDepuis } from '../lib/liveRules';
 
 const COULEURS = {
   magasin: { papier: '#FBFAF8', carte: '#FFFFFF', serif: 'Georgia, "Times New Roman", serif' },
@@ -47,34 +46,22 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
     enregistrerNom(valeur, styleId);
   };
 
-  /* ————————————————— le terminal ————————————————— */
+  /* ————————————————— le comptoir, en direct ————————————————— */
   /**
-   * Un reçu arrive par son lien (`?recu=…`) : il est posé sur le terminal une
-   * fois pour toutes. L'import se fait pendant le rendu — pas dans un effet —
-   * parce que c'est le même calcul : ouvrir le lien, c'est poser le reçu.
+   * Le comptoir est **partagé** : les invités y prennent leurs lignes et y
+   * demandent leurs morceaux, et la page des mariés se remplit toute seule
+   * (voir `terminalLive.ts`). Sans base branchée, il vit dans le navigateur.
    */
-  const importerRecu = (etat: EtatTerminal, code: string | null): EtatTerminal => {
-    if (!code) return etat;
-    const recu = decoderRecu(code);
-    if (!recu) return etat;
-    const suivant = entrerRecu(etat, recu, code);
-    if (suivant !== etat) enregistrerTerminal(suivant, styleId);
-    return suivant;
-  };
+  /* Un reçu arrive par son lien (`?recu=…`) : le comptoir le dépose lui-même. */
+  const comptoir = useComptoir(styleId, codeRecu);
+  const terminal = comptoir.etat;
 
-  const [terminal, setTerminal] = useState<EtatTerminal>(() => importerRecu(chargerTerminal(styleId), codeRecu));
-  const [codeTraite, setCodeTraite] = useState(codeRecu ?? '');
-  if ((codeRecu ?? '') !== codeTraite) {
-    setCodeTraite(codeRecu ?? '');
-    setTerminal((prev) => importerRecu(prev, codeRecu));
-  }
-
+  /** Ce que les composants demandent : un geste, appliqué et envoyé. */
   const majTerminal = (f: (etat: EtatTerminal) => EtatTerminal) => {
-    setTerminal((prev) => {
-      const suivant = f(prev);
-      enregistrerTerminal(suivant, styleId);
-      return suivant;
-    });
+    const suivant = f(comptoir.etat);
+    if (suivant === comptoir.etat) return;
+    const geste = gesteDepuis(comptoir.etat, suivant);
+    if (geste) comptoir.geste(geste);
   };
 
   /* ————————————————— la playlist du couple ————————————————— */
@@ -200,9 +187,14 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
               className="min-w-0 flex-1 bg-transparent text-[13.5px] text-white outline-none placeholder:text-white/35"
             />
           </label>
-          <span className="font-mono text-[10.5px] uppercase tracking-wider text-white/55">
-            {terminal.prises.length} ligne{terminal.prises.length > 1 ? 's' : ''} prise{terminal.prises.length > 1 ? 's' : ''}
-            {' '}· {terminal.demandes.length} morceau{terminal.demandes.length > 1 ? 'x' : ''} demandé{terminal.demandes.length > 1 ? 's' : ''}
+          <span className="inline-flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-wider text-white/55">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${comptoir.partage ? 'bg-emerald-400' : 'bg-white/40'}`}
+              style={comptoir.partage ? { animation: 'pulse 1.6s ease-in-out infinite' } : undefined}
+            />
+            {etatDuComptoir(comptoir.partage, comptoir.invites.length)}
+            {' '}· {terminal.prises.length} prise{terminal.prises.length > 1 ? 's' : ''}
+            {' '}· {terminal.demandes.length} morceau{terminal.demandes.length > 1 ? 'x' : ''}
           </span>
           <a
             href="#recap"
@@ -424,6 +416,7 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
         onTerminal={majTerminal}
         nom={nom}
         fond={tons.carte}
+        comptoir={{ partage: comptoir.partage, invites: comptoir.invites, rafraichir: comptoir.rafraichir, remettreAZero: comptoir.remettreAZero }}
       />
 
       {/* ═══════════════════════ 6 · LES AUTRES UNIVERS ═══════════════════════ */}

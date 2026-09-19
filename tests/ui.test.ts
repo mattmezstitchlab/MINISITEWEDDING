@@ -16,7 +16,8 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import PublicSiteView from '../src/components/PublicSiteView';
 import SharePanel from '../src/components/SharePanel';
 import { forgetPersonToken, setActiveToken } from '../src/lib/auth';
-import { apiSend } from '../src/lib/http';
+import { apiGet, apiSend } from '../src/lib/http';
+import { appliquerGeste, gesteDepuis, gestesDuRecu } from '../src/lib/liveRules';
 import { seedSite } from '../src/lib/defaults';
 import { loadSiteData } from '../src/lib/siteData';
 import { setRemote } from '../src/lib/dataSource';
@@ -667,6 +668,68 @@ check('avec l’ordre de la soirée', recapMaries.includes('ordre de la soirée'
 check('et le nom de qui l’a demandé', recapMaries.includes('demandé par Camille'), true);
 check('il donne le QR à scanner au comptoir', recapMaries.includes('À scanner au comptoir'), true);
 check('le tampon du DJ est prêt', recapMaries.includes('Prêt pour la piste'), true);
+
+/* -------------------- le comptoir partagé : les gestes, et la route locale ---------- */
+
+check(
+  'un geste de prise s’applique',
+  appliquerGeste(TERMINAL_VIDE, { type: 'prendre', articleId: 'horaire-22h00', nom: 'Camille' })?.prises.length,
+  1,
+);
+check(
+  'une prise déjà faite ne se rejoue pas',
+  appliquerGeste(terminalMaries, { type: 'prendre', articleId: lignePrise.id, nom: 'Bastien' }),
+  null,
+);
+check(
+  'un geste de demande garde son moment',
+  appliquerGeste(TERMINAL_VIDE, {
+    type: 'demander', cle: 'sug-4', titre: 'Superstition', artiste: 'Stevie Wonder',
+    phaseId: 'dancefloor_peak', nom: 'Camille',
+  })?.demandes[0]?.phaseId,
+  'dancefloor_peak',
+);
+check(
+  'un reçu se décompose en gestes',
+  gestesDuRecu(recuCamille, 'CODE-CAMILLE').map((g) => g.type),
+  ['prendre', 'prendre', 'demander', 'journaliser'],
+);
+{
+  const gestes = gestesDuRecu(recuCamille, 'CODE-CAMILLE');
+  const musique = gestes[2];
+  check('le morceau du reçu est résolu depuis le catalogue', musique.type === 'demander' ? musique.titre : '', 'Fly Me to the Moon');
+  check('et son moment aussi', musique.type === 'demander' ? musique.phaseId : '', 'diner_toasts');
+  check('le journal porte le code du reçu', gestes[3]?.type === 'journaliser' ? gestes[3].code : '', 'CODE-CAMILLE');
+}
+{
+  const avant = TERMINAL_VIDE;
+  const apres = prendre(avant, 'horaire-22h00', 'Camille');
+  check('gesteDepuis retrouve la prise', gesteDepuis(avant, apres)?.type, 'prendre');
+  const apres2 = demander(apres, { cle: 'sug-1', titre: 'Thinkin’ Out Loud', artiste: 'Ed Sheeran', phaseId: 'premiere_danse' }, 'Camille');
+  check('gesteDepuis retrouve la demande', gesteDepuis(apres, apres2)?.type, 'demander');
+  check('gesteDepuis retrouve le retrait', gesteDepuis(apres2, apres)?.type, 'retirerDemande');
+  check('gesteDepuis retrouve le lâcher', gesteDepuis(apres, avant)?.type, 'lacher');
+  check('sans changement, aucun geste', gesteDepuis(avant, avant), null);
+}
+
+/* La route du comptoir, servie par le navigateur quand aucune base n’est branchée. */
+setRemote(false);
+const liveVide = await apiGet<{ payload: { prises: unknown[] }; invites: string[] }>('/api/wedding-live?style_id=vegas');
+check('le comptoir local s’ouvre vide', liveVide.payload.prises.length, 0);
+const livePrise = await apiSend<{ applique: boolean; invites: string[] }>('/api/wedding-live', 'POST', {
+  style_id: 'vegas',
+  geste: { type: 'prendre', articleId: 'horaire-22h00', nom: 'Camille' },
+});
+check('le geste est appliqué', livePrise.applique, true);
+check('le comptoir retient l’invité', livePrise.invites, ['Camille']);
+const liveRelu = await apiGet<{ payload: { prises: Array<{ nom: string }> } }>('/api/wedding-live?style_id=vegas');
+check('le comptoir relu garde la prise', liveRelu.payload.prises[0]?.nom, 'Camille');
+const liveAutre = await apiGet<{ payload: { prises: unknown[] } }>('/api/wedding-live?style_id=corse');
+check('chaque univers a son comptoir', liveAutre.payload.prises.length, 0);
+const liveVide2 = await apiSend<{ payload: { prises: unknown[] } }>('/api/wedding-live', 'PUT', {
+  style_id: 'vegas', payload: TERMINAL_VIDE,
+});
+check('les mariés peuvent vider le comptoir', liveVide2.payload.prises.length, 0);
 
 /* ------------------------------------------------------------------- bilan */
 
