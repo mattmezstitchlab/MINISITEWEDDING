@@ -13,6 +13,8 @@ import PublicSite from './pages/PublicSite';
 import Theater from './pages/Theater';
 import Magazine from './pages/Magazine';
 import MagazineArticle from './pages/MagazineArticle';
+import Shop from './pages/Shop';
+import ShopProduct from './pages/ShopProduct';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -39,6 +41,8 @@ export default function App() {
             {/* Event OS retiré du produit : ses anciennes adresses ramènent à l'accueil. */}
             <Route path="/modules" element={<Navigate to="/" replace />} />
             <Route path="/features" element={<Navigate to="/" replace />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/shop/:slug" element={<ShopProduct />} />
             <Route path="/magazine" element={<Magazine />} />
             <Route path="/magazine/:slug" element={<MagazineArticle />} />
             <Route path="/aime" element={<Aime />} />

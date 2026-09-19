@@ -63,7 +63,7 @@ export default function PhoneShell({ hero, modules, accent, initial = 0 }: Phone
       </div>
 
       {/* La capsule de navigation de cet écran */}
-      <nav className="absolute inset-x-2 bottom-2 z-30 flex items-center justify-between gap-0.5 rounded-full bg-black/92 p-1 shadow-lg backdrop-blur">
+      <nav className="absolute inset-x-2 bottom-2 z-30 flex items-center justify-between gap-0.5 rounded-full bg-white/95 p-1 shadow-[0_6px_20px_rgba(0,0,0,0.16)] ring-1 ring-black/8 backdrop-blur">
         {modules.map((module, i) => {
           const Icon = module.icon;
           const isActive = i === active;
@@ -75,9 +75,9 @@ export default function PhoneShell({ hero, modules, accent, initial = 0 }: Phone
               aria-label={`Écran ${module.label}`}
               aria-current={isActive}
               className={`flex flex-1 flex-col items-center gap-0.5 rounded-full px-0.5 py-1.5 transition ${
-                isActive ? 'text-white' : 'text-white/45 hover:text-white/75'
+                isActive ? 'text-[#0B0C12]' : 'text-black/35 hover:text-black/60'
               }`}
-              style={isActive ? { background: `${accent}33` } : undefined}
+              style={isActive ? { background: `${accent}1f` } : undefined}
             >
               <Icon size={13} strokeWidth={isActive ? 2.4 : 1.8} />
               <span className="text-[7.5px] font-semibold leading-none">{module.label}</span>

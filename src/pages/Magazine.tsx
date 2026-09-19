@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, Sparkles } from 'lucide-react';
-import { GUIDE_ARTICLES, UNIVERSE_ARTICLES } from '../lib/magazine';
+import { GUIDE_ARTICLES, INSOLITE_ARTICLES, UNIVERSE_ARTICLES } from '../lib/magazine';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 
 /**
@@ -19,7 +19,7 @@ const fadeUp = {
 };
 
 export default function Magazine() {
-  const [filtre, setFiltre] = useState<'tout' | 'univers' | 'guide'>('tout');
+  const [filtre, setFiltre] = useState<'tout' | 'univers' | 'guide' | 'insolite'>('tout');
   const aLaUne = UNIVERSE_ARTICLES[0];
 
   return (
@@ -62,6 +62,7 @@ export default function Magazine() {
               ['tout', 'Tout le magazine'],
               ['univers', `Les ${UNIVERSE_ARTICLES.length} univers`],
               ['guide', `Les ${GUIDE_ARTICLES.length} guides`],
+              ['insolite', `Insolite (${INSOLITE_ARTICLES.length})`],
             ] as const).map(([id, label]) => (
               <button
                 key={id}
@@ -119,7 +120,8 @@ export default function Magazine() {
       {/* Les grilles d'articles */}
       {[
         { titre: 'Les univers, racontés', liste: UNIVERSE_ARTICLES, visible: filtre !== 'guide' },
-        { titre: 'Les guides', liste: GUIDE_ARTICLES, visible: filtre !== 'univers' },
+        { titre: 'Les guides', liste: GUIDE_ARTICLES, visible: filtre === 'tout' || filtre === 'guide' },
+        { titre: 'Insolite', liste: INSOLITE_ARTICLES, visible: filtre === 'tout' || filtre === 'insolite' },
       ]
         .filter((bloc) => bloc.visible)
         .map((bloc) => (
@@ -164,7 +166,9 @@ export default function Magazine() {
       <footer className="border-t border-black/5 px-5 py-10 sm:px-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
           <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">VOWS</span>
-          <span>{WEDDING_STYLES.length} univers · {UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length} articles</span>
+          <span>
+            {WEDDING_STYLES.length} univers · {UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length + INSOLITE_ARTICLES.length} articles
+          </span>
           <Link to="/" className="underline transition hover:text-black">
             Revenir au site
           </Link>

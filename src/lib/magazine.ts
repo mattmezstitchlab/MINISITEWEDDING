@@ -21,7 +21,7 @@ export interface ArticleSection {
 
 export interface Article {
   slug: string;
-  category: 'univers' | 'guide';
+  category: 'univers' | 'guide' | 'insolite';
   title: string;
   kicker: string;
   /** L'univers dont parle l'article, s'il y en a un. */
@@ -373,7 +373,109 @@ export const GUIDE_ARTICLES: Article[] = [
   },
 ];
 
-export const ALL_ARTICLES: Article[] = [...UNIVERSE_ARTICLES, ...GUIDE_ARTICLES];
+export const INSOLITE_ARTICLES: Article[] = [
+  {
+    slug: 'insolite-louer-plutot-qu-acheter',
+    category: 'insolite',
+    title: 'Tout louer, et ne rien stocker dans un garage',
+    kicker: 'Insolite · Objets',
+    cover: '/images/brocante.jpg',
+    readingMinutes: 5,
+    intro:
+      'Un mariage mobilise, en moyenne, quatre-vingts objets qui ne resserviront jamais. Le calcul est vite fait : entre l’achat, le transport, le nettoyage et le stockage, la location coûte moins cher — et surtout, elle ne laisse rien derrière.',
+    sections: [
+      {
+        heading: 'Ce qui se loue très bien',
+        body: [
+          'Le mobilier : tables, chaises, mange-debout, banquettes. Ce sont les objets les plus lourds, les plus encombrants, et ceux qui n’ont aucune valeur sentimentale après coup.',
+          'La vaisselle, la verrerie et les couverts : ils arrivent lavés, repartent sales, et personne ne veut de deux cents assiettes dans un appartement.',
+          'La lumière : guirlandes, projecteurs, boules à facettes. On les utilise une nuit, on n’a nulle part où les ranger.',
+        ],
+      },
+      {
+        heading: 'Ce qui s’achète mieux',
+        body: [
+          'La papeterie, les alliances, les tenues quand elles sont ajustées à votre morphologie. Ce sont les seules pièces que vous garderez, par choix.',
+          'Et les objets qui vous ressemblent : un juke-box si vous écoutez des vinyles, une enseigne néon à vos prénoms si elle finira au-dessus du canapé.',
+        ],
+      },
+      {
+        heading: 'Ce qui devrait circuler gratuitement',
+        body: [
+          'Les semelles de confort, les chemises en lin pour les mariages d’été, les marque-places gravés, les boutonnières séchées. Ces pièces ne s’usent presque pas : les prêter coûte moins cher que les jeter.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'insolite-mariage-par-38-degres',
+    category: 'insolite',
+    title: 'Se marier quand il fait 38 °C',
+    kicker: 'Insolite · Conditions',
+    cover: '/images/desert-motel.jpg',
+    readingMinutes: 4,
+    intro:
+      'Au-dessus de 34 °C, un mariage extérieur devient une épreuve physique : le glaçage coule, les invités s’épuisent, le photographe cherche l’ombre. Ce n’est pas une question de courage, c’est une question d’organisation.',
+    sections: [
+      {
+        heading: 'Décaler, plutôt que résister',
+        body: [
+          'Cérémonie à 19h30 plutôt qu’à 15h, dîner à 21h30, piste de danse après minuit : en décalant tout d’un cran, on garde les mêmes moments et on perd la fournaise.',
+        ],
+      },
+      {
+        heading: 'L’ombre et l’eau avant la décoration',
+        body: [
+          'Le budget parasol passe avant le budget fleurs. Deux parasols déportés et une fontaine d’eau fraîche sauvent un cocktail ; un centre de table, non.',
+        ],
+      },
+      {
+        heading: 'Les détails qui lâchent',
+        body: [
+          'Le beurre, le glaçage, le chocolat, le vin blanc, les fleurs fraîches. Prévoyez le dessert en coulis, la pièce montée à l’intérieur, et les bouquets en fleurs séchées.',
+        ],
+      },
+    ],
+  },
+  {
+    slug: 'insolite-objets-qui-font-une-soiree',
+    category: 'insolite',
+    title: 'Les objets qui font une soirée',
+    kicker: 'Insolite · Ambiance',
+    cover: '/images/danse.jpg',
+    readingMinutes: 4,
+    intro:
+      'Une soirée de mariage tient rarement à la playlist. Elle tient à trois ou quatre objets qui donnent aux invités quelque chose à faire — et c’est souvent là que les photos les plus drôles se prennent.',
+    sections: [
+      {
+        heading: 'Le juke-box',
+        body: [
+          'Cent quarante vinyles, une mécanique de 1963 et des boutons à presser soi-même : les invités deviennent DJ et se disputent gentiment les morceaux. Bien plus efficace qu’une playlist collaborative sur téléphone.',
+        ],
+      },
+      {
+        heading: 'La cabine argentique',
+        body: [
+          'Pas d’écran, pas de filtre, un tirage humide qui sort en trois minutes. Les invités repartent avec une photo, et le mur se remplit jusqu’à minuit.',
+        ],
+      },
+      {
+        heading: 'Le franche-bise et la fontaine à champagne',
+        body: [
+          'Un objet peut transformer un bar en attraction : le franche-bise sur son billot de 90 kg, ou une fontaine à sept étages. On a longtemps trouvé ça kitsch — puis on a regardé les photos.',
+        ],
+      },
+      {
+        heading: 'La machine à fumée',
+        body: [
+          'Elle ne sert qu’à un moment : quand la piste est pleine et que les faisceaux se découpent. C’est ce moment-là qui finit en couverture d’album.',
+        ],
+      },
+    ],
+  },
+];
+
+export const ALL_ARTICLES: Article[] = [...UNIVERSE_ARTICLES, ...GUIDE_ARTICLES, ...INSOLITE_ARTICLES];
 
 export function articleBySlug(slug: string): Article | undefined {
   return ALL_ARTICLES.find((a) => a.slug === slug);
@@ -388,5 +490,6 @@ export function relatedArticles(article: Article, limit = 3): Article[] {
       .filter((a): a is Article => Boolean(a));
     return voisins.slice(0, limit);
   }
-  return GUIDE_ARTICLES.filter((a) => a.slug !== article.slug).slice(0, limit);
+  const famille = article.category === 'insolite' ? INSOLITE_ARTICLES : GUIDE_ARTICLES;
+  return famille.filter((a) => a.slug !== article.slug).slice(0, limit);
 }

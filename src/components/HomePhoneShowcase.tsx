@@ -6,7 +6,7 @@ import CouplePhoneScreen from './phone/CouplePhoneScreen';
 import VendorPhoneScreen from './phone/VendorPhoneScreen';
 import { styleById } from '../lib/weddingStyles';
 import { contentFor, type UniverseContent } from '../lib/universeContent';
-import type { SpaceDraft } from '../lib/spaceDraft';
+import { roleToScreen, type SpaceDraft } from '../lib/spaceDraft';
 
 /**
  * L'ÉCRAN DU COUPLE
@@ -67,7 +67,7 @@ export default function HomePhoneShowcase({ draft }: { draft?: SpaceDraft }) {
   // L'espace est considéré comme créé dès que l'univers est choisi et qu'il y a
   // quelque chose à afficher.
   const isCreating = Boolean(draft?.styleId);
-  const created = Boolean(draft?.styleId && draft.partner1 && draft.partner2);
+  const created = Boolean(draft?.styleId && draft.partner1);
 
   useEffect(() => {
     if (isCreating) return;
@@ -79,10 +79,12 @@ export default function HomePhoneShowcase({ draft }: { draft?: SpaceDraft }) {
     if (draft?.styleId) {
       const chosen = styleById(draft.styleId);
       const base = contentFor(chosen);
+      const nom = draft.partner2 ? `${draft.partner1} & ${draft.partner2}` : draft.partner1;
       return {
         style: chosen,
-        content: withDraft(base, draft),
-        role: 'invite' as Role,
+        content: { ...withDraft(base, draft), couple: { ...withDraft(base, draft).couple, names: nom || chosen.name } },
+        // Le téléphone montre l'écran du rôle choisi : mariés, invité ou prestataire.
+        role: roleToScreen(draft.roleId) as Role,
         caption: created ? 'Votre espace' : 'Votre espace · en création',
       };
     }

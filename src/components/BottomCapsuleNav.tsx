@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Heart, Images, Layers, Music2, Smartphone, Sparkles } from 'lucide-react';
+import { Heart, Home, Images, Layers, Music2, Smartphone } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -19,7 +19,7 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { id: 'hero', label: 'Le visuel plein écran et le champ', short: 'Accueil', icon: Sparkles },
+  { id: 'hero', label: 'Le visuel plein écran et la création de l’espace', short: 'Accueil', icon: Home },
   { id: 'ecran', label: 'Le site du couple, dans la main', short: 'L’écran', icon: Smartphone },
   { id: 'direction', label: 'Direction artistique & scénographie', short: 'Direction artistique', icon: Images },
   { id: 'univers', label: 'Prestataires & univers complémentaires', short: 'Prestataires', icon: Layers },

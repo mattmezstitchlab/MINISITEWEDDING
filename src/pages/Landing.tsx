@@ -99,6 +99,12 @@ export default function Landing() {
               onOpenChange={(ouvert) => setMenuOuvert(ouvert ? 'metiers' : null)}
             />
             <Link
+              to="/shop"
+              className="hidden rounded-full border border-black/10 bg-white/95 px-3.5 py-1.5 text-[13px] font-semibold text-[#0B0C12] shadow-sm backdrop-blur-md transition hover:border-black/30 hover:bg-white sm:inline-block"
+            >
+              Shop
+            </Link>
+            <Link
               to="/magazine"
               className="rounded-full border border-black/10 bg-white/95 px-4 py-1.5 text-[13px] font-semibold text-[#0B0C12] shadow-sm backdrop-blur-md transition hover:border-black/30 hover:bg-white"
             >
