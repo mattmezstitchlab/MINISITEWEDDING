@@ -2,7 +2,7 @@ import type { PublicSiteData, WeddingSite } from './types';
 import {
   SECTION_DEFAULTS, GENERIC_INFO_DEFAULTS, FAQ_DEFAULTS, RSVP_EVENT_DEFAULTS, GIFT_DEFAULTS, storyText,
 } from './defaults';
-import { styleById } from './weddingStyles';
+import { styleById, typographyFor } from './weddingStyles';
 import { getScenesForStyle } from './themeTimelineScenarios';
 import { contentFor } from './universeContent';
 
@@ -47,7 +47,7 @@ export function buildPreviewSite(options: PreviewSiteOptions): PublicSiteData {
     phase: 'avant',
     // La typographie et la couleur viennent de l'univers : elles ne se règlent
     // pas à la main, c'est le choix du thème qui les décide.
-    typography: theme.id === 'noir-blanc' || theme.id === 'abyssal' ? 'editorial' : 'spatial',
+    typography: typographyFor(theme.id),
     accent_color: theme.accent,
     // Les formes et la mise en page appartiennent aussi au thème.
     button_style: 'pill',

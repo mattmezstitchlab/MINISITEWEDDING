@@ -2,10 +2,9 @@ import { useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowLeft, ArrowRight, Check, Loader2, MapPin, CalendarDays, Heart, Palette, Clock, Music2, Users,
+  ArrowLeft, ArrowRight, Check, Loader2, MapPin, CalendarDays, Heart, Clock, Music2, Users,
 } from 'lucide-react';
 import { seedSite } from '../lib/defaults';
-import StylePicker from '../components/StylePicker';
 import WeddingCard from '../components/WeddingCard';
 import { roleToScreen } from '../lib/spaceDraft';
 import {
@@ -74,7 +73,6 @@ export default function Onboarding() {
       { icon: CalendarDays, label: 'Le jour' },
       { icon: Clock, label: 'Les événements' },
       { icon: Music2, label: 'La musique' },
-      { icon: Palette, label: 'L’univers' },
     ],
     [],
   );
@@ -85,7 +83,6 @@ export default function Onboarding() {
     if (step === 1) return card.partner1.trim().length > 0 && card.partner2.trim().length > 0;
     if (step === 2) return card.date.length > 0 && card.venue.trim().length > 0;
     if (step === 3) return card.events.length > 0;
-    if (step === 5) return card.styleId.length > 0;
     return true;
   };
 
@@ -163,11 +160,12 @@ export default function Onboarding() {
         <div className="relative px-6 py-10 text-white sm:px-10 sm:py-14">
           <span className="vp-eyebrow !text-white/70">Créer votre site</span>
           <h1 className="vp-title mt-3 max-w-2xl text-white" style={{ fontSize: 'clamp(1.9rem, 4.6vw, 3rem)' }}>
-            Votre carte. Votre univers.
+            Votre carte. Votre mariage.
           </h1>
           <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/75">
-            Six questions, une carte, et votre mini-site complet s’ouvre dans l’éditeur — le programme, les lieux,
-            le RSVP, la cagnotte, la galerie.
+            Cinq questions, une carte, et votre mini-site complet s’ouvre dans l’éditeur — le programme, les lieux,
+            le RSVP, la cagnotte, la galerie. L’univers, lui, se choisit dans l’éditeur : vous le découvrirez sur
+            votre site.
           </p>
         </div>
       </header>
@@ -388,21 +386,6 @@ export default function Onboarding() {
                 </motion.div>
               )}
 
-              {step === 5 && (
-                <motion.div key="s5" initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
-                  <div className="vp-eyebrow">Étape 6 · L’univers</div>
-                  <h2 className="vp-title mt-3" style={{ fontSize: 'clamp(1.8rem, 4.4vw, 2.6rem)' }}>
-                    Quel univers ?
-                  </h2>
-                  <p className="vp-body mt-3 max-w-xl">
-                    C’est lui qui donne son esthétique au mini-site : les images, les couleurs, la typographie, le
-                    programme et les informations pratiques.
-                  </p>
-                  <div className="mt-8">
-                    <StylePicker value={card.styleId} onChange={(id) => set({ styleId: id })} />
-                  </div>
-                </motion.div>
-              )}
             </AnimatePresence>
 
             {error && (
@@ -450,7 +433,8 @@ export default function Onboarding() {
 
             <p className="mt-4 flex items-center gap-2 text-[12.5px] text-[var(--vp-muted)]">
               <MapPin size={13} />
-              Votre mini-site s’ouvre dans l’éditeur juste après : tout reste modifiable, section par section.
+              Votre mini-site s’ouvre dans l’éditeur juste après : l’univers, les textes et les sections s’y
+              règlent à tout moment.
             </p>
           </div>
 

@@ -61,23 +61,6 @@ const FACE = 'absolute inset-0 overflow-hidden rounded-[26px] backface-hidden';
 /** La face cachée ne doit jamais réapparaître pendant la rotation. */
 const CACHE: React.CSSProperties = { backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' };
 
-function Valeur({ children, vide }: { children?: string; vide?: boolean }) {
-  if (vide || !children) return <span className="text-[12.5px] text-black/25">À compléter</span>;
-  return <span className="text-[12.5px] font-semibold text-[#0B0C12]">{children}</span>;
-}
-
-function Ligne({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-2">
-      <Icon size={13} className="mt-0.5 shrink-0 text-black/30" />
-      <div className="min-w-0">
-        <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-black/40">{label}</div>
-        <Valeur vide={!value}>{value}</Valeur>
-      </div>
-    </div>
-  );
-}
-
 /** Une ligne du verso : sur fond noir, la même information, plus dense. */
 function LigneSombre({ icon: Icon, label, value, accent }: { icon: LucideIcon; label: string; value: string; accent?: boolean }) {
   return (
@@ -160,9 +143,16 @@ export default function WeddingCard({
             style={CACHE}
             className={`${FACE} flex flex-col bg-white shadow-[0_24px_60px_-30px_rgba(11,12,18,0.45)] ring-1 ring-black/8`}
           >
-            <div className={`relative w-full shrink-0 overflow-hidden ${compact ? 'h-[104px]' : 'h-[132px]'}`}>
-              <img src={style.image} alt="" className="h-full w-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+            {/* LE GRAND VISUEL : la personne plein cadre, l'identité par-dessus —
+                la même grammaire que les cartes de prestataires du site. */}
+            <div className="relative min-h-0 flex-1 overflow-hidden">
+              <img
+                src={card.photo || style.image}
+                alt=""
+                className="vp-live-frame h-full w-full object-cover object-top"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/20" />
+
               <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3.5">
                 <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/75">Carte VOWS</span>
                 {card.date && (
@@ -171,59 +161,63 @@ export default function WeddingCard({
                   </span>
                 )}
               </div>
-              <span className="absolute bottom-3 left-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/70">
-                {cardKindLabel(card)}
-              </span>
-            </div>
 
-            <div className="flex min-h-0 flex-1 flex-col px-4">
-              <div className="-mt-8 flex items-end gap-3">
-                <div className="h-[66px] w-[66px] shrink-0 overflow-hidden rounded-full bg-[#0B0C12] ring-4 ring-white">
-                  {card.photo ? (
-                    <img src={card.photo} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="vp-title flex h-full w-full items-center justify-center text-[20px] text-white">
+              <div className="absolute inset-x-0 bottom-0 p-4 text-white">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 font-mono text-[8.5px] font-bold uppercase tracking-[0.14em] text-black">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: style.accent }} />
+                  {cardKindLabel(card)}
+                </span>
+
+                <div className="mt-2.5 flex items-center gap-2.5">
+                  {!card.photo && (
+                    <span className="vp-title flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-[15px] ring-1 ring-white/40 backdrop-blur-sm">
                       {initials(card)}
                     </span>
                   )}
+                  <span className={`vp-title leading-tight ${compact ? 'text-[20px]' : 'text-[25px]'}`}>
+                    {nom || <span className="text-white/60">Votre nom</span>}
+                  </span>
                 </div>
-              </div>
 
-              <div className="mt-2.5">
-                <div className={`vp-title leading-tight text-[#0B0C12] ${compact ? 'text-[19px]' : 'text-[22px]'}`}>
-                  {nom || <span className="text-black/25">Votre nom</span>}
-                </div>
                 <div className="mt-1 text-[12.5px] font-semibold" style={{ color: style.accent }}>
                   {cardRoleLabel(card)}
                 </div>
+                <div className="mt-1 flex items-center gap-1.5 text-[11.5px] text-white/75">
+                  <MapPin size={11} className="shrink-0 text-white/55" />
+                  <span className="truncate">{card.homeCity.trim() || 'Votre ville'}</span>
+                  {card.trade.trim() && <span className="truncate">· {card.trade}</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* LE PIED DU RECTO : l'univers, la musique, le mariage, le renvoi au verso */}
+            <div className="shrink-0 px-4 pt-3">
+              <div className="flex items-center gap-4">
+                <span className="flex min-w-0 items-center gap-1.5 text-[11.5px] text-black/55">
+                  <Palette size={12} className="shrink-0 text-black/30" />
+                  <span className="truncate">{style.name}</span>
+                </span>
+                <span className="flex min-w-0 items-center gap-1.5 text-[11.5px] text-black/55">
+                  <Music2 size={12} className="shrink-0 text-black/30" />
+                  <span className="truncate">{musicLabel(card.music)}</span>
+                </span>
               </div>
 
-              <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2.5 border-t border-black/8 pt-3">
-                <Ligne icon={MapPin} label="Ville" value={card.homeCity} />
-                <Ligne icon={Briefcase} label="Métier" value={card.trade} />
-                <Ligne icon={Palette} label="Univers" value={style.name} />
-                <Ligne icon={Music2} label="Musique" value={musicLabel(card.music)} />
-              </dl>
+              {card.bio && <p className="mt-2 line-clamp-2 text-[11.5px] leading-snug text-black/50">« {card.bio} »</p>}
 
-              {card.bio && <p className="mt-3 line-clamp-2 text-[12px] leading-snug text-black/55">« {card.bio} »</p>}
-
-              <div className="mt-3 rounded-[16px] bg-black/[0.035] px-3.5 py-2.5">
-                <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-black/40">Le mariage</div>
-                <div className="mt-1 text-[13.5px] font-bold text-[#0B0C12]">
-                  {maries || <span className="text-black/25">Vos prénoms</span>}
-                </div>
-                {(card.date || lieu) && (
-                  <div className="text-[11.5px] capitalize text-black/55">
+              <div className="mt-2.5 flex items-center justify-between gap-3 rounded-[16px] bg-black/[0.035] px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-black/40">Le mariage</div>
+                  <div className="mt-0.5 truncate text-[13px] font-bold text-[#0B0C12]">
+                    {maries || <span className="font-normal text-black/25">Vos prénoms</span>}
+                  </div>
+                  <div className="truncate text-[11px] capitalize text-black/55">
                     {card.date && formatDateLong(card.date)}
                     {lieu && <span className="normal-case">{card.date ? ' · ' : ''}{lieu}</span>}
                   </div>
-                )}
-              </div>
-
-              <div className="mt-auto flex items-center justify-between border-t border-black/8 py-2.5 text-[11px] text-black/40">
-                <span>{temps.length} temps de la journée</span>
-                <span className="flex items-center gap-1.5 font-medium">
-                  <RotateCcw size={12} /> Le détail est au verso
+                </div>
+                <span className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium text-black/45">
+                  <RotateCcw size={12} /> Verso
                 </span>
               </div>
             </div>

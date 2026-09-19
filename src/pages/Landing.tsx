@@ -11,8 +11,6 @@ import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import EditorShowcase from '../components/EditorShowcase';
 import ComplementaryThemes from '../components/ComplementaryThemes';
-import SpaceBuilder from '../components/SpaceBuilder';
-import { EMPTY_DRAFT, type SpaceDraft } from '../lib/spaceDraft';
 
 import UniversePhoneScreens from '../components/UniversePhoneScreens';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -39,8 +37,6 @@ export default function Landing() {
     return id ? WEDDING_STYLES.find((s) => s.id === id) ?? null : null;
   });
   const [titleIdx, setTitleIdx] = useState(0);
-  // Ce que le couple saisit dans le hero : l'espace se construit dans le téléphone.
-  const [draft, setDraft] = useState<SpaceDraft>(EMPTY_DRAFT);
   // Un seul panneau de menu ouvert à la fois : Univers ou Métiers.
   const [menuOuvert, setMenuOuvert] = useState<'univers' | 'metiers' | null>(null);
 
@@ -61,11 +57,7 @@ export default function Landing() {
       setSelectedStyle(null);
     }
     const el = document.getElementById('hero-ai-container');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const input = el.querySelector('input');
-      input?.focus();
-    }
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   const handleSelectStyle = (style: WeddingStyle | null) => {
@@ -176,7 +168,9 @@ export default function Landing() {
             </div>
           )}
 
-          {/* Saisie de l'Agent IA connecté à tous les thèmes */}
+          {/* L'ACTION UNIQUE DU HERO : un bouton, pas un formulaire. La carte se
+              compose sur la page de création — et l'univers se découvre après,
+              dans l'éditeur, une fois le mini-site ouvert. */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -185,18 +179,24 @@ export default function Landing() {
           >
             {!selectedStyle && (
               <ErrorBoundary>
-                <div id="hero-ai-container" className="mt-6 w-full">
-                  <SpaceBuilder
-                    draft={draft}
-                    onDraftChange={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
-                    onCreated={() => {
-                      // Dernier clic du hero : on ouvre l'onboarding, qui compose la
-                      // carte puis ouvre l'éditeur du mini-site.
-                      navigate('/creer', {
-                        state: { preselectedStyle: draft.styleId, roleId: draft.roleId },
-                      });
-                    }}
-                  />
+                <div id="hero-ai-container" className="mt-6 flex w-full flex-col items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/creer')}
+                    className="vp-btn vp-press !bg-white !px-8 !py-3.5 !text-black shadow-2xl hover:!bg-white/90"
+                  >
+                    Créer ma carte <ArrowRight size={16} />
+                  </button>
+                  <p className="max-w-md text-[12.5px] leading-snug text-white/65">
+                    Quelques questions, et votre carte ouvre le mini-site de votre mariage. L’univers se
+                    choisit ensuite, dans l’éditeur.
+                  </p>
+                  <Link
+                    to="/carte"
+                    className="text-[12.5px] font-semibold text-white/80 underline underline-offset-4 transition hover:text-white"
+                  >
+                    J’ai déjà une carte — l’ouvrir
+                  </Link>
                 </div>
               </ErrorBoundary>
             )}
@@ -210,7 +210,7 @@ export default function Landing() {
       <ErrorBoundary>
         <div id="ecran">
         {!selectedStyle ? (
-          <HomePhoneShowcase draft={draft} />
+          <HomePhoneShowcase />
         ) : (
           <UniversePhoneScreens currentStyle={selectedStyle} />
         )}

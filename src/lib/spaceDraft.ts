@@ -1,39 +1,13 @@
-import { Sparkles, UserRound } from 'lucide-react';
 import { FULL_ROLES_TAXONOMY } from './weddingTaxonomy';
 
 /**
- * L'ESPACE EN COURS DE CRÉATION
+ * LES RÔLES DU MARIAGE, CÔTÉ NAVIGATEUR
  *
- * Deux questions, une à la fois : qui vous êtes — d'après la taxonomie des rôles
- * du site — puis l'univers. Aucun champ à remplir pour l'instant : les prénoms,
- * la date et le lieu seront demandés autrement.
+ * La taxonomie complète, rangée par famille, et les deux lectures dont les
+ * écrans ont besoin : le nom du rôle, et l'écran de téléphone qui lui
+ * correspond. Aucun univers ici : il ne se choisit plus à la création, il se
+ * découvre sur le mini-site et se change dans l'éditeur.
  */
-
-export interface SpaceDraft {
-  /** Le rôle, pris dans FULL_ROLES_TAXONOMY. */
-  roleId: string | null;
-  partner1: string;
-  partner2: string;
-  date: string;
-  venue: string;
-  city: string;
-  styleId: string | null;
-}
-
-export const EMPTY_DRAFT: SpaceDraft = {
-  roleId: null,
-  partner1: '',
-  partner2: '',
-  date: '',
-  venue: '',
-  city: '',
-  styleId: null,
-};
-
-export const STEPS = [
-  { id: 'role', title: 'Qui êtes-vous ?', hint: 'Chaque rôle voit le mariage à sa façon', icon: UserRound },
-  { id: 'style', title: 'Quel univers ?', hint: 'Les 24 univers, rangés par famille', icon: Sparkles },
-] as const;
 
 /** Les rôles de la taxonomie, rangés par famille, protagonistes d'abord. */
 export const ROLE_GROUPS = FULL_ROLES_TAXONOMY.reduce<Array<{ label: string; roles: typeof FULL_ROLES_TAXONOMY }>>(

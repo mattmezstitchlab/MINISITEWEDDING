@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { usePhoneTheme } from './phoneTheme';
 
 /**
  * LE CHÂSSIS DU TÉLÉPHONE
@@ -41,7 +42,13 @@ export default function PhoneFrame({ children, className = '' }: PhoneFrameProps
   );
 }
 
-/** La carte blanche qui sert de module à l'intérieur des écrans. */
+/**
+ * LA CARTE D'UN MODULE
+ *
+ * Le même matériau que les cartes du mini-site : un fond à peine teinté, l'arrondi
+ * du thème, une bordure discrète. Le sur-titre prend la couleur d'accent, comme
+ * les sur-titres du site.
+ */
 export function PhoneModule({
   eyebrow,
   children,
@@ -51,12 +58,22 @@ export function PhoneModule({
   children: ReactNode;
   className?: string;
 }) {
+  const theme = usePhoneTheme();
   return (
     <div
-      className={`rounded-[16px] border border-black/8 bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`}
+      className={`p-3 ${className}`}
+      style={{
+        borderRadius: theme.cardR,
+        background: 'rgba(12,14,24,0.042)',
+        border: '1px solid rgba(12,14,24,0.05)',
+        fontFamily: theme.body,
+      }}
     >
       {eyebrow && (
-        <div className="mb-1.5 text-[8.5px] font-mono font-bold uppercase tracking-wider text-black/40">
+        <div
+          className="mb-1.5 font-mono text-[8.5px] font-bold uppercase tracking-[0.16em]"
+          style={{ color: theme.accent }}
+        >
           {eyebrow}
         </div>
       )}

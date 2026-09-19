@@ -21,6 +21,14 @@ sont appliquées **côté serveur** (`server/people.js`) et vérifiées par 141
 contrôles d'API : `maries` / `participants` / `carte` pour les coordonnées,
 IBAN et pièces réservés à la personne et aux mariés du mariage concerné.
 
+**La carte a désormais sa page.** `/carte` (CardStudio) la compose, la retourne,
+la publie et la relie aux mariages : photo, rôle, disponibilité, repas, mobilité,
+prestations, pièces — chaque bloc n'apparaît que s'il concerne le rôle tenu. Le
+recto est un grand visuel : le visuel de l'univers (ou la photo), et l'identité
+par-dessus, comme les cartes de prestataires du site. **L'univers ne se choisit
+plus à la création** : on le découvre sur le mini-site, et il se change dans
+l'éditeur. Voir §9.
+
 **L'invitation, ensuite.** Le lien et le QR code du panneau de partage sont
 l'invitation : `/rejoindre/<slug>` pose deux questions — « qui êtes-vous dans ce
 mariage ? » puis « comment vous appelle-t-on ? » — crée la carte, donne la clé
@@ -173,14 +181,35 @@ Quatre choses, et rien d'autre :
 
 Plus une : **l'annonce** du couple, une seule, en haut.
 
-## 8. Décisions à prendre avant la première ligne de code
+## 8. Décisions prises
 
-1. **Ouvre-t-on les comptes ?** `people` + session est le préalable de tout le
-   reste. Sans lui, chaque document retombe sur un formulaire RSVP. C'est
-   invisible à l'écran et ça décide de tout.
-2. **Le mini-site actuel devient-il la face publique du mariage** (une projection
-   de `wedding_sites`), ou reste-t-il un objet séparé ? Je recommande la
-   projection : c'est ce qui interdit de dupliquer.
-3. **On commence par la carte (visible, immédiate, déjà à 60 % écrite) ou par le
-   noyau de données (invisible, structurant) ?** Je recommande la carte : elle
-   rend le renversement visible et réutilise `CardPreview` et `weddingCard.ts`.
+1. **Les comptes sont ouverts.** `people` + `person_secrets` + `wedding_members`
+   sont en base, servis par `api/people.js` et `api/wedding-members.js` : une clé
+   personnelle par personne (empreinte SHA-256 en base, clair montré une fois),
+   les permissions décidées **côté serveur**, et le miroir navigateur dans
+   `src/lib/localApi.ts`. Sans lui, chaque écran retombait sur un formulaire.
+2. **Le mini-site est la face publique du mariage** — une projection de
+   `wedding_sites`, jamais un objet séparé. C'est ce qui interdit de dupliquer.
+3. **On a commencé par la carte**, visible et immédiate : `/carte` la compose,
+   la publie, la relie aux mariages. Le noyau de données suit, section par
+   section (§2), sans jamais recréer ce qui existe.
+
+## 9. Ce que la refonte a tranché
+
+- **L'univers ne se choisit pas à la création.** On compose sa carte, on
+  découvre le mini-site dans son univers par défaut, et l'univers se change dans
+  l'éditeur (panneau Apparence, section « Univers »). Une question de moins à
+  l'entrée : le choix devient une découverte, pas un examen.
+  Conséquence technique : `src/lib/spaceDraft.ts` ne porte plus que les rôles
+  (`SpaceDraft`, `EMPTY_DRAFT` et `STEPS` supprimés, `SpaceBuilder` retiré) ;
+  l'accueil n'a plus de formulaire — un bouton, « Créer ma carte ».
+- **La carte est un grand visuel.** Recto : le visuel de l'univers (ou la photo
+  de la personne) plein cadre, puis le nom, le rôle, la ville et le métier
+  par-dessus — la grammaire des cartes de prestataires du site. Verso : les
+  sections du rôle (`cardSections`), un IBAN toujours masqué, des pièces jamais
+  publiques. Une seule carte par personne, jamais deux.
+- **Les écrans de téléphone parlent la langue du site.** La capsule blanche du
+  site en haut, le hero plein cadre, les cartes au matériau du thème, l'accent de
+  l'univers — jamais une couleur qui ne vienne de lui. `PhoneShell` publie le
+  thème (`src/components/phone/phoneTheme.ts`) et les modules le lisent : un
+  écran ne ressemble pas à un autre.

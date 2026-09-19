@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Check } from 'lucide-react';
 import type { WeddingSite } from '../lib/types';
-import { TYPO_OPTIONS, ACCENT_PRESETS, BUTTON_OPTIONS, SHAPE_OPTIONS, LAYOUT_OPTIONS, ANIMATION_OPTIONS } from '../lib/weddingStyles';
+import { TYPO_OPTIONS, ACCENT_PRESETS, BUTTON_OPTIONS, SHAPE_OPTIONS, LAYOUT_OPTIONS, ANIMATION_OPTIONS, WEDDING_STYLES, typographyFor } from '../lib/weddingStyles';
 
 interface Props {
   site: WeddingSite;
@@ -22,6 +22,52 @@ export default function AppearancePanel({ site, onPatch }: Props) {
 
   return (
     <div className="space-y-8">
+      {/* L'UNIVERS : celui qui donne son esthétique au mini-site. Il ne se choisit
+          plus à la création — on le découvre ici, une fois le site ouvert. */}
+      <div>
+        <Label>Univers</Label>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+          {WEDDING_STYLES.map((theme) => {
+            const actif = site.style === theme.id;
+            return (
+              <button
+                key={theme.id}
+                onClick={() =>
+                  onPatch({
+                    style: theme.id,
+                    accent_color: theme.accent,
+                    typography: typographyFor(theme.id),
+                  })
+                }
+                aria-pressed={actif}
+                className={`vp-press overflow-hidden rounded-[18px] border text-left transition backdrop-blur-xl ${
+                  actif
+                    ? 'border-[var(--vp-ink)] shadow-[0_0_0_3px_rgba(12,14,24,0.10)]'
+                    : 'border-white/65 hover:border-white/95'
+                }`}
+              >
+                <span className="relative block h-[58px] w-full overflow-hidden">
+                  <img src={theme.image} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  {actif && (
+                    <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[var(--vp-ink)]">
+                      <Check size={11} strokeWidth={3} />
+                    </span>
+                  )}
+                </span>
+                <span className="block bg-white/70 px-2.5 py-2">
+                  <span className="block truncate text-[12px] font-semibold text-[var(--vp-ink)]">{theme.name}</span>
+                  <span className="mt-0.5 block truncate text-[10.5px] text-[var(--vp-muted)]">{theme.tagline}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="vp-caption mt-2.5 !text-[11.5px]">
+          L’univers décide des images, de la typographie et des couleurs. Vos textes, vos sections et vos photos
+          restent les vôtres.
+        </p>
+      </div>
+
       <div>
         <Label>Typographie</Label>
         <div className="grid grid-cols-2 gap-2.5">

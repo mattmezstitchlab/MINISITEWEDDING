@@ -696,6 +696,16 @@ export const TYPO_OPTIONS: TypoOption[] = [
   { id: 'modern', name: 'Modern', hint: 'Géométrique et affirmé', heading: 'Manrope, system-ui, sans-serif', body: 'Manrope, system-ui, sans-serif', weight: 650 },
 ];
 
+/**
+ * La typographie qui accompagne un univers. Elle ne se règle pas à la main :
+ * c'est le thème qui la décide — les univers éditoriaux prennent la serif, les
+ * autres la sans-serif spatiale. Une seule règle, lue partout (mini-site,
+ * éditeur, cartes, écrans de téléphone).
+ */
+export function typographyFor(styleId: string): string {
+  return styleId === 'noir-blanc' || styleId === 'abyssal' ? 'editorial' : 'spatial';
+}
+
 export function fontsFor(typoId: string): { heading: string; body: string; weight: number } {
   const found = TYPO_OPTIONS.find((t) => t.id === typoId) ?? TYPO_OPTIONS[0];
   return { heading: found.heading, body: found.body, weight: found.weight };

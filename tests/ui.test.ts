@@ -23,6 +23,10 @@ import { setRemote } from '../src/lib/dataSource';
 import { resetDb } from '../src/lib/localStore';
 import { MemStorage } from './memStorage';
 import WeddingCard from '../src/components/WeddingCard';
+import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
+import Landing from '../src/pages/Landing';
+import { contentFor } from '../src/lib/universeContent';
+import { styleById } from '../src/lib/weddingStyles';
 import { EMPTY_CARD, type CardData } from '../src/lib/weddingCard';
 import {
   adoptPersonKey,
@@ -171,6 +175,66 @@ const masquee = renderToStaticMarkup(
 check('une carte masquée le dit au lieu de mentir', masquee.includes('Coordonnées réservées'), true);
 check('les pièces masquées aussi', masquee.includes('Pièces et IBAN réservés'), true);
 check('aucun IBAN, même tronqué, n’apparaît', masquee.includes('FR76'), false);
+
+/* ------------------------------------------------- la refonte : carte & écrans */
+
+/*
+ * L'accueil ne demande plus d'univers et n'a plus de formulaire : un bouton,
+ * « Créer ma carte », qui mène à la page de création. L'univers se découvre sur
+ * le mini-site — et se change dans l'éditeur, jamais avant.
+ */
+const accueil = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(Landing as never)),
+);
+check('l’accueil met le bouton de création dans son hero', accueil.includes('Créer ma carte'), true);
+check('l’accueil ne pose plus la question du rôle', accueil.includes('Qui êtes-vous ?'), false);
+check('l’accueil ne fait plus choisir d’univers', accueil.includes('Quel univers ?'), false);
+check(
+  'l’accueil garde la porte de la carte',
+  accueil.includes('J’ai déjà une carte'),
+  true,
+);
+
+/* L'écran invité parle la langue du mini-site : capsule du site, hero du site,
+   accent du thème, sections du site. */
+const styleCorse = styleById('corse');
+const ecranInvite = renderToStaticMarkup(
+  createElement(GuestPhoneScreen as never, { style: styleCorse, content: contentFor(styleCorse) }),
+);
+check('l’écran invité porte la capsule du site', ecranInvite.includes('VOWS'), true);
+check('l’écran invité garde l’étiquette du rôle', ecranInvite.includes('Invitation privée'), true);
+check('l’écran invité ouvre sur la réponse', ecranInvite.includes('Répondre à l’invitation'), true);
+check('l’écran invité prend l’accent de l’univers', ecranInvite.includes(styleCorse.accent), true);
+check(
+  'l’écran invité n’a plus de vert de cagnotte',
+  ecranInvite.includes('bg-emerald-500'),
+  false,
+);
+
+/* Le verso de la carte ne parle que du rôle tenu. */
+const carteInvite = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    null,
+    createElement(WeddingCard as never, {
+      card: { ...EMPTY_CARD, roleId: 'invites', firstName: 'Claire' } as CardData,
+    }),
+  ),
+);
+check('le recto de la carte est un grand visuel', carteInvite.includes('vp-live-frame'), true);
+check('la carte d’un invité n’affiche pas de tarif', carteInvite.includes('Tarif'), false);
+
+const cartePresta = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    null,
+    createElement(WeddingCard as never, {
+      card: { ...EMPTY_CARD, roleId: 'photographe', firstName: 'Marc' } as CardData,
+    }),
+  ),
+);
+check('la carte d’un prestataire affiche son tarif', cartePresta.includes('Tarif'), true);
+check('la carte d’un prestataire ignore le repas', cartePresta.includes('Rien de particulier'), false);
 
 /* ------------------------------------------------------------------- bilan */
 
