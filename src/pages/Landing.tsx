@@ -5,8 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 import { contentFor } from '../lib/universeContent';
 import HeroCycle from '../components/HeroCycle';
-import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
-import VendorDomainMenu from '../components/VendorDomainMenu';
+import SiteHeader from '../components/SiteHeader';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import EditorShowcase from '../components/EditorShowcase';
@@ -15,7 +14,6 @@ import ComplementaryThemes from '../components/ComplementaryThemes';
 
 import UniversePhoneScreens from '../components/UniversePhoneScreens';
 import ErrorBoundary from '../components/ErrorBoundary';
-import BottomCapsuleNav from '../components/BottomCapsuleNav';
 import HomeCardShowcase from '../components/HomeCardShowcase';
 
 const HERO_ROTATING_TITLES = [
@@ -38,8 +36,6 @@ export default function Landing() {
     return id ? WEDDING_STYLES.find((s) => s.id === id) ?? null : null;
   });
   const [titleIdx, setTitleIdx] = useState(0);
-  // Un seul panneau de menu ouvert à la fois : Univers ou Métiers.
-  const [menuOuvert, setMenuOuvert] = useState<'univers' | 'metiers' | null>(null);
 
   const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
 
@@ -66,45 +62,9 @@ export default function Landing() {
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
-      {/* Barre de navigation unifiée : Logo à gauche, UNIVERS & MÉTIERS à droite */}
-      <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
-        <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
-          <Link
-            to="/"
-            onClick={() => setSelectedStyle(null)}
-            className="flex items-center gap-2"
-          >
-            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
-          </Link>
-
-          {/* La bande : les univers, les métiers, le magazine */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <UnifiedUniverseMenu
-              selectedStyleId={selectedStyle?.id || null}
-              onSelectStyle={handleSelectStyle}
-              open={menuOuvert === 'univers'}
-              onOpenChange={(ouvert) => setMenuOuvert(ouvert ? 'univers' : null)}
-            />
-            <VendorDomainMenu
-              onSelectStyle={handleSelectStyle}
-              open={menuOuvert === 'metiers'}
-              onOpenChange={(ouvert) => setMenuOuvert(ouvert ? 'metiers' : null)}
-            />
-            <Link
-              to="/shop"
-              className="hidden rounded-full border border-black/10 bg-white/95 px-3.5 py-1.5 text-[13px] font-semibold text-[#0B0C12] shadow-sm backdrop-blur-md transition hover:border-black/30 hover:bg-white sm:inline-block"
-            >
-              Shop
-            </Link>
-            <Link
-              to="/magazine"
-              className="rounded-full border border-black/10 bg-white/95 px-4 py-1.5 text-[13px] font-semibold text-[#0B0C12] shadow-sm backdrop-blur-md transition hover:border-black/30 hover:bg-white"
-            >
-              Magazine
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* Le header du site : la même barre que partout, et sur l'accueil il
+          change l'univers montré dans le hero. */}
+      <SiteHeader selectedStyleId={selectedStyle?.id ?? null} onSelectStyle={handleSelectStyle} />
 
       {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
       <div id="hero">
@@ -255,9 +215,6 @@ export default function Landing() {
           <DjPlaylistStudio style={activeStyleOrFallback} />
         </div>
       </section>
-
-      {/* LA CAPSULE DU BAS : les sections de l'accueil, à l'horizontale */}
-      <BottomCapsuleNav />
 
       <footer className="px-5 pb-24">
         <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">

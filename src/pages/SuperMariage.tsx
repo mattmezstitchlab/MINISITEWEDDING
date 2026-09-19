@@ -63,7 +63,8 @@ export default function SuperMariage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
       {/* ————————————————— la ligne de caisse, toujours à portée ————————————————— */}
-      <div className="sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/90 backdrop-blur-xl">
+      {/* La ligne de caisse passe sous le header du site, jamais dessous lui. */}
+      <div className="sticky top-[68px] z-40 border-b border-white/10 bg-[#0A0A0A]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3 px-5 py-3 sm:px-8">
           <div className="flex items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full" style={{ background: VERT }}>

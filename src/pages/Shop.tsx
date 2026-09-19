@@ -48,30 +48,6 @@ export default function Shop() {
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      {/* La navigation */}
-      <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
-        <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
-            <span className="text-[12px] font-semibold uppercase tracking-[0.2em] text-black/40">Shop</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/magazine"
-              className="rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0B0C12] transition hover:border-black/30"
-            >
-              Magazine
-            </Link>
-            <Link
-              to="/"
-              className="rounded-full border border-black/10 bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-[#0B0C12] transition hover:border-black/30"
-            >
-              Univers &amp; Métiers
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       {/* Le hero du shop : le visuel, puis tout ce qui s'y trouve */}
       <header className="relative flex min-h-[64vh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
         <img

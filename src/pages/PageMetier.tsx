@@ -104,13 +104,8 @@ function PageMetierContenu({ page }: { page: Donnees }) {
           </div>
 
           <h1
-            className="mt-6 max-w-[900px] text-white"
-            style={{
-              fontFamily: 'Georgia, "Times New Roman", serif',
-              fontSize: 'clamp(2.4rem, 7vw, 5rem)',
-              lineHeight: 1,
-              letterSpacing: '-0.03em',
-            }}
+            className="vp-title mt-6 max-w-[900px] text-white"
+            style={{ fontSize: 'clamp(2.4rem, 7vw, 5rem)', lineHeight: 1 }}
           >
             {page.short}
           </h1>
@@ -218,13 +213,8 @@ function PageMetierContenu({ page }: { page: Donnees }) {
         <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <div>
             <h2
-              className="max-w-[760px]"
-              style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 'clamp(1.8rem, 4.4vw, 3rem)',
-                lineHeight: 1.05,
-                letterSpacing: '-0.02em',
-              }}
+              className="vp-title max-w-[760px]"
+              style={{ fontSize: 'clamp(1.8rem, 4.4vw, 3rem)', lineHeight: 1.05 }}
             >
               {page.recit.titre}
             </h2>
@@ -382,10 +372,7 @@ function PageMetierContenu({ page }: { page: Donnees }) {
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">
                   La playlist
                 </span>
-                <h2
-                  className="mt-3 text-[26px] font-semibold leading-tight tracking-[-0.02em] sm:text-[34px]"
-                  style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
-                >
+                <h2 className="vp-title mt-3 text-[26px] leading-tight sm:text-[34px]">
                   Ce que la soirée a demandé.
                 </h2>
               </div>
@@ -553,13 +540,8 @@ function PageMetierContenu({ page }: { page: Donnees }) {
                 Les métiers d’à côté
               </span>
               <h2
-                className="mt-3 max-w-[720px] text-white"
-                style={{
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                  fontSize: 'clamp(1.7rem, 4vw, 2.6rem)',
-                  lineHeight: 1.06,
-                  letterSpacing: '-0.02em',
-                }}
+                className="vp-title mt-3 max-w-[720px] text-white"
+                style={{ fontSize: 'clamp(1.7rem, 4vw, 2.6rem)', lineHeight: 1.06 }}
               >
                 Chaque métier a sa page entière.
               </h2>

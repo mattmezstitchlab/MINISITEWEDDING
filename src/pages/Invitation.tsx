@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowRight, Camera, Check, Copy, KeyRound, Loader2, UserRound } from 'lucide-react';
+import CartePostale from '../components/CartePostale';
 import WeddingCard from '../components/WeddingCard';
 import { apiGet } from '../lib/http';
 import { prepareCardPhoto } from '../lib/cardPhoto';
@@ -14,7 +15,6 @@ import {
 } from '../lib/people';
 import { ROLE_GROUPS } from '../lib/spaceDraft';
 import { styleById } from '../lib/weddingStyles';
-import { formatDateLong } from '../lib/format';
 import { DAY_EVENTS, accessForRole, savedOrEmpty, saveCard, type CardData } from '../lib/weddingCard';
 import type { Person, WeddingSite } from '../lib/types';
 
@@ -185,22 +185,25 @@ export default function Invitation() {
         </div>
       </nav>
 
-      <header className="relative mx-4 mt-4 overflow-hidden rounded-[28px] bg-[#0B0C12] sm:mx-8">
-        <img src={style.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/30" />
-        <div className="relative px-6 py-12 text-center text-white sm:px-10 sm:py-16">
-          <span className="vp-eyebrow !text-white/70">Vous êtes invité</span>
-          <h1 className="vp-title mt-4 text-white" style={{ fontSize: 'clamp(2.2rem, 6vw, 4rem)' }}>
-            {names}
-          </h1>
-          <p className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[14.5px] text-white/75">
-            {site.wedding_date && <span className="capitalize">{formatDateLong(site.wedding_date)}</span>}
-            {(site.venue || site.city) && <span>{[site.venue, site.city].filter(Boolean).join(', ')}</span>}
-          </p>
-        </div>
+      {/* L'invitation est une carte postale : le visuel d'un côté, le mot et les
+          deux timbres de l'autre — le marié, la mariée, sous le sceau du site. */}
+      <header className="px-4 pt-24 sm:px-8 sm:pt-28">
+        <CartePostale
+          partner1={site.partner1}
+          partner2={site.partner2}
+          date={site.wedding_date ?? ''}
+          venue={site.venue ?? ''}
+          city={site.city ?? ''}
+          univers={style.name}
+          accent={style.accent}
+          visuel={site.hero_photo || style.image}
+          photoMariage={site.hero_photo || style.image}
+          photoCouple={site.story_photo || '/images/couple-paris.jpg'}
+          mot={site.announcement || site.story_text || 'Nous serions heureux de vous compter parmi nous.'}
+        />
       </header>
 
-      <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-8">
+      <main className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-8">
         {/* — déjà des nôtres — */}
         {etat === 'deja' && (
           <section className="rounded-[26px] border border-black/8 bg-white p-6 text-center sm:p-8">

@@ -36,6 +36,9 @@ import {
 import { magasinFor } from '../src/lib/weddingPage';
 import RecapCourses from '../src/components/RecapCourses';
 import PageMetier from '../src/pages/PageMetier';
+import SiteChrome from '../src/components/SiteChrome';
+import RsvpTicket from '../src/components/RsvpTicket';
+import CartePostale from '../src/components/CartePostale';
 import { pageMetier, slugDeRole, tousLesMetiers } from '../src/lib/metierPage';
 import { chargerLive } from '../src/lib/terminalLive';
 import { contentFor } from '../src/lib/universeContent';
@@ -851,6 +854,109 @@ const htmlInconnu = renderToStaticMarkup(
   ),
 );
 check('un métier inconnu renvoie vers la page du mariage', htmlInconnu.includes('Ce métier n’existe pas encore'), true);
+
+/* --------- le header, le dock, le dos de la carte, le billet, la postale ------ */
+
+/* Le header et le dock encadrent les grandes pages : la nav est la même partout. */
+const chromeMetier = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/metiers/dj-resident-clubbing-sound-engineer'] },
+    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
+  ),
+);
+check('le header du site est sur la page d’un métier', chromeMetier.includes('VOWS'), true);
+check('il annonce la page', chromeMetier.includes('Les métiers'), true);
+check('il porte le shop et le magazine', chromeMetier.includes('Shop') && chromeMetier.includes('Magazine'), true);
+check('le dock est là aussi', chromeMetier.includes('Zéro contrainte') && chromeMetier.includes('Playlist'), true);
+const chromeAccueil = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/'] },
+    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
+  ),
+);
+check('sur l’accueil, le chrome ne double pas la barre de la page', chromeAccueil.includes('Magazine'), false);
+check('mais le dock y est', chromeAccueil.includes('Zéro contrainte'), true);
+const chromeSite = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/p/sarah-gabriel'] },
+    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
+  ),
+);
+check('le site des mariés reste sans header ni dock', chromeSite.includes('Zéro contrainte'), false);
+
+/* La typo du site : plus de serif d’emprunt sur les pages d’univers et de métier. */
+const pageUniversHtml = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/le-mariage/vegas'] }, createElement(LeMariage as never)),
+);
+check('la page d’un univers ne prend pas une autre typo', pageUniversHtml.includes('Georgia'), false);
+check('elle porte les titres du site', pageUniversHtml.includes('vp-title'), true);
+const pageMetierHtml = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/metiers/dj-resident-clubbing-sound-engineer'] },
+    createElement(Routes, null, createElement(Route, { path: '/metiers/:slug', element: createElement(PageMetier as never) })),
+  ),
+);
+check('la page d’un métier non plus', pageMetierHtml.includes('Georgia'), false);
+
+/* Le dos de la carte : le papier du ticket de caisse, plus de nuit. */
+const carteDos = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    null,
+    createElement(WeddingCard as never, {
+      card: { ...EMPTY_CARD, roleId: 'invites', firstName: 'Claire', lastName: 'Roz' } as CardData,
+      startFlipped: true,
+    }),
+  ),
+);
+check('le dos de la carte est du papier clair', carteDos.includes('bg-[#FFFEF7]'), true);
+check('et non un fond noir', carteDos.split('bg-[#0B0C12]').length - 1, 1);
+check('il s’annonce comme une carte de fidélité', carteDos.includes('Carte de fidélité'), true);
+check('il porte un code-barres', /VOWS-CLA-INV-[A-Z]{3}/.test(carteDos), true);
+check('la mention de confidentialité reste', carteDos.includes('Vos données restent les vôtres'), true);
+
+/* Le billet du RSVP : chaque univers a son registre. */
+const billetCinema = renderToStaticMarkup(
+  createElement(RsvpTicket, {
+    nom: 'Clara Mez', styleId: 'cinema', universeName: 'Cinéma', accent: '#C80000',
+    noms: 'Sarah & Gabriel', date: '2027-06-12', venue: 'Château de Larris, Paris',
+    vient: true, places: 2, enfants: 1, moments: ['Première — 19h'], regime: 'Végétarien',
+    allergies: 'Fruits à coque', message: 'Vivement !', reponduLe: new Date('2026-09-19T18:30:00'),
+  } as never),
+);
+check('le cinéma délivre un billet', billetCinema.includes('BILLET'), true);
+check('nominatif et numéroté', billetCinema.includes('Clara Mez') && /[A-H]-[0-9]{1,2}/.test(billetCinema), true);
+check('il compte les convives', billetCinema.includes('Convives') && billetCinema.includes('>3<'), true);
+check('et transmet le régime', billetCinema.includes('Végétarien'), true);
+const carteTable = renderToStaticMarkup(
+  createElement(RsvpTicket, {
+    nom: 'Jean Bru', styleId: 'corse', universeName: 'Corse', accent: '#2D4A22',
+    noms: 'Sarah & Gabriel', date: '2027-06-12', venue: 'Auberge', vient: false, places: 1, enfants: 0,
+    moments: [], regime: '', allergies: '', message: '', reponduLe: new Date(),
+  } as never),
+);
+check('la table délivre une carte de table', carteTable.includes('CARTE DE TABLE'), true);
+check('une absence le dit', carteTable.includes('Absent·e'), true);
+
+/* La carte postale d’invitation : le mot d’un côté, les timbres de l’autre. */
+const postale = renderToStaticMarkup(
+  createElement(CartePostale, {
+    partner1: 'Sarah', partner2: 'Gabriel', date: '2027-06-12', venue: 'Château de Larris', city: 'Paris',
+    univers: 'Cinéma', accent: '#C80000', visuel: '/images/cinema.jpg',
+    photoMariage: '/images/cinema.jpg', photoCouple: '/images/couple-paris.jpg',
+    mot: 'Nous avons hâte de vous retrouver sous le rideau rouge.',
+  } as never),
+);
+check('la postale montre le visuel et l’invitation', postale.includes('Carte postale · Cinéma') && postale.includes('Vous êtes invité'), true);
+check('au dos, le mot des mariés', postale.includes('Le mot des mariés') && postale.includes('rideau rouge'), true);
+check('le timbre du marié', postale.includes('Le marié · Sarah'), true);
+check('et le timbre de la mariée', postale.includes('La mariée · Gabriel'), true);
+check('la date courte des timbres', postale.includes('12.06.2027'), true);
+check('le sceau rond du site', postale.includes('textPath') && postale.includes('textLength'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

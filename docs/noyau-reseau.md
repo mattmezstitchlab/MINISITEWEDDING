@@ -549,3 +549,59 @@ c'est autre chose — c'est ce qu'il montre, lui, et à quoi son travail est rel
   terminal, ordre de la soirée, comptoir des invités ; page du chef sans
   playlist mais avec ses lignes du rayon Table ; adresse inconnue), `npm run
   build` OK.
+
+## 19. Un header, un dock, un dos de carte lisible, un billet, une postale (passe 24)
+
+Cinq demandes, une même idée : la navigation est la même partout, et le papier
+du mariage se garde.
+
+- **Le header sert de nav, et le dock suit.** `src/components/SiteHeader.tsx`
+  reprend la barre de l'accueil — VOWS, Univers, Métiers, Shop, Magazine — et
+  `src/components/SiteChrome.tsx` l'affiche sur les grandes pages (accueil,
+  univers, métiers, magazine, shop, prestataire, SuperMariage) avec une mention
+  selon la page (« Magazine », « Les métiers », « Le mariage »…). Les pages
+  intimes gardent la leur ou n'en ont pas besoin : le site des mariés (`/p/…`),
+  l'invitation, l'espace des personnes, les éditeurs, l'onboarding, la carte,
+  le théâtre. Les heroes se libèrent donc des rappels de navigation : les liens
+  « ← VOWS » et les barres locales ont disparu des pages d'univers et de métier,
+  et Magazine / Shop / Article n'ont plus leur nav à elles.
+- **Le dock navigue vraiment.** `BottomCapsuleNav` a maintenant deux façons de
+  servir la même capsule : sur l'accueil, chaque étape fait défiler jusqu'à sa
+  section et s'allume au passage ; ailleurs, la même étape mène à la page qui la
+  porte (`/carte`, `/le-mariage`, ou l'ancre de l'accueil) et s'allume selon
+  l'URL. Un seul dock, appris une fois.
+- **La typo du site, partout.** Les pages d'univers et de métier se donnaient
+  une serif d'emprunt (Georgia) : elles prennent les classes du site
+  (`vp-title`), la même typographie que l'accueil et que les mini-sites. Les
+  registres gardent leur papier — la table, le billet, le magasin — pas leur
+  police.
+- **Le dos de la carte est un ticket.** `WeddingCard` gardait un verso noir.
+  Il est désormais en papier clair `#FFFEF7`, en encre, avec l'en-tête « Carte de
+  fidélité · invité / prestataire / couple », les intertitres en mono, les
+  séparateurs en pointillés, les mêmes informations (place, contact, créneaux,
+  repas, mobilité, prestation, IBAN, musique), le tampon de confidentialité et
+  un **code-barres** : `VOWS-CLA-INV-MRS`, calculé depuis le nom, le rôle et
+  l'accès. Le recto ne bouge pas.
+- **Le RSVP délivre un billet.** `src/components/RsvpTicket.tsx` : la réponse
+  donne un billet nominatif, dans le registre de l'univers (`magasinFor` →
+  billet, table, panier) — bandeau à la couleur de l'univers, nom en grand,
+  convives, place (rang et numéro pour le billet), régimes, allergies, moments
+  cochés, le mot laissé, le tampon « Réponse enregistrée », le code-barres et le
+  pied « les mariés reçoivent la même liste ». Le papier dentelé est celui des
+  tickets de caisse : c'est la monnaie du mariage.
+- **L'invitation est une carte postale.** `src/components/CartePostale.tsx`,
+  posée en tête de `/rejoindre/:slug` : au recto le visuel de l'univers, la
+  mention « Carte postale · {univers} », les noms, la date et le lieu ; au verso,
+  séparés par un pli pointillé, **le mot des mariés** à gauche, l'adresse, **les
+  deux timbres** — celui du marié et celui de la mariée, chacun avec sa photo,
+  son nom et la date courte — et le **sceau rond du site** par-dessus : noms,
+  date et lieu écrits au cercle (`textPath` avec `textLength`), à la couleur de
+  l'univers. La carte se retourne au clic, au clavier, et un bouton le dit.
+  En dessous, le flux « qui êtes-vous / comment vous appelle-t-on » ne change
+  pas.
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+  173 / 55 / **270** (header et mention sur une page de métier, aucun chrome sur
+  le site des mariés, pas de double barre sur l'accueil, plus aucune serif
+  d'emprunt sur les pages d'univers et de métier, dos de carte en papier clair
+  avec son code-barres, billet nominatif du cinéma contre carte de table corse,
+  postale avec le mot, les deux timbres et le sceau), `npm run build` OK.

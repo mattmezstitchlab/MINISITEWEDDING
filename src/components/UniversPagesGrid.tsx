@@ -23,13 +23,8 @@ export default function UniversPagesGrid({ currentStyleId }: { currentStyleId: s
               Les autres univers
             </span>
             <h2
-              className="mt-3 max-w-[760px] text-white"
-              style={{
-                fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 'clamp(1.9rem, 4.6vw, 3.2rem)',
-                lineHeight: 1.05,
-                letterSpacing: '-0.02em',
-              }}
+              className="vp-title mt-3 max-w-[760px] text-white"
+              style={{ fontSize: 'clamp(1.9rem, 4.6vw, 3.2rem)', lineHeight: 1.05 }}
             >
               Chaque univers a sa page entière.
             </h2>

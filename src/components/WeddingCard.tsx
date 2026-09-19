@@ -58,25 +58,52 @@ const FACE = 'absolute inset-0 overflow-hidden rounded-[26px] backface-hidden';
 /** La face cachée ne doit jamais réapparaître pendant la rotation. */
 const CACHE: React.CSSProperties = { backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' };
 
-/** Une ligne du verso : sur fond noir, la même information, plus dense. */
-function LigneSombre({ icon: Icon, label, value, accent }: { icon: LucideIcon; label: string; value: string; accent?: boolean }) {
+/**
+ * Une ligne du verso : le papier du ticket de caisse — lisible, encre sur
+ * crème. L'accent de l'univers reste : un carré de couleur devant la valeur.
+ */
+function LigneTicket({ icon: Icon, label, value, accent }: { icon: LucideIcon; label: string; value: string; accent?: boolean }) {
   return (
     <div className="flex items-start gap-2.5">
-      <Icon size={13} className="mt-0.5 shrink-0 text-white/35" />
+      <Icon size={13} className="mt-0.5 shrink-0 text-black/30" />
       <div className="min-w-0">
-        <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/45">{label}</div>
-        <div className="mt-0.5 text-[12.5px] font-semibold" style={accent ? { color: 'var(--carte-accent)' } : undefined}>
-          {value || <span className="font-normal text-white/25">À compléter</span>}
+        <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-black/45">{label}</div>
+        <div className="mt-0.5 flex items-center gap-1.5 text-[12.5px] font-semibold text-[#14130F]">
+          {accent && value && (
+            <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: 'var(--carte-accent)' }} />
+          )}
+          {value || <span className="font-normal text-black/25">À compléter</span>}
         </div>
       </div>
     </div>
   );
 }
 
+/** Le code-barres du ticket : la carte a son numéro, comme une carte de fidélité. */
+function barresCarte(code: string): number[] {
+  return code.split('').map((c) => (c.charCodeAt(0) % 3) + 1);
+}
+
+/** Le numéro de la carte : ses lettres, son rôle, son accès — et rien d'autre. */
+function codeCarteDe(card: CardData): string {
+  const lettres = `${card.firstName}${card.lastName}`
+    .normalize('NFD')
+    .replace(/[^a-zA-Z]/g, '')
+    .toUpperCase()
+    .slice(0, 3)
+    .padEnd(3, 'X');
+  const role = card.roleId.replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, 3).padEnd(3, '0');
+  const acces = card.access === 'couple' ? 'MRS' : card.access === 'prestataire' ? 'PRO' : 'INV';
+  return `VOWS-${lettres}-${role}-${acces}`;
+}
+
 function Bloc({ id, label, children, premier }: { id: CardSectionId; label: string; children: React.ReactNode; premier?: boolean }) {
   return (
-    <section data-section={id} className={`pb-3.5 ${premier ? '' : 'border-t border-white/10 pt-3.5'}`}>
-      <h3 className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/45">{label}</h3>
+    <section
+      data-section={id}
+      className={`pb-3.5 ${premier ? '' : 'border-t border-dashed border-black/15 pt-3.5'}`}
+    >
+      <h3 className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-black/45">{label}</h3>
       <div className="mt-2 space-y-2.5">{children}</div>
     </section>
   );
@@ -85,8 +112,8 @@ function Bloc({ id, label, children, premier }: { id: CardSectionId; label: stri
 function Pastille({ children, actif = true }: { children: React.ReactNode; actif?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-        actif ? 'bg-white/10 text-white' : 'bg-white/[0.04] text-white/45'
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+        actif ? 'border-black/10 bg-black/[0.05] text-[#14130F]' : 'border-black/5 bg-black/[0.02] text-black/40'
       }`}
     >
       {children}
@@ -109,6 +136,7 @@ export default function WeddingCard({
   const sections = cardSections(card);
   const temps = keptEvents(card.events);
   const lieu = [card.venue.trim(), card.city.trim()].filter(Boolean).join(', ');
+  const codeCarte = codeCarteDe(card);
   const retourner = () => setFlipped((v) => !v);
 
   return (
@@ -197,14 +225,14 @@ export default function WeddingCard({
           {/* ————————————————————————— LE VERSO ————————————————————————— */}
           <div
             aria-hidden={!flipped}
-            className={`${FACE} flex flex-col bg-[#0B0C12] text-white shadow-[0_24px_60px_-30px_rgba(11,12,18,0.55)] ring-1 ring-white/10`}
+            className={`${FACE} flex flex-col bg-[#FFFEF7] text-[#14130F] shadow-[0_24px_60px_-30px_rgba(11,12,18,0.45)] ring-1 ring-black/10`}
             style={{ ...CACHE, transform: 'rotateY(180deg)' }}
           >
-            <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-4">
-              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/50">
-                Verso · {cardKindLabel(card)}
+            <div className="flex shrink-0 items-center justify-between border-b border-dashed border-black/15 px-4 pb-2.5 pt-3.5">
+              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.2em] text-black/50">
+                Carte de fidélité · {cardKindLabel(card)}
               </span>
-              <Lock size={12} className="text-white/35" />
+              <Lock size={12} className="text-black/30" />
             </div>
 
             <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-2">
@@ -212,16 +240,16 @@ export default function WeddingCard({
                 <Bloc key={section.id} id={section.id} label={section.label} premier={i === 0}>
                   {section.id === 'place' && (
                     <>
-                      <div className="text-[15px] font-semibold text-white">{nom || 'Votre nom'}</div>
-                      <div className="text-[12.5px] text-white/60">
+                      <div className="vp-title text-[16px] font-semibold">{nom || 'Votre nom'}</div>
+                      <div className="text-[12.5px] text-black/55">
                         {cardRoleLabel(card)} · {accessLabel(card.access)}
                       </div>
                       <div className="flex flex-wrap gap-1.5 pt-0.5">
-                        {temps.length === 0 && <span className="text-[11.5px] text-white/35">Aucun temps retenu</span>}
+                        {temps.length === 0 && <span className="text-[11.5px] text-black/35">Aucun temps retenu</span>}
                         {temps.map((t) => (
                           <Pastille key={t.id}>
                             {t.label}
-                            <span className="font-mono text-[10px] text-white/50">{t.time}</span>
+                            <span className="font-mono text-[10px] text-black/45">{t.time}</span>
                           </Pastille>
                         ))}
                       </div>
@@ -230,20 +258,20 @@ export default function WeddingCard({
 
                   {section.id === 'contact' &&
                     (redacted?.contacts ? (
-                      <p className="flex items-start gap-2 text-[11.5px] leading-snug text-white/45">
+                      <p className="flex items-start gap-2 text-[11.5px] leading-snug text-black/45">
                         <Lock size={12} className="mt-0.5 shrink-0" />
                         Coordonnées réservées — visibles par : {visibilityLabel(card.contactVisibility).toLowerCase()}.
                       </p>
                     ) : (
                       <>
-                        <LigneSombre icon={Mail} label="E-mail" value={card.email} />
-                        <LigneSombre icon={Phone} label="Téléphone" value={card.phone} />
-                        <LigneSombre
+                        <LigneTicket icon={Mail} label="E-mail" value={card.email} />
+                        <LigneTicket icon={Phone} label="Téléphone" value={card.phone} />
+                        <LigneTicket
                           icon={Link2}
                           label="Site & réseaux"
                           value={[card.website, card.social].filter(Boolean).join(' · ')}
                         />
-                        <p className="pt-0.5 text-[10.5px] text-white/40">
+                        <p className="pt-0.5 text-[10.5px] text-black/40">
                           Visible par : {visibilityLabel(card.contactVisibility).toLowerCase()}
                         </p>
                       </>
@@ -251,28 +279,28 @@ export default function WeddingCard({
 
                   {section.id === 'dispo' && (
                     <>
-                      <LigneSombre
+                      <LigneTicket
                         icon={Clock}
                         label={kind === 'prestataire' ? 'Créneaux' : 'Disponible'}
                         value={card.from && card.to ? `${card.from} → ${card.to}` : ''}
                         accent
                       />
-                      <LigneSombre icon={Car} label="Temps de déplacement" value={card.travel ? `${card.travel} min` : ''} />
-                      {card.blackout && <p className="text-[11.5px] leading-snug text-white/45">{card.blackout}</p>}
+                      <LigneTicket icon={Car} label="Temps de déplacement" value={card.travel ? `${card.travel} min` : ''} />
+                      {card.blackout && <p className="text-[11.5px] leading-snug text-black/45">{card.blackout}</p>}
                     </>
                   )}
 
                   {section.id === 'repas' && (
                     <>
                       <div className="flex flex-wrap gap-1.5">
-                        {card.diet.length === 0 && <span className="text-[11.5px] text-white/35">Rien de particulier</span>}
+                        {card.diet.length === 0 && <span className="text-[11.5px] text-black/35">Rien de particulier</span>}
                         {card.diet.map((d) => (
                           <Pastille key={d}>{d}</Pastille>
                         ))}
                       </div>
                       {card.allergens.length > 0 && (
-                        <div className="rounded-[14px] border border-white/12 bg-white/[0.04] px-3 py-2">
-                          <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/45">
+                        <div className="rounded-[14px] border border-dashed border-black/20 bg-black/[0.03] px-3 py-2">
+                          <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-black/45">
                             Allergènes · à transmettre au traiteur
                           </div>
                           <div className="mt-1 text-[12px] font-semibold">{card.allergens.join(' · ')}</div>
@@ -283,23 +311,23 @@ export default function WeddingCard({
 
                   {section.id === 'mobilite' && (
                     <>
-                      <LigneSombre icon={Car} label="Véhicule" value={card.vehicle} />
-                      <LigneSombre icon={MapPin} label="Places disponibles" value={card.seats} />
+                      <LigneTicket icon={Car} label="Véhicule" value={card.vehicle} />
+                      <LigneTicket icon={MapPin} label="Places disponibles" value={card.seats} />
                       {card.needsRide && <Pastille actif>Cherche une place</Pastille>}
                     </>
                   )}
 
                   {section.id === 'prestations' && (
                     <>
-                      <LigneSombre icon={Briefcase} label="Prestation" value={card.service} />
-                      <LigneSombre icon={BadgeEuro} label="Tarif" value={card.rate} accent />
-                      <LigneSombre icon={MapPin} label="Zone d’intervention" value={card.area} />
-                      <LigneSombre icon={Clock} label="Minimum de prestation" value={card.minimum} />
+                      <LigneTicket icon={Briefcase} label="Prestation" value={card.service} />
+                      <LigneTicket icon={BadgeEuro} label="Tarif" value={card.rate} accent />
+                      <LigneTicket icon={MapPin} label="Zone d’intervention" value={card.area} />
+                      <LigneTicket icon={Clock} label="Minimum de prestation" value={card.minimum} />
                     </>
                   )}
 
                   {section.id === 'documents' && redacted?.prive && (
-                    <p className="flex items-start gap-2 text-[11.5px] leading-snug text-white/45">
+                    <p className="flex items-start gap-2 text-[11.5px] leading-snug text-black/45">
                       <Lock size={12} className="mt-0.5 shrink-0" />
                       Pièces et IBAN réservés — la personne, et les mariés du mariage.
                     </p>
@@ -311,20 +339,20 @@ export default function WeddingCard({
                         {card.documents.map((doc) => (
                           <li key={doc.id} className="flex items-center gap-2 text-[12px]">
                             <span
-                              className={`h-1.5 w-1.5 shrink-0 rounded-full ${doc.done ? 'bg-emerald-400' : 'bg-white/25'}`}
+                              className={`h-1.5 w-1.5 shrink-0 rounded-full ${doc.done ? 'bg-emerald-500' : 'bg-black/20'}`}
                             />
-                            <span className={doc.done ? 'text-white' : 'text-white/45'}>{doc.label}</span>
+                            <span className={doc.done ? 'font-semibold text-[#14130F]' : 'text-black/45'}>{doc.label}</span>
                           </li>
                         ))}
                       </ul>
-                      <div className="flex items-start gap-2.5 border-t border-white/10 pt-2.5">
-                        <FileText size={13} className="mt-0.5 shrink-0 text-white/35" />
+                      <div className="flex items-start gap-2.5 border-t border-dashed border-black/15 pt-2.5">
+                        <FileText size={13} className="mt-0.5 shrink-0 text-black/30" />
                         <div>
-                          <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-white/45">IBAN</div>
+                          <div className="font-mono text-[8.5px] uppercase tracking-[0.16em] text-black/45">IBAN</div>
                           <div className="mt-0.5 font-mono text-[12.5px]">{maskIban(card.iban)}</div>
                         </div>
                       </div>
-                      <p className="flex items-start gap-1.5 text-[10.5px] leading-snug text-white/40">
+                      <p className="flex items-start gap-1.5 text-[10.5px] leading-snug text-black/40">
                         <Lock size={11} className="mt-0.5 shrink-0" />
                         Jamais public : les pièces et l’IBAN ne sont lisibles que par les mariés.
                       </p>
@@ -333,10 +361,11 @@ export default function WeddingCard({
 
                   {section.id === 'musique' && (
                     <>
-                      <div className="text-[13px] font-semibold" style={{ color: 'var(--carte-accent)' }}>
+                      <div className="flex items-center gap-1.5 text-[13px] font-semibold">
+                        <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ background: 'var(--carte-accent)' }} />
                         {musicLabel(card.music)}
                       </div>
-                      <p className="text-[11.5px] leading-snug text-white/50">
+                      <p className="text-[11.5px] leading-snug text-black/50">
                         Sa contribution rejoint la playlist collaborative du mariage.
                       </p>
                     </>
@@ -345,13 +374,24 @@ export default function WeddingCard({
               ))}
             </div>
 
-            <div className="flex shrink-0 items-center justify-between border-t border-white/10 px-4 py-2.5">
-              <span className="flex items-center gap-1.5 text-[10.5px] text-white/40">
-                <Lock size={11} /> Vos données restent les vôtres
-              </span>
-              <span className="flex items-center gap-1.5 text-[10.5px] text-white/40">
-                <RotateCcw size={11} /> Recto
-              </span>
+            {/* Le code-barres : la carte a son numéro, comme une carte de fidélité. */}
+            <div className="flex shrink-0 items-end justify-between gap-3 border-t border-dashed border-black/15 px-4 py-2.5">
+              <div className="flex min-w-0 items-end gap-[2px]" aria-hidden>
+                {barresCarte(codeCarte).map((largeur, i) => (
+                  <span
+                    key={i}
+                    className="bg-[#14130F]"
+                    style={{ width: `${largeur}px`, height: `${8 + largeur * 3}px`, opacity: i % 7 === 0 ? 0.45 : 1 }}
+                  />
+                ))}
+              </div>
+              <div className="min-w-0 text-right">
+                <div className="truncate font-mono text-[9.5px] tracking-[0.14em] text-black/60">{codeCarte}</div>
+                <div className="mt-0.5 flex items-center justify-end gap-1.5 text-[10px] text-black/40">
+                  <Lock size={11} /> Vos données restent les vôtres
+                  <RotateCcw size={11} /> Recto
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>

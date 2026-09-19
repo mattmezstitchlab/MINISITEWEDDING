@@ -1,6 +1,6 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight, Clock } from 'lucide-react';
 import { articleBySlug, relatedArticles } from '../lib/magazine';
 import { styleById } from '../lib/weddingStyles';
 import RichText from '../components/RichText';
@@ -23,18 +23,6 @@ export default function MagazineArticle() {
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
-        <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
-          <Link to="/magazine" className="flex items-center gap-2 text-[12.5px] font-semibold text-black/60 transition hover:text-black">
-            <ArrowLeft size={14} />
-            Magazine
-          </Link>
-          <Link to="/" className="flex items-center gap-2">
-            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
-          </Link>
-        </div>
-      </nav>
-
       {/* La couverture */}
       <header className="relative h-[52vh] min-h-[340px] w-full overflow-hidden">
         <img src={article.cover} alt={article.title} className="h-full w-full object-cover" />

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
+import SiteChrome from './components/SiteChrome';
 
 /**
  * Chaque page est chargée avec gestion propre des routes.
@@ -41,6 +42,7 @@ export default function App() {
     <BrowserRouter>
       <ScrollToTop />
       <ErrorBoundary>
+        <SiteChrome>
         <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -78,6 +80,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
+        </SiteChrome>
       </ErrorBoundary>
     </BrowserRouter>
   );

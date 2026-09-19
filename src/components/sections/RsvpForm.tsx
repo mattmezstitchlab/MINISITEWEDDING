@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Check, Copy, Mail, MessageCircle } from 'lucide-react';
 import { apiSend } from '../../lib/http';
 import { isRemote } from '../../lib/dataSource';
+import RsvpTicket from '../RsvpTicket';
 import { useSiteView } from './context';
 
 const FIELD = 'vp-field vp-field-dark !px-4 !py-3 !text-[14px]';
@@ -17,7 +18,7 @@ const FIELD = 'vp-field vp-field-dark !px-4 !py-3 !text-[14px]';
  * parler de son régime — et le récapitulatif part aux mariés d'un seul geste.
  */
 export default function RsvpForm() {
-  const { site, data, preview, degraded } = useSiteView();
+  const { site, data, preview, degraded, theme, accent, names } = useSiteView();
   const events = data.rsvpEvents;
   const local = !isRemote();
   /**
@@ -172,17 +173,32 @@ export default function RsvpForm() {
 
   if (sent) {
     return (
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="px-2 py-8 text-center text-white">
-        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#0B0C12]">
-          <Check size={22} strokeWidth={2.6} />
-        </span>
-        <div className="mt-4 text-[19px] font-bold">Merci {firstName}.</div>
-        <p className="mt-1.5 text-[13.5px] leading-relaxed text-white/65">
+      <div className="text-white">
+        {/* Répondre délivre un billet : nominatif, numéroté, au nom de l'univers. */}
+        <RsvpTicket
+          nom={`${firstName} ${lastName}`.trim()}
+          styleId={theme.id}
+          universeName={theme.name}
+          accent={accent}
+          noms={names}
+          date={site.wedding_date ?? ''}
+          venue={[site.venue, site.city].filter(Boolean).join(', ')}
+          vient={attending === true}
+          places={guests}
+          enfants={children}
+          moments={picked}
+          regime={diet}
+          allergies={allergies}
+          message={message}
+          reponduLe={new Date()}
+        />
+        <p className="mx-auto mt-4 max-w-md text-center text-[13.5px] leading-relaxed text-white/70">
+          <Check size={14} className="mr-1 inline" />
           {attending
-            ? 'Votre réponse est arrivée. Nous avons hâte de vous retrouver.'
-            : 'Votre réponse est arrivée. Vous nous manquerez.'}
+            ? `Merci ${firstName}. Votre billet est prêt — gardez-le, il vous attend à l’entrée.`
+            : `Merci ${firstName}. Votre réponse est arrivée : vous nous manquerez.`}
         </p>
-      </motion.div>
+      </div>
     );
   }
 

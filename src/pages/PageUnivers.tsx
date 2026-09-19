@@ -18,9 +18,9 @@ import { etatDuComptoir, useComptoir } from '../lib/terminalLive';
 import { gesteDepuis } from '../lib/liveRules';
 
 const COULEURS = {
-  magasin: { papier: '#FBFAF8', carte: '#FFFFFF', serif: 'Georgia, "Times New Roman", serif' },
-  table: { papier: '#FBF7EE', carte: '#FFFDF6', serif: 'Georgia, "Times New Roman", serif' },
-  billet: { papier: '#F1F1F4', carte: '#FFFFFF', serif: '"Helvetica Neue", Arial, Helvetica, sans-serif' },
+  magasin: { papier: '#FBFAF8', carte: '#FFFFFF' },
+  table: { papier: '#FBF7EE', carte: '#FFFDF6' },
+  billet: { papier: '#F1F1F4', carte: '#FFFFFF' },
 } as const;
 
 export default function PageUnivers({ styleId }: { styleId: string }) {
@@ -96,13 +96,6 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/70 to-[#0A0A0A]/35" />
 
         <div className="relative mx-auto flex min-h-[88svh] max-w-[1180px] flex-col justify-end px-6 pb-16 pt-24">
-          <Link
-            to="/"
-            className="absolute left-6 top-8 font-mono text-[10px] uppercase tracking-[0.2em] text-white/55 no-underline transition hover:text-white"
-          >
-            ← VOWS
-          </Link>
-
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-black">
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: style.accent }} />
@@ -116,8 +109,8 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
           </div>
 
           <h1
-            className="mt-6 max-w-[900px] text-white"
-            style={{ fontFamily: tons.serif, fontSize: 'clamp(2.8rem, 8vw, 6rem)', lineHeight: 0.98, letterSpacing: '-0.03em' }}
+            className="vp-title mt-6 max-w-[900px] text-white"
+            style={{ fontSize: 'clamp(2.8rem, 8vw, 6rem)', lineHeight: 0.98 }}
           >
             {content.couple.names}
           </h1>
@@ -224,8 +217,8 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
             </span>
 
             <h2
-              className="mt-4 max-w-[760px]"
-              style={{ fontFamily: tons.serif, fontSize: 'clamp(2rem, 5vw, 3.4rem)', lineHeight: 1.04, letterSpacing: '-0.02em' }}
+              className="vp-title mt-4 max-w-[760px]"
+              style={{ fontSize: 'clamp(2rem, 5vw, 3.4rem)', lineHeight: 1.04 }}
             >
               {magazine.titre}
             </h2>
@@ -243,10 +236,10 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
             </figure>
 
             <div className="mt-10">
-              <p className="text-[16.5px] leading-[1.75] text-black/80" style={{ fontFamily: tons.serif }}>
+              <p className="text-[16.5px] leading-[1.75] text-black/80">
                 <span
-                  className="float-left mr-3 mt-1 leading-[0.8]"
-                  style={{ fontFamily: tons.serif, fontSize: '4.4rem', color: style.accent }}
+                  className="vp-title float-left mr-3 mt-1 leading-[0.8]"
+                  style={{ fontSize: '4.4rem', color: style.accent }}
                 >
                   {page.lettrineDe(content.couple.names)}
                 </span>
@@ -336,10 +329,7 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">Le programme</span>
-              <h2
-                className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.02em] sm:text-[40px]"
-                style={{ fontFamily: tons.serif }}
-              >
+              <h2 className="vp-title mt-3 text-[30px] leading-tight sm:text-[40px]">
                 {scenes.length} moments, chacun son morceau.
               </h2>
             </div>
