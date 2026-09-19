@@ -73,6 +73,7 @@ const invite = rendre(PublicSiteView, { data });
 check('mini-site local : le rendu est complet', invite.length > 20_000, true);
 check('mini-site local : la date du mariage est présente', invite.includes('2027'), true);
 check('mini-site local : les sections ont leurs ancres', invite.includes('id="sec-programme"') && invite.includes('id="sec-rsvp"'), true);
+check('mini-site local : la porte de l’invité est dans le pied de page', invite.includes(`/rejoindre/${created.site.slug}`), true);
 
 /* ------------------------------------------- RSVP sans serveur intermédiaire */
 
@@ -96,6 +97,7 @@ const partage = rendre(SharePanel, { site: data.site, data, onPublishedChange: (
 check('Partage : la publication est expliquée', partage.includes('Publier pour vos invités'), true);
 check('Partage : le dossier de dépôt est indiqué', partage.includes('public/sites/'), true);
 check('Partage : le nom de fichier attendu est donné', partage.includes(`${created.site.slug}.json`), true);
+check('Partage : le lien est présenté comme l’invitation', partage.includes('c’est l’invitation'), true);
 
 /* -------------------------------------- la carte et le réseau, base du navigateur */
 

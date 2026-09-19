@@ -361,6 +361,22 @@ check('site sans clé : édition impossible → 403', (await call(weddingSites, 
     404,
   );
 
+  check(
+    'rejoindre un mariage en brouillon → 404',
+    (await call(members, { method: 'POST', body: { slug: brouillon.body.site.slug, role_id: 'invites' }, person: cleBruno })).statusCode,
+    404,
+  );
+  check(
+    'ses mariés, eux, peuvent rejoindre leur brouillon',
+    (await call(members, {
+      method: 'POST',
+      body: { slug: brouillon.body.site.slug, role_id: 'maries' },
+      person: cleAlice,
+      token: brouillon.body.edit_token,
+    })).statusCode,
+    201,
+  );
+
   const aliceRejoint = await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'maries' }, person: cleAlice });
   check('rejoindre → 201', aliceRejoint.statusCode, 201);
   check('la place porte le rôle', aliceRejoint.body.member.role_id, 'maries');

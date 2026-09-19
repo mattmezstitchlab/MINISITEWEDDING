@@ -18,11 +18,11 @@ export default function Footer() {
         </div>
         <div className="mt-8 border-t pt-7 text-[11px] uppercase tracking-[0.2em]" style={{ borderColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(12,14,24,0.08)', color: muted }}>Créé avec VOWS</div>
         <Link
-          to="/carte"
+          to={`/rejoindre/${site.slug}`}
           className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold transition-opacity hover:opacity-70"
           style={{ color: muted }}
         >
-          <UserRound size={13} /> Créer ma carte
+          <UserRound size={13} /> Rejoindre le mariage
         </Link>
       </div>
     </footer>

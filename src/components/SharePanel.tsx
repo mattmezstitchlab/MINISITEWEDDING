@@ -63,6 +63,10 @@ export default function SharePanel({ site, data, onPublishedChange }: Props) {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  /**
+   * Ce lien, ce QR code, c'est l'invitation : l'invité y trouve le mariage et
+   * la proposition de rejoindre — sa carte, son rôle, sa place.
+   */
   const channels = [
     { name: 'WhatsApp', icon: MessageCircle, href: `https://wa.me/?text=${text}` },
     { name: 'Messages', icon: MessageSquare, href: `sms:?&body=${text}` },
@@ -148,7 +152,13 @@ export default function SharePanel({ site, data, onPublishedChange }: Props) {
         <div className="inline-block rounded-[14px] border border-black/8 bg-white p-4">
           <QRCodeSVG value={fullUrl} size={160} fgColor="#0B0C12" level="M" />
         </div>
-        <div className="vp-caption mt-3">QR code élégant, prêt à imprimer<br />sur vos invitations papier.</div>
+        <div className="vp-caption mt-3">
+          QR code élégant, prêt à imprimer<br />sur vos invitations papier.
+        </div>
+        <p className="vp-caption mt-3 !text-[11.5px] leading-relaxed">
+          Ce lien, c’est l’invitation : vos invités y trouvent le mariage, puis la proposition de rejoindre — leur
+          carte, leur rôle, leur place. Rien à créer de votre côté.
+        </p>
         <button onClick={() => window.print()} className="vp-press mt-3 inline-flex items-center gap-2 text-[13px] font-medium text-[var(--vp-ink-soft)] underline underline-offset-4 transition hover:text-[var(--vp-accent)]">
           <Printer size={14} /> Imprimer le QR code
         </button>

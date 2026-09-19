@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { formatDateShort } from '../../lib/format';
 import Countdown from '../Countdown';
@@ -142,6 +143,13 @@ export default function Hero() {
                   {l.label}
                 </motion.a>
               ))}
+              <Link
+                to={`/rejoindre/${site.slug}`}
+                onClick={() => setMenuOpen(false)}
+                className="mt-8 rounded-full border border-black/12 px-5 py-2.5 text-[13px] font-semibold text-[#0B0C12]"
+              >
+                Rejoindre le mariage
+              </Link>
             </div>
           </motion.div>
         )}

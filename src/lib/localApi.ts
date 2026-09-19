@@ -468,6 +468,8 @@ function memberRoutes(
   if (method === 'POST') {
     const siteId = siteIdFrom(db, { site_id: String(payload.site_id ?? ''), slug: String(payload.slug ?? '') });
     if (!siteId) return fail(404, 'Mariage introuvable');
+    // On ne rejoint qu'un mariage ouvert : publié, ou déjà à nous.
+    if (!canReadSiteHere(db, viewer, siteId, siteToken)) return fail(404, 'Mariage introuvable');
     if (!isValidRoleId(payload.role_id)) return fail(400, 'Rôle invalide');
 
     return withDb((live) => {

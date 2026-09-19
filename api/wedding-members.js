@@ -112,6 +112,11 @@ async function rejoindre(req, res) {
   const payload = parseBody(req);
   const siteId = await resolveSiteId({ site_id: payload.site_id, slug: payload.slug });
   if (!siteId) return res.status(404).json({ error: 'Mariage introuvable' });
+  // On ne rejoint qu'un mariage ouvert : publié, ou déjà à nous.
+  const viewer = await viewerFor(req);
+  if (!(await canReadSite(req, viewer, siteId))) {
+    return res.status(404).json({ error: 'Mariage introuvable' });
+  }
   if (!isValidRoleId(payload.role_id)) return res.status(400).json({ error: 'Rôle invalide' });
 
   const { data: existant, error: erreurLecture } = await supabase
@@ -144,7 +149,6 @@ async function rejoindre(req, res) {
     .single();
   if (error) throw error;
 
-  const viewer = await viewerFor(req);
   const { data: person } = await supabase.from('people').select('*').eq('id', personId).maybeSingle();
   return res.status(201).json({ member: redactMemberRow(membre, person, viewer, siteId), deja: false });
 }

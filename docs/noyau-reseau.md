@@ -21,7 +21,14 @@ sont appliquées **côté serveur** (`server/people.js`) et vérifiées par 141
 contrôles d'API : `maries` / `participants` / `carte` pour les coordonnées,
 IBAN et pièces réservés à la personne et aux mariés du mariage concerné.
 
-Reste à faire : les médias collectifs, le fil, l'invitation par QR code, le
+**L'invitation, ensuite.** Le lien et le QR code du panneau de partage sont
+l'invitation : `/rejoindre/<slug>` pose deux questions — « qui êtes-vous dans ce
+mariage ? » puis « comment vous appelle-t-on ? » — crée la carte, donne la clé
+une fois, et la place est prise. La porte est aussi dans le pied du mini-site et
+dans son menu. Un mariage en brouillon ne s'ouvre pas : on ne rejoint qu'un
+mariage publié, ou le sien.
+
+Reste à faire : les médias collectifs et leur rangement par moment, le fil, le
 film. Et la fusion des réponses RSVP (`rsvp_responses`) dans `people` — deux
 systèmes côte à côte aujourd'hui, un seul demain.
 
