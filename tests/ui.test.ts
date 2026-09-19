@@ -33,6 +33,13 @@ import {
   repartitionParMoment,
 } from '../src/lib/weddingPlaylist';
 import { aPartirDe, magasinFor } from '../src/lib/weddingPage';
+import RecapCourses from '../src/components/RecapCourses';
+import { contentFor } from '../src/lib/universeContent';
+import { styleById } from '../src/lib/weddingStyles';
+import {
+  TERMINAL_VIDE, avancement, decoderRecu, demander, encoderRecu, entrerRecu, lacher, planDj, prendre,
+  preneurDe, prisesParInvite, recuDe,
+} from '../src/lib/weddingTicket';
 import { ALL_STYLES } from '../src/lib/weddingStyles';
 import { totalCaisse } from '../src/lib/superMariage';
 import PreviewSite from '../src/pages/PreviewSite';
@@ -496,7 +503,9 @@ check('ses moments sont les siens', vegasDecode.includes('La Chapelle Néon'), t
 check('et ses plats aussi', vegasDecode.includes('Sliders et ailes de poulet sauce miel'), true);
 check('les invités peuvent envoyer la page', vegasDecode.includes('Envoyer aux invités'), true);
 check('le récap s’ouvre en billets', vegasDecode.includes('Les invités prennent leurs billets'), true);
-check('et chacun coche ce qu’il offre', vegasDecode.includes('coche ce qu’il offre'), true);
+check('et chacun prend une ligne', vegasDecode.includes('Chacun prend une ligne'), true);
+check('le reçu de l’invité s’imprime à côté', vegasDecode.includes('Mon reçu'), true);
+check('un reçu vide n’a pas de bouton d’envoi', vegasDecode.includes('Copier le lien du reçu'), false);
 
 /* Le moteur : chaque univers a son magasin, complet et cohérent. */
 const magasins = ALL_STYLES.map((s) => magasinFor(s.id));
@@ -533,6 +542,102 @@ check(
   chargerPlaylist('vegas').length === chargerPlaylist('corse').length,
   true,
 );
+
+/* ------------- le terminal : l'invité prend, le couple reçoit, le DJ récupère -------- */
+
+const magasinSM = magasinFor('supermarche');
+const lignePrise = magasinSM.articles[3]!;
+const ligneLibre = magasinSM.articles[5]!;
+
+let terminal = prendre(TERMINAL_VIDE, lignePrise.id, 'Camille');
+terminal = prendre(terminal, magasinSM.articles[4]!.id, 'Camille');
+terminal = demander(
+  terminal,
+  { cle: 'track-d1', titre: 'Fly Me to the Moon', artiste: 'Frank Sinatra', phaseId: 'diner_toasts' },
+  'Camille',
+);
+
+check('on prend une ligne, elle n’est plus libre', preneurDe(terminal, lignePrise.id), 'Camille');
+check('un autre invité ne peut pas la reprendre', prendre(terminal, lignePrise.id, 'Bastien').prises.length, 2);
+check('la ligne libre reste libre', preneurDe(terminal, ligneLibre.id), undefined);
+check('l’invité ne lâche que ce qu’il a pris', lacher(terminal, lignePrise.id, 'Bastien').prises.length, 2);
+check('et lâche bien ce qu’il a pris', lacher(terminal, lignePrise.id, 'Camille').prises.length, 1);
+check('les prises se groupent par invité', prisesParInvite(terminal)[0]?.nom, 'Camille');
+check('l’avancement du comptoir se calcule', avancement(terminal, magasinSM.articles.length).pris, 2);
+
+/* Le reçu : il tient dans un lien, et il repart sans faute sur le terminal. */
+const recuCamille = recuDe(terminal, 'Camille');
+const codeRecu = encoderRecu(recuCamille);
+const recuDecode = decoderRecu(codeRecu);
+check('le reçu porte le nom de l’invité', recuDecode?.nom, 'Camille');
+check('et ses deux lignes', recuDecode?.articles.length, 2);
+check('et son morceau', recuDecode?.morceaux, ['track-d1']);
+check('un code inventé ne décode rien', decoderRecu('nimportequoi'), null);
+
+const terminalMaries = entrerRecu(TERMINAL_VIDE, recuDecode!, codeRecu);
+check('le reçu posé remonte les lignes', terminalMaries.prises.length, 2);
+check('et le morceau demandé', terminalMaries.demandes.length, 1);
+check('le morceau reprend son vrai titre', terminalMaries.demandes[0]?.titre, 'Fly Me to the Moon');
+check('et son moment de la soirée', terminalMaries.demandes[0]?.phaseId, 'diner_toasts');
+check('le reçu entre au journal', terminalMaries.journal.length, 1);
+check('le journal nomme l’invité', terminalMaries.journal[0]?.nom, 'Camille');
+check('rouvrir le lien ne compte pas double', entrerRecu(terminalMaries, recuDecode!, codeRecu).prises.length, 2);
+
+/* Le terminal DJ : la playlist complète, dans l’ordre de la soirée. */
+const socle = morceauxDeLaPlaylist(['track-c1', 'track-ck1', 'track-d1', 'sug-3']);
+const plan = planDj(socle, terminalMaries.demandes);
+check('le plan du DJ a des blocs', plan.length >= 2, true);
+check('les blocs suivent l’ordre de la soirée', plan[0]?.phaseLabel.includes('Cérémonie'), true);
+check(
+  'la cérémonie ouvre avec le morceau du couple',
+  plan[0]?.lignes.every((l) => l.demandeurs.length === 0),
+  true,
+);
+const blocDiner = plan.find((b) => b.phaseId === 'diner_toasts');
+check('le morceau demandé est au dîner', blocDiner?.lignes.some((l) => l.titre === 'Fly Me to the Moon'), true);
+check(
+  'et il porte le nom de l’invité',
+  blocDiner?.lignes.find((l) => l.titre === 'Fly Me to the Moon')?.demandeurs,
+  ['Camille'],
+);
+check(
+  'deux invités sur le même morceau le comptent deux fois',
+  planDj([], [
+    ...terminalMaries.demandes,
+    { ...terminalMaries.demandes[0]!, nom: 'Bastien' },
+  ]).find((b) => b.phaseId === 'diner_toasts')?.lignes[0]?.demandeurs.length,
+  2,
+);
+
+/* Le récap, vu des mariés : le comptoir, le journal, et le terminal DJ. */
+const recapMaries = renderToStaticMarkup(
+  createElement(RecapCourses, {
+    styleId: 'supermarche',
+    style: styleById('supermarche'),
+    magasin: magasinSM,
+    couple: {
+      noms: contentFor(styleById('supermarche')).couple.names,
+      date: '31/12/2026',
+      venue: contentFor(styleById('supermarche')).couple.venue,
+      convives: magasinSM.articles.length,
+    },
+    dateLabel: '19/09/2026',
+    heureLabel: '21h05',
+    morceaux: socle,
+    terminal: terminalMaries,
+    onTerminal: () => {},
+    nom: 'Camille',
+    fond: '#FFFFFF',
+    vueInitiale: 'maries',
+  }),
+).replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, '`');
+check('le récap s’ouvre côté mariés', recapMaries.includes('Le comptoir'), true);
+check('il liste les reçus reçus', recapMaries.includes('Journal du terminal') && recapMaries.includes('Reçu de Camille'), true);
+check('il porte le terminal DJ', recapMaries.includes('Le terminal DJ'), true);
+check('avec l’ordre de la soirée', recapMaries.includes('ordre de la soirée'), true);
+check('et le nom de qui l’a demandé', recapMaries.includes('demandé par Camille'), true);
+check('il donne le QR à scanner au comptoir', recapMaries.includes('À scanner au comptoir'), true);
+check('le tampon du DJ est prêt', recapMaries.includes('Prêt pour la piste'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

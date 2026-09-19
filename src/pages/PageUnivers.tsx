@@ -1,36 +1,22 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  ArrowRight, Check, Copy, ExternalLink, Minus, Music2, Plus, Printer, Search, Sparkles, Ticket, X,
-} from 'lucide-react';
-import MusicCard from '../components/MusicCard';
-import TicketCaisse from '../components/TicketCaisse';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ArrowRight, Check, Copy, Music2, Sparkles, Ticket } from 'lucide-react';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 import UniversPagesGrid from '../components/UniversPagesGrid';
+import PlaylistCollaborative from '../components/PlaylistCollaborative';
+import RecapCourses from '../components/RecapCourses';
 import { contentFor } from '../lib/universeContent';
 import { getComplementaryStyles } from '../lib/weddingStyles';
 import { getScenesForStyle } from '../lib/themeTimelineScenarios';
 import { trackForText } from '../lib/weddingSoundtrack';
 import { daysUntil, formatDateLong } from '../lib/format';
-import {
-  CATALOGUE, chargerPlaylist, chercherMorceaux, enregistrerPlaylist,
-  morceauxDeLaPlaylist, repartitionParMoment,
-} from '../lib/weddingPlaylist';
-import { euros, lignesDuTicket, numeroDeTicket, prixDeLArticle, totalCaisse } from '../lib/superMariage';
+import { chargerPlaylist, enregistrerPlaylist, morceauxDeLaPlaylist } from '../lib/weddingPlaylist';
+import MusicCard from '../components/MusicCard';
 import { aPartirDe, pageFor, type PageUnivers as PageDonnees } from '../lib/weddingPage';
-
-/**
- * LE MARIAGE, EN ENTIER — LE MOTEUR
- *
- * Une seule page verticale, bien espacée, qui suffit pour un mariage entier :
- * l'article, le programme, la playlist, les métiers, le récap en ticket, les
- * autres univers. Le même moteur sert les vingt-quatre univers : ce qui change
- * n'est pas la page, c'est son magasin — son enseigne, ses moments, ses trois
- * métiers, ses plats, ses tarifs et sa caisse (voir `lib/weddingPage.ts`).
- *
- * Et c'est collaboratif : n'importe qui ouvre la page, coche ce qu'il offre,
- * ajoute un morceau, et le ticket se recalcule sous ses yeux.
- */
+import {
+  chargerNom, chargerTerminal, decoderRecu, enregistrerNom, enregistrerTerminal, entrerRecu,
+  signataire, type EtatTerminal,
+} from '../lib/weddingTicket';
 
 const COULEURS = {
   magasin: { papier: '#FBFAF8', carte: '#FFFFFF', serif: 'Georgia, "Times New Roman", serif' },
@@ -45,45 +31,68 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
   const content = useMemo(() => contentFor(style), [style]);
   const scenes = useMemo(() => getScenesForStyle(styleId), [styleId]);
   const voisins = getComplementaryStyles(style);
+  const [params] = useSearchParams();
+  /** Le reçu d'un invité, quand on ouvre son lien. */
+  const codeRecu = params.get('recu');
 
   const aujourdHui = useMemo(() => new Date(), []);
   const dateLabel = aujourdHui.toLocaleDateString('fr-FR');
   const heureLabel = `${aujourdHui.getHours()}h${String(aujourdHui.getMinutes()).padStart(2, '0')}`;
 
-  /* ————————————————— la playlist ————————————————— */
-  const [playlist, setPlaylist] = useState<string[]>(() => chargerPlaylist(styleId));
-  const [requete, setRequete] = useState('');
+  /* ————————————————— la carte de fidélité ————————————————— */
+  const [nom, setNom] = useState(() => chargerNom(styleId));
   const [copie, setCopie] = useState(false);
-  const morceaux = useMemo(() => morceauxDeLaPlaylist(playlist), [playlist]);
-  const resultats = useMemo(() => chercherMorceaux(requete), [requete]);
-  const moments = useMemo(() => repartitionParMoment(morceaux), [morceaux]);
+  const nommer = (valeur: string) => {
+    setNom(valeur);
+    enregistrerNom(valeur, styleId);
+  };
 
-  const basculerMorceau = (id: string) => {
-    setPlaylist((prev) => {
-      const suivant = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      enregistrerPlaylist(suivant, styleId);
+  /* ————————————————— le terminal ————————————————— */
+  /**
+   * Un reçu arrive par son lien (`?recu=…`) : il est posé sur le terminal une
+   * fois pour toutes. L'import se fait pendant le rendu — pas dans un effet —
+   * parce que c'est le même calcul : ouvrir le lien, c'est poser le reçu.
+   */
+  const importerRecu = (etat: EtatTerminal, code: string | null): EtatTerminal => {
+    if (!code) return etat;
+    const recu = decoderRecu(code);
+    if (!recu) return etat;
+    const suivant = entrerRecu(etat, recu, code);
+    if (suivant !== etat) enregistrerTerminal(suivant, styleId);
+    return suivant;
+  };
+
+  const [terminal, setTerminal] = useState<EtatTerminal>(() => importerRecu(chargerTerminal(styleId), codeRecu));
+  const [codeTraite, setCodeTraite] = useState(codeRecu ?? '');
+  if ((codeRecu ?? '') !== codeTraite) {
+    setCodeTraite(codeRecu ?? '');
+    setTerminal((prev) => importerRecu(prev, codeRecu));
+  }
+
+  const majTerminal = (f: (etat: EtatTerminal) => EtatTerminal) => {
+    setTerminal((prev) => {
+      const suivant = f(prev);
+      enregistrerTerminal(suivant, styleId);
       return suivant;
     });
   };
 
-  /* ————————————————— la checklist et son ticket ————————————————— */
-  const [coches, setCoches] = useState<string[]>(magasin.panierDeDepart);
-  const [menu, setMenu] = useState<string | null>(magasin.packages[0]?.id ?? null);
-  const [valide, setValide] = useState(false);
-
-  const total = useMemo(() => totalCaisse(coches, menu, magasin.articles, magasin.packages), [coches, menu, magasin]);
-  const lignes = useMemo(() => lignesDuTicket(coches, menu, magasin.articles, magasin.packages), [coches, menu, magasin]);
-  const numero = useMemo(() => numeroDeTicket(coches, menu, magasin.prefixe), [coches, menu, magasin]);
-
-  const basculerArticle = (id: string) => {
-    setValide(false);
-    setCoches((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  /* ————————————————— la playlist du couple ————————————————— */
+  const [playlist, setPlaylist] = useState<string[]>(() => chargerPlaylist(styleId));
+  const morceaux = useMemo(() => morceauxDeLaPlaylist(playlist), [playlist]);
+  const changerPlaylist = (suivant: string[]) => {
+    setPlaylist(suivant);
+    enregistrerPlaylist(suivant, styleId);
   };
 
-  const articlesChoisis = new Set(coches);
-  const prix = (n: number) => (n === 0 ? 'Offert' : euros(n));
+  const couple = {
+    noms: content.couple.names,
+    date: formatDateLong(content.couple.date),
+    venue: content.couple.venue,
+    convives: content.couple.guests,
+  };
 
-  /** Collaboratif : on envoie la page telle quelle — chacun coche, chacun ajoute. */
+  /** Collaboratif : on envoie la page telle quelle — chacun prend, chacun demande. */
   const partager = () => {
     const lien = typeof window === 'undefined' ? '' : window.location.href;
     void navigator.clipboard?.writeText(lien).then(() => {
@@ -173,6 +182,39 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
           </div>
         </div>
       </header>
+
+      {/* ═══════════ LA CARTE DE FIDÉLITÉ : le nom qui signe tout ═══════════ */}
+      <section id="carte-fidelite" className="border-b border-black/10 bg-[#0A0A0A] px-6 py-4 text-white">
+        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-5 gap-y-3">
+          <span className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
+            Carte de fidélité
+          </span>
+          <label className="flex min-w-[240px] flex-1 items-center gap-3 rounded-full border border-white/20 bg-white/5 px-4 py-2">
+            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-white/50">
+              Votre nom
+            </span>
+            <input
+              value={nom}
+              onChange={(e) => nommer(e.target.value)}
+              placeholder="Il signe vos prises et vos morceaux"
+              className="min-w-0 flex-1 bg-transparent text-[13.5px] text-white outline-none placeholder:text-white/35"
+            />
+          </label>
+          <span className="font-mono text-[10.5px] uppercase tracking-wider text-white/55">
+            {terminal.prises.length} ligne{terminal.prises.length > 1 ? 's' : ''} prise{terminal.prises.length > 1 ? 's' : ''}
+            {' '}· {terminal.demandes.length} morceau{terminal.demandes.length > 1 ? 'x' : ''} demandé{terminal.demandes.length > 1 ? 's' : ''}
+          </span>
+          <a
+            href="#recap"
+            className="rounded-full bg-white px-4 py-2 text-[12.5px] font-bold text-[#0C0C0C] no-underline transition hover:bg-white/90"
+          >
+            Faire ses courses
+          </a>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-white/35">
+            {signataire(nom)} au comptoir
+          </span>
+        </div>
+      </section>
 
       {/* ═══════════════════════ 1 · L'ARTICLE DU MAGAZINE ═══════════════════════ */}
       <article id="article" className="mx-auto max-w-[1080px] px-6 py-20 sm:py-28">
@@ -354,326 +396,35 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
       </section>
 
       {/* ═══════════════════════ 3 · LA PLAYLIST COLLABORATIVE ═══════════════════════ */}
-      <section id="playlist" className="border-t border-black/10 px-6 py-20 sm:py-24">
-        <div className="mx-auto max-w-[1080px]">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">La playlist</span>
-              <h2
-                className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.02em] sm:text-[40px]"
-                style={{ fontFamily: tons.serif }}
-              >
-                Cherchez un morceau, ajoutez-le.
-              </h2>
-            </div>
-            <p className="max-w-[380px] text-[13px] leading-relaxed text-black/55">
-              {morceaux.length} morceau{morceaux.length > 1 ? 'x' : ''} dans la playlist ·{' '}
-              {CATALOGUE.filter((m) => !m.suggere).length} s’écoutent ici, les autres sont suggérés.
-            </p>
-          </div>
-
-          <div className="mt-8 flex items-center gap-3 rounded-full border border-black/12 bg-white px-5 py-3 shadow-sm">
-            <Search size={16} className="shrink-0 text-black/35" />
-            <input
-              value={requete}
-              onChange={(e) => setRequete(e.target.value)}
-              placeholder="Un titre, un artiste, un moment — « cérémonie », « bal », « Sinatra »…"
-              className="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-black/35"
-            />
-            {requete && (
-              <button
-                type="button"
-                onClick={() => setRequete('')}
-                aria-label="Effacer la recherche"
-                className="shrink-0 rounded-full p-1 text-black/35 transition hover:bg-black/5 hover:text-black"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-
-          <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
-            <div>
-              <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">
-                {requete ? `${resultats.length} résultat${resultats.length > 1 ? 's' : ''}` : 'Tout le catalogue'}
-              </div>
-
-              <div className="mt-4 space-y-2.5">
-                {resultats.length === 0 && (
-                  <p className="rounded-[16px] border border-dashed border-black/15 px-4 py-6 text-center text-[13px] text-black/45">
-                    Rien pour « {requete} ». Essayez « bal », « cocktail », « Piaf »…
-                  </p>
-                )}
-
-                {resultats.map((morceau) => {
-                  const dedans = playlist.includes(morceau.id);
-                  return (
-                    <div key={morceau.id} className="flex items-center gap-3.5 rounded-[16px] border border-black/10 bg-white p-2.5">
-                      <img src={morceau.cover} alt="" className="h-12 w-12 shrink-0 rounded-[12px] object-cover" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-[13.5px] font-semibold">{morceau.title}</div>
-                        <div className="truncate text-[11.5px] text-black/55">
-                          {morceau.artiste} · {morceau.moment}
-                        </div>
-                      </div>
-
-                      <span
-                        className="hidden shrink-0 rounded-full px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider sm:block"
-                        style={{
-                          background: morceau.suggere ? 'rgba(12,14,24,0.05)' : `${style.accent}22`,
-                          color: morceau.suggere ? 'rgba(12,14,24,0.5)' : 'rgba(12,14,24,0.75)',
-                        }}
-                      >
-                        {morceau.suggere ? 'Suggéré' : 'Extrait'}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() => basculerMorceau(morceau.id)}
-                        aria-label={dedans ? `Retirer ${morceau.title}` : `Ajouter ${morceau.title}`}
-                        className={`flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-semibold transition ${
-                          dedans
-                            ? 'bg-black text-white hover:bg-neutral-800'
-                            : 'border border-black/15 text-black/70 hover:border-black hover:text-black'
-                        }`}
-                      >
-                        {dedans ? <Check size={13} /> : <Plus size={13} />}
-                        {dedans ? 'Ajouté' : 'Ajouter'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="lg:sticky lg:top-8">
-              <div className="rounded-[20px] border border-black/12 bg-white p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-black/45">
-                    La playlist du mariage
-                  </div>
-                  <span className="font-mono text-[10.5px] text-black/40">{morceaux.length}</span>
-                </div>
-
-                {moments.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {moments.map((m) => (
-                      <span
-                        key={m.moment}
-                        className="rounded-full bg-black/5 px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-wider text-black/50"
-                      >
-                        {m.moment} · {m.nombre}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="mt-4 space-y-2.5">
-                  {morceaux.length === 0 && (
-                    <p className="rounded-[16px] border border-dashed border-black/15 px-4 py-6 text-center text-[12.5px] text-black/45">
-                      La playlist est vide. Cherchez un morceau et ajoutez-le.
-                    </p>
-                  )}
-
-                  {morceaux.map((morceau) => (
-                    <div key={morceau.id} className="group relative">
-                      <MusicCard track={morceau} accent={style.accent} />
-                      <button
-                        type="button"
-                        onClick={() => basculerMorceau(morceau.id)}
-                        aria-label={`Retirer ${morceau.title}`}
-                        className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-white text-black/45 opacity-0 shadow ring-1 ring-black/10 transition hover:text-black group-hover:opacity-100"
-                      >
-                        <Minus size={12} />
-                      </button>
-                      {!morceau.suggere && morceau.spotifyId && (
-                        <a
-                          href={`https://open.spotify.com/track/${morceau.spotifyId}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="absolute bottom-3 right-3 text-black/30 transition hover:text-black"
-                          title="L’original sur Spotify"
-                        >
-                          <ExternalLink size={12} />
-                        </a>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <p className="mt-4 border-t border-black/10 pt-3 font-mono text-[10px] uppercase leading-relaxed tracking-wider text-black/35">
-                  La playlist reste sur cet appareil · chaque invité peut ajouter la sienne
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PlaylistCollaborative
+        style={style}
+        styleId={styleId}
+        playlist={playlist}
+        onPlaylist={changerPlaylist}
+        terminal={terminal}
+        onTerminal={majTerminal}
+        nom={nom}
+      />
 
       {/* ═══════════════════════ 4 · LES MÉTIERS DE L'UNIVERS ═══════════════════════ */}
       <ComplementaryThemes currentStyle={style} />
 
       {/* ═══════════════════════ 5 · LE RÉCAP, EN TICKET ═══════════════════════ */}
-      <section id="recap" className="border-t border-black/10 px-6 py-20 sm:py-24" style={{ background: tons.carte }}>
-        <div className="mx-auto max-w-[1080px]">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <span className="font-mono text-[10px] font-bold uppercase tracking-[0.24em] text-black/40">Le récap</span>
-              <h2
-                className="mt-3 text-[30px] font-semibold leading-tight tracking-[-0.02em] sm:text-[40px]"
-                style={{ fontFamily: tons.serif }}
-              >
-                {magasin.registre === 'table'
-                  ? 'Les invités dressent la table.'
-                  : magasin.registre === 'billet'
-                    ? 'Les invités prennent leurs billets.'
-                    : 'Les invités font leurs courses.'}
-              </h2>
-              <p className="mt-3 max-w-[560px] text-[13.5px] leading-relaxed text-black/55">
-                Chacun ouvre la page, coche ce qu’il offre, choisit la formule — et le ticket se
-                recalcule sous ses yeux, jusqu’au tampon PAYÉ.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => { setValide(false); setCoches(magasin.panierDeDepart); }}
-                className="rounded-full border border-black/12 px-4 py-2 text-[12px] font-semibold text-black/65 transition hover:border-black/30"
-              >
-                Repartir du départ
-              </button>
-              <button
-                type="button"
-                onClick={() => { setCoches(magasin.articles.map((a) => a.id)); setValide(true); }}
-                className="rounded-full border border-black/12 px-4 py-2 text-[12px] font-semibold text-black/65 transition hover:border-black/30"
-              >
-                Tout cocher
-              </button>
-              <button
-                type="button"
-                onClick={() => setValide(true)}
-                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-bold text-black transition hover:brightness-95"
-                style={{ background: style.accent }}
-              >
-                <Printer size={13} /> Valider
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
-            <div className="space-y-8">
-              {magasin.rayons.map((rayon) => (
-                <section key={rayon.key}>
-                  <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-black/12 pb-2.5">
-                    <h3 className="font-mono text-[11.5px] font-bold uppercase tracking-[0.18em]">
-                      <span className="mr-2">{rayon.emoji}</span>
-                      {rayon.label}
-                    </h3>
-                    <span className="font-mono text-[10.5px] text-black/40">
-                      {rayon.articles.filter((a) => articlesChoisis.has(a.id)).length} / {rayon.articles.length}
-                    </span>
-                  </div>
-
-                  <div className="mt-3 space-y-1.5">
-                    {rayon.articles.length === 0 && (
-                      <p className="rounded-[12px] border border-dashed border-black/15 px-4 py-4 text-center text-[12.5px] text-black/45">
-                        Rien dans ce rayon : cet univers n’impose aucun métier.
-                      </p>
-                    )}
-
-                    {rayon.articles.map((article) => {
-                      const coche = articlesChoisis.has(article.id);
-                      return (
-                        <label
-                          key={article.id}
-                          className={`flex cursor-pointer items-center gap-3 rounded-[12px] px-3 py-2 transition ${
-                            coche ? 'bg-white shadow-sm ring-1 ring-black/8' : 'hover:bg-black/[0.025]'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={coche}
-                            onChange={() => basculerArticle(article.id)}
-                            className="h-4 w-4 shrink-0 accent-black"
-                          />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[13px] font-medium">{article.label}</span>
-                            <span className="block truncate text-[11px] text-black/45">{article.detail}</span>
-                          </span>
-                          <span className="shrink-0 font-mono text-[12px] tabular-nums text-black/70">
-                            {prix(prixDeLArticle(article))}
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                </section>
-              ))}
-
-              <section>
-                <div className="border-b border-black/12 pb-2.5">
-                  <div className="font-mono text-[11.5px] font-bold uppercase tracking-[0.18em]">
-                    <span className="mr-2">🍽</span>La formule
-                  </div>
-                  <div className="mt-1 text-[11.5px] text-black/45">{magasin.service}</div>
-                </div>
-                <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
-                  {magasin.packages.map((pkg) => {
-                    const actif = menu === pkg.id;
-                    return (
-                      <button
-                        key={pkg.id}
-                        type="button"
-                        onClick={() => { setValide(false); setMenu(actif ? null : pkg.id); }}
-                        className={`rounded-[14px] border p-3 text-left transition ${
-                          actif ? 'border-transparent bg-[#0C0C0C] text-white' : 'border-black/12 hover:border-black/30'
-                        }`}
-                      >
-                        <div className="flex items-baseline justify-between gap-2">
-                          <span className="text-[13px] font-semibold">Menu {pkg.name}</span>
-                          <span className="font-mono text-[12px] tabular-nums">{prix(pkg.prix)}</span>
-                        </div>
-                        <p className={`mt-1.5 text-[11.5px] leading-snug ${actif ? 'text-white/65' : 'text-black/50'}`}>
-                          {pkg.description}
-                        </p>
-                        <ul className={`mt-2 space-y-0.5 font-mono text-[10px] uppercase tracking-wider ${actif ? 'text-white/50' : 'text-black/40'}`}>
-                          {pkg.features.slice(0, 3).map((f) => (
-                            <li key={f} className="truncate">· {f}</li>
-                          ))}
-                        </ul>
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="mt-3 font-mono text-[10px] uppercase leading-relaxed tracking-wider text-black/40">
-                  La formule est offerte : elle ouvre la carte de fidélité, −10 % sur la main-d’œuvre.
-                </p>
-              </section>
-            </div>
-
-            <div className="lg:sticky lg:top-8">
-              <TicketCaisse
-                lignes={lignes}
-                total={total}
-                numero={numero}
-                dateLabel={dateLabel}
-                heureLabel={heureLabel}
-                paye={valide}
-                magasin={magasin}
-                couple={{
-                  noms: content.couple.names,
-                  date: formatDateLong(content.couple.date),
-                  venue: content.couple.venue,
-                  convives: content.couple.guests,
-                }}
-              />
-              <p className="mt-4 text-center font-mono text-[10.5px] uppercase tracking-wider text-black/35">
-                Tarifs indicatifs — rien n’est facturé
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Côté invités : on prend une ligne, le reçu s'imprime. Côté mariés : le
+          comptoir, le journal des reçus, et le terminal que le DJ récupère. */}
+      <RecapCourses
+        styleId={styleId}
+        style={style}
+        magasin={magasin}
+        couple={couple}
+        dateLabel={dateLabel}
+        heureLabel={heureLabel}
+        morceaux={morceaux}
+        terminal={terminal}
+        onTerminal={majTerminal}
+        nom={nom}
+        fond={tons.carte}
+      />
 
       {/* ═══════════════════════ 6 · LES AUTRES UNIVERS ═══════════════════════ */}
       <UniversPagesGrid currentStyleId={styleId} />

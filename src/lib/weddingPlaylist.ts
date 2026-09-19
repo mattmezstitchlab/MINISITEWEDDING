@@ -1,4 +1,4 @@
-import { GLOBAL_WEDDING_PLAYLIST_FULL } from './weddingDjPlaylist';
+import { DJ_CHRONOLOGICAL_PHASES, GLOBAL_WEDDING_PLAYLIST_FULL } from './weddingDjPlaylist';
 import type { Track } from './weddingSoundtrack';
 
 /**
@@ -17,14 +17,33 @@ import type { Track } from './weddingSoundtrack';
 export interface Morceau extends Track {
   id: string;
   artiste: string;
-  /** Le moment du mariage auquel il appartient. */
+  /** Le moment du mariage auquel il appartient (libellé court). */
   moment: string;
+  /** L'identifiant du moment, pour ranger le ticket du DJ (voir `weddingTicket`). */
+  phase: string;
   /** L'humeur, en un mot ou deux. */
   ambiance: string;
   /** L'identifiant Spotify de l'original, quand il existe. */
   spotifyId?: string;
   /** Vrai quand le morceau est seulement suggéré (pas d'extrait local). */
   suggere?: boolean;
+}
+
+/** Le libellé court d'un moment du mariage, depuis son identifiant. */
+const COURTS: Record<string, string> = {
+  prelude_ceremonie: 'Cérémonie',
+  cocktail: 'Cocktail',
+  entree_maries: 'Entrée',
+  diner_toasts: 'Dîner',
+  gateau: 'Pièce montée',
+  premiere_danse: 'Première danse',
+  dancefloor_classics: 'Bal',
+  dancefloor_peak: 'Peak',
+  closing: 'Closing',
+};
+
+export function libellePhase(phaseId: string): string {
+  return COURTS[phaseId] ?? DJ_CHRONOLOGICAL_PHASES.find((p) => p.id === phaseId)?.label ?? 'Bal';
 }
 
 /** Les extraits réels : chaque morceau a son fichier dans `public/audio/`. */
@@ -35,33 +54,34 @@ const EXTRAITS: Morceau[] = GLOBAL_WEDDING_PLAYLIST_FULL.map((t) => ({
   src: t.previewUrl,
   cover: t.artwork,
   artiste: t.artist,
-  moment: t.phaseLabel,
+  moment: libellePhase(t.phase),
+  phase: t.phase,
   ambiance: t.audioBpm >= 110 ? 'ça danse' : t.audioBpm >= 90 ? 'ça balance' : 'ça écoute',
   spotifyId: t.spotifyTrackId,
 }));
 
 /** Les suggestions : de vrais morceaux, sans extrait libre. */
-const SUGGESTIONS: Array<Omit<Morceau, 'src' | 'subtitle' | 'suggere'>> = [
-  { id: 'sug-1', title: 'Thinkin’ Out Loud', artiste: 'Ed Sheeran', cover: '/images/bouquet.jpg', moment: 'Première danse', ambiance: 'à deux', spotifyId: '34gCuhDGsG4bRPIf9bb02f' },
-  { id: 'sug-2', title: 'Stand by Me', artiste: 'Ben E. King', cover: '/images/garden.jpg', moment: 'Cérémonie', ambiance: 'tout le monde', spotifyId: '3SdTKo2uVsxFblQjpScoHy' },
-  { id: 'sug-3', title: 'Dancing Queen', artiste: 'ABBA', cover: '/images/danse.jpg', moment: 'Bal', ambiance: 'dancefloor', spotifyId: '0GjEhVFGZW8afUYGChu3Rr' },
-  { id: 'sug-4', title: 'Superstition', artiste: 'Stevie Wonder', cover: '/images/club-amour.jpg', moment: 'Bal', ambiance: 'dancefloor', spotifyId: '1hA8LOb0lMdWXQfXaISnHu' },
-  { id: 'sug-5', title: 'Get Lucky', artiste: 'Daft Punk', cover: '/images/club-amour.jpg', moment: 'Bal', ambiance: 'dancefloor', spotifyId: '69kOkLUCkxIZYexIgSG8rq' },
-  { id: 'sug-6', title: 'Stayin’ Alive', artiste: 'Bee Gees', cover: '/images/club-amour.jpg', moment: 'Bal', ambiance: 'dancefloor', spotifyId: '5ubvP9oKmxLUVq506fgLhk' },
-  { id: 'sug-7', title: 'Dancing in the Moonlight', artiste: 'Toploader', cover: '/images/garden.jpg', moment: 'Cocktail', ambiance: 'golden hour', spotifyId: '6u8B9bNWBDfc1hxwcSd8dg' },
-  { id: 'sug-8', title: 'Beyond the Sea', artiste: 'Bobby Darin', cover: '/images/desert-motel.jpg', moment: 'Cocktail', ambiance: 'crooner', spotifyId: '3LmPK5QLa2C4zPFZBjEZnY' },
-  { id: 'sug-9', title: 'La Vie en rose', artiste: 'Édith Piaf', cover: '/images/couple-paris.jpg', moment: 'Dîner', ambiance: 'français', spotifyId: '1iYVnTkRHB0bCwGZSKPpnL' },
-  { id: 'sug-10', title: 'La Javanaise', artiste: 'Serge Gainsbourg', cover: '/images/couple-paris.jpg', moment: 'Dîner', ambiance: 'français', spotifyId: '4pFcv3LFbwXNRKQfAGO8wD' },
-  { id: 'sug-11', title: 'Les Champs-Élysées', artiste: 'Joe Dassin', cover: '/images/couple-paris.jpg', moment: 'Bal', ambiance: 'chanson', spotifyId: '7IjZvSV0sPuZ6yIcbUqCVM' },
-  { id: 'sug-12', title: 'Bamboléo', artiste: 'Gipsy Kings', cover: '/images/desert-motel.jpg', moment: 'Bal', ambiance: 'tout le monde', spotifyId: '1aP4kfjpT4VsRvSjdUe8jL' },
-  { id: 'sug-13', title: 'Sarà perché ti amo', artiste: 'Ricchi e Poveri', cover: '/images/garden.jpg', moment: 'Bal', ambiance: 'tout le monde', spotifyId: '4BgnwxiCbOwC0y1GFIPDDD' },
-  { id: 'sug-14', title: '(I’ve Had) The Time of My Life', artiste: 'Bill Medley & Jennifer Warnes', cover: '/images/danse.jpg', moment: 'Bal', ambiance: 'climax', spotifyId: '28kOchCkrm4MYjYQ2JEZi6' },
-  { id: 'sug-15', title: 'Last Dance', artiste: 'Donna Summer', cover: '/images/club-amour.jpg', moment: 'Nuit', ambiance: 'closing', spotifyId: '3afQ4z4DkxKEjLDMoEGzWN' },
-  { id: 'sug-16', title: 'I Gotta Feeling', artiste: 'The Black Eyed Peas', cover: '/images/club-amour.jpg', moment: 'Nuit', ambiance: 'closing', spotifyId: '4kLLWz7srcuLKA7Et40PQR' },
-  { id: 'sug-17', title: 'Hallelujah', artiste: 'Leonard Cohen', cover: '/images/table-noir.jpg', moment: 'Cérémonie', ambiance: 'à l’église', spotifyId: '1LzM3OCPqvmW2u1NrPohV2' },
-  { id: 'sug-18', title: 'Ave Maria', artiste: 'Schubert', cover: '/images/hero-wedding.jpg', moment: 'Cérémonie', ambiance: 'à l’église', spotifyId: '1t1bPJqR34KbzhZck5RZT3' },
-  { id: 'sug-19', title: 'Fly Me to the Moon', artiste: 'Frank Sinatra', cover: '/images/champagne.jpg', moment: 'Cocktail', ambiance: 'crooner', spotifyId: '5b7OgznPJJr1vHNYGyvxau' },
-  { id: 'sug-20', title: 'My Way', artiste: 'Frank Sinatra', cover: '/images/hero-wedding.jpg', moment: 'Nuit', ambiance: 'grand final', spotifyId: '3spdoTYpuCpmq19tuD0bOe' },
+const SUGGESTIONS: Array<Omit<Morceau, 'src' | 'subtitle' | 'suggere' | 'moment'>> = [
+  { id: 'sug-1', title: 'Thinkin’ Out Loud', artiste: 'Ed Sheeran', cover: '/images/bouquet.jpg', phase: 'premiere_danse', ambiance: 'à deux', spotifyId: '34gCuhDGsG4bRPIf9bb02f' },
+  { id: 'sug-2', title: 'Stand by Me', artiste: 'Ben E. King', cover: '/images/garden.jpg', phase: 'prelude_ceremonie', ambiance: 'tout le monde', spotifyId: '3SdTKo2uVsxFblQjpScoHy' },
+  { id: 'sug-3', title: 'Dancing Queen', artiste: 'ABBA', cover: '/images/danse.jpg', phase: 'dancefloor_classics', ambiance: 'dancefloor', spotifyId: '0GjEhVFGZW8afUYGChu3Rr' },
+  { id: 'sug-4', title: 'Superstition', artiste: 'Stevie Wonder', cover: '/images/club-amour.jpg', phase: 'dancefloor_classics', ambiance: 'dancefloor', spotifyId: '1hA8LOb0lMdWXQfXaISnHu' },
+  { id: 'sug-5', title: 'Get Lucky', artiste: 'Daft Punk', cover: '/images/club-amour.jpg', phase: 'dancefloor_classics', ambiance: 'dancefloor', spotifyId: '69kOkLUCkxIZYexIgSG8rq' },
+  { id: 'sug-6', title: 'Stayin’ Alive', artiste: 'Bee Gees', cover: '/images/club-amour.jpg', phase: 'dancefloor_peak', ambiance: 'dancefloor', spotifyId: '5ubvP9oKmxLUVq506fgLhk' },
+  { id: 'sug-7', title: 'Dancing in the Moonlight', artiste: 'Toploader', cover: '/images/garden.jpg', phase: 'cocktail', ambiance: 'golden hour', spotifyId: '6u8B9bNWBDfc1hxwcSd8dg' },
+  { id: 'sug-8', title: 'Beyond the Sea', artiste: 'Bobby Darin', cover: '/images/desert-motel.jpg', phase: 'cocktail', ambiance: 'crooner', spotifyId: '3LmPK5QLa2C4zPFZBjEZnY' },
+  { id: 'sug-9', title: 'La Vie en rose', artiste: 'Édith Piaf', cover: '/images/couple-paris.jpg', phase: 'diner_toasts', ambiance: 'français', spotifyId: '1iYVnTkRHB0bCwGZSKPpnL' },
+  { id: 'sug-10', title: 'La Javanaise', artiste: 'Serge Gainsbourg', cover: '/images/couple-paris.jpg', phase: 'diner_toasts', ambiance: 'français', spotifyId: '4pFcv3LFbwXNRKQfAGO8wD' },
+  { id: 'sug-11', title: 'Les Champs-Élysées', artiste: 'Joe Dassin', cover: '/images/couple-paris.jpg', phase: 'dancefloor_classics', ambiance: 'chanson', spotifyId: '7IjZvSV0sPuZ6yIcbUqCVM' },
+  { id: 'sug-12', title: 'Bamboléo', artiste: 'Gipsy Kings', cover: '/images/desert-motel.jpg', phase: 'dancefloor_peak', ambiance: 'tout le monde', spotifyId: '1aP4kfjpT4VsRvSjdUe8jL' },
+  { id: 'sug-13', title: 'Sarà perché ti amo', artiste: 'Ricchi e Poveri', cover: '/images/garden.jpg', phase: 'dancefloor_classics', ambiance: 'tout le monde', spotifyId: '4BgnwxiCbOwC0y1GFIPDDD' },
+  { id: 'sug-14', title: '(I’ve Had) The Time of My Life', artiste: 'Bill Medley & Jennifer Warnes', cover: '/images/danse.jpg', phase: 'dancefloor_classics', ambiance: 'climax', spotifyId: '28kOchCkrm4MYjYQ2JEZi6' },
+  { id: 'sug-15', title: 'Last Dance', artiste: 'Donna Summer', cover: '/images/club-amour.jpg', phase: 'closing', ambiance: 'closing', spotifyId: '3afQ4z4DkxKEjLDMoEGzWN' },
+  { id: 'sug-16', title: 'I Gotta Feeling', artiste: 'The Black Eyed Peas', cover: '/images/club-amour.jpg', phase: 'dancefloor_peak', ambiance: 'closing', spotifyId: '4kLLWz7srcuLKA7Et40PQR' },
+  { id: 'sug-17', title: 'Hallelujah', artiste: 'Leonard Cohen', cover: '/images/table-noir.jpg', phase: 'prelude_ceremonie', ambiance: 'à l’église', spotifyId: '1LzM3OCPqvmW2u1NrPohV2' },
+  { id: 'sug-18', title: 'Ave Maria', artiste: 'Schubert', cover: '/images/hero-wedding.jpg', phase: 'prelude_ceremonie', ambiance: 'à l’église', spotifyId: '1t1bPJqR34KbzhZck5RZT3' },
+  { id: 'sug-19', title: 'Fly Me to the Moon', artiste: 'Frank Sinatra', cover: '/images/champagne.jpg', phase: 'cocktail', ambiance: 'crooner', spotifyId: '5b7OgznPJJr1vHNYGyvxau' },
+  { id: 'sug-20', title: 'My Way', artiste: 'Frank Sinatra', cover: '/images/hero-wedding.jpg', phase: 'closing', ambiance: 'grand final', spotifyId: '3spdoTYpuCpmq19tuD0bOe' },
 ];
 
 const parId = new Map<string, Morceau>();
@@ -73,7 +93,8 @@ for (const suggestion of SUGGESTIONS) {
   if (!doublon) {
     parId.set(suggestion.id, {
       ...suggestion,
-      subtitle: `${suggestion.artiste} · ${suggestion.moment}`,
+      moment: libellePhase(suggestion.phase),
+      subtitle: `${suggestion.artiste} · ${libellePhase(suggestion.phase)}`,
       src: '',
       suggere: true,
     });

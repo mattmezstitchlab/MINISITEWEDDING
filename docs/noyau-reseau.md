@@ -426,3 +426,47 @@ coche, on ajoute, on partage — et les invités font leurs courses.
   trois formules, panier de départ, ticket non vide, préfixes uniques, registres,
   univers vierge) et le rendu réel d'une page non-supermarché (Las Vegas) — ,
   `npm run build` OK.
+
+## 16. Le terminal : l'invité prend, le couple reçoit, le DJ récupère (passe 22)
+
+La page entière était un espace de travail ; elle devient un **comptoir**. Le
+ticket n'est plus un récapitulatif, c'est la monnaie du mariage : chacun y prend
+sa part, repart avec son reçu, et le DJ emporte la playlist.
+
+- **`src/lib/weddingTicket.ts` : le terminal.** Trois objets, aucune horloge —
+  l'ordre d'arrivée (`rang`) suffit :
+  - la **prise** : « cet article, c'est moi qui l'offre ». Un article = un
+    invité : le premier arrivé le garde (`prendre`, `lacher`, `preneurDe`,
+    `prisesParInvite`, `articlesLibres`, `avancement`) ;
+  - la **demande** : un morceau du catalogue ou un titre proposé
+    (`demander`, `retirerDemande`, `demandeursDe`) — plusieurs invités peuvent
+    demander le même, c'est le meilleur signe ;
+  - le **reçu** : tout l'invité tient dans un code (`encoderRecu`,
+    `decoderRecu` — base64url du nom, des lignes, des morceaux, des titres).
+    `entrerRecu` pose le reçu sur le terminal : les lignes non prises passent au
+    nom de l'invité, le reçu entre au journal, et **rouvrir le lien ne compte
+    jamais double** (idempotent par code). Un morceau importé reprend son titre,
+    son artiste et son moment depuis le catalogue — jamais un identifiant.
+- **`planDj(morceaux, demandes)`** rend le ticket du DJ : les blocs suivent
+  `DJ_CHRONOLOGICAL_PHASES`, le socle du couple d'abord, les demandes ensuite,
+  chaque ligne portant qui l'a demandée (`demandeurs`). Les blocs vides ne
+  s'impriment pas.
+- **`TicketCaisse` a trois variantes** — `couple` (inchangée), `invite` (le reçu,
+  tampon « Réservé · merci »), `dj` (le terminal, tampon « Prêt pour la piste »,
+  résumé en morceaux au lieu de l'argent). Même papier, même code-barres, même
+  imprimante.
+- **Le récap a deux points de vue** (`RecapCourses`) : **côté invités** — la
+  carte de fidélité nomme l'invité, chaque ligne a « Je prends », et le reçu
+  s'imprime à droite avec WhatsApp / e-mail / copie du lien ; **côté mariés** —
+  le comptoir (prises par invité, lignes libres, journal des reçus), le QR à
+  scanner, le ticket du couple et le terminal DJ.
+- **La playlist a deux gestes** (`PlaylistCollaborative`) : **Ajouter** (la
+  playlist du mariage) et **Demander** (le ticket du DJ), plus **Proposer un
+  titre** avec son moment — il monte sur le ticket comme les autres.
+- **Le lien du reçu** : `/le-mariage/<univers>?recu=<code>` pose le reçu au
+  terminal pendant le rendu (pas dans un effet), et `vows:terminal:<univers>`
+  garde l'état du comptoir sur l'appareil.
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm test`
+  143 / 55 / **189** — la boucle complète est testée en pur (prise, conflit,
+  lâcher, reçu encodé/décodé, import idempotent, plan du DJ, deux invités sur le
+  même morceau) et le récap est rendu dans les deux vues — `npm run build` OK.
