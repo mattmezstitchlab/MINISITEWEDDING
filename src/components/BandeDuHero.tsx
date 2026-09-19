@@ -18,7 +18,8 @@ import LecteurHero from './LecteurHero';
  */
 
 interface BandeDuHeroProps {
-  libelle: string;
+  /** Ce que la bande annonce, quand elle annonce quelque chose. */
+  libelle?: string;
   cartes: CarteVivante[];
   styleId: string;
   onChoisir?: (carte: CarteVivante) => void;

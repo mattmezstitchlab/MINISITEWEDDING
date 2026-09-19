@@ -53,7 +53,12 @@ export default function CarteVivanteUI({
   // Le même grossissement que la bande de la playlist : 0.88 au bord, 1.06 au
   // centre.
   const echelle = 0.88 + facteur * 0.18;
-  const jouable = Boolean(carte.media.audio || carte.media.video);
+  /**
+   * Le bouton du play existe dès qu'il y a un média à lancer **ou une action à
+   * faire** : la bande des rôles n'a pas de média, elle a « Entrer » et
+   * « Ouvrir ».
+   */
+  const jouable = Boolean(carte.media.audio || carte.media.video || libelleAction);
 
   return (
     <div

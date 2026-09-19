@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
-import { PERSONNAGES, VISUELS_DU_HERO } from '../lib/personas';
+import {
+  DOMAINES_PRESTATAIRES, PERSONNAGES, TITRES, VISUELS_DU_HERO, domainePrestataire,
+  personnageParId, porteurDuDomaine,
+} from '../lib/personas';
 import { usePrefersReducedMotion } from '../lib/useReducedMotion';
 import HeroCycle from '../components/HeroCycle';
 import PictoPersonnage from '../components/PictoPersonnage';
 import OuvertureSite from '../components/OuvertureSite';
 import BandeDuHero from '../components/BandeDuHero';
-import { cartesDesPersonas, cartesDesUnivers } from '../lib/cartesVivantes';
+import { cartesDesDomaines, cartesDesPersonas, cartesDesUnivers, type CarteVivante } from '../lib/cartesVivantes';
 import { definirPersonaCourant, definirPersonaSurvolee, enregistrerControlesBande } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_ACCUEIL } from '../lib/navDesPages';
@@ -35,21 +38,53 @@ export default function Landing() {
     return id ? WEDDING_STYLES.find((s) => s.id === id) ?? null : null;
   });
   /**
-   * LE HERO EST UN SÉLECTEUR DE PERSONNAGE
+   * LE HERO : UN TITRE, PUIS LES CARTES
    *
-   * « Qui êtes-vous dans ce mariage ? » Le hero traverse les rôles du site, du
-   * premier au dernier : le visuel, le nom, la phrase, et **les entrées de leur
-   * espace** — de quoi comprendre le site sans jamais voir les informations de
-   * quelqu'un d'autre. Les flèches font la même chose à la main, et l'on
-   * n'entre qu'avec le personnage qui est au milieu.
+   * « Qui êtes-vous dans ce mariage ? » Le hero ouvre les grandes familles l'une
+   * après l'autre — **SUPER PRESTATAIRE, SUPER MARIÉ(E), SUPER FUTUR MARIÉ(E),
+   * SUPER FAMILLE, SUPER TÉMOIN** — et sous chacune, **les cartes à choisir**.
+   * On ne demande pas qui on est : on le laisse se choisir, carte après carte.
+   *
+   * **Les prestataires ont deux niveaux** : le domaine (« Image & Mémoire »),
+   * puis les métiers qui le font vivre. C'est là qu'on trouve ce qu'on n'était
+   * pas venu chercher.
    */
-  const [personaId, setPersonaId] = useState(PERSONNAGES[0]!.id);
+  const [titreIndex, setTitreIndex] = useState(0);
+  const [carteIndex, setCarteIndex] = useState(0);
+  /** Un domaine ouvert : le hero montre ses métiers, et prend son nom. */
+  const [domaineOuvert, setDomaineOuvert] = useState<string | null>(null);
   /** Un média occupe le hero : le défilé attend, la carte joue. */
   const [lectureEnCours, setLectureEnCours] = useState(false);
   const reduced = usePrefersReducedMotion();
 
-  const indexPersona = Math.max(0, PERSONNAGES.findIndex((p) => p.id === personaId));
-  const persona = PERSONNAGES[indexPersona] ?? PERSONNAGES[0]!;
+  const titre = TITRES[titreIndex] ?? TITRES[0]!;
+  const domaine = domaineOuvert ? domainePrestataire(domaineOuvert) ?? null : null;
+
+  /** Les cartes du moment, dans l'ordre : des domaines, ou des personnages. */
+  const ids = useMemo(() => {
+    if (!titre.domaines) return titre.cartes;
+    return domaine ? domaine.cartes : DOMAINES_PRESTATAIRES.map((d) => d.key);
+  }, [titre, domaine]);
+  const index = Math.min(carteIndex, Math.max(0, ids.length - 1));
+  const cleActive = ids[index] ?? '';
+
+  /** Le domaine ouvert dans la liste (premier niveau des prestataires). */
+  const domaineActif = titre.domaines && !domaine ? domainePrestataire(cleActive) ?? null : null;
+
+  /** Le nom écrit en grand : le titre, ou le domaine quand il est ouvert. */
+  const nomDuHero = domaine ? domaine.label : titre.nom;
+
+  /** Le personnage qui mène le site : la carte du milieu, ou le métier du domaine. */
+  const persona = useMemo(() => {
+    const porteur = domaineActif ? porteurDuDomaine(domaineActif.key) : personnageParId(cleActive);
+    const premier = personnageParId(titre.cartes[0] ?? '') ?? PERSONNAGES[0]!;
+    return porteur ?? premier;
+  }, [domaineActif, cleActive, titre]);
+
+  const cartes = useMemo(() => {
+    if (domaineActif) return cartesDesDomaines(DOMAINES_PRESTATAIRES, domaineActif.key);
+    return cartesDesPersonas(persona.id, ids);
+  }, [domaineActif, persona.id, ids]);
 
   // Le site s'accorde au personnage qui défile : le dock montre ses outils.
   useEffect(() => {
@@ -62,22 +97,50 @@ export default function Landing() {
     return () => enregistrerNavVerticale(null);
   }, []);
 
-  /** Les deux flèches, posées de chaque côté du dock : elles mènent la bande. */
-  const suivant = () => setPersonaId(PERSONNAGES[(indexPersona + 1) % PERSONNAGES.length]!.id);
-  const precedent = () => setPersonaId(PERSONNAGES[(indexPersona - 1 + PERSONNAGES.length) % PERSONNAGES.length]!.id);
+  /** Ouvrir un domaine : on montre ses métiers, et le hero prend son nom. */
+  const ouvrirDomaine = (key: string | null) => {
+    setDomaineOuvert(key);
+    setCarteIndex(0);
+  };
+
+  /**
+   * Les deux flèches, posées de chaque côté du dock : elles mènent la bande. Une
+   * flèche fait avancer d'une carte — et quand le titre n'en a plus, elle entre
+   * dans le titre suivant, au début.
+   */
+  const suivant = () => {
+    if (index + 1 < ids.length) setCarteIndex(index + 1);
+    else {
+      setTitreIndex((i) => (i + 1) % TITRES.length);
+      setDomaineOuvert(null);
+      setCarteIndex(0);
+    }
+  };
+  const precedent = () => {
+    if (index > 0) setCarteIndex(index - 1);
+    else {
+      setTitreIndex((i) => (i - 1 + TITRES.length) % TITRES.length);
+      setDomaineOuvert(null);
+      setCarteIndex(999);
+    }
+  };
   useEffect(() => {
     enregistrerControlesBande({ precedent, suivant });
     return () => enregistrerControlesBande(null);
   });
 
-  /** Le défilé des personnages : personne ne clique, et il avance tout seul. */
+  /** Le défilé : les cartes d'un titre, puis le titre suivant. Il attend qu'on explore. */
   useEffect(() => {
-    if (reduced || lectureEnCours) return;
+    if (reduced || lectureEnCours || domaineOuvert) return;
     const t = window.setTimeout(() => {
-      setPersonaId(PERSONNAGES[(indexPersona + 1) % PERSONNAGES.length]!.id);
+      if (index + 1 < ids.length) setCarteIndex(index + 1);
+      else {
+        setTitreIndex((i) => (i + 1) % TITRES.length);
+        setCarteIndex(0);
+      }
     }, 5600);
     return () => window.clearTimeout(t);
-  }, [indexPersona, reduced, lectureEnCours]);
+  }, [index, ids.length, domaineOuvert, reduced, lectureEnCours]);
 
   /** L'univers de la page : celui qui mène l'éditeur, la playlist et la bande. */
   const activeStyleOrFallback = selectedStyle ?? WEDDING_STYLES[0]!;
@@ -85,25 +148,38 @@ export default function Landing() {
   /** On entre avec un personnage : c'est la carte qu'on vient créer. */
   const entrer = (id: string) => navigate('/creer', { state: { roleId: id } });
 
+  /** Le domaine d'une carte de domaine : « domaine-image » → « image ». */
+  const cleDeCarte = (carte: CarteVivante) =>
+    carte.id.startsWith('domaine-') ? carte.id.slice('domaine-'.length) : null;
+
   /**
-   * LA BANDE DES RÔLES
+   * LA BANDE DES TITRES
    *
-   * Les mêmes cartes que les univers, pour la première question du site : celle
-   * du milieu est le personnage du hero, un clic montre son hero, et **le play
-   * entre** — c'est lui le bouton. **Dans le hero** (`premiere`) : pas de bande
-   * blanche sous les cartes, le libellé s'écrit en blanc, et **pas de flèches** —
-   * celles du dock mènent déjà la bande.
+   * Sous le titre, **les cartes à choisir** : un clic montre la carte au milieu,
+   * le play fait l'action — « Entrer » pour un personnage, « Ouvrir » pour un
+   * domaine, qui découvre alors ses métiers. **Dans le hero** (`premiere`) : pas
+   * de bande blanche, pas de flèches — celles du dock mènent la bande.
    */
-  const bandeDesRoles = (
+  const bandeDuTitre = (
     <BandeDuHero
       premiere
-      libelle="Les rôles — cliquez pour voir, play pour entrer"
       styleId="personas"
-      cartes={cartesDesPersonas(persona.id)}
-      onChoisir={(carte) => setPersonaId(carte.id)}
-      onAction={(carte) => entrer(carte.id)}
-      onSurvol={(carte) => definirPersonaSurvolee(carte?.id ?? null)}
-      libelleAction="Entrer"
+      cartes={cartes}
+      onChoisir={(carte) => {
+        const cle = cleDeCarte(carte);
+        if (cle) ouvrirDomaine(cle);
+        else setCarteIndex(Math.max(0, cartes.findIndex((c) => c.id === carte.id)));
+      }}
+      onAction={(carte) => {
+        const cle = cleDeCarte(carte);
+        if (cle) ouvrirDomaine(cle);
+        else entrer(carte.id);
+      }}
+      onSurvol={(carte) => {
+        const cle = carte ? cleDeCarte(carte) : null;
+        definirPersonaSurvolee(cle ? porteurDuDomaine(cle)?.id ?? null : carte?.id ?? null);
+      }}
+      libelleAction={titre.domaines && !domaine ? 'Ouvrir' : 'Entrer'}
     />
   );
 
@@ -145,15 +221,15 @@ export default function Landing() {
           <div className="flex flex-col items-center text-center">
             <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
 
-            {/* Le personnage du milieu : son picto, son nom, sa phrase */}
-            <div key={persona.id} className="mt-4 flex flex-col items-center">
+            {/* LE TITRE DU MOMENT : la grande famille, et son picto */}
+            <div key={nomDuHero} className="mt-4 flex flex-col items-center">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]"
               >
-                <PictoPersonnage picto={persona.picto} size={30} />
+                <PictoPersonnage picto={titre.picto} size={30} />
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 14 }}
@@ -162,17 +238,25 @@ export default function Landing() {
                 className="vp-title mt-3 text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
                 style={{ fontSize: 'clamp(2rem, 5.4vw, 4rem)', lineHeight: 1.04 }}
               >
-                {persona.nom}
+                {nomDuHero}
               </motion.h1>
-              <p className="mx-auto mt-3 max-w-xl text-[15.5px] leading-relaxed text-white/80">
-                « {persona.phrase} »
-              </p>
+
+              {/* Un domaine ouvert : de quoi revenir à tous les domaines. */}
+              {domaine && (
+                <button
+                  type="button"
+                  onClick={() => ouvrirDomaine(null)}
+                  className="mt-3 rounded-full border border-white/25 px-3 py-1 text-[11px] font-semibold text-white/80 transition hover:border-white hover:text-white"
+                >
+                  ← Tous les domaines
+                </button>
+              )}
             </div>
 
-            {/* LES CARTES DES RÔLES, JUSTE SOUS LE TITRE : on les a sous les yeux
+            {/* LES CARTES À CHOISIR, JUSTE SOUS LE TITRE : on les a sous les yeux
                 dans le hero, sans bande blanche et sans flèches — celles du dock
                 mènent la bande. */}
-            <div className="mt-9 w-full sm:mt-11">{bandeDesRoles}</div>
+            <div className="mt-9 w-full sm:mt-11">{bandeDuTitre}</div>
           </div>
         </HeroCycle>
       </div>

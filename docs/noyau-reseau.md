@@ -1125,3 +1125,48 @@ cartes des rôles entre le titre et la fin du hero ; plus de `bottom-[6.5rem]` ;
 **une seule** paire de flèches de cartes dans toute la page — celle des univers —
 et les deux du dock ; la bande des univers toujours sur blanc), `npm run build`
 OK.
+
+## 34. Les titres, les cartes, et le profil (passe 39)
+
+**Le hero n'a plus de commentaire.** « Les rôles — cliquez pour voir, play pour
+entrer » a disparu, et les phrases entre guillemets sous les grands titres
+aussi : le titre se lit, les cartes se voient, rien ne les explique. La bande
+des **univers**, elle, garde son libellé — elle n'est pas dans le hero.
+
+**Le générique ouvre des titres, pas des rôles.** `TITRES` (dans
+`src/lib/personas.ts`) tient les cinq grandes familles, dans l'ordre du
+parcours : **SUPER PRESTATAIRE, SUPER MARIÉ(E), SUPER FUTUR MARIÉ(E), SUPER
+FAMILLE, SUPER TÉMOIN**. Le hero prend le titre en grand, et **dessous, ses
+cartes à choisir** — pas de bande blanche, pas de flèches (celles du dock mènent
+la bande, comme partout).
+
+**Deux niveaux chez les prestataires.** Les cartes du titre sont les
+**domaines** — Réception & Bouche, Cérémonie & Coordination, Musique & Live,
+Image & Mémoire, Style & Scénographie, Logistique & Sécurité, Métiers
+Transverses — et le play les **ouvre** : le hero prend le nom du domaine, et
+montre **les métiers qui le font vivre**. C'est là qu'on trouve ce qu'on n'était
+pas venu chercher, et « ← Tous les domaines » ramène d'un geste.
+
+**Une carte peut porter deux personnes.** `Personnage.places` dit combien :
+« SUPER MARIÉ » est à quelqu'un, « SUPER MARIÉS » à deux. Les variantes existent
+des deux côtés — marié, mariée, mariés, mariées, marié·e·s, et les mêmes au
+futur. Les cartes à deux portent leur pastille (« 2 places ») ; les autres, leur
+domaine.
+
+**Le profil remplace les deux portes.** En haut à droite, plus de caddie ni de
+magazine : **un bouton profil** — c'est lui qui ouvre le menu du site
+(`src/lib/menuProfil.ts`) : **Voir en tant que** (tous les rôles, rangés par
+titre : on en prend un, le site devient le sien, et l'on ne voit jamais les
+informations de personne), puis Profil, Boîte de réception (1), Paramètres (⌘.),
+Apparence, Assistance, Documentation, Communauté, Télécharger les applications,
+Accueil, Se déconnecter — les entrées du menu, et les pages du site derrière.
+Le Shop et le Magazine restent dans la **nav verticale**, sur chaque page.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **483** (les cinq
+titres dans l'ordre, chacun avec ses cartes, toutes des personnages du site ;
+les sept domaines et leurs quatorze métiers, sans média à lancer ; les variantes
+d'un couple — 1, 1, 2, 2, 2 places — et la pastille qui le dit ; le hero qui
+ouvre sur le premier titre, sans libellé ni phrase entre guillemets, et le play
+qui ouvre un domaine ; la barre sans ses deux portes, avec le profil ; le menu
+et ses entrées, « voir en tant que », et **aucun rôle oublié**), `npm run build`
+OK.

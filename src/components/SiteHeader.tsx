@@ -1,22 +1,19 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, ShoppingCart } from 'lucide-react';
+import MenuProfil from './MenuProfil';
 import { usePersonaSurvolee } from '../lib/personaCourant';
 import { NOM_DU_SITE } from '../lib/nomDuSite';
 
 /**
  * LA BARRE DU SITE
  *
- * Une seule ligne posée sur le hero, sans fond : **le nom**, et à droite les
- * deux portes — le caddie pour le Shop, le magazine pour le Magazine, **en blanc
- * sur encre noire** : on les voit sur n'importe quel visuel. Pas de capsule : la
- * barre laisse voir le hero, et un voile très doux tient la lisibilité du blanc
- * quand la page défile.
+ * Une seule ligne posée sur le hero, sans fond : **le nom**, et à droite **le
+ * profil** — une seule entrée, qui ouvre le menu du site. Le Shop et le
+ * Magazine, eux, sont dans la nav verticale, sur toutes les pages, et ils
+ * suivent le rôle survolé : ils n'ont pas besoin d'être en double ici.
  *
  * **Tout suit le rôle qu'on regarde.** On survole « SUPER PHOTOGRAPHE » : le nom
- * devient le sien, et les deux portes deviennent les siennes — son Shop (les
- * pièces qui le concernent), son Magazine (les conseils qui lui parlent). On ne
- * mélange rien : c'est le rôle qui filtre, et les filtres restent sur la page
- * pour affiner.
+ * devient le sien, et ses deux portes deviennent les siennes — son Shop, son
+ * Magazine. On ne mélange rien : c'est le rôle qui filtre.
  */
 
 interface SiteHeaderProps {
@@ -28,7 +25,6 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
   /** Le rôle qu'on regarde, s'il y en a un : le nom et les portes sont les siens. */
   const survole = usePersonaSurvolee();
   const nom = survole?.nom ?? NOM_DU_SITE;
-  const suite = survole ? `?role=${survole.id}` : '';
 
   return (
     <>
@@ -53,25 +49,8 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
           )}
         </Link>
 
-        {/* En haut à droite, les deux portes du site — celles du rôle regardé. */}
-        <div className="flex items-center gap-2">
-          <Link
-            to={`/shop${suite}`}
-            aria-label={survole ? `Le Shop de ${survole.nom}` : 'Le Shop'}
-            title={survole ? `Le Shop de ${survole.nom}` : 'Le Shop'}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white bg-white text-[#0B0C12] shadow-[0_6px_18px_rgba(0,0,0,0.35)] transition hover:scale-105 hover:bg-black hover:text-white"
-          >
-            <ShoppingCart size={16} />
-          </Link>
-          <Link
-            to={`/magazine${suite}`}
-            aria-label={survole ? `Le Magazine de ${survole.nom}` : 'Le Magazine'}
-            title={survole ? `Le Magazine de ${survole.nom}` : 'Le Magazine'}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white bg-white text-[#0B0C12] shadow-[0_6px_18px_rgba(0,0,0,0.35)] transition hover:scale-105 hover:bg-black hover:text-white"
-          >
-            <BookOpen size={16} />
-          </Link>
-        </div>
+        {/* En haut à droite, une seule entrée : le profil — et tout part de là. */}
+        <MenuProfil />
       </nav>
     </>
   );

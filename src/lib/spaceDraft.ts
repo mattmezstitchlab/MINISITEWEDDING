@@ -29,14 +29,35 @@ export function roleTitle(roleId: string | null): string | null {
  * Quel écran du téléphone correspond à ce rôle : celui des mariés, celui des
  * invités, ou celui des prestataires missionnés.
  */
+/**
+ * Les rôles qui préparent ou racontent le mariage : les mariés, ceux qui le
+ * seront, et toutes leurs variantes — seul, seule, à deux, à deux femmes, à deux
+ * hommes. **Une carte peut porter deux personnes.**
+ */
+const ROLES_DES_MARIES = [
+  'maries',
+  'marie',
+  'mariee',
+  'mariees',
+  'maries_e',
+  'futur_marie',
+  'future_mariee',
+  'futurs_maries',
+  'futures_mariees',
+  'futurs_maries_e',
+];
+
+/** Les rôles qu'on vit depuis l'invitation : les invités, la famille, les témoins. */
+const ROLES_DES_INVITES = ['temoin', 'invites', 'famille'];
+
 export function roleToScreen(roleId: string | null): 'invite' | 'maries' | 'prestataire' {
   if (!roleId) return 'invite';
-  if (roleId === 'maries') return 'maries';
-  if (roleId === 'temoin' || roleId === 'invites') return 'invite';
+  if (ROLES_DES_MARIES.includes(roleId)) return 'maries';
+  if (ROLES_DES_INVITES.includes(roleId)) return 'invite';
   return 'prestataire';
 }
 
 /** Est-ce un rôle de protagoniste ? Les mariés saisissent deux prénoms. */
 export function isCoupleRole(roleId: string | null): boolean {
-  return roleId === 'maries' || roleId === null;
+  return roleId === null || ROLES_DES_MARIES.includes(roleId);
 }

@@ -59,6 +59,7 @@ import PreviewSite from '../src/pages/PreviewSite';
 import OuvertureSite from '../src/components/OuvertureSite';
 import BottomCapsuleNav from '../src/components/BottomCapsuleNav';
 import NavVerticale from '../src/components/NavVerticale';
+import MenuProfil from '../src/components/MenuProfil';
 import LecteurHero from '../src/components/LecteurHero';
 import Magazine from '../src/pages/Magazine';
 import MagazineArticle from '../src/pages/MagazineArticle';
@@ -66,10 +67,15 @@ import Shop from '../src/pages/Shop';
 import ShopProduct from '../src/pages/ShopProduct';
 import { ALL_ARTICLES, articleDUnivers, badgeDUnivers } from '../src/lib/magazine';
 import { articlesPourRole, phraseShopDuRole, piecesPourRole } from '../src/lib/personaSuites';
-import { cartesDesMoments, cartesDesPersonas, cartesDesProduits, cartesDesUnivers } from '../src/lib/cartesVivantes';
-import { PERSONNAGES, VISUELS_DU_HERO } from '../src/lib/personas';
-import { definirPersonaSurvolee, enregistrerControlesBande, personaCourant } from '../src/lib/personaCourant';
+import {
+  cartesDesDomaines, cartesDesMoments, cartesDesPersonas, cartesDesProduits, cartesDesUnivers,
+} from '../src/lib/cartesVivantes';
+import { DOMAINES_PRESTATAIRES, PERSONNAGES, TITRES, VISUELS_DU_HERO, personnageParId } from '../src/lib/personas';
+import {
+  definirPersonaCourant, definirPersonaSurvolee, enregistrerControlesBande, personaCourant,
+} from '../src/lib/personaCourant';
 import { enregistrerNavVerticale } from '../src/lib/navVerticale';
+import { AIDE_PROFIL, MENU_PROFIL, SORTIE_PROFIL, rolesDuMenu } from '../src/lib/menuProfil';
 import {
   NAV_ACCUEIL, NAV_ARTICLE, NAV_MAGAZINE, NAV_METIER, NAV_PRODUIT, NAV_PRESTATAIRE, NAV_SHOP, NAV_UNIVERS,
 } from '../src/lib/navDesPages';
@@ -262,12 +268,12 @@ check('l’accueil met la carte avant le site', accueil.includes('La carte d’a
 check('l’accueil n’a plus de bouton « Découvrir »', accueil.includes('Découvrir'), false);
 /* LE HERO DE L'ACCUEIL : « QUI ÊTES-VOUS DANS CE MARIAGE ? » */
 check('le hero demande qui vous êtes', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
-check('et il présente le premier personnage', accueil.includes(PERSONNAGES[0]!.nom), true);
-check('avec sa phrase', accueil.includes(PERSONNAGES[0]!.phrase.slice(0, 30)), true);
+check('et il ouvre sur le premier titre', accueil.includes(TITRES[0]!.nom), true);
+check('plus de phrase entre guillemets sous le titre', accueil.includes('« '), false);
 /* Les badges sous le titre ont disparu : les outils sont dans le dock. */
 check(
   'les entrées ne sont pas répétées dans le hero',
-  accueil.slice(accueil.indexOf('Qui êtes-vous'), accueil.indexOf('Les rôles —')).includes('>Invités<'),
+  accueil.slice(accueil.indexOf('Qui êtes-vous'), accueil.indexOf('</header>')).includes('>Invités<'),
   false,
 );
 /* Le picto est posé nu, au-dessus du titre. */
@@ -940,15 +946,21 @@ check('le dock est noir', chromeMetier.includes('bg-[#0B0C12]/95'), true);
 check('et ses pictos sont blancs', chromeMetier.includes('text-white/60'), true);
 check('l’étape courante s’inverse en blanc', chromeMetier.includes('bg-white text-[#0B0C12]'), true);
 
-/* LA BARRE DU SITE : le nom au centre, le caddie et le magazine à droite. */
+/* LA BARRE DU SITE : le nom à gauche, le profil à droite. */
+definirPersonaCourant('maries');
+definirPersonaSurvolee(null);
 const entete = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
 check('le site s’appelle Super Mariage', entete.includes('SUPER MARIAGE'), true);
 check('le nom s’écrit en blanc, sans capsule', entete.includes('text-white') && entete.includes('bg-gradient-to-b from-black/45'), true);
 check('la barre n’a plus de fond blanc', entete.includes('rounded-[26px] bg-white'), false);
 check('la barre ne garde que le nom', ['Métiers', 'Shop<', 'Magazine<'].every((m) => entete.includes(m)), false);
-check('et ses deux pictos', ['aria-label="Le Shop"', 'aria-label="Le Magazine"'].every((m) => entete.includes(m)), true);
-check('le caddie mène au shop', entete.includes('href="/shop"'), true);
-check('le magazine à son magazine', entete.includes('href="/magazine"'), true);
+check(
+  'le shop et le magazine ont quitté la barre',
+  ['aria-label="Le Shop"', 'aria-label="Le Magazine"'].every((m) => entete.includes(m)),
+  false,
+);
+check('à la place, le profil', entete.includes('aria-label="Profil — '), true);
+check('et il dit qui l’on est', entete.includes(`aria-label="Profil — ${personnageParId('maries')!.nom}"`), true);
 check('le header n’a plus de bouton Univers', entete.includes('>Univers<'), false);
 check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
 
@@ -957,9 +969,9 @@ check('la bande des univers est sur l’accueil', accueil.includes('Les univers'
 check('la bande ne montre que des univers', accueil.includes('Vue d’ensemble'), false);
 check('elle s’annonce sous le hero', accueil.indexOf('Les univers') > accueil.indexOf('</header>'), true);
 check(
-  'les cartes des rôles sont juste sous le titre du hero',
-  accueil.indexOf('Les rôles') > accueil.indexOf('Qui êtes-vous dans ce mariage') &&
-    accueil.indexOf('Les rôles') < accueil.indexOf('</header>'),
+  'le titre du hero, et ses cartes, sont dans le hero',
+  accueil.indexOf(TITRES[0]!.nom) > accueil.indexOf('Qui êtes-vous dans ce mariage') &&
+    accueil.indexOf(TITRES[0]!.nom) < accueil.indexOf('</header>'),
   true,
 );
 check('sans bande blanche', accueil.includes('bottom-[6.5rem]'), false);
@@ -967,7 +979,7 @@ check('et sans flèches : celles du dock mènent la bande', (accueil.match(/Cart
 check('la bande des univers, elle, se pose sur blanc', accueil.includes('bg-white pb-6 pt-5'), true);
 /* Trois cartes au centre par bande, celle du milieu plus grande, et les flèches. */
 check('chaque bande ne garde que trois cartes', (accueil.match(/Aimer /g) ?? []).length, 6);
-check('la bande des rôles annonce ce qu’elle fait', accueil.includes('Les rôles — cliquez pour voir, play pour entrer'), true);
+check('la bande du titre ne s’annonce plus', accueil.includes('Les rôles'), false);
 check('la bande des univers garde ses deux flèches', (accueil.match(/Carte suivante/g) ?? []).length, 1);
 check('deux bandes, une carte marquée chacune', (accueil.match(/data-actif="true"/g) ?? []).length, 2);
 /* Le hero annonce l'univers qu'il montre : la bande s'aligne, une seule carte. */
@@ -1364,9 +1376,66 @@ check('et l’on peut passer', generique.includes('Passer'), true);
 check('il se joue une fois par visite', ouvertureDejaVue(), true);
 check('sans stockage, on ne le force pas', DUREE_OUVERTURE_SANS_MOUVEMENT < DUREE_OUVERTURE, true);
 
-/* LES PERSONNAGES : tous les rôles de la taxonomie, dans l'ordre du parcours. */
-check('les personnages sont les rôles du site', PERSONNAGES.length, FULL_ROLES_TAXONOMY.length);
+/* LES PERSONNAGES : les rôles de la taxonomie, et les variantes du site. */
+check(
+  'tous les rôles de la taxonomie sont là',
+  FULL_ROLES_TAXONOMY.every((r) => PERSONNAGES.some((p) => p.id === r.id)),
+  true,
+);
+check('et les variantes que le site ajoute', PERSONNAGES.length > FULL_ROLES_TAXONOMY.length, true);
 check('et le premier est celui des mariés', PERSONNAGES[0]?.id, 'maries');
+/* Une carte peut porter une personne, ou deux — c'est le même jour vu de deux têtes. */
+check(
+  'les variantes d’un couple : seul, seule, et à deux',
+  TITRES.find((t) => t.id === 'futurs')!.cartes.map((id) => personnageParId(id)!.places),
+  [1, 1, 2, 2, 2],
+);
+check('une carte peut porter deux personnes', PERSONNAGES.filter((p) => p.places > 1).length >= 4, true);
+check(
+  'et la carte le dit',
+  cartesDesPersonas(undefined, ['maries'])[0]?.badge,
+  '2 places',
+);
+
+/* LES TITRES DU GÉNÉRIQUE : un titre, puis les cartes à choisir. */
+check(
+  'les cinq titres, dans l’ordre du parcours',
+  TITRES.map((t) => t.nom),
+  ['SUPER PRESTATAIRE', 'SUPER MARIÉ(E)', 'SUPER FUTUR MARIÉ(E)', 'SUPER FAMILLE', 'SUPER TÉMOIN'],
+);
+check('chaque titre ouvre ses cartes', TITRES.every((t) => t.domaines || t.cartes.length > 0), true);
+check(
+  'et chaque carte est un personnage du site',
+  TITRES.flatMap((t) => t.cartes).every((id) => Boolean(personnageParId(id))),
+  true,
+);
+
+/* LES DOMAINES : le second niveau, sous les prestataires. */
+check('les domaines des prestataires', DOMAINES_PRESTATAIRES.map((d) => d.label), [
+  'Réception & Bouche',
+  'Cérémonie & Coordination',
+  'Musique & Live',
+  'Image & Mémoire',
+  'Style & Scénographie',
+  'Logistique & Sécurité',
+  'Métiers Transverses',
+]);
+check('chaque domaine ouvre ses métiers', DOMAINES_PRESTATAIRES.every((d) => d.cartes.length >= 1), true);
+check(
+  'et ces métiers sont des personnages du site',
+  DOMAINES_PRESTATAIRES.flatMap((d) => d.cartes).every((id) => Boolean(personnageParId(id))),
+  true,
+);
+check(
+  'tous les métiers ont leur domaine',
+  DOMAINES_PRESTATAIRES.flatMap((d) => d.cartes).length,
+  PERSONNAGES.filter((p) => !['maries', 'marie', 'mariee', 'mariees', 'maries_e', 'futur_marie', 'future_mariee', 'futurs_maries', 'futures_mariees', 'futurs_maries_e', 'famille', 'invites', 'temoin'].includes(p.id)).length,
+);
+check(
+  'un domaine a sa carte, sans média à lancer',
+  cartesDesDomaines(DOMAINES_PRESTATAIRES).every((c) => !c.media.audio && c.badge === 'Domaine'),
+  true,
+);
 check(
   'chacun a sa phrase, ses entrées, son visuel et son picto',
   PERSONNAGES.every(
@@ -1384,11 +1453,16 @@ check('leur famille en badge', cartesDesPersonas()[1]?.badge, PERSONNAGES[1]!.fa
 check('leur phrase en précision', cartesDesPersonas()[1]?.sousTitre, PERSONNAGES[1]!.phrase);
 check('et un média qui joue', String(cartesDesPersonas()[1]?.media.audio ?? '').startsWith('/audio/'), true);
 check(
-  'le play de la bande des rôles fait entrer',
-  (accueil.match(/aria-label="Entrer /g) ?? []).length,
-  3,
+  'le play d’une carte de domaine l’ouvre',
+  accueil.includes(`aria-label="Ouvrir ${enHtml(DOMAINES_PRESTATAIRES[0]!.label)}"`),
+  true,
 );
-check('et pas seulement avec le milieu', accueil.includes(`aria-label="Entrer ${PERSONNAGES[1]!.nom}"`), true);
+check(
+  'et pas seulement avec le milieu',
+  accueil.includes(`aria-label="Ouvrir ${enHtml(DOMAINES_PRESTATAIRES[1]!.label)}"`),
+  true,
+);
+check('un domaine ne s’ouvre pas tout seul', accueil.includes('Tous les domaines'), false);
 check('plus de bouton « Entrer » à part', accueil.includes('>Entrer<'), false);
 
 /* L'univers reste le second axe : sa bande, et son propre défilé. */
@@ -1438,20 +1512,54 @@ check('les flèches encadrent le dock', ['Rôle précédent', 'Rôle suivant'].e
 
 /* ------------------- le nom se transforme, les deux portes suivent le rôle --- */
 
-/* On survole « SUPER PHOTOGRAPHE » : le nom devient le sien. */
+/* On survole « SUPER PHOTOGRAPHE » : le nom devient le sien. Le profil, lui,
+   ne bouge pas — c'est le mien. */
+definirPersonaCourant('maries');
 definirPersonaSurvolee('photographe');
 const entetePhoto = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
 const rolePhoto = PERSONNAGES.find((p) => p.id === 'photographe')!;
 check('le nom du site devient celui du rôle', entetePhoto.includes(rolePhoto.nom), true);
 check('et plus « SUPER MARIAGE » tant qu’on le regarde', entetePhoto.includes('>SUPER MARIAGE<'), false);
-check('le caddie mène à son Shop', entetePhoto.includes('href="/shop?role=photographe"'), true);
-check('le magazine à son Magazine', entetePhoto.includes('href="/magazine?role=photographe"'), true);
-check('et les deux portes disent de qui elles sont', entetePhoto.includes(`aria-label="Le Shop de ${rolePhoto.nom}"`), true);
+check('et le profil, lui, reste le mien', entetePhoto.includes('aria-label="Profil — SUPER MARIÉS"'), true);
+/* Les deux portes du rôle regardé : la nav verticale les porte, sur chaque page. */
+const navPhoto = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(NavVerticale as never)));
+check('la nav verticale mène au shop du rôle', navPhoto.includes(`Le Shop de ${rolePhoto.nom}`), true);
+check('et à son magazine', navPhoto.includes(`Le Magazine de ${rolePhoto.nom}`), true);
 
 definirPersonaSurvolee(null);
 const enteteNeutre = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
 check('sans survol, le nom du site revient', enteteNeutre.includes('SUPER MARIAGE'), true);
-check('et les portes sont celles de tout le monde', enteteNeutre.includes('href="/shop"') && enteteNeutre.includes('href="/magazine"'), true);
+check('le profil reste celui de la personne', enteteNeutre.includes('aria-label="Profil — SUPER MARIÉS"'), true);
+
+/* LE MENU DU PROFIL : ses entrées, et « voir en tant que ». */
+/* Le profil, c'est **moi** : on repose le rôle par défaut avant de le lire. */
+definirPersonaCourant('maries');
+const boutonProfil = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(MenuProfil as never)));
+check('le bouton profil ouvre un menu', boutonProfil.includes('aria-haspopup="menu"'), true);
+check('il est fermé par défaut', boutonProfil.includes('Boîte de réception'), false);
+check(
+  'le menu porte ses entrées, dans l’ordre',
+  [...MENU_PROFIL, ...AIDE_PROFIL, SORTIE_PROFIL].map((i) => i.label),
+  [
+    'Profil', 'Boîte de réception', 'Paramètres', 'Apparence', 'Assistance', 'Documentation',
+    'Communauté', 'Télécharger les applications', 'Accueil', 'Se déconnecter',
+  ],
+);
+check('avec le compteur qui attend', MENU_PROFIL[1]!.badge, '1');
+check('et le raccourci des réglages', MENU_PROFIL[2]!.raccourci, '⌘ .');
+check('chaque entrée mène à une page du site', [...MENU_PROFIL, ...AIDE_PROFIL].every((i) => i.to.startsWith('/')), true);
+/* « Voir en tant que » : tous les rôles du site, rangés par titre. */
+check('voir en tant que, un groupe par titre', rolesDuMenu().map((g) => g.titre.nom), TITRES.map((t) => t.nom));
+check(
+  'et tous les rôles y sont',
+  rolesDuMenu().flatMap((g) => g.roles).length,
+  PERSONNAGES.length,
+);
+check(
+  'aucun rôle oublié',
+  rolesDuMenu().flatMap((g) => g.roles).every((p) => Boolean(personnageParId(p.id))),
+  true,
+);
 
 /* LE SHOP D'UN RÔLE : les pièces qui le concernent, et rien d'autre. */
 const piecesFleuriste = piecesPourRole('fleuriste');

@@ -3,7 +3,7 @@ import { getScenesForStyle } from './themeTimelineScenarios';
 import { CATALOGUE, morceauxDeLaPlaylist, PLAYLIST_DEPART, type Morceau } from './weddingPlaylist';
 import { SHOP_PRODUCTS, modeLabel, type ShopProduct } from './shopData';
 import { metiersVoisins, pageMetier, slugDeRole, tousLesMetiers, type PageMetier } from './metierPage';
-import { PERSONNAGES } from './personas';
+import { PERSONNAGES, type DomainePrestataire } from './personas';
 
 /**
  * LA CARTE VIVANTE — LA CARTE MULTIFONCTION, MULTICOUCHE
@@ -107,14 +107,17 @@ export function cartesDesUnivers(lien: (style: WeddingStyle) => string | undefin
  * la première question du site : « qui êtes-vous dans ce mariage ? ». Le clic
  * montre le hero de ce rôle ; **le play, lui, entre avec lui**.
  */
-export function cartesDesPersonas(actifId?: string): CarteVivante[] {
+export function cartesDesPersonas(actifId?: string, ids?: string[]): CarteVivante[] {
   const track = morceauDUneUnivers();
-  return PERSONNAGES.map((persona) => ({
+  const gens = ids ? PERSONNAGES.filter((p) => ids.includes(p.id)) : PERSONNAGES;
+  return gens.map((persona) => ({
     id: persona.id,
     cle: `persona|${persona.id}`,
     titre: persona.nom,
     sousTitre: persona.phrase,
-    badge: persona.famille,
+    // La pastille dit ce que la carte ne dit pas : **combien de personnes elle
+    // peut porter**, quand elles sont deux — sinon son domaine.
+    badge: persona.places > 1 ? `${persona.places} places` : persona.famille,
     accent: '#0B0C12',
     media: {
       image: persona.image,
@@ -122,6 +125,30 @@ export function cartesDesPersonas(actifId?: string): CarteVivante[] {
       legende: persona.entrees.join(' · '),
     },
     actif: actifId === persona.id,
+  }));
+}
+
+/* ————————————————— les cartes des domaines de métiers ————————————————— */
+
+/**
+ * LES CARTES D'UN DOMAINE — LE SECOND NIVEAU
+ *
+ * Un domaine de prestataires en cartes : son nom, ce qu'il ouvre, et le visuel
+ * de son premier métier. **Ces cartes ne jouent pas de média** : leur geste,
+ * c'est d'ouvrir le domaine — le play devient « Ouvrir », et il montre les
+ * métiers qui le font vivre.
+ */
+export function cartesDesDomaines(domaines: DomainePrestataire[], actifKey?: string): CarteVivante[] {
+  return domaines.map((domaine) => ({
+    id: `domaine-${domaine.key}`,
+    cle: `domaine|${domaine.key}`,
+    titre: domaine.label,
+    sousTitre: domaine.resume,
+    badge: 'Domaine',
+    accent: '#0B0C12',
+    media: { image: domaine.image },
+    actif: actifKey === domaine.key,
+    to: `/prestataire`,
   }));
 }
 

@@ -22,8 +22,8 @@ import CarteVivanteUI from './CarteVivante';
  */
 
 interface BandeauHeroProps {
-  /** Ce que la bande annonce : « Les univers », « Les moments du Jour J »… */
-  libelle: string;
+  /** Ce que la bande annonce : « Les univers », « Les moments du Jour J »… Rien, quand elle se passe de commentaire. */
+  libelle?: string;
   cartes: CarteVivante[];
   /** L'univers qui compte les avis — la même clé de comptoir pour tout le monde. */
   styleId: string;
@@ -97,24 +97,31 @@ export default function BandeauHero({
     </motion.div>
   );
 
-  /** Les trois cartes de la bande, centrées : le milieu est celle de la page. */
+  /**
+   * Les cartes de la bande, centrées : le milieu est celle de la page. Les
+   * voisines ne s'affichent que s'il y en a vraiment — avec une ou deux cartes,
+   * on ne remplit pas avec des doublons.
+   */
+  const aDesVoisines = cartes.length >= 3;
   const troisCartes = (
     <div className="flex min-w-0 items-center justify-center gap-3 sm:flex-1 sm:gap-6">
-      {rendre(precedente, 0.25, true)}
+      {aDesVoisines && rendre(precedente, 0.25, true)}
       {rendre(cartes[milieu]!, 1, false)}
-      {rendre(suivante, 0.25, true)}
+      {aDesVoisines && rendre(suivante, 0.25, true)}
     </div>
   );
 
   return (
     <div className="w-full">
-      <div
-        className={`mb-1 text-center font-mono text-[9.5px] uppercase tracking-[0.22em] ${
-          premiere ? 'text-white/60' : 'text-black/40'
-        }`}
-      >
-        {libelle}
-      </div>
+      {libelle && (
+        <div
+          className={`mb-1 text-center font-mono text-[9.5px] uppercase tracking-[0.22em] ${
+            premiere ? 'text-white/60' : 'text-black/40'
+          }`}
+        >
+          {libelle}
+        </div>
+      )}
 
       {/* Les trois cartes : celle de la page au milieu, plus grande. */}
       {fleches ? (
