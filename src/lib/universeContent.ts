@@ -460,26 +460,6 @@ export const UNIVERSE_CONTENT: Record<string, UniverseContent> = {
     vendor: { arrival: 'Appelé la veille, arrivée 17h00', access: 'Immeuble sans ascenseur, 4ᵉ étage, cour étroite', contact: 'Romy · 07 97 31 58 24'  },
   },
 
-  'divorce-party': {
-    hero: {
-      kicker: 'Univers · Rupture joyeuse',
-      title: 'Les bagues au feu de joie.',
-      subtitle:
-        'Champagne sabré, discours de libération, cagnotte du nouveau départ. On ferme un chapitre en dansant.',
-      facts: [
-        { label: 'Lieu', value: 'Rooftop privé, Paris 18ᵉ' },
-        { label: 'Invités', value: '60 personnes' },
-        { label: 'Rituel', value: 'Grand feu de joie à minuit' },
-      ],
-    },
-    couple: { names: 'Hugo (et Bientôt Libre)', date: '2026-11-21', countdown: 'J-64', venue: 'Rooftop Montmartre', city: 'Paris 18ᵉ', season: 'Novembre', dressCode: 'Ce qui vous va, surtout pas de blanc', guests: 60 },
-    rsvp: { confirmed: 54, pending: 6, invitation: 'Répondez avant le 10 novembre, la sécurité ferme la liste' },
-    cagnotte: { purpose: 'Le nouveau départ : dépôt d’un nouvel appartement', goal: 3000, raised: 2580, contributors: 48, top: '400 €' },
-    menu: { service: 'Banquet noir, buffet debout', items: ['Ardoises fumées et charbon végétal', 'Gigot d’agneau effiloché, sauce au poivre noir', 'Gâteau tout noir, du fondant au crumble'] },
-    allergens: [{ label: 'Végétarien', value: '5 couverts' }, { label: 'Sans alcool', value: '8 couverts' }, { label: 'Sans gluten', value: '3 couverts' }],
-    infos: [{ label: 'Accès', value: 'Rooftop accessible par l’ascenseur C, badge obligatoire' }, { label: 'Navette', value: '23h00 et 02h00 vers Pigalle' }, { label: 'Hébergement', value: 'Hôtel Clignancourt, 10 chambres bloquées' }],
-    vendor: { arrival: 'Arrivée 16h00, sécurité à 18h', access: 'Rue du Chevalier-de-la-Barre, arrêt court, 10 min', contact: 'Hugo · 06 26 79 03 55'  },
-  },
   traditionnel: {
     hero: {
       kicker: 'Univers · Traditionnel & Famille',

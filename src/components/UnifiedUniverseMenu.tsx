@@ -6,13 +6,23 @@ import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 interface UnifiedUniverseMenuProps {
   onSelectStyle: (style: WeddingStyle | null) => void;
   selectedStyleId: string | null;
+  /** Le menu est piloté par la nav, pour qu'un seul panneau soit ouvert à la fois. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export default function UnifiedUniverseMenu({
   onSelectStyle,
   selectedStyleId,
+  open,
+  onOpenChange,
 }: UnifiedUniverseMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [openInterne, setOpenInterne] = useState(false);
+  const isOpen = open ?? openInterne;
+  const setIsOpen = (valeur: boolean) => {
+    setOpenInterne(valeur);
+    onOpenChange?.(valeur);
+  };
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const selectedStyle = selectedStyleId
@@ -67,7 +77,7 @@ export default function UnifiedUniverseMenu({
           ) : (
             <>
               <Layers size={14} className="text-[#0B0C12]" />
-              <span className="tracking-wide">UNIVERS &amp; MÉTIERS</span>
+              <span className="tracking-wide">Univers</span>
             </>
           )}
           <ChevronDown
@@ -94,7 +104,7 @@ export default function UnifiedUniverseMenu({
                   <div className="flex items-center gap-3">
                     <span className="h-2 w-2 rounded-full bg-[#0B0C12]" />
                     <span className="text-[12.5px] font-bold uppercase tracking-[0.2em] text-[#0B0C12]/80">
-                      Galerie des Univers &amp; Métiers VOWS
+                      Les {WEDDING_STYLES.length} univers VOWS
                     </span>
                     {selectedStyle && (
                       <button

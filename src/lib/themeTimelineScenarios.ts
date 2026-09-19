@@ -1,3 +1,6 @@
+import { styleById } from './weddingStyles';
+import { contentFor } from './universeContent';
+
 export interface VendorRoleCandidate {
   role: string;
   mission: string;
@@ -259,42 +262,6 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
   ],
 
   // 11. FÊTE DE DIVORCE & DÉ-MARIAGE (La Renaissance Joyeuse)
-  'divorce-party': [
-    {
-      time: '18h30',
-      title: 'L’Entrée Triomphale & Clôture du Bail',
-      narrativeScript: 'Arrivée solo en smoking impeccable ou tailleur blanc. Pas de marche nuptiale : un quatuor joue Daft Punk en acoustique pendant que les clés de l’ancien appartement sont remises à l’avocat.',
-      ambianceDetail: 'Coupes de champagne blanc de noirs, livre d’or des vœux de liberté et sourires sans rancœur.',
-      image: '/images/couple-paris.jpg',
-      vendorRoles: [
-        { role: 'Maître de Cérémonie de Rupture', mission: 'Discours libérateur avec autodérision et rituel d’extinction des alliances', status: 'filled' },
-        { role: 'Photographe Lookbook Solo', mission: 'Portraits individuels rayonnants et photos de groupe avec les vrais amis', status: 'filled' },
-      ],
-    },
-    {
-      time: '20h30',
-      title: 'Le Banquet de Dé-Mariage & Pièce Noire',
-      narrativeScript: 'Banquets généreux sur table épurée sans fleurs niaises. Arrivée du gâteau inversé monochrome noir surmonté de la figurine victorieuse.',
-      ambianceDetail: 'Chandeliers métalliques, toasts à la renaissance personnelle et rires décomplexés.',
-      image: '/images/table-noir.jpg',
-      vendorRoles: [
-        { role: 'Pâtissier Gâteau Noir Dé-Mariage', mission: 'Sculpture pâtissière satirique monochrome chocolat noir fumé', status: 'filled' },
-        { role: 'Traiteur Banquet Convivial', mission: 'Plats généreux de partage et accords mets-vins de célébration', status: 'filled' },
-      ],
-    },
-    {
-      time: '23h00',
-      title: 'Le Feu de Joie des Alliances & Danse Renaissance',
-      narrativeScript: 'Un brasero extérieur crépite. Les alliances sont symboliquement fondues ou recyclées, ouvrant un dancefloor d’hymnes d’indépendance jusqu’à l’aube.',
-      ambianceDetail: 'Basses chaleureuses, liberté retrouvée, nuit de fête pure.',
-      image: '/images/danse.jpg',
-      vendorRoles: [
-        { role: 'DJ Set "Liberté & Renaissance"', mission: 'Mix house/funk survolté hymnes d’émancipation sans temps mort', status: 'open', compensationHint: 'Set festif 23h-04h' },
-        { role: 'Brasero & Régie Flamme', mission: 'Sécurisation du feu rituel de libération', status: 'filled' },
-      ],
-    },
-  ],
-
   // 12. MARIAGE IMPROVISÉ · 48H (Plan B héroïque)
   'last-minute': [
     {
@@ -485,6 +452,44 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
 
 };
 
+/**
+ * Les univers qui n'ont pas de scénario écrit reçoivent trois scènes tirées de
+ * leur propre contenu : leur cérémonie, leur dîner et leur lendemain. Rien de
+ * générique, et jamais les scènes d'un autre univers.
+ */
+function scenesDepuisLeContenu(styleId: string): ThemeTimelineScene[] {
+  const style = styleById(styleId);
+  const contenu = contentFor(style);
+  const image = () => style.image;
+
+  return [
+    {
+      time: '16h00',
+      title: `La cérémonie · ${contenu.couple.venue}`,
+      narrativeScript: contenu.hero.subtitle,
+      ambianceDetail: contenu.couple.season,
+      image: image(),
+      vendorRoles: [{ role: style.humanMissions[0]?.role ?? 'Prestataire', mission: style.humanMissions[0]?.mission ?? '', status: 'open' }],
+    },
+    {
+      time: '20h00',
+      title: contenu.menu.service,
+      narrativeScript: contenu.menu.items.join(' · '),
+      ambianceDetail: `${contenu.couple.guests} invités · ${contenu.couple.dressCode}`,
+      image: image(),
+      vendorRoles: [{ role: style.humanMissions[1]?.role ?? 'Traiteur', mission: style.humanMissions[1]?.mission ?? '', status: 'filled' }],
+    },
+    {
+      time: '11h00',
+      title: 'Le lendemain',
+      narrativeScript: contenu.infos.map((i) => `${i.label} : ${i.value}`).join(' · '),
+      ambianceDetail: contenu.cagnotte.purpose,
+      image: image(),
+      vendorRoles: [{ role: style.humanMissions[2]?.role ?? 'Prestataire', mission: style.humanMissions[2]?.mission ?? '', status: 'open' }],
+    },
+  ];
+}
+
 export function getScenesForStyle(styleId: string): ThemeTimelineScene[] {
-  return THEME_TIMELINE_SCENARIOS[styleId] || THEME_TIMELINE_SCENARIOS['noir-blanc'];
+  return THEME_TIMELINE_SCENARIOS[styleId] ?? scenesDepuisLeContenu(styleId);
 }

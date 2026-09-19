@@ -1,0 +1,167 @@
+import { Link, Navigate, useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Clock } from 'lucide-react';
+import { articleBySlug, relatedArticles } from '../lib/magazine';
+import { styleById } from '../lib/weddingStyles';
+
+/**
+ * UN ARTICLE DU MAGAZINE
+ *
+ * Un article d'univers se termine toujours par le même appel : ouvrir la page
+ * de l'univers dont il parle, dans le site.
+ */
+
+export default function MagazineArticle() {
+  const { slug } = useParams<{ slug: string }>();
+  const article = slug ? articleBySlug(slug) : undefined;
+
+  if (!article) return <Navigate to="/magazine" replace />;
+
+  const univers = article.universeId ? styleById(article.universeId) : null;
+  const suivants = relatedArticles(article);
+
+  return (
+    <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
+      <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
+        <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
+          <Link to="/magazine" className="flex items-center gap-2 text-[12.5px] font-semibold text-black/60 transition hover:text-black">
+            <ArrowLeft size={14} />
+            Magazine
+          </Link>
+          <Link to="/" className="flex items-center gap-2">
+            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+          </Link>
+        </div>
+      </nav>
+
+      {/* La couverture */}
+      <header className="relative h-[52vh] min-h-[340px] w-full overflow-hidden">
+        <img src={article.cover} alt={article.title} className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/40 to-black/30" />
+        <div className="absolute inset-x-0 bottom-0 px-5 pb-10 sm:px-8">
+          <div className="mx-auto max-w-3xl">
+            <span className="rounded-full bg-white/95 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-black">
+              {article.kicker}
+            </span>
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="vp-title mt-4 text-white"
+              style={{ fontSize: 'clamp(2rem, 4.6vw, 3.4rem)', lineHeight: 1.08 }}
+            >
+              {article.title}
+            </motion.h1>
+            <div className="mt-3 flex items-center gap-3 font-mono text-[11px] uppercase tracking-wider text-white/70">
+              <span className="flex items-center gap-1">
+                <Clock size={12} /> {article.readingMinutes} min de lecture
+              </span>
+              {univers && <span>· Univers {univers.name}</span>}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="px-5 py-12 sm:px-8">
+        <div className="mx-auto max-w-3xl">
+          <p className="text-[18px] leading-relaxed text-black/75">{article.intro}</p>
+
+          <div className="mt-10 space-y-10">
+            {article.sections.map((section, i) => (
+              <section key={section.heading}>
+                <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-black/35">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h2 className="vp-title mt-2 text-[24px] leading-tight sm:text-[28px]">{section.heading}</h2>
+                <div className="mt-3 space-y-3">
+                  {section.body.map((paragraphe) => (
+                    <p key={paragraphe} className="text-[15.5px] leading-relaxed text-black/70">
+                      {paragraphe}
+                    </p>
+                  ))}
+                </div>
+                {section.bullets && (
+                  <ul className="mt-4 space-y-2 rounded-[18px] bg-[#FAFAFC] p-4">
+                    {section.bullets.map((point) => (
+                      <li key={point} className="flex items-start gap-2 text-[14px] leading-relaxed text-black/70">
+                        <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-black/30" />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ))}
+          </div>
+
+          {/* L'appel vers l'univers, quand l'article en parle */}
+          {univers && (
+            <Link
+              to={`/?univers=${univers.id}`}
+              className="group mt-12 flex items-center justify-between gap-4 rounded-[24px] border border-black/10 bg-[#FAFAFC] p-5 transition hover:border-black/25 hover:bg-white hover:shadow-lg"
+            >
+              <span className="flex items-center gap-4">
+                <img
+                  src={univers.image}
+                  alt={univers.name}
+                  className="h-14 w-14 shrink-0 rounded-[16px] object-cover"
+                />
+                <span>
+                  <span className="block text-[11px] font-mono uppercase tracking-wider text-black/40">
+                    Passer à la pratique
+                  </span>
+                  <span className="block text-[16px] font-bold text-[#0B0C12]">
+                    Voir la page de l’univers {univers.name}
+                  </span>
+                  <span className="block text-[13px] text-black/55">
+                    Les trois écrans, la playlist, les prestataires et les informations pratiques.
+                  </span>
+                </span>
+              </span>
+              <ArrowRight size={18} className="shrink-0 text-black/50 transition group-hover:translate-x-1" />
+            </Link>
+          )}
+
+          {/* À lire ensuite */}
+          <section className="mt-14 border-t border-black/8 pt-8">
+            <h2 className="vp-title text-[20px]">À lire ensuite</h2>
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              {suivants.map((suivant) => (
+                <Link
+                  key={suivant.slug}
+                  to={`/magazine/${suivant.slug}`}
+                  className="group overflow-hidden rounded-[20px] border border-black/8 bg-white transition hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img
+                      src={suivant.cover}
+                      alt={suivant.title}
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                    />
+                  </div>
+                  <div className="p-3">
+                    <div className="text-[13.5px] font-bold leading-snug text-[#0B0C12]">{suivant.title}</div>
+                    <div className="mt-1 font-mono text-[10.5px] uppercase tracking-wider text-black/40">
+                      {suivant.kicker}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer className="border-t border-black/5 px-5 py-10 sm:px-8">
+        <div className="mx-auto flex max-w-3xl items-center justify-between text-[12.5px] text-black/50">
+          <Link to="/magazine" className="underline transition hover:text-black">
+            Tous les articles
+          </Link>
+          <Link to="/" className="underline transition hover:text-black">
+            Revenir au site
+          </Link>
+        </div>
+      </footer>
+    </div>
+  );
+}

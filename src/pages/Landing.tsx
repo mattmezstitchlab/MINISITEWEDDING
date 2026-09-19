@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { WEDDING_STYLES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
 import { contentFor } from '../lib/universeContent';
 import HeroCycle from '../components/HeroCycle';
 import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
+import VendorDomainMenu from '../components/VendorDomainMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import ComplementaryThemes from '../components/ComplementaryThemes';
@@ -29,11 +30,18 @@ const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   // Par défaut : null = page principale générale d'atterrissage VOWS
-  const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(null);
+  // Un article du magazine peut ouvrir directement un univers : « /?univers=corse »
+  const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(() => {
+    const id = searchParams.get('univers');
+    return id ? WEDDING_STYLES.find((s) => s.id === id) ?? null : null;
+  });
   const [titleIdx, setTitleIdx] = useState(0);
   // Ce que le couple saisit dans le hero : l'espace se construit dans le téléphone.
   const [draft, setDraft] = useState<SpaceDraft>(EMPTY_DRAFT);
+  // Un seul panneau de menu ouvert à la fois : Univers ou Métiers.
+  const [menuOuvert, setMenuOuvert] = useState<'univers' | 'metiers' | null>(null);
 
   const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
 
@@ -61,6 +69,7 @@ export default function Landing() {
 
   const handleSelectStyle = (style: WeddingStyle | null) => {
     setSelectedStyle(style);
+    if (searchParams.has('univers')) setSearchParams({}, { replace: true });
   };
 
   return (
@@ -76,12 +85,25 @@ export default function Landing() {
             <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
           </Link>
 
-          {/* Le menu des univers : les vingt environnements du catalogue */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* La bande : les univers, les métiers, le magazine */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             <UnifiedUniverseMenu
               selectedStyleId={selectedStyle?.id || null}
               onSelectStyle={handleSelectStyle}
+              open={menuOuvert === 'univers'}
+              onOpenChange={(ouvert) => setMenuOuvert(ouvert ? 'univers' : null)}
             />
+            <VendorDomainMenu
+              onSelectStyle={handleSelectStyle}
+              open={menuOuvert === 'metiers'}
+              onOpenChange={(ouvert) => setMenuOuvert(ouvert ? 'metiers' : null)}
+            />
+            <Link
+              to="/magazine"
+              className="rounded-full border border-black/10 bg-white/95 px-4 py-1.5 text-[13px] font-semibold text-[#0B0C12] shadow-sm backdrop-blur-md transition hover:border-black/30 hover:bg-white"
+            >
+              Magazine
+            </Link>
           </div>
         </div>
       </nav>

@@ -9,7 +9,7 @@
  * Les portraits vivent dans `public/images/prestataires/`.
  */
 
-import type { WeddingStyle } from './weddingStyles';
+import { WEDDING_STYLES, type WeddingStyle } from './weddingStyles';
 import { contentFor } from './universeContent';
 
 export interface Vendor {
@@ -128,6 +128,66 @@ const FALLBACK = {
   specialty: 'Intervient sur ce type d’univers',
   names: ['Alice Moreau', 'Sarah Delcourt'],
 };
+
+/** Le domaine d'un métier, tel qu'il s'affiche dans le menu Métiers. */
+export const DOMAINES: Record<string, { label: string; description: string }> = {
+  chef: { label: 'Cuisine & Traiteur', description: 'Menus, banquets, service à l’assiette et food trucks' },
+  patissier: { label: 'Pâtisserie & Desserts', description: 'Pièces montées, gâteaux et sweet tables' },
+  photographe: { label: 'Photo & Vidéo', description: 'Reportage, films, portraits et tirages' },
+  musicien: { label: 'Musique live', description: 'Ensembles, solistes et groupes sur scène' },
+  dj: { label: 'DJ & Régie son', description: 'Sets, playlists, sono et micros' },
+  fleuriste: { label: 'Fleurs & Jardins', description: 'Compositions, feuillages et décors végétaux' },
+  officiant: { label: 'Cérémonie & Coordination', description: 'Officiants, maîtres de cérémonie et chefs d’orchestre' },
+  mixologue: { label: 'Bar & Cocktails', description: 'Barres à cocktails, champagnes et boissons' },
+  createur: { label: 'Création & Scénographie', description: 'Stylisme, mobilier, décors et identité visuelle' },
+  artisan: { label: 'Artisanat & Ateliers', description: 'Imprimeurs, céramistes, menuisiers et façonneurs' },
+  regisseur: { label: 'Technique & Logistique', description: 'Lumière, son, transport, sécurité et accès' },
+  polyvalent: { label: 'Métiers rares', description: 'Les rôles inventés pour un univers précis' },
+};
+
+/** Le domaine auquel appartient un métier. */
+export function domaineDe(role: string): string {
+  const haystack = normalize(role);
+  return (FAMILIES.find((f) => f.keywords.some((k) => haystack.includes(k))) ?? FALLBACK).key;
+}
+
+/** Un métier et les univers qui le mobilisent. */
+export interface MetierDuDomaine {
+  role: string;
+  short: string;
+  universes: Array<{ id: string; name: string }>;
+}
+
+/** Les métiers, regroupés par domaine — c'est le contenu du menu Métiers. */
+export function metiersParDomaine(): Array<{ key: string; label: string; description: string; metiers: MetierDuDomaine[] }> {
+  const parDomaine = new Map<string, Map<string, MetierDuDomaine>>();
+
+  for (const style of WEDDING_STYLES) {
+    for (const mission of style.humanMissions ?? []) {
+      const key = domaineDe(mission.role);
+      if (!parDomaine.has(key)) parDomaine.set(key, new Map());
+      const metiers = parDomaine.get(key)!;
+      if (!metiers.has(mission.role)) {
+        metiers.set(mission.role, { role: mission.role, short: shortTrade(mission.role), universes: [] });
+      }
+      metiers.get(mission.role)!.universes.push({ id: style.id, name: style.name });
+    }
+  }
+
+  // L'ordre d'affichage des domaines suit celui des familles
+  const ordre = [...FAMILIES.map((f) => f.key), 'polyvalent'];
+  return ordre
+    .filter((key) => parDomaine.has(key))
+    .map((key) => {
+      const meta = DOMAINES[key] ?? DOMAINES.polyvalent;
+      return {
+        key,
+        label: meta.label,
+        description: meta.description,
+        metiers: Array.from(parDomaine.get(key)!.values()).sort((a, b) => a.role.localeCompare(b.role, 'fr')),
+      };
+    });
+}
 
 /** Tous les portraits disponibles, pour ne jamais montrer deux fois le même visage. */
 export const ALL_PORTRAITS = [
