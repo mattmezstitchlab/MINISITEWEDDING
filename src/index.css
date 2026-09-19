@@ -251,6 +251,33 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
+ *  La lumière du générique
+ *
+ *  À l'arrivée, le nom prend l'écran et une lumière le traverse : la
+ *  bande passe de droite à gauche, une fois. Qui a demandé moins
+ *  d'animations ne la voit pas.
+ * ------------------------------------------------------------------ */
+
+.vp-lumiere {
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.32) 34%,
+    #ffffff 48%,
+    rgba(255, 255, 255, 0.32) 62%
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: vp-lumiere 2.4s var(--vp-ease) 1 both;
+}
+
+@keyframes vp-lumiere {
+  from { background-position: 130% 0; }
+  to { background-position: -30% 0; }
+}
+
+/* ------------------------------------------------------------------ *
  *  Le sous-titre qui défile
  *
  *  Comme le titre et l'artiste sur une radio : deux fois le texte, un

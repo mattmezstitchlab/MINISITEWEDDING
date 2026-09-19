@@ -1,66 +1,55 @@
-import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
-import { usePrefersReducedMotion, useTabVisible } from '../lib/useReducedMotion';
+import { usePrefersReducedMotion } from '../lib/useReducedMotion';
 import VisionImage from './vision/VisionImage';
 
-/** Millisecondes passées sur chaque environnement. */
-const STEP_MS = 5600;
-
 /**
- * Hero plein écran : les dix environnements en fond, chacun avec son gros
- * titre.
+ * LE HERO — UN VISUEL QUI SE FOND DANS LE SUIVANT
  *
- * Le visuel couvre toute la hauteur ; le pitch du produit (`children`) est posé
- * en haut, le titre de l’univers en bas. Deux dégradés garantissent la lisibilité
- * du texte quelle que soit la photo.
+ * Le hero ne sait rien de ce qu'il montre : on lui donne des **visuels**, et
+ * celui qui est actif. Il les enchaîne en fondu, fait respirer doucement celui
+ * qui est à l'écran, et pose le contenu de la page par-dessus.
  *
- * Le défilement s’arrête dès que le pointeur entre dans le hero, qu’un élément
- * reçoit le focus, que l’onglet passe en arrière-plan ou que l’utilisateur
- * demande des animations réduites — les segments et les flèches restent
- * cliquables dans tous les cas.
+ * Il ne décide de rien : ni de ce qui défile, ni quand. C'est la page qui mène
+ * l'index — parce que c'est elle qui sait ce qui défile (les univers, les
+ * personnages), et ce qui doit s'arrêter quand un média joue.
  */
-interface HeroCycleProps {
-  children?: ReactNode;
-  activeStyleId?: string;
-  /** Le défilé s'arrête : un média occupe le hero. */
-  pause?: boolean;
-  /** L'univers montré change : la bande s'aligne dessus, carte par carte. */
-  onChange?: (styleId: string) => void;
+
+export interface VisuelHero {
+  id: string;
+  image: string;
+  /** Les couleurs du dégradé de secours, si le visuel manque. */
+  aura?: string[];
+  /** Ce qui s'écrit sur le dégradé de secours. */
+  nom: string;
 }
 
-export default function HeroCycle({ children, activeStyleId, pause = false, onChange }: HeroCycleProps) {
-  const [index, setIndex] = useState(0);
+interface HeroCycleProps {
+  children?: ReactNode;
+  /** Ce que le hero traverse. Par défaut, les univers du site. */
+  visuels?: VisuelHero[];
+  /** Celui qui est à l'écran. */
+  actifId?: string;
+  className?: string;
+}
+
+export default function HeroCycle({
+  children,
+  visuels = WEDDING_STYLES.map((s) => ({ id: s.id, image: s.image, aura: s.aura, nom: s.name })),
+  actifId,
+  className = '',
+}: HeroCycleProps) {
   const reduced = usePrefersReducedMotion();
-  const tabVisible = useTabVisible();
-
-  // Un univers choisi par la bande se montre tout de suite : il n'y a rien à
-  // synchroniser, l'index se déduit du choix.
-  const impose = activeStyleId ? WEDDING_STYLES.findIndex((s) => s.id === activeStyleId) : -1;
-  const courant = impose === -1 ? index : impose;
-
-  const running = !reduced && tabVisible && !activeStyleId && !pause;
-
-  useEffect(() => {
-    if (!running) return;
-    const timer = setTimeout(() => setIndex((i) => (i + 1) % WEDDING_STYLES.length), STEP_MS);
-    return () => clearTimeout(timer);
-  }, [index, running]);
-
-  // L'univers montré est annoncé : la bande s'aligne sur le hero, toute seule.
-  useEffect(() => {
-    const montre = WEDDING_STYLES[courant];
-    if (montre) onChange?.(montre.id);
-  }, [courant, onChange]);
+  const courant = Math.max(0, visuels.findIndex((v) => v.id === actifId));
 
   return (
-    <header className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 py-24 sm:px-8">
-      {/* Visuels plein écran, en fondu enchaîné, avec un léger souffle */}
+    <header className={`relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 py-24 sm:px-8 ${className}`}>
+      {/* Les visuels plein cadre, en fondu enchaîné, avec un léger souffle */}
       <div className="absolute inset-0" aria-hidden="true">
-        {WEDDING_STYLES.map((s, i) => (
+        {visuels.map((v, i) => (
           <motion.div
-            key={s.id}
+            key={v.id}
             className="absolute inset-0"
             initial={false}
             animate={{ opacity: i === courant ? 1 : 0 }}
@@ -74,22 +63,21 @@ export default function HeroCycle({ children, activeStyleId, pause = false, onCh
               transition={{ duration: i === courant ? 9 : 0.6, ease: 'linear' }}
             >
               <VisionImage
-                src={s.image}
+                src={v.image}
                 alt=""
-                aura={s.aura}
-                fallbackLabel={s.name}
+                aura={v.aura}
+                fallbackLabel={v.nom}
                 loading={i === 0 ? 'eager' : 'lazy'}
                 className="h-full w-full object-cover"
               />
             </motion.div>
           </motion.div>
         ))}
-        {/* Voiles d'assombrissement pour garantir la lisibilité du titre centré */}
-        <div className="absolute inset-0 bg-black/45" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/60" />
+        {/* Les voiles : ils tiennent la lisibilité du texte, quelle que soit la photo */}
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/65" />
       </div>
 
-      {/* Titre centré */}
       <div className="relative z-10 mx-auto w-full max-w-4xl">{children}</div>
     </header>
   );

@@ -56,6 +56,7 @@ import {
 import { ALL_STYLES } from '../src/lib/weddingStyles';
 import { totalCaisse } from '../src/lib/superMariage';
 import PreviewSite from '../src/pages/PreviewSite';
+import OuvertureSite from '../src/components/OuvertureSite';
 import LecteurHero from '../src/components/LecteurHero';
 import Magazine from '../src/pages/Magazine';
 import MagazineArticle from '../src/pages/MagazineArticle';
@@ -63,6 +64,9 @@ import Shop from '../src/pages/Shop';
 import ShopProduct from '../src/pages/ShopProduct';
 import { ALL_ARTICLES, articleDUnivers, badgeDUnivers } from '../src/lib/magazine';
 import { cartesDesMoments, cartesDesProduits, cartesDesUnivers } from '../src/lib/cartesVivantes';
+import { PERSONNAGES, VISUELS_DU_HERO } from '../src/lib/personas';
+import { FULL_ROLES_TAXONOMY } from '../src/lib/weddingTaxonomy';
+import { DUREE_OUVERTURE, DUREE_OUVERTURE_SANS_MOUVEMENT, ouvertureDejaVue } from '../src/lib/ouverture';
 import { appliquerGeste } from '../src/lib/liveRules';
 import { TERMINAL_VIDE } from '../src/lib/weddingTicket';
 import { getScenesForStyle } from '../src/lib/themeTimelineScenarios';
@@ -248,10 +252,16 @@ check(
 );
 check('l’accueil met la carte avant le site', accueil.includes('La carte d’abord.'), true);
 check('l’accueil n’a plus de bouton « Découvrir »', accueil.includes('Découvrir'), false);
-/* Le hero de l'accueil porte le titre de l'univers qui défile. */
+/* LE HERO DE L'ACCUEIL : « QUI ÊTES-VOUS DANS CE MARIAGE ? » */
+check('le hero demande qui vous êtes', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
+check('et il présente le premier personnage', accueil.includes(PERSONNAGES[0]!.nom), true);
+check('avec sa phrase', accueil.includes(PERSONNAGES[0]!.phrase.slice(0, 30)), true);
+check('et les entrées de son espace', PERSONNAGES[0]!.entrees.every((e) => accueil.includes(e)), true);
+check('on entre avec lui, et une seule fois', (accueil.match(/>Entrer</g) ?? []).length, 1);
+check('les flèches changent de personnage', ['Personnage précédent', 'Personnage suivant'].every((l) => accueil.includes(l)), true);
 check(
-  'le hero de l’accueil est celui d’un univers',
-  accueil.includes(contentFor(WEDDING_STYLES[0]!).hero.title),
+  'et l’on n’entre qu’avec le sien',
+  accueil.includes('Les autres rôles se regardent — on n’entre qu’avec le sien'),
   true,
 );
 check('la bande d’iPhones a quitté l’accueil', accueil.includes('Mini-site · '), false);
@@ -1220,9 +1230,8 @@ check('et sans compte de métiers', carteBande.includes('métiers ·'), false);
 const accueilVegas = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/?univers=vegas'] }, createElement(Landing as never)),
 );
-check('le hero prend le titre de l’univers', accueilVegas.includes(contentFor(styleById('vegas')).hero.title), true);
-check('il garde son chapô', accueilVegas.includes(contentFor(styleById('vegas')).hero.subtitle), true);
-check('les badges lieu, invités et programme ont disparu', />(Lieu|Invités|Programme)</.test(accueilVegas), false);
+check('le hero reste celui des personnages', accueilVegas.includes('Qui êtes-vous dans ce mariage ?'), true);
+check('l’univers choisi mène toujours la page', accueilVegas.includes('data-actif="true"'), true);
 check('et plus de bouton « Découvrir »', accueilVegas.includes('Découvrir'), false);
 check('l’univers choisi est marqué dans la bande', accueilVegas.includes('data-actif="true"'), true);
 
@@ -1318,6 +1327,50 @@ check('la bande reste devant lui', lecteur.includes('z-30'), true);
 check('il dit ce qu’il joue', lecteur.includes('Le morceau joue'), true);
 check('son plan est animé', lecteur.includes('hero-plan'), true);
 check('et il se ferme', lecteur.includes('Fermer le lecteur'), true);
+
+/* -------------------- le générique, les personnages, l'univers en dessous -- */
+
+/* L'OUVERTURE : le nom, la lumière qui le traverse, puis elle se fond. */
+const vraiStockage = (globalThis as { sessionStorage?: unknown }).sessionStorage;
+(globalThis as { sessionStorage?: unknown }).sessionStorage = {
+  getItem: () => null,
+  setItem: () => undefined,
+};
+const generique = renderToStaticMarkup(createElement(OuvertureSite as never));
+(globalThis as { sessionStorage?: unknown }).sessionStorage = vraiStockage;
+
+check('le générique écrit le nom en grand', generique.includes('SUPER MARIAGE'), true);
+check('une lumière le traverse', generique.includes('vp-lumiere'), true);
+check('et l’on peut passer', generique.includes('Passer'), true);
+check('il se joue une fois par visite', ouvertureDejaVue(), true);
+check('sans stockage, on ne le force pas', DUREE_OUVERTURE_SANS_MOUVEMENT < DUREE_OUVERTURE, true);
+
+/* LES PERSONNAGES : tous les rôles de la taxonomie, dans l'ordre du parcours. */
+check('les personnages sont les rôles du site', PERSONNAGES.length, FULL_ROLES_TAXONOMY.length);
+check('et le premier est celui des mariés', PERSONNAGES[0]?.id, 'maries');
+check(
+  'chacun a sa phrase, ses entrées, son visuel et son picto',
+  PERSONNAGES.every(
+    (p) => p.phrase.length > 20 && p.entrees.length >= 3 && p.image.startsWith('/images/') && Boolean(p.picto),
+  ),
+  true,
+);
+check('aucun personnage en double', new Set(PERSONNAGES.map((p) => p.id)).size, PERSONNAGES.length);
+check('et le hero traverse exactement les mêmes', VISUELS_DU_HERO.length, PERSONNAGES.length);
+
+/* Les autres rôles se regardent : ils sont écrits, et ne mènent nulle part. */
+const autres = PERSONNAGES.slice(1);
+check(
+  'les autres rôles sont visibles',
+  autres.slice(0, 6).every((p) => accueil.includes(p.nom)),
+  true,
+);
+check('et non cliquables', accueil.includes('aria-hidden="true" class="mt-4 hidden'), true);
+
+/* L'univers reste le second axe : sa bande, et son propre défilé. */
+check('la bande des univers est toujours sous le hero', accueil.includes('Les univers'), true);
+check('elle montre trois cartes', (accueil.match(/Aimer /g) ?? []).length, 3);
+check('et son milieu est l’univers de la page', accueil.includes('data-actif="true"'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

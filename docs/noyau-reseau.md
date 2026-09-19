@@ -956,3 +956,44 @@ blanche posée au centre de la pochette — et dans le lecteur du hero aussi.
 pastille d'univers, plus de ligne d'univers, le nom écrit une fois ; le triangle
 plein ; le sous-titre qui défile, écrit deux fois pour boucler),
 `npm run build` OK.
+
+## 29. Le générique, puis « qui êtes-vous dans ce mariage ? » (passe 34)
+
+**L'ouverture.** `OuvertureSite` : le nom prend tout l'écran, **une lumière le
+traverse** (`.vp-lumiere`, une bande qui passe une fois), puis il se fond —
+trois secondes, l'ouverture d'un film. Elle se joue **une fois par visite**
+(`sessionStorage`, `supermariage:ouverture`), s'écourte au clic, à une touche ou
+par « Passer », et qui a demandé moins d'animations ne la voit qu'un instant
+(1,1 s, sans lumière). Un générique, jamais un péage : rien n'est bloqué, la page
+est derrière.
+
+**Le hero devient un sélecteur de personnage.** `src/lib/personas.ts` : les
+personnages sont **les rôles de la taxonomie du site** (`FULL_ROLES_TAXONOMY`),
+dans l'ordre du parcours — les mariés, l'invité, le témoin, puis les métiers —
+chacun avec son nom court (« SUPER MARIÉS », « SUPER PHOTOGRAPHE »), sa phrase à
+la première personne, **les entrées de son espace** (Invités · Planning · Lieu ·
+Playlist · Photos), son visuel et son picto (au trait, jamais un emoji). Rien
+n'est ressaisi : le rôle est celui que le site connaît déjà, et c'est lui qui
+donne l'écran et les droits.
+
+**On regarde les autres, on n'entre qu'avec le sien.** Le hero traverse les
+personnages tout seul (5,6 s, arrêté pendant un média ou en animations
+réduites), les flèches font la même chose à la main, et **tous les autres rôles
+sont écrits sous le nom, en gris, non cliquables** (`aria-hidden`) : le site
+entier se comprend sans jamais ouvrir l'espace de quelqu'un d'autre. Le bouton
+**Entrer** ouvre `/creer` avec le rôle du milieu — la création d'une carte
+commence par un personnage, plus par un formulaire.
+
+**Le hero ne sait plus rien.** `HeroCycle` ne fait que traverser des **visuels**
+(`visuels`, `actifId`) : la page décide de ce qui défile et de quand. L'accueil
+lui donne les personnages ; l'univers, lui, reste le second axe, dans la bande
+sous le hero (sa carte au milieu mène l'éditeur, la playlist et les sections).
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+178 / 55 / **416** (le générique : le nom, la lumière, « Passer », une fois par
+visite, plus court sans mouvement ; les personnages : autant que de rôles, le
+premier est celui des mariés, chacun a phrase, entrées, visuel et picto, aucun
+doublon, le hero traverse les mêmes ; les autres rôles visibles et non
+cliquables ; le hero demande qui vous êtes, présente le premier personnage, une
+seule porte « Entrer », les deux flèches, la phrase des autres rôles),
+`npm run build` OK.

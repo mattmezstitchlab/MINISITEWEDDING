@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
-import { contentFor } from '../lib/universeContent';
+import { PERSONNAGES, VISUELS_DU_HERO } from '../lib/personas';
+import { usePrefersReducedMotion } from '../lib/useReducedMotion';
 import HeroCycle from '../components/HeroCycle';
+import PictoPersonnage from '../components/PictoPersonnage';
+import OuvertureSite from '../components/OuvertureSite';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesUnivers } from '../lib/cartesVivantes';
 import SiteHeader from '../components/SiteHeader';
@@ -29,25 +33,39 @@ export default function Landing() {
     return id ? WEDDING_STYLES.find((s) => s.id === id) ?? null : null;
   });
   /**
-   * L'univers que le hero montre : il défile tout seul, et la bande s'aligne
-   * dessus — chaque carte arrive au centre en même temps que son visuel.
+   * LE HERO EST UN SÉLECTEUR DE PERSONNAGE
+   *
+   * « Qui êtes-vous dans ce mariage ? » Le hero traverse les rôles du site, du
+   * premier au dernier : le visuel, le nom, la phrase, et **les entrées de leur
+   * espace** — de quoi comprendre le site sans jamais voir les informations de
+   * quelqu'un d'autre. Les flèches font la même chose à la main, et l'on
+   * n'entre qu'avec le personnage qui est au milieu.
    */
-  const [universMontre, setUniversMontre] = useState(WEDDING_STYLES[0]!.id);
+  const [personaId, setPersonaId] = useState(PERSONNAGES[0]!.id);
   /** Un média occupe le hero : le défilé attend, la carte joue. */
   const [lectureEnCours, setLectureEnCours] = useState(false);
+  const reduced = usePrefersReducedMotion();
 
-  /** L'univers que la page montre : celui qu'on a choisi, sinon celui qui défile. */
-  const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
-  const afficheId = selectedStyle?.id ?? universMontre;
-  /**
-   * LE TITRE DU HERO EST CELUI DE L'UNIVERS
-   *
-   * Le hero montre un univers et il en porte le titre : celui que la bande met
-   * au milieu, que l'univers défile tout seul ou qu'on l'ait choisi. Le site,
-   * lui, continue plus bas — la carte, l'éditeur, la playlist.
-   */
-  const universAffiche = WEDDING_STYLES.find((s) => s.id === afficheId) ?? WEDDING_STYLES[0]!;
-  const heroDeLUnivers = contentFor(universAffiche).hero;
+  const indexPersona = Math.max(0, PERSONNAGES.findIndex((p) => p.id === personaId));
+  const persona = PERSONNAGES[indexPersona] ?? PERSONNAGES[0]!;
+
+  const personaSuivant = () => setPersonaId(PERSONNAGES[(indexPersona + 1) % PERSONNAGES.length]!.id);
+  const personaPrecedent = () => setPersonaId(PERSONNAGES[(indexPersona - 1 + PERSONNAGES.length) % PERSONNAGES.length]!.id);
+
+  /** Le défilé des personnages : personne ne clique, et il avance tout seul. */
+  useEffect(() => {
+    if (reduced || lectureEnCours) return;
+    const t = window.setTimeout(() => {
+      setPersonaId(PERSONNAGES[(indexPersona + 1) % PERSONNAGES.length]!.id);
+    }, 5600);
+    return () => window.clearTimeout(t);
+  }, [indexPersona, reduced, lectureEnCours]);
+
+  /** L'univers de la page : celui qui mène l'éditeur, la playlist et la bande. */
+  const activeStyleOrFallback = selectedStyle ?? WEDDING_STYLES[0]!;
+
+  /** On entre avec le personnage du milieu : c'est la carte qu'on vient créer. */
+  const entrer = () => navigate('/creer', { state: { roleId: persona.id } });
 
   const handleSelectStyle = (style: WeddingStyle | null) => {
     setSelectedStyle(style);
@@ -57,17 +75,16 @@ export default function Landing() {
   /**
    * LA BANDE DU HERO — LES CARTES VIVANTES
    *
-   * Les univers, en cartes musicales : elles grossissent au centre, portent le
-   * nombre de personnes qui les aiment, et leur play allume le hero — le visuel
-   * de l'univers et un morceau du Jour J. Un clic sur la carte choisit l'univers
-   * que le hero montre — et sans choix, c'est la carte de l'univers qui défile
-   * qui se centre, au même rythme que le hero.
+   * Sous le hero, l'autre axe : **l'univers**. Les cartes musicales disent le
+   * nombre de personnes qui les aiment, leur play allume le média, et celle qui
+   * est au milieu est l'univers de la page — celui qui mène l'éditeur, la
+   * playlist et les sections plus bas.
    */
   const bandeDesUnivers = (
     <BandeDuHero
       libelle="Les univers"
       styleId={activeStyleOrFallback.id}
-      cartes={cartesDesUnivers(() => undefined, afficheId)}
+      cartes={cartesDesUnivers(() => undefined, activeStyleOrFallback.id)}
       onChoisir={(carte) => handleSelectStyle(WEDDING_STYLES.find((s) => s.id === carte.id) ?? null)}
       onLecture={setLectureEnCours}
     />
@@ -75,36 +92,97 @@ export default function Landing() {
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
-      {/* Le header du site : la même barre que partout. Les univers, eux, se
-          parcourent dans la bande en bas du hero. */}
+      {/* L'OUVERTURE : le nom prend l'écran, une lumière le traverse, et il se
+          fond — le générique, puis la question : qui êtes-vous ? */}
+      <OuvertureSite />
+
+      {/* Le header du site : la même barre que partout. */}
       <SiteHeader />
 
-      {/* Le hero : le visuel de l'univers qui défile, et son titre */}
+      {/* LE HERO : QUI ÊTES-VOUS DANS CE MARIAGE ? */}
       <div id="hero">
-      <HeroCycle activeStyleId={selectedStyle?.id} pause={lectureEnCours} onChange={setUniversMontre}>
-        <div className="mx-auto flex flex-col items-center justify-center text-center">
-          {/* Le titre de l'univers montré : il change quand le défilé passe à
-              l'univers suivant, exactement comme le visuel. */}
-          <div key={universAffiche.id} className="mx-auto max-w-3xl">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <span className="vp-eyebrow !text-white/70">{heroDeLUnivers.kicker}</span>
-              <h1
-                className="vp-title mt-3 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
-                style={{ fontSize: 'clamp(2.1rem, 5vw, 3.9rem)', lineHeight: 1.08 }}
+        <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id}>
+          <div className="flex flex-col items-center text-center">
+            <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
+
+            {/* Le personnage du milieu : son picto, son nom, sa phrase */}
+            <div key={persona.id} className="mt-5 flex flex-col items-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur"
               >
-                {heroDeLUnivers.title}
-              </h1>
-              <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-white/80">
-                {heroDeLUnivers.subtitle}
+                <PictoPersonnage picto={persona.picto} size={24} />
+              </motion.div>
+              <motion.h1
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="vp-title mt-4 text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+                style={{ fontSize: 'clamp(2rem, 5.4vw, 4rem)', lineHeight: 1.04 }}
+              >
+                {persona.nom}
+              </motion.h1>
+              <p className="mx-auto mt-3 max-w-xl text-[15.5px] leading-relaxed text-white/80">
+                « {persona.phrase} »
               </p>
-            </motion.div>
+
+              {/* Les entrées de son espace : la démonstration, sans ses données */}
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                {persona.entrees.map((entree) => (
+                  <span
+                    key={entree}
+                    className="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-mono text-[9.5px] uppercase tracking-[0.14em] text-white/70 backdrop-blur"
+                  >
+                    {entree}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* On entre avec ce personnage — et l'on regarde les autres */}
+            <div className="mt-7 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={personaPrecedent}
+                aria-label="Personnage précédent"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur transition hover:bg-white hover:text-[#0B0C12] active:scale-95"
+              >
+                <ChevronLeft size={17} />
+              </button>
+              <button
+                type="button"
+                onClick={entrer}
+                className="vp-btn vp-press !bg-white !px-8 !py-3 !text-black shadow-2xl hover:!bg-white/90"
+              >
+                Entrer
+              </button>
+              <button
+                type="button"
+                onClick={personaSuivant}
+                aria-label="Personnage suivant"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur transition hover:bg-white hover:text-[#0B0C12] active:scale-95"
+              >
+                <ChevronRight size={17} />
+              </button>
+            </div>
+
+            <p className="mt-4 font-mono text-[9.5px] uppercase tracking-[0.2em] text-white/45">
+              Les autres rôles se regardent — on n’entre qu’avec le sien
+            </p>
+
+            {/* Les autres personnages, visibles et non cliquables : on découvre
+                le site entier sans jamais ouvrir l'espace de quelqu'un d'autre. */}
+            <div aria-hidden="true" className="mt-4 hidden max-w-3xl flex-wrap items-center justify-center gap-x-3 gap-y-1.5 sm:flex">
+              {PERSONNAGES.filter((p) => p.id !== persona.id).map((p) => (
+                <span key={p.id} className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/30">
+                  {p.nom}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      </HeroCycle>
+        </HeroCycle>
       </div>
 
       {/* LA BANDE : sous le hero, sur blanc — la navigation du site, la carte de
