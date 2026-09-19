@@ -12,11 +12,11 @@ interface PhoneFrameProps {
   children: ReactNode;
   /** La largeur du châssis. */
   className?: string;
-  /** La teinte du verre, propre à l'univers affiché. */
+  /** Conservé pour compatibilité : plus de liseré sous le verre. */
   tint?: string;
 }
 
-export default function PhoneFrame({ children, className = '', tint }: PhoneFrameProps) {
+export default function PhoneFrame({ children, className = '' }: PhoneFrameProps) {
   return (
     <div
       className={`relative rounded-[48px] bg-[#0A0B10] p-[9px] shadow-[0_35px_90px_rgba(0,0,0,0.22)] ring-1 ring-black/10 ${className}`}
@@ -36,14 +36,6 @@ export default function PhoneFrame({ children, className = '', tint }: PhoneFram
         <div className="pointer-events-none absolute inset-x-0 bottom-1.5 z-30 flex justify-center">
           <span className="h-1 w-20 rounded-full bg-black/20" />
         </div>
-
-        {/* Le liseré de l'univers, discret sous le verre */}
-        {tint && (
-          <span
-            className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-[3px]"
-            style={{ background: tint }}
-          />
-        )}
       </div>
     </div>
   );

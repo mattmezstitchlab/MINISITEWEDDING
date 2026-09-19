@@ -153,7 +153,8 @@ export default function GuestPhoneScreen({
           image={style.image}
           badge="Invitation privée"
           title={content.couple.names}
-          subtitle={`${formatDateLong(content.couple.date)} · ${content.couple.venue}`}
+          date={formatDateLong(content.couple.date)}
+          venue={content.couple.venue}
         />
       }
     />

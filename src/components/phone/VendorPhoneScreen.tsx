@@ -150,7 +150,8 @@ export default function VendorPhoneScreen({
           image={scenes[0]?.image ?? style.image}
           badge="Écran prestataire"
           title={role}
-          subtitle={`${content.couple.venue} · ${content.couple.city}`}
+          date={content.couple.countdown}
+          venue={content.couple.venue}
         />
       }
     />

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CalendarDays, MapPin } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -89,33 +90,60 @@ export default function PhoneShell({ hero, modules, accent, initial = 0 }: Phone
   );
 }
 
-/** Le bandeau de hero des écrans : visuel, étiquette de rôle et deux lignes. */
+/**
+ * Le bandeau de hero des écrans : le visuel, l'étiquette du rôle posée en haut
+ * du bloc, le titre, puis la date et le lieu — chacun avec son picto, alignés
+ * sur la même ligne de base.
+ */
 export function PhoneHero({
   image,
   badge,
   title,
-  subtitle,
-  height = 'h-[38%]',
+  date,
+  venue,
+  height = 'h-[40%]',
   children,
 }: {
   image: string;
   badge: string;
   title: string;
-  subtitle?: string;
+  date?: string;
+  venue?: string;
   height?: string;
   children?: ReactNode;
 }) {
   return (
     <div className={`relative w-full shrink-0 overflow-hidden ${height}`}>
       <img src={image} alt={title} className="h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/25 to-black/25" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/30" />
 
-      <div className="absolute bottom-3 left-3.5 right-3.5 text-white">
-        <span className="rounded-full bg-white/95 px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider text-black">
+      <div className="absolute inset-x-0 bottom-0 px-4 pb-5 text-white">
+        {/* L'étiquette du rôle, posée haut et alignée avec le titre */}
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 font-mono text-[8.5px] font-bold uppercase tracking-[0.14em] text-black shadow-sm">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           {badge}
         </span>
-        <div className="vp-title mt-1 text-[18px] leading-tight">{title}</div>
-        {subtitle && <div className="mt-0.5 font-mono text-[9px] text-white/80">{subtitle}</div>}
+
+        <div className="vp-title mt-3.5 text-[19px] leading-[1.1]">{title}</div>
+
+        {/* La date et le lieu, chacun avec son picto */}
+        {(date || venue) && (
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            {date && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] text-white/85">
+                <CalendarDays size={11} className="shrink-0 text-white/65" />
+                {date}
+              </span>
+            )}
+            {venue && (
+              <span className="inline-flex items-center gap-1.5 text-[10px] text-white/85">
+                <MapPin size={11} className="shrink-0 text-white/65" />
+                <span className="max-w-[150px] truncate">{venue}</span>
+              </span>
+            )}
+          </div>
+        )}
+
         {children}
       </div>
     </div>

@@ -167,7 +167,8 @@ export default function CouplePhoneScreen({
           image={getDirectionArtistiqueImage(style.id)}
           badge="Cockpit des mariés"
           title={content.couple.names}
-          subtitle={`${formatDateLong(content.couple.date)} · ${content.couple.countdown}`}
+          date={`${formatDateLong(content.couple.date)} · ${content.couple.countdown}`}
+          venue={content.couple.venue}
         />
       }
     />
