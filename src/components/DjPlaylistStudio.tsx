@@ -103,12 +103,8 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
       {/* En-tête épuré */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-black/8 pb-5">
         <div>
-          <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] text-black/40 block mb-1.5">
-            Bande-Son Scénarisée · {style.name}
-          </span>
           <h3 className="vp-title text-[24px] sm:text-[32px] text-[#0B0C12] leading-tight">
-            Les Vrais Morceaux du Jour J.<br />
-            <span className="text-black/35 text-[18px] sm:text-[21px]">Lecteur officiel direct sans contrefaçon.</span>
+            Playlist Collaborative
           </h3>
         </div>
 

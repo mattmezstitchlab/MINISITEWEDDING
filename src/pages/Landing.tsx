@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { WEDDING_STYLES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
@@ -26,6 +26,7 @@ const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0
 
 
 export default function Landing() {
+  const navigate = useNavigate();
   // Par défaut : null = page principale générale d'atterrissage VOWS
   const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(null);
   const [titleIdx, setTitleIdx] = useState(0);
@@ -183,18 +184,15 @@ export default function Landing() {
       </ParallaxSection>
       </div>
 
-      {/* STUDIO DJ & BANDE-SON CHRONOLOGIQUE */}
-      <section id="bande-son" className="bg-white px-5 py-16 sm:px-8">
-        <div className="mx-auto max-w-6xl">
-          <DjPlaylistStudio style={activeStyleOrFallback} />
-        </div>
-      </section>
-
       {/* SECTION SUGGESTIONS COMPLÉMENTAIRES D'UNIVERS & MISSIONS */}
       <div id="univers">
         <ComplementaryThemes
           currentStyle={activeStyleOrFallback}
           onSelectStyle={handleSelectStyle}
+          onClaimRole={(role) => {
+            if (role) window.sessionStorage.setItem('vows:role-revendique', role);
+            navigate('/creer', { state: { preselectedStyle: activeStyleOrFallback.id } });
+          }}
         />
       </div>
 
@@ -217,6 +215,13 @@ export default function Landing() {
         </motion.div>
       </ParallaxSection>
       </div>
+
+      {/* PLAYLIST COLLABORATIVE : en bas de page, tout de suite avant la capsule */}
+      <section id="bande-son" className="bg-white px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-6xl">
+          <DjPlaylistStudio style={activeStyleOrFallback} />
+        </div>
+      </section>
 
       {/* LA CAPSULE DU BAS : les sections de l'accueil, à l'horizontale */}
       <BottomCapsuleNav />

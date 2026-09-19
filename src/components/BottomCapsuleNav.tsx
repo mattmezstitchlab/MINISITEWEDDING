@@ -22,9 +22,9 @@ const STEPS: Step[] = [
   { id: 'hero', label: 'Le visuel plein écran et le champ', short: 'Accueil', icon: Sparkles },
   { id: 'ecran', label: 'Le site du couple, dans la main', short: 'L’écran', icon: Smartphone },
   { id: 'direction', label: 'Direction artistique & scénographie', short: 'Direction artistique', icon: Images },
-  { id: 'bande-son', label: 'Studio DJ & bande-son du Jour J', short: 'Bande son', icon: Music2 },
-  { id: 'univers', label: 'Univers & métiers complémentaires', short: 'Univers', icon: Layers },
+  { id: 'univers', label: 'Prestataires & univers complémentaires', short: 'Prestataires', icon: Layers },
   { id: 'contrainte', label: 'Le plus beau jour se vit', short: 'Zéro contrainte', icon: Heart },
+  { id: 'bande-son', label: 'Playlist collaborative du Jour J', short: 'Playlist', icon: Music2 },
 ];
 
 export default function BottomCapsuleNav() {
