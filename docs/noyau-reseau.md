@@ -1170,3 +1170,51 @@ ouvre sur le premier titre, sans libellé ni phrase entre guillemets, et le play
 qui ouvre un domaine ; la barre sans ses deux portes, avec le profil ; le menu
 et ses entrées, « voir en tant que », et **aucun rôle oublié**), `npm run build`
 OK.
+
+## 35. Le manifeste, les univers en hero, SUPER ÉDITEUR (passe 40)
+
+**Sous le hero, le manifeste.** Trois paragraphes (`src/lib/manifeste.ts`, lus
+par `Manifeste.tsx`) disent le concept avant que le site ne le montre : tout le
+monde arrive par une porte différente ; une carte dit qui vous êtes, un univers
+où vous le vivez, un métier qui le rend possible ; le passé raconte, le présent
+prépare, le futur imagine ; et le miroir — visible pour soi, invisible pour les
+autres. C'est le seul endroit de l'accueil qui parle à tout le monde de la même
+façon.
+
+**Les univers ont leur hero.** La bande volante sous le hero a disparu :
+`HeroUnivers.tsx` pose **le même hero que les rôles** — le nom de l'univers en
+grand, sa phrase, et **ses cartes juste en dessous** (`premiere`, pas de bande
+blanche, pas de flèches). L'univers défile tout seul (5,6 s), un clic sur une
+carte montre son hero, le play lance son média dans le hero.
+
+**Les flèches du dock suivent la bande qu'on regarde.** Une page peut porter
+plusieurs bandes : elles s'enregistrent **chacune sous son identifiant**
+(`enregistrerControlesBande(gestes, id)`), et le dock mène **la dernière entrée à
+l'écran** (`useControlesDeBande`, observateur d'intersection à 30 %). On descend
+vers les univers : leurs flèches prennent le dock. On remonte : celles des rôles
+reviennent. Plus aucune bande ne porte ses propres flèches.
+
+**La carte est mise de côté.** La section « Votre carte » a quitté l'accueil
+(`HomeCardShowcase` reste dans le dépôt, et toujours testé) — on la reprendra.
+
+**SUPER ÉDITEUR a sa page, et l'accueil montre le responsive.** L'écran d'édition
+est passé sur `/parametres` (`EditeurMiniSite`, l'univers se choisit par
+`?univers=`), ouvert par le **bouton Paramètres en bas à gauche**, monté dans
+`SiteChrome` — donc présent partout. À sa place, l'accueil montre **un
+ordinateur, une tablette et un téléphone** (`Appareils.tsx`) : la même page, au
+même moment, qui descend et remonte doucement (`.vp-defile-page`, éteinte en
+`prefers-reduced-motion`).
+
+**Le shop s'appelle SUPER SHOP.** `SuperMariageTeaser` prend son vrai nom — c'est
+lui qui nous a menés ici —, garde son ticket de caisse, et **perd le bouton
+« L'éditeur des métiers »**. La nav verticale de l'accueil suit : Les univers · Le
+manifeste · Super Éditeur · Faire ses courses · La playlist, et une liste pour la
+page des paramètres.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **506** (le
+manifeste entre les deux heros ; les univers en hero avec leurs cartes ; aucune
+bande ne porte ses flèches ; les trois appareils et la même page dans chacun ;
+l'éditeur qui a sa page, l'accueil qui ne l'a plus, le bouton Paramètres en bas à
+gauche ; SUPER SHOP, son ticket, plus de porte des métiers ; tous les ancres de
+la nav présentes dans les pages ; et **les flèches du dock qui passent d'une
+bande à l'autre** selon ce qu'on regarde), `npm run build` OK.

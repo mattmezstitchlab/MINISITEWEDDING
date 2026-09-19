@@ -59,6 +59,11 @@ import PreviewSite from '../src/pages/PreviewSite';
 import OuvertureSite from '../src/components/OuvertureSite';
 import BottomCapsuleNav from '../src/components/BottomCapsuleNav';
 import NavVerticale from '../src/components/NavVerticale';
+import BoutonParametres from '../src/components/BoutonParametres';
+import HomeCardShowcase from '../src/components/HomeCardShowcase';
+import Appareils from '../src/components/Appareils';
+import EditeurMiniSite from '../src/pages/EditeurMiniSite';
+import { MANIFESTE } from '../src/lib/manifeste';
 import MenuProfil from '../src/components/MenuProfil';
 import LecteurHero from '../src/components/LecteurHero';
 import Magazine from '../src/pages/Magazine';
@@ -77,7 +82,8 @@ import {
 import { enregistrerNavVerticale } from '../src/lib/navVerticale';
 import { AIDE_PROFIL, MENU_PROFIL, SORTIE_PROFIL, rolesDuMenu } from '../src/lib/menuProfil';
 import {
-  NAV_ACCUEIL, NAV_ARTICLE, NAV_MAGAZINE, NAV_METIER, NAV_PRODUIT, NAV_PRESTATAIRE, NAV_SHOP, NAV_UNIVERS,
+  NAV_ACCUEIL, NAV_ARTICLE, NAV_MAGAZINE, NAV_METIER, NAV_PARAMETRES, NAV_PRODUIT, NAV_PRESTATAIRE,
+  NAV_SHOP, NAV_UNIVERS,
 } from '../src/lib/navDesPages';
 import { FULL_ROLES_TAXONOMY } from '../src/lib/weddingTaxonomy';
 import { DUREE_OUVERTURE, DUREE_OUVERTURE_SANS_MOUVEMENT, ouvertureDejaVue } from '../src/lib/ouverture';
@@ -264,7 +270,7 @@ check(
   accueil.includes('J’ai déjà une carte'),
   true,
 );
-check('l’accueil met la carte avant le site', accueil.includes('La carte d’abord.'), true);
+check('la section de la carte est mise de côté', accueil.includes('La carte d’abord.'), false);
 check('l’accueil n’a plus de bouton « Découvrir »', accueil.includes('Découvrir'), false);
 /* LE HERO DE L'ACCUEIL : « QUI ÊTES-VOUS DANS CE MARIAGE ? » */
 check('le hero demande qui vous êtes', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
@@ -502,9 +508,11 @@ const ecranLaverie = renderToStaticMarkup(
 check('l’écran du métier nomme le geste de l’univers', ecranLaverie.includes('Tambour 7'), true);
 check('et garde l’étiquette du rôle', ecranLaverie.includes('Écran prestataire'), true);
 
-/* La carte de l'accueil : le visuel plein cadre, le nom, le rôle. */
-check('la carte met le nom par-dessus le visuel', accueil.includes('Votre nom'), true);
-check('et son rôle', accueil.includes(cardRoleLabel(EMPTY_CARD)), true);
+/* La carte de l'accueil : mise de côté pour l'instant, mais toujours debout. */
+const carteDuSite = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(HomeCardShowcase as never)));
+check('la carte met le nom par-dessus le visuel', carteDuSite.includes('Votre nom'), true);
+check('et son rôle', carteDuSite.includes(cardRoleLabel(EMPTY_CARD)), true);
+check('elle n’est plus sur l’accueil', accueil.includes('Votre nom'), false);
 
 
 /* --------------------- le mariage en entier : une page, tout dedans */
@@ -975,22 +983,29 @@ check(
   true,
 );
 check('sans bande blanche', accueil.includes('bottom-[6.5rem]'), false);
-check('et sans flèches : celles du dock mènent la bande', (accueil.match(/Carte précédente/g) ?? []).length, 1);
-check('la bande des univers, elle, se pose sur blanc', accueil.includes('bg-white pb-6 pt-5'), true);
+check('et sans flèches : celles du dock mènent la bande', (accueil.match(/Carte précédente/g) ?? []).length, 0);
+check('les deux bandes sont dans un hero, aucune sur une bande blanche', accueil.includes('bg-white pb-6 pt-5'), false);
 /* Trois cartes au centre par bande, celle du milieu plus grande, et les flèches. */
 check('chaque bande ne garde que trois cartes', (accueil.match(/Aimer /g) ?? []).length, 6);
 check('la bande du titre ne s’annonce plus', accueil.includes('Les rôles'), false);
-check('la bande des univers garde ses deux flèches', (accueil.match(/Carte suivante/g) ?? []).length, 1);
+check('aucune bande ne porte ses propres flèches', (accueil.match(/Carte suivante/g) ?? []).length, 0);
 check('deux bandes, une carte marquée chacune', (accueil.match(/data-actif="true"/g) ?? []).length, 2);
 /* Le hero annonce l'univers qu'il montre : la bande s'aligne, une seule carte. */
 check('une carte de la page par bande', (accueil.match(/data-actif="true"/g) ?? []).length, 2);
 /** Un nom peut contenir une esperluette : le HTML l'échappe. */
 const enHtml = (texte: string) => texte.replace(/&/g, '&amp;');
+/* Les univers ont leur hero : le nom de l'univers du moment, et ses cartes. */
+const debutUnivers = accueil.indexOf('id="univers-hero"');
+const heroUnivers = accueil.slice(debutUnivers, accueil.indexOf('id="supermarriage"'));
+check('les univers ont leur hero', debutUnivers > 0, true);
+check('avec l’univers du moment, en grand', heroUnivers.includes(enHtml(WEDDING_STYLES[0]!.name)), true);
+const cartesUniversHero = cartesDesUnivers(() => undefined, WEDDING_STYLES[0]!.id);
 check(
-  'elle porte les cartes des univers, visuel compris',
-  accueil.includes('/images/') && WEDDING_STYLES.every((u) => accueil.includes(enHtml(u.name))),
+  'et ses cartes juste en dessous, visuel compris',
+  heroUnivers.includes('/images/') && heroUnivers.includes(enHtml(cartesUniversHero[1]!.titre)),
   true,
 );
+check('trois cartes, pas plus', (heroUnivers.match(/Aimer /g) ?? []).length, 3);
 
 /* La même bande sur la page d'un univers, pour changer d'univers d'un geste. */
 const universBande = renderToStaticMarkup(
@@ -1239,7 +1254,7 @@ check('il reste dentelé', timbre.includes('border-dashed'), true);
 /* ---------- la charte de la bande, le hero d'univers, l'article, les héros ----- */
 
 /* Les cartes de la bande reprennent la charte : visuel, badge blanc, majuscules. */
-const carteBande = accueil.slice(accueil.indexOf('Les univers'));
+const carteBande = accueil.slice(accueil.indexOf('id="univers-hero"'));
 check('les cartes sont celles de la playlist', accueil.includes('w-[172px]') && accueil.includes('sm:w-[188px]'), true);
 check('elles grossissent au centre', carteBande.includes('scale('), true);
 check('et les cartes de côté sont en retrait', accueil.includes('hidden opacity-60'), true);
@@ -1247,7 +1262,11 @@ check('elles portent la pastille de la playlist', carteBande.includes('rounded-[
 /* Plus de badge d'univers sur les cartes : ni pastille, ni ligne d'univers. */
 check('plus de pastille noire d’univers', carteBande.includes('bg-black/75 px-2 py-0.5'), false);
 check('et plus de ligne d’univers', carteBande.includes('inset-x-2.5 bottom-2 truncate'), false);
-check('le titre de l’univers est écrit une fois', (carteBande.match(/Vegas/g) ?? []).length > 0, true);
+check(
+  'le titre de l’univers est écrit une fois',
+  (carteBande.match(new RegExp(enHtml(WEDDING_STYLES[0]!.name), 'g')) ?? []).length > 0,
+  true,
+);
 check('chaque carte porte son play', carteBande.includes('Lancer '), true);
 check('un triangle noir plein, posé sur la pochette', carteBande.includes('fill-current'), true);
 /* Le sous-titre défile, comme sur une radio. */
@@ -1510,6 +1529,19 @@ const dockFleches = renderToStaticMarkup(
 enregistrerControlesBande(null);
 check('les flèches encadrent le dock', ['Rôle précédent', 'Rôle suivant'].every((f) => dockFleches.includes(f)), true);
 
+/* Deux bandes sur une page : le dock mène **celle qu'on regarde** — la dernière
+   entrée à l'écran prend les flèches, et l'autre les rend en partant. */
+const rien = { precedent: () => undefined, suivant: () => undefined };
+const dockDe = () =>
+  renderToStaticMarkup(createElement(MemoryRouter, null, createElement(BottomCapsuleNav as never)));
+enregistrerControlesBande(rien, 'roles');
+enregistrerControlesBande(rien, 'univers');
+check('les flèches suivent la bande à l’écran', dockDe().includes('Rôle précédent'), true);
+enregistrerControlesBande(null, 'univers');
+check('et reviennent quand on remonte', dockDe().includes('Rôle précédent'), true);
+enregistrerControlesBande(null, 'roles');
+check('sans bande à l’écran, plus de flèches', dockDe().includes('Rôle précédent'), false);
+
 /* ------------------- le nom se transforme, les deux portes suivent le rôle --- */
 
 /* On survole « SUPER PHOTOGRAPHE » : le nom devient le sien. Le profil, lui,
@@ -1530,6 +1562,47 @@ definirPersonaSurvolee(null);
 const enteteNeutre = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(SiteHeader as never)));
 check('sans survol, le nom du site revient', enteteNeutre.includes('SUPER MARIAGE'), true);
 check('le profil reste celui de la personne', enteteNeutre.includes('aria-label="Profil — SUPER MARIÉS"'), true);
+
+/* LE MANIFESTE : l'édito, entre le hero des rôles et celui des univers. */
+check('le manifeste est sur l’accueil', accueil.includes(MANIFESTE.titre), true);
+check(
+  'avec ses trois paragraphes',
+  MANIFESTE.paragraphes.every((p) => accueil.includes(enHtml(p.slice(0, 40)))),
+  true,
+);
+check(
+  'et il se lit entre les deux heros',
+  accueil.indexOf(MANIFESTE.titre) > accueil.indexOf('Qui êtes-vous dans ce mariage') &&
+    accueil.indexOf(MANIFESTE.titre) < accueil.indexOf('id="univers-hero"'),
+  true,
+);
+
+/* SUPER ÉDITEUR : la même page sur trois appareils, et l'éditeur a sa page. */
+const appareils = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(Appareils as never, { styleId: 'vegas' })),
+);
+check('la section s’appelle SUPER ÉDITEUR', appareils.includes('SUPER ÉDITEUR'), true);
+check('elle dit qu’une page s’écrit une fois', appareils.includes('se range sur les trois tailles'), true);
+check('elle montre la page en train de défiler', (appareils.match(/vp-defile-page/g) ?? []).length, 3);
+check('un ordinateur, une tablette, un téléphone', (appareils.match(/rounded-\[16px\]|rounded-\[20px\]|rounded-\[22px\]/g) ?? []).length, 3);
+check('et la même page dans chacun', (appareils.match(/Répondre à l’invitation/g) ?? []).length, 3);
+
+const pageParametres = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/parametres'] }, createElement(EditeurMiniSite as never)),
+);
+check('l’éditeur a sa page', pageParametres.includes('SUPER ÉDITEUR'), true);
+check('elle fait travailler sur un mini-site', pageParametres.includes('id="mini-site"'), true);
+check('l’accueil ne porte plus l’éditeur', accueil.includes('id="mini-site"'), false);
+const boutonParametres = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(BoutonParametres as never)),
+);
+check('le bouton Paramètres mène à l’éditeur', boutonParametres.includes('href="/parametres"'), true);
+check('et il est en bas à gauche', boutonParametres.includes('fixed bottom-20 left-3'), true);
+
+/* LE SHOP : SUPER SHOP, son ticket, et plus de porte vers l'éditeur des métiers. */
+check('le shop s’appelle SUPER SHOP', accueil.includes('SUPER SHOP'), true);
+check('il garde son ticket de caisse', accueil.includes('TOTAL'), true);
+check('et n’ouvre plus l’éditeur des métiers', accueil.includes('L’éditeur des métiers'), false);
 
 /* LE MENU DU PROFIL : ses entrées, et « voir en tant que ». */
 /* Le profil, c'est **moi** : on repose le rôle par défaut avant de le lire. */
@@ -1623,6 +1696,7 @@ const NAVS: Array<[string, ReturnType<typeof navDePage>]> = [
   ['le shop', NAV_SHOP],
   ['une fiche produit', NAV_PRODUIT],
   ['l’espace prestataire', NAV_PRESTATAIRE],
+  ['les paramètres', NAV_PARAMETRES],
 ];
 check('chaque page a sa nav', NAVS.every(([, liste]) => liste.length >= 2), true);
 check(
@@ -1633,7 +1707,8 @@ check(
 
 /* Les ancres existent vraiment dans les pages qui les annoncent. */
 const ancresAttendues: Record<string, string[]> = {
-  accueil: ['ecran', 'univers', 'site', 'bande-son'],
+  accueil: ['univers-hero', 'manifeste', 'editeur', 'supermarriage', 'bande-son'],
+  parametres: ['mini-site'],
   univers: ['article', 'programme', 'carte-fidelite'],
   metier: ['playlist', 'ticket'],
   article: ['article'],
@@ -1641,7 +1716,10 @@ const ancresAttendues: Record<string, string[]> = {
   produit: ['details', 'similaires'],
   prestataire: ['editeur'],
 };
-const sourceDuSite = [accueil, universBande, metierBande, pageArticle, pageShop, pageProduit, pagePrestataire, pageMagazine].join(' ');
+const sourceDuSite = [
+  accueil, universBande, metierBande, pageArticle, pageShop, pageProduit, pagePrestataire, pageMagazine,
+  pageParametres,
+].join(' ');
 check(
   'les ancres de la nav existent dans les pages',
   Object.values(ancresAttendues).flat().every((ancre) => sourceDuSite.includes(`id="${ancre}"`)),

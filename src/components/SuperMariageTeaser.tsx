@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, ScanBarcode, ShoppingCart } from 'lucide-react';
+import { ScanBarcode, ShoppingCart } from 'lucide-react';
 import { MAGASIN, PACKAGES, RAYONS, euros } from '../lib/superMariage';
 
 /**
- * SUPERMARIAGE — LE BANDEAU DU MAGASIN
+ * SUPER SHOP — LE BANDEAU DU MAGASIN
  *
- * Le mini-site du Supermarché 22H a son ticket de caisse ; ce bandeau ouvre le
- * magasin en vrai : on y coche ses horaires et ses métiers, et le ticket se
- * calcule tout seul. Un aperçu de ticket, ici, qui donne envie d'aller remplir
- * le caddie.
+ * C'est le nom qui nous a menés jusqu'ici : le mariage se compose comme une
+ * liste de courses. Le magasin a son ticket de caisse, ce bandeau l'ouvre en
+ * vrai — on y coche ses horaires et ses métiers, et le ticket se calcule tout
+ * seul. Le reste du site a grandi autour, mais le shop, lui, reste un shop.
  */
 
 const TICKET_APERCU = [
@@ -32,7 +32,7 @@ export default function SuperMariageTeaser() {
           </span>
 
           <h2 className="mt-5 font-black leading-[1.02] tracking-[-0.03em]" style={{ fontSize: 'clamp(2rem, 4.4vw, 3.4rem)' }}>
-            SuperMariage
+            SUPER SHOP
           </h2>
           <p className="mt-4 max-w-[560px] text-[14.5px] leading-relaxed text-white/65">
             Le mariage se compose comme une liste de courses : {RAYONS.length} rayons, {articles}{' '}
@@ -48,12 +48,6 @@ export default function SuperMariageTeaser() {
               style={{ background: '#00FF88' }}
             >
               <ScanBarcode size={14} /> Faire mes courses
-            </Link>
-            <Link
-              to="/prestataire"
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-[13px] font-semibold text-white/80 no-underline transition hover:border-white/40"
-            >
-              L’éditeur des métiers <ArrowRight size={13} />
             </Link>
           </div>
         </div>

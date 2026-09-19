@@ -1,5 +1,5 @@
 import {
-  BookOpen, CalendarClock, CreditCard, Heart, Images, ListOrdered, Music2, Package,
+  BookOpen, CalendarClock, CreditCard, Images, ListOrdered, Music2, Package,
   ScrollText, ShoppingBag, Sparkles, Store, Tag, Users, Wand2,
 } from 'lucide-react';
 import type { ActionNav } from './navVerticale';
@@ -18,11 +18,18 @@ import type { ActionNav } from './navVerticale';
  */
 
 export const NAV_ACCUEIL: ActionNav[] = [
-  { id: 'carte', label: 'La carte', icone: CreditCard, ancre: 'ecran' },
-  { id: 'univers', label: 'Les univers', icone: Sparkles, ancre: 'univers' },
-  { id: 'mariage', label: 'Le mariage', icone: Heart, ancre: 'site' },
+  { id: 'univers', label: 'Les univers', icone: Sparkles, ancre: 'univers-hero' },
+  { id: 'manifeste', label: 'Le manifeste', icone: ScrollText, ancre: 'manifeste' },
+  { id: 'editeur', label: 'Super Éditeur', icone: Wand2, ancre: 'editeur' },
+  { id: 'shop', label: 'Faire ses courses', icone: ShoppingBag, ancre: 'supermarriage' },
   { id: 'playlist', label: 'La playlist', icone: Music2, ancre: 'bande-son' },
-  { id: 'creer', label: 'Créer ma carte', icone: Wand2, to: '/creer' },
+];
+
+/** La page de l'éditeur : ce qu'on vient y faire. */
+export const NAV_PARAMETRES: ActionNav[] = [
+  { id: 'mini-site', label: 'Le mini-site', icone: Wand2, ancre: 'mini-site' },
+  { id: 'univers', label: 'Les univers', icone: Sparkles, to: '/' },
+  { id: 'shop', label: 'Faire ses courses', icone: ShoppingBag, to: '/shop' },
 ];
 
 export const NAV_UNIVERS: ActionNav[] = [

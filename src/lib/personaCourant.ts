@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { PERSONNAGES, personnageParId, type Personnage } from './personas';
 
 /**
@@ -111,12 +111,34 @@ export interface ControlesBande {
   suivant: () => void;
 }
 
-let controles: ControlesBande | null = null;
+/**
+ * **Une bande par identifiant.** Un accueil peut en porter plusieurs — les rôles
+ * dans le premier hero, les univers dans le second — et le dock mène **celle
+ * qu'on regarde** : la dernière bande entrée à l'écran prend les flèches, les
+ * autres se taisent. C'est le défilement de la page qui décide, pas un ordre
+ * écrit à l'avance.
+ */
+const bandes = new Map<string, ControlesBande>();
+let active: string | null = null;
 const EVENEMENT_CONTROLES = 'supermariage:bande-controles';
 
-/** La page pose ses deux gestes. */
-export function enregistrerControlesBande(suivants: ControlesBande | null): void {
-  controles = suivants;
+function lireLaBandeActive(): ControlesBande | null {
+  return active ? bandes.get(active) ?? null : null;
+}
+
+/** Une bande pose ses deux gestes, sous son identifiant. */
+export function enregistrerControlesBande(suivants: ControlesBande | null, id = 'defaut'): void {
+  if (suivants) {
+    bandes.set(id, suivants);
+    active = id;
+  } else {
+    bandes.delete(id);
+    if (active === id) {
+      // La bande qui mène s'en va : la dernière arrivée prend la place.
+      const restantes = Array.from(bandes.keys());
+      active = restantes.length > 0 ? restantes[restantes.length - 1]! : null;
+    }
+  }
   try {
     window.dispatchEvent(new Event(EVENEMENT_CONTROLES));
   } catch {
@@ -124,15 +146,57 @@ export function enregistrerControlesBande(suivants: ControlesBande | null): void
   }
 }
 
-/** Le dock lit les deux gestes, et les suit quand ils changent. */
+/** Le dock lit les deux gestes de la bande active, et les suit. */
 export function useControlesBande(): ControlesBande | null {
-  const [etat, setEtat] = useState<ControlesBande | null>(controles);
+  const [etat, setEtat] = useState<ControlesBande | null>(() => lireLaBandeActive());
 
   useEffect(() => {
-    const surChangement = () => setEtat(controles);
+    const surChangement = () => setEtat(lireLaBandeActive());
     window.addEventListener(EVENEMENT_CONTROLES, surChangement);
+    surChangement();
     return () => window.removeEventListener(EVENEMENT_CONTROLES, surChangement);
   }, []);
 
   return etat;
+}
+
+/**
+ * **LA BANDE QU'ON REGARDE** — la page pose ses deux gestes, et c'est l'écran
+ * qui dit lesquels comptent : la bande enregistrée est celle qui est visible.
+ * On descend vers les univers : leurs flèches prennent le dock, et celles des
+ * rôles se retirent. On remonte : l'inverse.
+ *
+ * La fonction rendue se pose en `ref` sur l'élément qui porte la bande.
+ */
+export function useControlesDeBande(id: string, controles: ControlesBande): (el: HTMLElement | null) => void {
+  const [element, setElement] = useState<HTMLElement | null>(null);
+  const dernier = useRef(controles);
+
+  useEffect(() => {
+    dernier.current = controles;
+  });
+
+  useEffect(() => {
+    if (!element) return;
+    // Sans observateur (rendu statique, vieux navigateur), la bande se pose.
+    if (typeof IntersectionObserver === 'undefined') {
+      enregistrerControlesBande(dernier.current, id);
+      return () => enregistrerControlesBande(null, id);
+    }
+    const observateur = new IntersectionObserver(
+      (entrees) => {
+        const entree = entrees[0];
+        if (entree?.isIntersecting) enregistrerControlesBande(dernier.current, id);
+        else enregistrerControlesBande(null, id);
+      },
+      { threshold: [0.3] },
+    );
+    observateur.observe(element);
+    return () => {
+      observateur.disconnect();
+      enregistrerControlesBande(null, id);
+    };
+  }, [element, id]);
+
+  return setElement;
 }

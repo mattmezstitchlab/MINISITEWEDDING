@@ -25,6 +25,7 @@ import SuperMariage from './pages/SuperMariage';
 import LeMariage from './pages/LeMariage';
 import PageMetier from './pages/PageMetier';
 import PageProfil from './pages/PageProfil';
+import EditeurMiniSite from './pages/EditeurMiniSite';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -62,6 +63,7 @@ export default function App() {
             <Route path="/carte" element={<CardStudio />} />
             {/* L'espace du prestataire : le même éditeur, dans la langue du métier. */}
             <Route path="/prestataire" element={<VendorStudio />} />
+            <Route path="/parametres" element={<EditeurMiniSite />} />
             {/* SuperMariage : le magasin où l'on coche son mariage, et le ticket suit. */}
             <Route path="/supermarriage" element={<SuperMariage />} />
             {/* Le mariage, en entier : l'article, la playlist, le récap — une page par univers. */}

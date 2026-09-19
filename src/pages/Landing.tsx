@@ -11,19 +11,21 @@ import HeroCycle from '../components/HeroCycle';
 import PictoPersonnage from '../components/PictoPersonnage';
 import OuvertureSite from '../components/OuvertureSite';
 import BandeDuHero from '../components/BandeDuHero';
-import { cartesDesDomaines, cartesDesPersonas, cartesDesUnivers, type CarteVivante } from '../lib/cartesVivantes';
-import { definirPersonaCourant, definirPersonaSurvolee, enregistrerControlesBande } from '../lib/personaCourant';
+import { cartesDesDomaines, cartesDesPersonas, type CarteVivante } from '../lib/cartesVivantes';
+import {
+  definirPersonaCourant, definirPersonaSurvolee, useControlesDeBande,
+} from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_ACCUEIL } from '../lib/navDesPages';
 import SiteHeader from '../components/SiteHeader';
+import Manifeste from '../components/Manifeste';
+import HeroUnivers from '../components/HeroUnivers';
+import Appareils from '../components/Appareils';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
-import EditorShowcase from '../components/EditorShowcase';
 import SuperMariageTeaser from '../components/SuperMariageTeaser';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 
-import ErrorBoundary from '../components/ErrorBoundary';
-import HomeCardShowcase from '../components/HomeCardShowcase';
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
 
@@ -124,10 +126,8 @@ export default function Landing() {
       setCarteIndex(999);
     }
   };
-  useEffect(() => {
-    enregistrerControlesBande({ precedent, suivant });
-    return () => enregistrerControlesBande(null);
-  });
+  /** Les deux flèches du dock mènent **la bande à l'écran** : ici, les rôles. */
+  const surveillerLeHero = useControlesDeBande('roles', { precedent, suivant });
 
   /** Le défilé : les cartes d'un titre, puis le titre suivant. Il attend qu'on explore. */
   useEffect(() => {
@@ -188,24 +188,6 @@ export default function Landing() {
     if (searchParams.has('univers')) setSearchParams({}, { replace: true });
   };
 
-  /**
-   * LA BANDE DU HERO — LES CARTES VIVANTES
-   *
-   * Sous le hero, l'autre axe : **l'univers**. Les cartes musicales disent le
-   * nombre de personnes qui les aiment, leur play allume le média, et celle qui
-   * est au milieu est l'univers de la page — celui qui mène l'éditeur, la
-   * playlist et les sections plus bas.
-   */
-  const bandeDesUnivers = (
-    <BandeDuHero
-      libelle="Les univers"
-      styleId={activeStyleOrFallback.id}
-      cartes={cartesDesUnivers(() => undefined, activeStyleOrFallback.id)}
-      onChoisir={(carte) => handleSelectStyle(WEDDING_STYLES.find((s) => s.id === carte.id) ?? null)}
-      onLecture={setLectureEnCours}
-    />
-  );
-
   return (
     <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
       {/* L'OUVERTURE : le nom prend l'écran, une lumière le traverse, et il se
@@ -216,7 +198,7 @@ export default function Landing() {
       <SiteHeader />
 
       {/* LE HERO : QUI ÊTES-VOUS DANS CE MARIAGE ? */}
-      <div id="hero">
+      <div id="hero" ref={surveillerLeHero}>
         <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id}>
           <div className="flex flex-col items-center text-center">
             <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
@@ -261,24 +243,20 @@ export default function Landing() {
         </HeroCycle>
       </div>
 
-      {/* LA BANDE DES UNIVERS : le second axe du site, sous le hero — les rôles,
-          eux, sont dans le hero, juste au-dessus du dock. */}
-      {bandeDesUnivers}
+      {/* LE MANIFESTE : le concept en trois paragraphes, avant de le montrer. */}
+      <Manifeste />
 
-      {/* LA CARTE AVANT LE SITE : sous le hero, la carte — on voit ce qu'il
-          reste à remplir. Les écrans de téléphone ont disparu : un univers se
-          découvre dans son article. */}
-      <ErrorBoundary>
-        <div id="ecran">
-          <HomeCardShowcase />
-        </div>
-      </ErrorBoundary>
+      {/* LES UNIVERS : le second axe, avec **son propre hero** — le nom de
+          l'univers en grand, ses cartes juste en dessous, comme les rôles. */}
+      <HeroUnivers
+        styleId={activeStyleOrFallback.id}
+        onChoisir={(style) => handleSelectStyle(style)}
+        onLecture={setLectureEnCours}
+      />
 
-      {/* LE MINI-SITE COMPLET : l'éditeur, ses sections, et ce qu'il contient */}
-      <div id="site">
-        <EditorShowcase key={activeStyleOrFallback.id} styleId={activeStyleOrFallback.id} />
-      </div>
-
+      {/* SUPER ÉDITEUR : la même page sur trois appareils. L'éditeur lui-même a
+          sa page — le bouton Paramètres, en bas à gauche, l'ouvre. */}
+      <Appareils styleId={activeStyleOrFallback.id} />
 
       {/* LE MAGASIN : on coche ses horaires et ses métiers, le ticket suit */}
       <div id="supermarriage">

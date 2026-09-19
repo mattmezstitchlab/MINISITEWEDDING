@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom';
 import SiteHeader from './SiteHeader';
 import BottomCapsuleNav from './BottomCapsuleNav';
 import NavVerticale from './NavVerticale';
+import BoutonParametres from './BoutonParametres';
 
 /**
  * LA NAVIGATION DU SITE, POSÉE UNE SEULE FOIS
@@ -38,7 +39,8 @@ const MENTIONS: Array<[string, string]> = [
   ['/metiers/', 'Les métiers'],
   ['/profil/', 'Une page du réseau'],
   ['/prestataire', 'Espace prestataire'],
-  ['/supermarriage', 'SuperMariage'],
+  ['/supermarriage', 'SuperShop'],
+  ['/parametres', 'Paramètres'],
 ];
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
@@ -55,6 +57,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       {pathname !== '/' && <SiteHeader mention={mention} />}
       {/* La nav verticale : à droite, et différente sur chaque page. */}
       <NavVerticale />
+      {/* En bas à gauche : les paramètres, c'est-à-dire l'éditeur du mini-site. */}
+      <BoutonParametres />
       {/* Le dock est fixe : la page laisse la place au bas. */}
       <div className="pb-24">{children}</div>
       <BottomCapsuleNav />

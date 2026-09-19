@@ -640,3 +640,29 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   .vp-live-frame, .vp-live-dot { animation: none; }
 }
+
+/* --------------------------------------------------------------------------
+   LA PAGE QUI DÉFILE DANS UN APPAREIL
+
+   Pour montrer le responsive : la même page, dans un ordinateur, une tablette
+   et un téléphone — elle descend doucement, puis remonte. Elle ne bouge pas
+   quand on a demandé moins d'animation.
+   -------------------------------------------------------------------------- */
+@keyframes vp-defile-page {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-52%);
+  }
+}
+
+.vp-defile-page {
+  animation: vp-defile-page 26s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vp-defile-page {
+    animation: none;
+  }
+}
