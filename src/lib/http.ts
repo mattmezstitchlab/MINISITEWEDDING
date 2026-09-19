@@ -1,4 +1,4 @@
-import { getActiveToken } from './auth';
+import { getActiveToken, getPersonToken } from './auth';
 import { isRemote } from './dataSource';
 import { localRequest } from './localApi';
 import type { LocalResponse } from './localApi';
@@ -30,6 +30,8 @@ function headers(json: boolean): Record<string, string> {
   const h: Record<string, string> = json ? { 'Content-Type': 'application/json' } : {};
   const token = getActiveToken();
   if (token) h['x-site-token'] = token;
+  const person = getPersonToken();
+  if (person) h['x-person-token'] = person;
   return h;
 }
 
@@ -64,12 +66,16 @@ function parseLocal<T>(res: LocalResponse): T {
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  if (!isRemote()) return parseLocal<T>(await localRequest(path, 'GET', undefined, getActiveToken()));
+  if (!isRemote()) {
+    return parseLocal<T>(await localRequest(path, 'GET', undefined, getActiveToken(), getPersonToken()));
+  }
   return parse<T>(await fetch(path, { headers: headers(false) }));
 }
 
 export async function apiSend<T>(path: string, method: 'POST' | 'PUT' | 'DELETE', body?: unknown): Promise<T> {
-  if (!isRemote()) return parseLocal<T>(await localRequest(path, method, body, getActiveToken()));
+  if (!isRemote()) {
+    return parseLocal<T>(await localRequest(path, method, body, getActiveToken(), getPersonToken()));
+  }
   return parse<T>(
     await fetch(path, {
       method,

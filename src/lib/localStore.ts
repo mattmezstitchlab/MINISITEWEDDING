@@ -1,6 +1,6 @@
 import type {
-  Faq, GalleryPhoto, GiftOption, InfoPratique, MediaAsset,
-  ProgrammeEvent, RsvpEvent, RsvpResponse, SiteSection, WeddingSite,
+  Faq, GalleryPhoto, GiftOption, InfoPratique, MediaAsset, Person,
+  ProgrammeEvent, RsvpEvent, RsvpResponse, SiteSection, WeddingMember, WeddingSite,
 } from './types';
 import { MEDIA_SEED } from './mediaSeed';
 
@@ -30,6 +30,12 @@ export interface SiteSecret {
   token: string;
 }
 
+/** La clé personnelle, en clair dans le navigateur : ici, la base est à nous. */
+export interface PersonSecret {
+  person_id: number;
+  token: string;
+}
+
 export interface LocalDb {
   version: number;
   seq: number;
@@ -44,6 +50,11 @@ export interface LocalDb {
   gifts: GiftOption[];
   rsvp: RsvpResponse[];
   media: MediaAsset[];
+  people: Person[];
+  members: WeddingMember[];
+  personSecrets: PersonSecret[];
+  /** Le comptoir partagé, une ligne par univers (voir `liveRules.ts`). */
+  live: Array<{ style_id: string; payload: unknown; updated_at: string }>;
 }
 
 /** Écriture refusée faute de place : l’éditeur l’affiche telle quelle. */
@@ -72,6 +83,10 @@ function emptyDb(): LocalDb {
     rsvp: [],
     // La bibliothèque livrée avec le projet : l’éditeur n’est jamais vide.
     media: MEDIA_SEED.map((m) => ({ ...m })),
+    people: [],
+    members: [],
+    personSecrets: [],
+    live: [],
   };
 }
 

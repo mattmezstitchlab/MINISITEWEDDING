@@ -117,6 +117,22 @@ body {
   color: #f4f5fb;
 }
 
+/* ------------------------------------------------------------------ *
+ *  Les signatures d'univers : le fond du thème, et le néon
+ * ------------------------------------------------------------------ */
+
+/* La signature repeint le fond : on éteint le dégradé de la coquille. */
+.vp-sg-fond::before {
+  background: none;
+}
+
+/* Les titres s'allument — c'est le geste du néon, et seulement lui. */
+.vp-sg-lueur :is(h1, h2, h3, .vp-title) {
+  text-shadow:
+    0 0 14px color-mix(in srgb, var(--vp-accent) 85%, transparent),
+    0 0 44px color-mix(in srgb, var(--vp-accent) 45%, transparent);
+}
+
 .vp-env-dark::before {
   background: linear-gradient(180deg, var(--vp-env-dark-a) 0%, var(--vp-env-dark-b) 55%, var(--vp-env-dark-c) 100%);
 }
@@ -232,6 +248,32 @@ body {
 .vp-tilt {
   transform-style: preserve-3d;
   transition: transform 0.5s var(--vp-ease), box-shadow 0.5s var(--vp-ease);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Le contenant éditorial
+ *
+ *  La mise en page d'un article de magazine, appliquée partout : une
+ *  colonne centrée, la même marge de chaque côté, quelle que soit la
+ *  page. Les visuels et les fonds, eux, restent plein cadre : c'est le
+ *  texte et les blocs qui respirent, pas l'image.
+ * ------------------------------------------------------------------ */
+
+.vp-page {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.vp-page-read {
+  max-width: 820px;
+}
+
+@media (min-width: 640px) {
+  .vp-page {
+    padding-inline: 2rem;
+  }
 }
 
 /* ------------------------------------------------------------------ *
@@ -468,17 +510,7 @@ body {
  *  Divers
  * ------------------------------------------------------------------ */
 
-@keyframes rainbowGlow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
+
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -512,4 +544,30 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   .vp-env::before { animation: none; }
   .vp-lift:hover, .vp-tilt { transform: none !important; }
   * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+
+
+/* Les portraits des prestataires sont animés comme un plan filmé : un lent
+   mouvement de caméra, décalé d'une carte à l'autre pour que la grille vive. */
+@keyframes vpKenBurns {
+  0% { transform: scale(1.02); }
+  50% { transform: scale(1.07); }
+  100% { transform: scale(1.02); }
+}
+
+.vp-live-frame {
+  animation: vpKenBurns 16s ease-in-out infinite;
+}
+
+.vp-live-dot {
+  animation: vpPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes vpPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vp-live-frame, .vp-live-dot { animation: none; }
 }

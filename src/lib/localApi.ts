@@ -1,6 +1,15 @@
 import type { LocalDb } from './localStore';
 import { createToken, nextId, readDb, withDb } from './localStore';
-import type { WeddingSite } from './types';
+import type { Person, WeddingMember, WeddingSite } from './types';
+import { appliquerGeste, invitesAuComptoir, type Geste } from './liveRules';
+import type { EtatTerminal } from './weddingTicket';
+import {
+  cleanPersonPatch,
+  isValidRoleId,
+  redactPerson,
+  type PersonRow,
+  type Viewer,
+} from './personRules';
 
 /**
  * Les fonctions serverless, rejouées dans le navigateur.
@@ -94,6 +103,72 @@ function sortBy(rows: Row[], column: string, ascending: boolean): Row[] {
     const cmp = av > bv ? 1 : -1;
     return ascending ? cmp : -cmp;
   });
+}
+
+/* ------------------------------------------------------------- le comptoir */
+
+/**
+ * Le comptoir partagé, servi comme les autres routes.
+ *
+ *   GET  ?style_id=…            -> l'état du comptoir
+ *   POST { style_id, geste }    -> un geste d'invité, appliqué et renvoyé
+ *   PUT  { style_id, payload }  -> remise à zéro, par les mariés
+ *
+ * Les règles sont celles de `liveRules.ts` — les mêmes que celles de
+ * `server/live.js` quand une base est branchée. Sans base, la page se comporte
+ * donc exactement pareil : ici, le « partagé » s'arrête au navigateur.
+ */
+function weddingLive(method: string, query: Record<string, string>, payload: Record<string, unknown>): LocalResponse {
+  const styleId = String(query.style_id || payload.style_id || '').trim();
+  if (!styleId) return fail(400, 'style_id requis');
+  if (!['GET', 'POST', 'PUT'].includes(method)) return fail(405, 'Method not allowed');
+
+  const db = readDb();
+  const ligne = db.live.find((l) => l.style_id === styleId);
+  const courant = normaliserEtat(ligne?.payload);
+
+  const enveloppe = (etat: EtatTerminal, updatedAt: string, applique?: boolean) => ({
+    style_id: styleId,
+    payload: etat,
+    updated_at: updatedAt,
+    invites: invitesAuComptoir(etat),
+    ...(applique === undefined ? {} : { applique }),
+  });
+
+  if (method === 'GET') return ok(enveloppe(courant, ligne?.updated_at ?? ''));
+
+  if (method === 'POST') {
+    const suivant = appliquerGeste(courant, payload.geste as Geste);
+    // Le geste ne change rien : on renvoie l'état tel quel, sans écrire.
+    if (!suivant) return ok(enveloppe(courant, ligne?.updated_at ?? '', false));
+    return withDb((live) => {
+      const index = live.live.findIndex((l) => l.style_id === styleId);
+      const updatedAt = new Date().toISOString();
+      if (index < 0) live.live.push({ style_id: styleId, payload: suivant, updated_at: updatedAt });
+      else live.live[index] = { ...live.live[index], payload: suivant, updated_at: updatedAt };
+      return ok(enveloppe(suivant, updatedAt, true));
+    });
+  }
+
+  const remis = payload.payload && typeof payload.payload === 'object' ? normaliserEtat(payload.payload) : null;
+  if (!remis) return fail(400, 'payload requis');
+  return withDb((live) => {
+    const index = live.live.findIndex((l) => l.style_id === styleId);
+    const updatedAt = new Date().toISOString();
+    if (index < 0) live.live.push({ style_id: styleId, payload: remis, updated_at: updatedAt });
+    else live.live[index] = { ...live.live[index], payload: remis, updated_at: updatedAt };
+    return ok(enveloppe(remis, updatedAt, true));
+  });
+}
+
+/** Un état relu depuis le stockage : jamais de champ manquant. */
+function normaliserEtat(payload: unknown): EtatTerminal {
+  const etat = (payload ?? {}) as Partial<EtatTerminal>;
+  return {
+    prises: Array.isArray(etat.prises) ? etat.prises : [],
+    demandes: Array.isArray(etat.demandes) ? etat.demandes : [],
+    journal: Array.isArray(etat.journal) ? etat.journal : [],
+  };
 }
 
 /* --------------------------------------------------------------------- CRUD */
@@ -283,17 +358,285 @@ async function upload(method: string, payload: Record<string, unknown>, token: s
   });
 }
 
+/* ------------------------------------------------------------ les personnes */
+
+/**
+ * Les personnes et leurs places, rejouées comme dans `api/people.js` et
+ * `api/wedding-members.js` — mêmes corps, mêmes codes, mêmes règles de
+ * lecture. La clé personnelle est en clair : cette base est celle du
+ * navigateur, elle n'est pas un secret partagé.
+ */
+function personIdFromToken(db: LocalDb, token: string | null): number | null {
+  if (!token) return null;
+  return db.personSecrets.find((s) => s.token === token)?.person_id ?? null;
+}
+
+function viewerOf(db: LocalDb, personToken: string | null): Viewer {
+  const personId = personIdFromToken(db, personToken);
+  const memberships = personId
+    ? db.members
+        .filter((m) => m.person_id === personId)
+        .map((m) => ({ id: m.id, site_id: m.site_id, role_id: m.role_id }))
+    : [];
+  return { personId, memberships };
+}
+
+function siteIdFrom(db: LocalDb, query: Record<string, string>): number | null {
+  if (query.site_id) {
+    const n = Number(query.site_id);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+  if (!query.slug) return null;
+  const site = db.sites.find((s) => s.slug === query.slug);
+  return site ? Number(site.id) : null;
+}
+
+function canReadSiteHere(db: LocalDb, viewer: Viewer, siteId: number | null, siteToken: string | null): boolean {
+  if (!siteId) return false;
+  const site = db.sites.find((s) => Number(s.id) === Number(siteId));
+  if (!site) return false;
+  if (site.published) return true;
+  if (viewer.personId && viewer.memberships.some((m) => Number(m.site_id) === Number(siteId))) return true;
+  return ownerSiteId(db, siteToken) === Number(siteId);
+}
+
+/**
+ * Les mariages publiés d'une personne — la même règle que `publicMembershipsOf`
+ * côté serveur : un mariage non publié ne sort jamais.
+ */
+function publicMembershipsOf(db: LocalDb, personId: number) {
+  return db.members
+    .filter((m) => Number(m.person_id) === personId)
+    .map((member) => {
+      const site = db.sites.find((s) => Number(s.id) === Number(member.site_id));
+      if (!site || !site.published) return null;
+      return {
+        id: Number(member.id),
+        site_id: Number(member.site_id),
+        role_id: String(member.role_id ?? ''),
+        joined_at: member.joined_at ?? null,
+        site: {
+          id: Number(site.id),
+          slug: site.slug || '',
+          partner1: site.partner1 || '',
+          partner2: site.partner2 || '',
+          wedding_date: site.wedding_date ?? '',
+          venue: site.venue || '',
+          city: site.city || '',
+          style: site.style || '',
+        },
+      };
+    })
+    .filter(Boolean);
+}
+
+function peopleRoutes(
+  method: string,
+  query: Record<string, string>,
+  payload: Record<string, unknown>,
+  siteToken: string | null,
+  personToken: string | null,
+): LocalResponse {
+  const db = readDb();
+  const viewer = viewerOf(db, personToken);
+
+  if (method === 'POST') {
+    const propre = cleanPersonPatch(payload);
+    const prenom = String(propre.first_name ?? '').trim();
+    if (!prenom) return fail(400, 'Le prénom est requis pour créer une carte');
+
+    return withDb((live) => {
+      const person: Person = {
+        id: nextId(live),
+        first_name: '',
+        last_name: '',
+        photo: '',
+        home_city: '',
+        trade: '',
+        bio: '',
+        email: '',
+        phone: '',
+        website: '',
+        social: '',
+        contact_visibility: 'participants',
+        ...(propre as Partial<Person>),
+      };
+      const token = createToken();
+      live.people.push(person);
+      live.personSecrets.push({ person_id: person.id, token });
+      const lecteur: Viewer = { personId: person.id, memberships: [] };
+      return ok({ person: redactPerson(person as PersonRow, lecteur), person_token: token }, 201);
+    });
+  }
+
+  if (method === 'PUT') {
+    const personId = viewer.personId;
+    if (!personId) return fail(403, 'Clé personnelle requise');
+    const patch = cleanPersonPatch(payload);
+    if (Object.keys(patch).length === 0) return fail(400, 'Aucun champ reconnu à modifier');
+
+    return withDb((live) => {
+      const index = live.people.findIndex((p) => Number(p.id) === Number(personId));
+      if (index < 0) return fail(404, 'Introuvable');
+      live.people[index] = { ...live.people[index], ...(patch as Partial<Person>) };
+      const lecteur = viewerOf(live, personToken);
+      return ok({ person: redactPerson(live.people[index] as PersonRow, lecteur) });
+    });
+  }
+
+  if (method !== 'GET') return fail(405, 'Method not allowed');
+
+  const { id, site_id: siteParam, slug } = query;
+
+  // Ma carte : sans cible, la clé suffit.
+  if (!id && !siteParam && !slug) {
+    if (!viewer.personId) return fail(400, 'id, site_id ou slug requis');
+    const moi = db.people.find((p) => Number(p.id) === Number(viewer.personId));
+    if (!moi) return fail(404, 'Introuvable');
+    return ok({ person: redactPerson(moi as PersonRow, viewer) });
+  }
+
+  const siteId = siteIdFrom(db, query);
+
+  if (id) {
+    const person = db.people.find((p) => Number(p.id) === Number(id));
+    if (!person) return fail(404, 'Introuvable');
+    // Lue seule, la carte porte ses mariages publiés : c'est la page de profil.
+    const memberships = siteId ? [] : publicMembershipsOf(db, Number(id));
+    return ok({ person: redactPerson(person as PersonRow, viewer, siteId), memberships });
+  }
+
+  if (!siteId) return fail(404, 'Introuvable');
+  if (!canReadSiteHere(db, viewer, siteId, siteToken)) return fail(404, 'Introuvable');
+
+  const ids = db.members.filter((m) => Number(m.site_id) === siteId).map((m) => Number(m.person_id));
+  const people = ids
+    .map((personId) => db.people.find((p) => Number(p.id) === personId))
+    .filter((p): p is Person => Boolean(p))
+    .map((person) => redactPerson(person as PersonRow, viewer, siteId));
+
+  return ok({ people });
+}
+
+function memberRoutes(
+  method: string,
+  query: Record<string, string>,
+  payload: Record<string, unknown>,
+  siteToken: string | null,
+  personToken: string | null,
+): LocalResponse {
+  const db = readDb();
+  const viewer = viewerOf(db, personToken);
+
+  if (method === 'GET') {
+    if (!query.site_id && !query.slug) {
+      if (!viewer.personId) return fail(400, 'site_id ou slug requis');
+      const memberships = db.members
+        .filter((m) => Number(m.person_id) === Number(viewer.personId))
+        .map((member) => ({
+          member,
+          site: db.sites.find((s) => Number(s.id) === Number(member.site_id)) ?? null,
+        }));
+      return ok({ memberships });
+    }
+
+    const siteId = siteIdFrom(db, query);
+    if (!siteId) return fail(404, 'Introuvable');
+    if (!canReadSiteHere(db, viewer, siteId, siteToken)) return fail(404, 'Introuvable');
+
+    const members = db.members
+      .filter((m) => Number(m.site_id) === siteId)
+      .sort((a, b) => String(a.joined_at ?? '').localeCompare(String(b.joined_at ?? '')))
+      .map((m) => {
+        const person = db.people.find((p) => Number(p.id) === Number(m.person_id)) ?? null;
+        return {
+          ...m,
+          person: person ? redactPerson(person as PersonRow, viewer, siteId) : null,
+        };
+      });
+
+    return ok({
+      members,
+      count: members.length,
+      moi: viewer.personId ? members.find((m) => Number(m.person_id) === Number(viewer.personId)) ?? null : null,
+    });
+  }
+
+  const personId = viewer.personId;
+  if (!personId) return fail(403, 'Clé personnelle requise');
+
+  if (method === 'POST') {
+    const siteId = siteIdFrom(db, { site_id: String(payload.site_id ?? ''), slug: String(payload.slug ?? '') });
+    if (!siteId) return fail(404, 'Mariage introuvable');
+    // On ne rejoint qu'un mariage ouvert : publié, ou déjà à nous.
+    if (!canReadSiteHere(db, viewer, siteId, siteToken)) return fail(404, 'Mariage introuvable');
+    if (!isValidRoleId(payload.role_id)) return fail(400, 'Rôle invalide');
+
+    return withDb((live) => {
+      const existant = live.members.find(
+        (m) => Number(m.site_id) === siteId && Number(m.person_id) === Number(personId),
+      );
+      if (existant) {
+        if (existant.role_id !== payload.role_id) {
+          existant.role_id = String(payload.role_id);
+          existant.status = 'confirme';
+        }
+        return ok({ member: existant, deja: true });
+      }
+      const membre: WeddingMember = {
+        id: nextId(live),
+        site_id: siteId,
+        person_id: Number(personId),
+        role_id: String(payload.role_id),
+        status: 'confirme',
+        joined_at: new Date().toISOString(),
+      };
+      live.members.push(membre);
+      const lecteur = viewerOf(live, personToken);
+      const person = live.people.find((p) => Number(p.id) === Number(personId)) ?? null;
+      return ok(
+        { member: { ...membre, person: person ? redactPerson(person as PersonRow, lecteur, siteId) : null }, deja: false },
+        201,
+      );
+    });
+  }
+
+  if (method === 'DELETE') {
+    const id = Number(query.id);
+    if (!Number.isFinite(id) || id <= 0) return fail(400, 'id requis');
+    const ligne = db.members.find((m) => Number(m.id) === id);
+    if (!ligne) return fail(404, 'Introuvable');
+    if (Number(ligne.person_id) !== Number(personId)) return fail(403, 'Accès refusé');
+    return withDb((live) => {
+      const index = live.members.findIndex((m) => Number(m.id) === id);
+      if (index >= 0) live.members.splice(index, 1);
+      return ok({ deleted: true });
+    });
+  }
+
+  return fail(405, 'Method not allowed');
+}
+
 /* ------------------------------------------------------------------- entrée */
 
-export async function localRequest(path: string, method: string, body: unknown, token: string | null): Promise<LocalResponse> {
+export async function localRequest(
+  path: string,
+  method: string,
+  body: unknown,
+  token: string | null,
+  personToken: string | null = null,
+): Promise<LocalResponse> {
   const [pathname, search = ''] = path.split('?');
   const query = Object.fromEntries(new URLSearchParams(search));
   const payload = (body ?? {}) as Record<string, unknown>;
 
   try {
     if (pathname === '/api/create-site') return createSite(method, payload);
+    if (pathname === '/api/wedding-live') return weddingLive(method, query, payload);
     if (pathname === '/api/wedding-sites') return weddingSites(method, query, payload, token);
     if (pathname === '/api/upload') return await upload(method, payload, token);
+    if (pathname === '/api/people') return peopleRoutes(method, query, payload, token, personToken);
+    if (pathname === '/api/wedding-members') return memberRoutes(method, query, payload, token, personToken);
 
     const spec = TABLES[pathname];
     if (!spec) return fail(404, 'Route inconnue');

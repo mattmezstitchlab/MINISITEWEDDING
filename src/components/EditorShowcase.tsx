@@ -1,358 +1,401 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Type, Palette, Layout, Smartphone, Monitor, Check, ArrowRight, Sliders, Eye } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Check, ArrowRight, Sliders, Type, Images, Layout, Smartphone, Monitor, MousePointerClick } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SECTION_DEFAULTS } from '../lib/defaults';
+import { WEDDING_STYLES } from '../lib/weddingStyles';
+import { VISUAL_FAMILIES, VISUAL_COUNT } from '../lib/visualLibrary';
+import { previewPath } from '../lib/previewSite';
 
-const TYPO_PREVIEWS = [
-  { id: 'editorial', name: 'Éditorial Serif', font: 'Georgia, serif', sample: 'Sarah & Gabriel', note: 'Magazine & haute couture' },
-  { id: 'sans', name: 'Sans Contemporain', font: 'Inter, sans-serif', sample: 'Sarah & Gabriel', note: 'Net, moderne et architectural' },
-  { id: 'spatial', name: 'Vision Spatiale', font: '-apple-system, sans-serif', sample: 'Sarah & Gabriel', note: 'Typographie visionOS' },
-];
+/**
+ * LES MINI-SITES
+ *
+ * Un mini-site complet par univers — vingt-quatre designs différents, montés en
+ * vrai dans une fenêtre à part. Dans l'éditeur on ne touche ni à la police ni
+ * aux couleurs : c'est le thème qui les décide. On change les textes, les
+ * visuels, les sections, et on passe d'un thème à l'autre.
+ */
 
-const ACCENT_COLORS = [
-  { name: 'Noir Pur', hex: '#111111' },
-  { name: 'Or Riviera', hex: '#C5A059' },
-  { name: 'Terre Cuite', hex: '#B88258' },
-  { name: 'Orange Feu', hex: '#FF4D00' },
-  { name: 'Rose Magenta', hex: '#FF00E5' },
-  { name: 'Vert Forêt', hex: '#2F6F4E' },
-];
+const SITE_SECTIONS = SECTION_DEFAULTS.map((section) => ({ key: section.key, title: section.title }));
 
-export default function EditorShowcase() {
-  const [selectedTypo, setSelectedTypo] = useState(TYPO_PREVIEWS[0]);
-  const [selectedColor, setSelectedColor] = useState(ACCENT_COLORS[1]);
-  const [activeDevice, setActiveDevice] = useState<'mobile' | 'desktop'>('desktop');
-  const [activeTab, setActiveTab] = useState<'style' | 'modules'>('style');
+export default function EditorShowcase({ styleId }: { styleId: string }) {
+  const [theme, setTheme] = useState(styleId);
+  const [onglet, setOnglet] = useState<'themes' | 'textes' | 'visuels' | 'sections'>('themes');
+  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [scale, setScale] = useState(0.6);
+
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [titre, setTitre] = useState('');
+  const [sousTitre, setSousTitre] = useState('');
+  const [annonce, setAnnonce] = useState('');
+  const [masquees, setMasquees] = useState<string[]>([]);
+  const [familleVisuelle, setFamilleVisuelle] = useState(VISUAL_FAMILIES[0].id);
+
+  const cadre = useRef<HTMLDivElement>(null);
+
+  // L'univers de la page d'accueil commande le thème affiché : le composant est
+  // remonté avec une clé quand il change (voir `Landing`), donc pas d'effet ici.
+
+  const src = useMemo(
+    () =>
+      previewPath({
+        styleId: theme,
+        heroPhoto: photo ?? undefined,
+        heroTitle: titre.trim() || undefined,
+        heroSubtitle: sousTitre.trim() || undefined,
+        announcement: annonce.trim() || undefined,
+        hiddenSections: masquees,
+      }),
+    [theme, photo, titre, sousTitre, annonce, masquees],
+  );
+
+  /**
+   * L'aperçu bureau est rendu à 1280 px puis réduit pour tenir dans le cadre :
+   * la mise en page du site est donc exactement celle d'un vrai écran.
+   */
+  useEffect(() => {
+    const el = cadre.current;
+    if (!el) return;
+    const mesurer = () => setScale(Math.min(1, el.clientWidth / 1280));
+    mesurer();
+    const observer = new ResizeObserver(mesurer);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [device]);
+
+  const changerTheme = (id: string) => {
+    setTheme(id);
+    setPhoto(null); // le visuel revient à celui du thème choisi
+  };
+
+  const basculerSection = (key: string) => {
+    setMasquees((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
+  };
+
+  const familleActive = VISUAL_FAMILIES.find((f) => f.id === familleVisuelle) ?? VISUAL_FAMILIES[0];
+  const themeActif = WEDDING_STYLES.find((s) => s.id === theme) ?? WEDDING_STYLES[0];
+
+  const onglets = [
+    { id: 'themes' as const, label: 'Les thèmes', icon: Sliders },
+    { id: 'textes' as const, label: 'Les textes', icon: Type },
+    { id: 'visuels' as const, label: 'Les visuels', icon: Images },
+    { id: 'sections' as const, label: 'Les sections', icon: Layout },
+  ];
 
   return (
-    <section className="relative overflow-hidden px-5 py-20 sm:px-8 sm:py-28 bg-[#FBFBFA]">
-      <div className="mx-auto max-w-6xl">
-        {/* En-tête */}
+    <section className="relative overflow-hidden bg-white py-20 sm:py-28">
+      <div className="vp-page">
         <div className="mx-auto max-w-2xl text-center">
-          <div className="vp-eyebrow">L'expérience post-onboarding</div>
+          <div className="vp-eyebrow">Après l’onboarding</div>
           <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3.2rem)' }}>
-            Un studio de personnalisation.<br />
-            Sans complexité.
+            Vingt-quatre mini-sites.<br />
+            Un design par univers.
           </h2>
-          <p className="vp-body mt-4 max-w-lg mx-auto">
-            Dès vos réponses validées, accédez à votre éditeur en direct. Ajustez la typographie, les nuances chromatiques et les modules en observant le résultat instantané.
+          <p className="vp-body mt-4 mx-auto max-w-xl">
+            Chaque univers donne son propre site : la mise en page, la typographie et les couleurs viennent de lui —
+            on n’y touche pas. Vous changez les textes, les visuels et les sections, et vous passez d’un thème à
+            l’autre en un clic. L’aperçu ci-dessous est le vrai site, pas une maquette.
           </p>
         </div>
 
-        {/* Maquette de l'Éditeur */}
         <div className="mt-14 overflow-hidden rounded-[32px] border border-black/10 bg-white shadow-[0_24px_70px_-20px_rgba(0,0,0,0.12)] ring-1 ring-black/5">
-          {/* Topbar de l'éditeur */}
-          <div className="flex items-center justify-between border-b border-black/5 bg-[#FAFAFA] px-5 py-3.5 sm:px-7">
-            <div className="flex items-center gap-3">
-              <span className="h-3 w-3 rounded-full bg-red-400" />
-              <span className="h-3 w-3 rounded-full bg-amber-400" />
-              <span className="h-3 w-3 rounded-full bg-emerald-400" />
-              <span className="ml-3 hidden text-[13px] font-semibold text-[#0B0C12] sm:inline">
-                Studio VOWS · Éditeur de site
+          {/* La barre de l'éditeur, en capsule comme le reste du site */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 px-4 py-3 sm:px-6">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="vp-title text-[15px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
+              <span className="truncate text-[12px] font-semibold uppercase tracking-[0.18em] text-black/35">
+                {themeActif.name}
               </span>
             </div>
 
-            {/* Bascule mobile / desktop */}
-            <div className="flex items-center gap-1 rounded-full border border-black/10 bg-white p-1 shadow-sm">
-              <button
-                type="button"
-                onClick={() => setActiveDevice('desktop')}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold transition ${
-                  activeDevice === 'desktop'
-                    ? 'bg-[#0B0C12] text-white shadow-sm'
-                    : 'text-[var(--vp-muted)] hover:text-[#0B0C12]'
-                }`}
-              >
-                <Monitor size={13} />
-                <span className="hidden sm:inline">Bureau</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveDevice('mobile')}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold transition ${
-                  activeDevice === 'mobile'
-                    ? 'bg-[#0B0C12] text-white shadow-sm'
-                    : 'text-[var(--vp-muted)] hover:text-[#0B0C12]'
-                }`}
-              >
-                <Smartphone size={13} />
-                <span className="hidden sm:inline">Mobile</span>
-              </button>
-            </div>
-
-            <Link
-              to="/"
-              className="vp-btn vp-press !px-4 !py-1.5 !text-[12.5px]"
-            >
-              Publier <ArrowRight size={13} />
-            </Link>
-          </div>
-
-          {/* Corps de l'Éditeur : Panneau de réglages à gauche + Prévisualisation en direct à droite */}
-          <div className="grid lg:grid-cols-12 min-h-[520px]">
-            {/* Panneau de réglages latéral */}
-            <div className="lg:col-span-4 border-r border-black/5 p-6 space-y-6 bg-white">
-              {/* Onglets de configuration */}
-              <div className="flex rounded-xl bg-black/[0.04] p-1">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('style')}
-                  className={`flex-1 rounded-lg py-1.5 text-[12.5px] font-semibold transition ${
-                    activeTab === 'style' ? 'bg-white shadow-sm text-[#0B0C12]' : 'text-[var(--vp-muted)]'
-                  }`}
-                >
-                  Apparence &amp; Style
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('modules')}
-                  className={`flex-1 rounded-lg py-1.5 text-[12.5px] font-semibold transition ${
-                    activeTab === 'modules' ? 'bg-white shadow-sm text-[#0B0C12]' : 'text-[var(--vp-muted)]'
-                  }`}
-                >
-                  Sections &amp; Modules
-                </button>
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 rounded-full border border-black/10 bg-white p-1 shadow-sm">
+                {(['desktop', 'mobile'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setDevice(mode)}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold transition ${
+                      device === mode ? 'bg-[#0B0C12] text-white' : 'text-black/50 hover:text-[#0B0C12]'
+                    }`}
+                  >
+                    {mode === 'desktop' ? <Monitor size={13} /> : <Smartphone size={13} />}
+                    <span className="hidden sm:inline">{mode === 'desktop' ? 'Bureau' : 'Mobile'}</span>
+                  </button>
+                ))}
               </div>
 
-              {activeTab === 'style' ? (
-                <>
-                  {/* Choix de la couleur d'accent */}
-                  <div>
-                    <div className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-[var(--vp-muted)] mb-3">
-                      <Palette size={14} /> Couleur signature
-                    </div>
-                    <div className="flex flex-wrap gap-2.5">
-                      {ACCENT_COLORS.map((c) => {
-                        const isSelected = selectedColor.hex === c.hex;
-                        return (
-                          <button
-                            key={c.hex}
-                            type="button"
-                            onClick={() => setSelectedColor(c)}
-                            className="h-8 w-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 shadow-sm"
-                            style={{ background: c.hex }}
-                            title={c.name}
-                          >
-                            {isSelected && <Check size={14} className="text-white" strokeWidth={3} />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+              <Link to="/creer" className="vp-btn vp-press !px-4 !py-1.5 !text-[12.5px]">
+                Créer notre site <ArrowRight size={13} />
+              </Link>
+            </div>
+          </div>
 
-                  {/* Choix de la typographie */}
+          <div className="grid lg:grid-cols-12">
+            {/* Le panneau : thèmes, textes, visuels, sections */}
+            <div className="flex flex-col border-b border-black/5 lg:col-span-4 lg:border-b-0 lg:border-r">
+              <div className="grid grid-cols-2 gap-1 border-b border-black/5 bg-black/[0.02] p-2">
+                {onglets.map((item) => {
+                  const Icone = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setOnglet(item.id)}
+                      className={`flex items-center justify-center gap-1.5 rounded-full py-2 text-[12px] font-semibold transition ${
+                        onglet === item.id ? 'bg-white text-[#0B0C12] shadow-sm' : 'text-black/45 hover:text-black/70'
+                      }`}
+                    >
+                      <Icone size={13} />
+                      {item.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="no-scrollbar max-h-[520px] flex-1 overflow-y-auto p-5">
+                {onglet === 'themes' && (
                   <div>
-                    <div className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-[var(--vp-muted)] mb-3">
-                      <Type size={14} /> Typographie des titres
-                    </div>
-                    <div className="space-y-2">
-                      {TYPO_PREVIEWS.map((t) => {
-                        const isSelected = selectedTypo.id === t.id;
+                    <p className="text-[12.5px] leading-relaxed text-black/50">
+                      Chaque univers est un mini-site différent : image d’ouverture, palette, typographie et rythme.
+                    </p>
+                    <div className="mt-4 grid grid-cols-2 gap-2.5">
+                      {WEDDING_STYLES.map((style) => {
+                        const actif = theme === style.id;
                         return (
                           <button
-                            key={t.id}
+                            key={style.id}
                             type="button"
-                            onClick={() => setSelectedTypo(t)}
-                            className={`w-full rounded-xl border p-3 text-left transition ${
-                              isSelected
-                                ? 'border-[#0B0C12] bg-black/[0.03] ring-1 ring-[#0B0C12]'
-                                : 'border-black/10 hover:border-black/20'
+                            onClick={() => changerTheme(style.id)}
+                            className={`group overflow-hidden rounded-[16px] border text-left transition ${
+                              actif ? 'border-[#0B0C12] ring-2 ring-[#0B0C12]' : 'border-black/10 hover:border-black/35'
                             }`}
                           >
-                            <div className="text-[16px] font-semibold leading-tight text-[#0B0C12]" style={{ fontFamily: t.font }}>
-                              {t.sample}
-                            </div>
-                            <div className="mt-1 flex items-center justify-between text-[11px] text-[var(--vp-muted)]">
-                              <span>{t.name}</span>
-                              <span className="text-[10px]">{t.note}</span>
-                            </div>
+                            <span className="relative block aspect-[16/10] w-full overflow-hidden">
+                              <img
+                                src={style.image}
+                                alt=""
+                                loading="lazy"
+                                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                              />
+                              {actif && (
+                                <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white">
+                                  <Check size={10} className="text-black" />
+                                </span>
+                              )}
+                            </span>
+                            <span className="block px-2.5 py-2 text-[11.5px] font-bold leading-tight text-[#0B0C12]">
+                              {style.name}
+                            </span>
                           </button>
                         );
                       })}
                     </div>
                   </div>
-                </>
-              ) : (
-                /* Liste des modules réorganisables */
-                <div className="space-y-2">
-                  <div className="text-[12px] font-bold uppercase tracking-wider text-[var(--vp-muted)] mb-3 flex items-center gap-1.5">
-                    <Layout size={14} /> Structure activée
-                  </div>
-                  {['Hero & Titre', 'Notre Histoire', 'Programme du Jour J', 'Adresses & Itinéraires', 'RSVP en ligne', 'Cagnotte & Cadeaux', 'Galerie photos'].map((m, i) => (
-                    <div key={m} className="flex items-center justify-between rounded-xl border border-black/10 bg-white p-2.5 text-[13px] font-medium text-[#0B0C12] shadow-sm">
-                      <span className="flex items-center gap-2">
-                        <span className="vp-num text-[11px] text-[var(--vp-muted)]">0{i + 1}</span>
-                        {m}
-                      </span>
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                )}
+
+                {onglet === 'textes' && (
+                  <div className="space-y-4">
+                    <p className="text-[12.5px] leading-relaxed text-black/50">
+                      Les mots du site. La typographie, elle, appartient au thème.
+                    </p>
+                    <div>
+                      <label className="vp-label ml-1">Titre d’ouverture</label>
+                      <input
+                        value={titre}
+                        onChange={(e) => setTitre(e.target.value)}
+                        placeholder={themeActif.id === 'vegas' ? 'Sarah & Gabriel' : 'Nos prénoms'}
+                        className="vp-field"
+                      />
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Zone de prévisualisation en direct (Canvas) */}
-            <div className="lg:col-span-8 bg-[#F4F4F3] p-4 sm:p-8 flex items-center justify-center min-h-[580px]">
-              {activeDevice === 'mobile' ? (
-                /* Vrai iPhone interactif fidèle à la landing */
-                <div className="relative">
-                  {/* Lueur subtile posée sous l’iPhone */}
-                  <div
-                    aria-hidden="true"
-                    className="absolute -inset-x-8 -bottom-6 h-20 rounded-[50%] opacity-50 blur-2xl transition-colors duration-500"
-                    style={{ background: `radial-gradient(closest-side, ${selectedColor.hex}55, transparent)` }}
-                  />
-                  <div className="vp-perspective relative w-[295px] rounded-[48px] bg-[#0B0C12] p-[9.5px] shadow-[0_36px_90px_-24px_rgba(11,12,18,0.7)] ring-1 ring-black/20 sm:w-[315px]">
-                    <div className="relative aspect-[9/19] w-full overflow-hidden rounded-[39px] bg-[#0B0C12]">
-                      {/* Îlot dynamique */}
-                      <div className="absolute left-1/2 top-2 z-20 h-[20px] w-[82px] -translate-x-1/2 rounded-full bg-[#0B0C12] shadow-sm" />
-
-                      {/* Écran scrollable de l'iPhone */}
-                      <div className="no-scrollbar absolute inset-0 overflow-y-auto bg-white pt-7 text-[#0B0C12]">
-                        {/* En-tête photo Hero */}
-                        <div className="relative h-56 w-full overflow-hidden">
-                          <img
-                            src="/images/chateau.jpg"
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-                          <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                            <span className="text-[8.5px] font-semibold uppercase tracking-[0.22em] text-white/70">
-                              Nous nous marions
-                            </span>
-                            <h1
-                              className="mt-1 text-[24px] leading-tight drop-shadow-md"
-                              style={{ fontFamily: selectedTypo.font }}
-                            >
-                              Sarah &amp; Gabriel
-                            </h1>
-                            <div className="mt-1.5 flex items-center gap-2">
-                              <span className="text-[10px] text-white/80">12 Juin 2027 · Champlâtreux</span>
-                              <span
-                                className="rounded-full px-2 py-0.5 text-[8px] font-bold text-white shadow-sm"
-                                style={{ background: selectedColor.hex }}
-                              >
-                                J-267
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Contenu et modules dans l'iPhone */}
-                        <div className="p-4 space-y-3.5">
-                          {/* Module Cérémonie & RSVP */}
-                          <div className="rounded-2xl border border-black/5 bg-[#FAFAFA] p-3.5 shadow-sm">
-                            <div className="text-[9px] font-bold uppercase tracking-wider text-[var(--vp-muted)]">
-                              Cérémonie laïque
-                            </div>
-                            <div className="text-[12.5px] font-semibold text-[#0B0C12] mt-0.5">
-                              Parc du domaine · 15h30
-                            </div>
-                            <button
-                              type="button"
-                              className="mt-2.5 w-full rounded-full py-2 text-[11px] font-semibold text-white shadow-sm transition"
-                              style={{ background: selectedColor.hex }}
-                            >
-                              Confirmer ma présence (RSVP)
-                            </button>
-                          </div>
-
-                          {/* Mini Galerie Photos */}
-                          <div>
-                            <div className="text-[9px] font-bold uppercase tracking-wider text-[var(--vp-muted)] mb-1.5">
-                              Moments choisis
-                            </div>
-                            <div className="grid grid-cols-3 gap-1.5">
-                              {['/images/alliances.jpg', '/images/danse.jpg', '/images/champagne.jpg'].map((src) => (
-                                <div key={src} className="overflow-hidden rounded-xl aspect-square shadow-sm">
-                                  <img src={src} alt="" className="h-full w-full object-cover" />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Informations pratiques */}
-                          <div className="rounded-2xl border border-black/5 bg-[#FAFAFA] p-3 text-[10.5px] space-y-1 text-[var(--vp-muted)]">
-                            <div className="font-semibold text-[#0B0C12]">Accès &amp; Navettes</div>
-                            <div>Navettes privées au départ de Paris toutes les 30 min.</div>
-                          </div>
-                        </div>
-
-                        {/* Footer mini-site */}
-                        <div className="p-4 pb-6 text-center text-[8px] uppercase tracking-widest text-[var(--vp-muted)]">
-                          Sarah &amp; Gabriel · VOWS
-                        </div>
-                      </div>
-
-                      {/* Barre d’accueil iPhone */}
-                      <div className="pointer-events-none absolute inset-x-0 bottom-1.5 z-20 flex justify-center">
-                        <span className="h-1 w-24 rounded-full bg-black/30" />
-                      </div>
+                    <div>
+                      <label className="vp-label ml-1">Sur-titre</label>
+                      <input
+                        value={sousTitre}
+                        onChange={(e) => setSousTitre(e.target.value)}
+                        placeholder="Nous nous marions"
+                        className="vp-field"
+                      />
                     </div>
-                  </div>
-                </div>
-              ) : (
-                /* Vue Bureau (Desktop) moderne */
-                <div className="w-full max-w-2xl overflow-hidden rounded-[22px] border border-black/10 bg-white shadow-xl transition-all duration-300">
-                  {/* Entête du site généré */}
-                  <div className="relative h-60 sm:h-68 w-full overflow-hidden">
-                    <img
-                      src="/images/chateau.jpg"
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/70">
-                        Nous nous marions
-                      </span>
-                      <h1
-                        className="mt-1 text-[30px] sm:text-[36px] leading-tight drop-shadow-md"
-                        style={{ fontFamily: selectedTypo.font }}
-                      >
-                        Sarah &amp; Gabriel
-                      </h1>
-                      <div className="mt-2.5 flex items-center gap-2.5">
-                        <span className="text-[12px] text-white/85">12 Juin 2027 · Château de Champlâtreux</span>
-                        <span
-                          className="rounded-full px-2.5 py-0.5 text-[9.5px] font-bold text-white shadow-sm"
-                          style={{ background: selectedColor.hex }}
-                        >
-                          J-267
-                        </span>
-                      </div>
+                    <div>
+                      <label className="vp-label ml-1">Message aux invités</label>
+                      <textarea
+                        value={annonce}
+                        onChange={(e) => setAnnonce(e.target.value)}
+                        rows={3}
+                        placeholder="Nous avons hâte de vous retrouver."
+                        className="vp-field resize-none"
+                      />
                     </div>
-                  </div>
-
-                  {/* Contenu simulé Bureau */}
-                  <div className="p-6 space-y-5">
-                    <div className="flex items-center justify-between border-b border-black/5 pb-4">
-                      <div>
-                        <div className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--vp-muted)]">Cérémonie laïque</div>
-                        <div className="text-[14px] font-semibold text-[#0B0C12] mt-0.5">Parc du domaine · 15h30</div>
-                      </div>
+                    {(titre || sousTitre || annonce) && (
                       <button
                         type="button"
-                        className="rounded-full px-4 py-1.5 text-[12px] font-semibold text-white transition shadow-sm"
-                        style={{ background: selectedColor.hex }}
+                        onClick={() => {
+                          setTitre('');
+                          setSousTitre('');
+                          setAnnonce('');
+                        }}
+                        className="text-[12px] font-semibold text-black/45 underline underline-offset-2 transition hover:text-black"
                       >
-                        Confirmer RSVP
+                        Revenir aux textes de l’univers
                       </button>
-                    </div>
+                    )}
+                  </div>
+                )}
 
-                    <div className="grid grid-cols-3 gap-2.5 pt-1">
-                      {['/images/alliances.jpg', '/images/danse.jpg', '/images/champagne.jpg'].map((src) => (
-                        <div key={src} className="overflow-hidden rounded-xl aspect-square shadow-sm">
-                          <img src={src} alt="" className="h-full w-full object-cover hover:scale-105 transition duration-500" />
-                        </div>
+                {onglet === 'visuels' && (
+                  <div>
+                    <p className="text-[12.5px] leading-relaxed text-black/50">
+                      {VISUAL_COUNT} visuels disponibles. Celui que vous choisissez devient l’image d’ouverture du
+                      site.
+                    </p>
+                    <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto pb-1">
+                      {VISUAL_FAMILIES.map((famille) => (
+                        <button
+                          key={famille.id}
+                          type="button"
+                          onClick={() => setFamilleVisuelle(famille.id)}
+                          className={`shrink-0 rounded-full border px-3 py-1 text-[11.5px] font-semibold transition ${
+                            familleVisuelle === famille.id
+                              ? 'border-[#0B0C12] bg-[#0B0C12] text-white'
+                              : 'border-black/12 bg-white text-black/60 hover:border-black/35'
+                          }`}
+                        >
+                          {famille.label} <span className="opacity-60">{famille.visuals.length}</span>
+                        </button>
                       ))}
                     </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      {familleActive.visuals.map((visual) => {
+                        const actif = photo === visual.url;
+                        return (
+                          <button
+                            key={visual.url}
+                            type="button"
+                            title={visual.title}
+                            onClick={() => setPhoto(actif ? null : visual.url)}
+                            className={`overflow-hidden rounded-[12px] border transition ${
+                              actif ? 'border-[#0B0C12] ring-2 ring-[#0B0C12]' : 'border-black/10 hover:border-black/35'
+                            }`}
+                          >
+                            <span className="relative block aspect-[4/3] w-full overflow-hidden">
+                              <img
+                                src={visual.url}
+                                alt=""
+                                loading="lazy"
+                                className="h-full w-full object-cover"
+                                onError={(e) => {
+                                  // Un visuel pas encore livré montre le visuel de sa catégorie.
+                                  if (visual.repli && e.currentTarget.src !== location.origin + visual.repli) {
+                                    e.currentTarget.src = visual.repli;
+                                  }
+                                }}
+                              />
+                              {actif && (
+                                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white">
+                                  <Check size={10} className="text-black" />
+                                </span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {photo && (
+                      <button
+                        type="button"
+                        onClick={() => setPhoto(null)}
+                        className="mt-3 text-[12px] font-semibold text-black/45 underline underline-offset-2 transition hover:text-black"
+                      >
+                        Revenir au visuel de l’univers
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {onglet === 'sections' && (
+                  <div>
+                    <p className="text-[12.5px] leading-relaxed text-black/50">
+                      Les {SITE_SECTIONS.length} sections du site. Décochez ce que vous ne voulez pas montrer.
+                    </p>
+                    <div className="mt-4 space-y-1.5">
+                      {SITE_SECTIONS.map((section) => {
+                        const visible = !masquees.includes(section.key);
+                        return (
+                          <button
+                            key={section.key}
+                            type="button"
+                            onClick={() => basculerSection(section.key)}
+                            className="flex w-full items-center gap-3 rounded-[14px] border border-black/8 bg-white px-3.5 py-2.5 text-left transition hover:border-black/25"
+                          >
+                            <span
+                              className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border transition ${
+                                visible ? 'border-[#0B0C12] bg-[#0B0C12] text-white' : 'border-black/25'
+                              }`}
+                            >
+                              {visible && <Check size={10} />}
+                            </span>
+                            <span className="text-[13px] font-medium text-[#0B0C12]">{section.title}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <p className="flex items-center gap-2 border-t border-black/6 px-5 py-3 text-[12px] text-black/45">
+                <MousePointerClick size={13} />
+                L’aperçu est le vrai site : cliquez-dedans pour le parcourir.
+              </p>
+            </div>
+
+            {/* Le vrai mini-site, dans sa fenêtre */}
+            <div className="lg:col-span-8">
+              {device === 'desktop' ? (
+                <div ref={cadre} className="relative h-[560px] overflow-hidden bg-[#0B0C12]">
+                  <iframe
+                    key={src}
+                    title={`Aperçu du mini-site — ${themeActif.name}`}
+                    src={src}
+                    className="border-0 bg-white"
+                    style={{
+                      width: 1280,
+                      height: Math.round(560 / scale),
+                      transform: `scale(${scale})`,
+                      transformOrigin: 'top left',
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="flex justify-center bg-[#0B0C12] py-8">
+                  <div className="relative w-[368px] overflow-hidden rounded-[44px] border-[7px] border-black bg-black shadow-[0_30px_70px_-24px_rgba(0,0,0,0.6)]">
+                    <div className="absolute left-1/2 top-2.5 z-20 h-[18px] w-[76px] -translate-x-1/2 rounded-full bg-black" />
+                    <iframe
+                      key={src}
+                      title="Aperçu du mini-site sur téléphone"
+                      src={src}
+                      className="h-[640px] w-full rounded-[36px] border-0 bg-white"
+                    />
                   </div>
                 </div>
               )}
             </div>
           </div>
+        </div>
+
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link to="/creer" className="vp-btn vp-press !px-7">
+            Créer notre site <ArrowRight size={15} />
+          </Link>
+          <button
+            type="button"
+            onClick={() =>
+              document.getElementById('hero-ai-container')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }
+            className="vp-btn vp-btn-glass vp-press !px-7"
+          >
+            Choisir notre univers <Sliders size={15} />
+          </button>
         </div>
       </div>
     </section>

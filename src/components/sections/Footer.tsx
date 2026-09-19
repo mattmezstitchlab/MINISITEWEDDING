@@ -1,4 +1,5 @@
-import { Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { IdCard, UserRound, Users } from 'lucide-react';
 import { formatDateShort } from '../../lib/format';
 import { useSiteView } from './context';
 
@@ -16,6 +17,23 @@ export default function Footer() {
           <span>{site.phase === 'apres' ? 'Merci d’avoir partagé ce jour avec nous' : site.phase === 'pendant' ? 'C’est aujourd’hui — à tout à l’heure' : 'Nous avons hâte de vous retrouver'}</span>
         </div>
         <div className="mt-8 border-t pt-7 text-[11px] uppercase tracking-[0.2em]" style={{ borderColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(12,14,24,0.08)', color: muted }}>Créé avec VOWS</div>
+        {/* Les deux portes : rejoindre le mariage, ou retrouver sa carte. */}
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+          <Link
+            to={`/rejoindre/${site.slug}`}
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold transition-opacity hover:opacity-70"
+            style={{ color: muted }}
+          >
+            <UserRound size={13} /> Rejoindre le mariage
+          </Link>
+          <Link
+            to="/carte"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold transition-opacity hover:opacity-70"
+            style={{ color: muted }}
+          >
+            <IdCard size={13} /> Ma carte
+          </Link>
+        </div>
       </div>
     </footer>
   );

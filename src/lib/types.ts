@@ -122,6 +122,36 @@ export interface MediaAsset {
   orientation: string;
 }
 
+/** Une personne du réseau : sa carte, indépendamment de tout mariage. */
+export interface Person {
+  id: number;
+  first_name: string;
+  last_name: string;
+  photo: string;
+  home_city: string;
+  trade: string;
+  bio: string;
+  email: string;
+  phone: string;
+  website: string;
+  social: string;
+  contact_visibility: string;
+  card?: Record<string, unknown>;
+  /** Renseigné par le serveur : ce qui a été masqué pour l'appelant. */
+  redacted?: { contacts: boolean; prive: boolean };
+}
+
+/** La place d'une personne dans un mariage. Le rôle ne vit que là. */
+export interface WeddingMember {
+  id: number;
+  site_id: number;
+  person_id: number;
+  role_id: string;
+  status: string;
+  joined_at?: string | null;
+  person?: Person | null;
+}
+
 export interface PublicSiteData {
   site: WeddingSite;
   sections: SiteSection[];

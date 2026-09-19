@@ -6,7 +6,6 @@ import type {
 import { apiGet, ApiError } from './http';
 import { DEMO_DATA, DEMO_ENABLED } from './demo';
 import { STATIC_SITES, loadStaticSite } from './staticSite';
-import { AimeKernelBridge } from './aimeKernelBridge';
 
 /**
  * Chargement d’un site complet raccordé au Kernel AIME.
@@ -121,16 +120,15 @@ export function useSiteData(target: SiteTarget): SiteDataState & SiteDataActions
 
   const reload = useCallback(() => {
     const gen = ++generation.current;
+    // Les données chargées sont affichées telles quelles.
+    //
+    // Elles passaient auparavant par `AimeKernelBridge.projectWorldProjectToSiteData`,
+    // qui écrasait les prénoms, la date, le lieu et tout le programme par ceux du
+    // mariage de démonstration (« Sarah & Gabriel », Château des Tilleuls). Le
+    // Kernel relationnel redevient ce qu'il aurait dû rester : une source pour
+    // les cockpits par rôle, pas un filtre sur les données des vrais mariés.
     const commit = (next: SiteDataState) => {
-      if (gen === generation.current) {
-        // GRAND RACCORDEMENT : Projection immédiate depuis le Kernel AIME
-        if (next.data) {
-          const unifiedData = AimeKernelBridge.projectWorldProjectToSiteData(next.data);
-          setState({ ...next, data: unifiedData });
-        } else {
-          setState(next);
-        }
-      }
+      if (gen === generation.current) setState(next);
     };
     return loadSiteData(target)
       .then(({ data, degraded }) => commit({ data, demo: false, degraded, loading: false, error: '', status: null }))

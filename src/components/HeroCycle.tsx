@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
 import { usePrefersReducedMotion, useTabVisible } from '../lib/useReducedMotion';
 import VisionImage from './vision/VisionImage';
@@ -26,20 +24,19 @@ const STEP_MS = 5600;
 interface HeroCycleProps {
   children?: ReactNode;
   activeStyleId?: string;
+  /** La bande de navigation, posée en bas du hero, toujours au même endroit. */
+  bas?: ReactNode;
 }
 
-export default function HeroCycle({ children, activeStyleId }: HeroCycleProps) {
+export default function HeroCycle({ children, activeStyleId, bas }: HeroCycleProps) {
   const [index, setIndex] = useState(0);
   const reduced = usePrefersReducedMotion();
   const tabVisible = useTabVisible();
 
-  // Si un style spécifique est sélectionné (par l'agent ou le menu), se caler dessus
-  useEffect(() => {
-    if (activeStyleId) {
-      const found = WEDDING_STYLES.findIndex((s) => s.id === activeStyleId);
-      if (found !== -1) setIndex(found);
-    }
-  }, [activeStyleId]);
+  // Un univers choisi par la bande se montre tout de suite : il n'y a rien à
+  // synchroniser, l'index se déduit du choix.
+  const impose = activeStyleId ? WEDDING_STYLES.findIndex((s) => s.id === activeStyleId) : -1;
+  const courant = impose === -1 ? index : impose;
 
   const running = !reduced && tabVisible && !activeStyleId;
 
@@ -49,10 +46,12 @@ export default function HeroCycle({ children, activeStyleId }: HeroCycleProps) {
     return () => clearTimeout(timer);
   }, [index, running]);
 
-  const style = WEDDING_STYLES[index] || WEDDING_STYLES[0];
-
   return (
-    <header className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 py-24 sm:px-8">
+    <header
+      className={`relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 pt-24 sm:px-8 ${
+        bas ? 'pb-44' : 'pb-24'
+      }`}
+    >
       {/* Visuels plein écran, en fondu enchaîné, avec un léger souffle */}
       <div className="absolute inset-0" aria-hidden="true">
         {WEDDING_STYLES.map((s, i) => (
@@ -60,15 +59,15 @@ export default function HeroCycle({ children, activeStyleId }: HeroCycleProps) {
             key={s.id}
             className="absolute inset-0"
             initial={false}
-            animate={{ opacity: i === index ? 1 : 0 }}
+            animate={{ opacity: i === courant ? 1 : 0 }}
             transition={{ duration: reduced ? 0.01 : 1.4, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Seul le visuel affiché respire */}
             <motion.div
               className="h-full w-full"
               initial={false}
-              animate={{ scale: i === index && !reduced ? 1.12 : 1.02 }}
-              transition={{ duration: i === index ? 9 : 0.6, ease: 'linear' }}
+              animate={{ scale: i === courant && !reduced ? 1.12 : 1.02 }}
+              transition={{ duration: i === courant ? 9 : 0.6, ease: 'linear' }}
             >
               <VisionImage
                 src={s.image}
@@ -88,6 +87,13 @@ export default function HeroCycle({ children, activeStyleId }: HeroCycleProps) {
 
       {/* Titre centré */}
       <div className="relative z-10 mx-auto w-full max-w-4xl">{children}</div>
+
+      {/* La bande du hero : la navigation de la page, au même endroit partout. */}
+      {bas && (
+        <div className="absolute inset-x-0 bottom-0 z-20 pb-5 sm:pb-7">
+          <div className="vp-page">{bas}</div>
+        </div>
+      )}
     </header>
   );
 }
