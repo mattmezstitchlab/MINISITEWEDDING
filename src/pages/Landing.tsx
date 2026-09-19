@@ -9,7 +9,8 @@ import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import ComplementaryThemes from '../components/ComplementaryThemes';
-import HeroAiPrompt from '../components/HeroAiPrompt';
+import SpaceBuilder from '../components/SpaceBuilder';
+import { EMPTY_DRAFT, type SpaceDraft } from '../lib/spaceDraft';
 
 import UniversePhoneScreens from '../components/UniversePhoneScreens';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -31,6 +32,8 @@ export default function Landing() {
   // Par défaut : null = page principale générale d'atterrissage VOWS
   const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(null);
   const [titleIdx, setTitleIdx] = useState(0);
+  // Ce que le couple saisit dans le hero : l'espace se construit dans le téléphone.
+  const [draft, setDraft] = useState<SpaceDraft>(EMPTY_DRAFT);
 
   const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
 
@@ -44,6 +47,10 @@ export default function Landing() {
   }, [selectedStyle]);
 
   const scrollToHero = () => {
+    // Sur un univers, la création vit sur l'accueil : on y revient d'abord.
+    if (selectedStyle) {
+      setSelectedStyle(null);
+    }
     const el = document.getElementById('hero-ai-container');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -145,13 +152,19 @@ export default function Landing() {
             transition={{ delay: 0.25, duration: 0.8 }}
             className="mt-4 w-full"
           >
-            <ErrorBoundary>
-              <HeroAiPrompt
-                onProposalGenerated={(proposal) => {
-                  setSelectedStyle(proposal.style);
-                }}
-              />
-            </ErrorBoundary>
+            {!selectedStyle && (
+              <ErrorBoundary>
+                <div id="hero-ai-container" className="mt-6 w-full">
+                  <SpaceBuilder
+                    draft={draft}
+                    onDraftChange={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
+                    onCreated={() => {
+                      document.getElementById('ecran')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                  />
+                </div>
+              </ErrorBoundary>
+            )}
           </motion.div>
         </div>
       </HeroCycle>
@@ -162,7 +175,7 @@ export default function Landing() {
       <ErrorBoundary>
         <div id="ecran">
         {!selectedStyle ? (
-          <HomePhoneShowcase />
+          <HomePhoneShowcase draft={draft} />
         ) : (
           <UniversePhoneScreens currentStyle={selectedStyle} />
         )}

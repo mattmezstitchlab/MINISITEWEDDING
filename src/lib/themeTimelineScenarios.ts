@@ -318,6 +318,171 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
       ],
     },
   ],
+  'traditionnel': [
+    {
+      time: '15h00',
+      title: 'La Messe et le Cortège',
+      narrativeScript: 'Entrée au son de l’orgue, les familles debout dans l’allée centrale, puis la sortie sous une pluie de pétales sur le parvis.',
+      ambianceDetail: 'Cierges, grand orgue et chemise de fleurs blanches sur le parvis.',
+      image: '/images/traditionnel.jpg',
+      vendorRoles: [
+        { role: 'Wedding Planner Cérémonie & Réception', mission: 'Coordination église, cortège et transfert vers le manoir', status: 'filled' },
+        { role: 'Organiste & Chorale', mission: 'Accompagnement musical de la messe', status: 'open', compensationHint: 'Prestation 2h sur place' },
+      ],
+    },
+    {
+      time: '19h30',
+      title: 'Le Banquet Assis',
+      narrativeScript: 'Cent quatre-vingts convives, cinq services, un plan de table calligraphié et un discours entre chaque plat.',
+      ambianceDetail: 'Nappes longues, bougies hautes, service à l’assiette en cadence.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Traiteur Banquet Traditionnel', mission: 'Repas assis cinq services et pièce montée', status: 'filled' },
+        { role: 'Orchestre de Bal & Animateur', mission: 'Ouverture de bal et animation du dîner', status: 'open', compensationHint: 'Forfait soirée complète' },
+      ],
+    },
+    {
+      time: '11h00',
+      title: 'Le Brunch du Lendemain',
+      narrativeScript: 'Pain perdu, jus pressés et récits de la veille, sous les tilleuls du manoir, avant les au revoir.',
+      ambianceDetail: 'Tables dépareillées, paniers de viennoiseries et café en continu.',
+      image: '/images/chateau-tilleuls.jpg',
+      vendorRoles: [
+        { role: 'Brunch & Pâtissier du Lendemain', mission: 'Brunch servi sous les tilleuls jusqu’à 14h00', status: 'open', compensationHint: 'Service du matin' },
+      ],
+    },
+  ],
+  'corse': [
+    {
+      time: '17h30',
+      title: 'Le Oui sur la Crête',
+      narrativeScript: 'Un cercle de pierres sèches, la mer en contrebas, et les voix polyphoniques qui montent du vallon pendant les vœux.',
+      ambianceDetail: 'Maquis en fleurs, vent d’ouest et lumière rasante sur les aiguilles.',
+      image: '/images/corse.jpg',
+      vendorRoles: [
+        { role: 'Groupe Polyphonique Corse', mission: 'Chants pendant la cérémonie et au coucher du soleil', status: 'filled' },
+      ],
+    },
+    {
+      time: '20h00',
+      title: 'Le Cochon de Lait',
+      narrativeScript: 'La broche tourne depuis midi. On découpe sur la table de bois, on sert avec les pommes de terre au maquis et le vin de Patrimonio.',
+      ambianceDetail: 'Feu de bois, lanterne tempête et longues tables sur la dalle de pierre.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'Berger Hôte & Cuisinier au Feu', mission: 'Cochon de lait à la broche et fromages de brebis', status: 'filled' },
+      ],
+    },
+    {
+      time: '11h00',
+      title: 'La Baignade du Lendemain',
+      narrativeScript: 'Descente au sentier, baignade en calanque, café au feu et retour tranquille avant la chaleur.',
+      ambianceDetail: 'Eau à 19 °C, galets blancs, personne n’avait prévu de maillot.',
+      image: '/images/terrasse.jpg',
+      vendorRoles: [
+        { role: 'Guide Randonnée & Baignade', mission: 'Descente encadrée et baignade du lendemain', status: 'open', compensationHint: 'Demi-journée encadrée' },
+      ],
+    },
+  ],
+  'reunion': [
+    {
+      time: '16h00',
+      title: 'L’Accueil au Rougail',
+      narrativeScript: 'On arrive par la varangue, on goûte le rougail d’accueil et on se met à l’ombre des frangipaniers pendant que la famille s’installe.',
+      ambianceDetail: 'Ti-punch, achards et serviettes humides pour la chaleur.',
+      image: '/images/reunion.jpg',
+      vendorRoles: [
+        { role: 'Chef Créole Marmite & Carry', mission: 'Accueil, rougail et buffet créole', status: 'filled' },
+      ],
+    },
+    {
+      time: '21h00',
+      title: 'Le Maloya',
+      narrativeScript: 'Les tambours entrent après le dessert. Le roulèr donne le rythme, les invités forment le cercle et personne ne s’assoit plus.',
+      ambianceDetail: 'Roulèr, kayanm et lumières basses sur le jardin tropical.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'Groupe Séga & Maloya', mission: 'Concert live jusqu’à l’aube', status: 'filled' },
+      ],
+    },
+    {
+      time: '10h00',
+      title: 'Le Lendemain à la Mer',
+      narrativeScript: 'Petit-déjeuner sous les palmiers puis plage de l’Ermitage : la journée suit la marée, personne ne regarde l’heure.',
+      ambianceDetail: 'Boules de coco, lagon tiède et sieste sous les filaos.',
+      image: '/images/terrasse.jpg',
+      vendorRoles: [
+        { role: 'Fleuriste Tropical & Décoration', mission: 'Décor de plage et de varangue', status: 'open', compensationHint: 'Prestation deux jours' },
+      ],
+    },
+  ],
+  'new-york': [
+    {
+      time: '18h30',
+      title: 'Le Dîner sur le Toit',
+      narrativeScript: 'On monte par l’ascenseur de service, la skyline est déjà orange, les lumières s’allument entre les réservoirs d’eau au moment où l’on s’assoit.',
+      ambianceDetail: 'Golden hour sur Manhattan, bar à huîtres et verres de champagne.',
+      image: '/images/new-york.jpg',
+      vendorRoles: [
+        { role: 'Chef & Bar à Cocktails', mission: 'Dîner sur le toit et bar à cocktails', status: 'filled' },
+        { role: 'Saxophoniste & DJ Set', mission: 'Cocktail au saxophone puis set jusqu’à la fermeture', status: 'filled' },
+      ],
+    },
+    {
+      time: '23h00',
+      title: 'Le Food Truck',
+      narrativeScript: 'Quand la ville baisse d’un ton, le camion s’installe dans la rue en bas et remonte les burgers par l’ascenseur.',
+      ambianceDetail: 'Néons, papier kraft et musique qui ne s’arrête pas.',
+      image: '/images/hero-wedding.jpg',
+      vendorRoles: [
+        { role: 'Food Truck de Nuit', mission: 'Service tardif depuis la rue', status: 'open', compensationHint: 'Service 2h' },
+      ],
+    },
+    {
+      time: '11h30',
+      title: 'Le Brunch dans un Diner',
+      narrativeScript: 'Banquettes rouges, pancakes et café sans fin : les adieux américains, avec les photos de la veille passées de main en main.',
+      ambianceDetail: 'Juke-box, sirops d’érable et café en mug épais.',
+      image: '/images/terrasse.jpg',
+      vendorRoles: [
+        { role: 'Diner Partenaire', mission: 'Brunch privatif du lendemain', status: 'open', compensationHint: 'Salle privatisée 3h' },
+      ],
+    },
+  ],
+  'vegas': [
+    {
+      time: '22h00',
+      title: 'La Chapelle Néon',
+      narrativeScript: 'Vingt minutes, une arche de fleurs, Elvis qui officie et la famille qui rit du début à la fin.',
+      ambianceDetail: 'Néons roses, flashs et orgue d’un autre temps.',
+      image: '/images/vegas.jpg',
+      vendorRoles: [
+        { role: 'Elvis Officiant & Maître de Cérémonie', mission: 'Cérémonie en vingt minutes sous les néons', status: 'filled' },
+        { role: 'Photographe Néon', mission: 'Portraits de nuit et tirages sépia', status: 'filled' },
+      ],
+    },
+    {
+      time: '23h30',
+      title: 'Champagne au Strip',
+      narrativeScript: 'La limousine remonte le boulevard, on sabre une bouteille au-dessus du strip et les taxis jaunes klaxonnent au passage.',
+      ambianceDetail: 'Enseignes géantes, vitres baissées, musique à fond.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Chauffeur de Limousine', mission: 'Tour du Strip et champagne à bord', status: 'filled' },
+      ],
+    },
+    {
+      time: '01h30',
+      title: 'Le Buffet de Nuit',
+      narrativeScript: 'Retour au chapiteau, buffet nocturne, machine à sous pour tirer le gâteau et piste de danse jusqu’à trois heures.',
+      ambianceDetail: 'Sliders, glace pilée et lumières roses jusqu’au bout de la nuit.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'Buffet Nocturne & Bar', mission: 'Service de nuit et bar permanent', status: 'open', compensationHint: 'Service jusqu’à 03h' },
+      ],
+    },
+  ],
+
 };
 
 export function getScenesForStyle(styleId: string): ThemeTimelineScene[] {

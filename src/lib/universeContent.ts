@@ -480,6 +480,111 @@ export const UNIVERSE_CONTENT: Record<string, UniverseContent> = {
     infos: [{ label: 'Accès', value: 'Rooftop accessible par l’ascenseur C, badge obligatoire' }, { label: 'Navette', value: '23h00 et 02h00 vers Pigalle' }, { label: 'Hébergement', value: 'Hôtel Clignancourt, 10 chambres bloquées' }],
     vendor: { arrival: 'Arrivée 16h00, sécurité à 18h', access: 'Rue du Chevalier-de-la-Barre, arrêt court, 10 min', contact: 'Hugo · 06 26 79 03 55'  },
   },
+  traditionnel: {
+    hero: {
+      kicker: 'Univers · Traditionnel & Famille',
+      title: 'Le mariage tel qu’on se le raconte depuis toujours.',
+      subtitle:
+        'Messe à l’église, cortège, banquet assis, orchestre et brunch du lendemain. Rien d’insolite — tout est tenu, à la minute.',
+      facts: [
+        { label: 'Lieu', value: 'Église Saint-Jean puis Manoir des Ormes' },
+        { label: 'Invités', value: '180 personnes' },
+        { label: 'Programme', value: 'Messe, banquet, bal jusqu’à 04h00' },
+      ],
+    },
+    couple: { names: 'Claire & Thomas', date: '2027-06-19', countdown: 'J-274', venue: 'Église Saint-Jean & Manoir des Ormes', city: 'Touraine', season: 'Juin', dressCode: 'Tenue de cérémonie, chapeaux bienvenus', guests: 180 },
+    rsvp: { confirmed: 164, pending: 16, invitation: 'Réponse avant le 15 mai, plan de table à valider' },
+    cagnotte: { purpose: 'Le voyage de noces en Italie, offert par les familles', goal: 6000, raised: 5240, contributors: 118, top: '700 €' },
+    menu: { service: 'Banquet assis, cinq services, service à l’assiette', items: ['Feuilleté de ris de veau, sauce suprême', 'Filet de bœuf, gratin dauphinois, jus au madère', 'Pièce montée à la nougatine et corbeille de dragées'] },
+    allergens: [{ label: 'Végétarien', value: '6 couverts' }, { label: 'Sans gluten', value: '4 couverts' }, { label: 'Sans alcool', value: '12 couverts' }],
+    infos: [{ label: 'Église', value: 'Messe à 15h00, 12 place de l’Église — parking fléché' }, { label: 'Navette', value: 'Deux bus de 17h00 et 17h20 vers le manoir' }, { label: 'Hébergement', value: 'Manoir et gîtes voisins, 40 lits réservés' }],
+    vendor: { arrival: 'Arrivée 9h00 au manoir, mise en place jusqu’à 13h', access: 'Entrée de service, chemin des Ormes — véhicule autorisé', contact: 'Claire · 06 44 17 92 30' },
+  },
+
+  corse: {
+    hero: {
+      kicker: 'Univers · Sauvage & Éphémère',
+      title: 'Le maquis pour tout décor.',
+      subtitle:
+        'Une bergerie de pierre sur la crête, des tables de bois, et des chants polyphoniques quand le soleil descend sur le golfe.',
+      facts: [
+        { label: 'Lieu', value: 'Bergerie de la Crête, Balagne' },
+        { label: 'Invités', value: '70 personnes' },
+        { label: 'Repas', value: 'Cochon de lait à la broche' },
+      ],
+    },
+    couple: { names: 'Laetitia & Petru', date: '2027-05-29', countdown: 'J-253', venue: 'Bergerie de la Crête', city: 'Balagne, Corse', season: 'Mai, maquis en fleurs', dressCode: 'Lin clair, chaussures de marche', guests: 70 },
+    rsvp: { confirmed: 66, pending: 4, invitation: 'Réponse avant le 1ᵉʳ mai — l’accès se prépare' },
+    cagnotte: { purpose: 'Le vin de Patrimonio et les fromages de brebis', goal: 2400, raised: 2110, contributors: 52, top: '300 €' },
+    menu: { service: 'Repas au feu de bois, servi sur la crête', items: ['Assiette de charcuterie corse, figatellu grillé', 'Cochon de lait à la broche, pommes de terre au maquis', 'Fiadone au brocciu et canistrelli'] },
+    allergens: [{ label: 'Végétarien', value: '4 couverts' }, { label: 'Sans lactose', value: '3 couverts' }, { label: 'Sans porc', value: '5 couverts' }],
+    infos: [{ label: 'Accès', value: 'Rendez-vous au col à 16h00, puis 25 min de sentier' }, { label: 'Navette', value: 'Quatre 4 × 4 depuis la place du village' }, { label: 'Hébergement', value: 'Bergerie et deux maisons du village, 30 lits' }],
+    vendor: { arrival: 'Arrivée 10h00 au col, montage avec les 4 × 4', access: 'Piste carrossable jusqu’à la bergerie, terrain sec', contact: 'Petru · 06 78 21 55 42' },
+  },
+
+  reunion: {
+    hero: {
+      kicker: 'Univers · Île & Tropiques',
+      title: 'La varangue ouverte sur les palmiers.',
+      subtitle:
+        'Un domaine créole, des carrys qui mijotent depuis le matin et un maloya qui fait lever tout le monde à la fin du repas.',
+      facts: [
+        { label: 'Lieu', value: 'Domaine de la Varangue, Saint-Paul' },
+        { label: 'Invités', value: '140 personnes' },
+        { label: 'Soirée', value: 'Séga et maloya live jusqu’à l’aube' },
+      ],
+    },
+    couple: { names: 'Océane & Dimitri', date: '2027-08-14', countdown: 'J-330', venue: 'Domaine de la Varangue', city: 'Saint-Paul, La Réunion', season: 'Août, hiver austral', dressCode: 'Léger et coloré, tissus tropicaux', guests: 140 },
+    rsvp: { confirmed: 128, pending: 12, invitation: 'Réponse avant le 20 juillet, le traiteur compte les marmites' },
+    cagnotte: { purpose: 'Le rougail d’accueil et les épices du repas', goal: 3800, raised: 3190, contributors: 97, top: '450 €' },
+    menu: { service: 'Repas créole, service au buffet sous la varangue', items: ['Rougail saucisse et grains, achards de légumes', 'Carry boucané, riz et lentilles de Cilaos', 'Ananas Victoria rôti, glace coco'] },
+    allergens: [{ label: 'Végétarien', value: '16 couverts' }, { label: 'Sans porc', value: '11 couverts' }, { label: 'Sans gluten', value: '8 couverts' }],
+    infos: [{ label: 'Accès', value: 'Route de Saint-Paul, entrée du domaine à 16h00' }, { label: 'Navette', value: 'Trois départs de Saint-Denis et de Saint-Gilles' }, { label: 'Hébergement', value: 'Bungalows du domaine, 45 lits, petit-déjeuner inclus' }],
+    vendor: { arrival: 'Arrivée 11h00, les marmites démarrent à 13h', access: 'Cour du domaine, livraison côté cuisine', contact: 'Dimitri · 07 62 84 10 27' },
+  },
+
+  'new-york': {
+    hero: {
+      kicker: 'Univers · Urbain',
+      title: 'La skyline pour mur de fond.',
+      subtitle:
+        'Un rooftop à Brooklyn, des lumières tendues entre deux réservoirs d’eau, et un dîner qui commence quand le soleil descend sur Manhattan.',
+      facts: [
+        { label: 'Lieu', value: 'Rooftop Williamsburg, Brooklyn' },
+        { label: 'Invités', value: '110 personnes' },
+        { label: 'Dîner', value: '18h30 — coucher de soleil sur Manhattan' },
+      ],
+    },
+    couple: { names: 'Alix & Jordan', date: '2027-09-25', countdown: 'J-372', venue: 'Rooftop Williamsburg', city: 'Brooklyn, New York', season: 'Septembre, fin d’été', dressCode: 'Costume clair, robe courte', guests: 110 },
+    rsvp: { confirmed: 96, pending: 14, invitation: 'Réponse avant le 5 septembre — le lieu ferme la liste' },
+    cagnotte: { purpose: 'La limousine jaune et le brunch du lendemain', goal: 4200, raised: 3480, contributors: 74, top: '500 €' },
+    menu: { service: 'Dîner sur le toit, bar à cocktails et food truck', items: ['Bar à huîtres, sauce mignonette', 'Côtes de bœuf, pommes de terre au fenouil', 'Cheesecake new-yorkais, cerises macérées'] },
+    allergens: [{ label: 'Végétarien', value: '9 couverts' }, { label: 'Sans gluten', value: '6 couverts' }, { label: 'Sans alcool', value: '8 couverts' }],
+    infos: [{ label: 'Accès', value: 'Ascenseur de service jusqu’au 12ᵉ, badge nominatif' }, { label: 'Navette', value: 'Deux vans depuis Manhattan, 17h00 et 17h30' }, { label: 'Hébergement', value: 'Hôtel Williamsburg, 30 chambres bloquées' }],
+    vendor: { arrival: 'Arrivée 13h00, montage du toit jusqu’à 16h', access: 'Quai de livraison Kent Ave, 20 minutes maximum', contact: 'Jordan · 07 45 90 66 18' },
+  },
+
+  vegas: {
+    hero: {
+      kicker: 'Univers · Express & Festif',
+      title: 'Chapelle rose, Elvis, limousine.',
+      subtitle:
+        'Une cérémonie de vingt minutes sous une arche de fleurs, du champagne au strip et un buffet nocturne jusqu’à trois heures.',
+      facts: [
+        { label: 'Lieu', value: 'Chapelle Neon Rose, Las Vegas' },
+        { label: 'Invités', value: '40 personnes' },
+        { label: 'Cérémonie', value: '22h00, vingt minutes, Elvis officie' },
+      ],
+    },
+    couple: { names: 'Mélanie & Kevin', date: '2026-12-31', countdown: 'J-104', venue: 'Chapelle Neon Rose', city: 'Las Vegas', season: 'Décembre, nuit claire', dressCode: 'Blanc, paillettes, santiags bienvenus', guests: 40 },
+    rsvp: { confirmed: 38, pending: 2, invitation: 'Réponse avant le 15 décembre — chapelle à créneau' },
+    cagnotte: { purpose: 'La limousine, le champagne et le buffet de nuit', goal: 2000, raised: 1680, contributors: 33, top: '250 €' },
+    menu: { service: 'Buffet nocturne et bar permanent', items: ['Sliders et ailes de poulet sauce miel', 'Frites au cheddar et jalapeños', 'Gâteau à étage rose, crème vanille'] },
+    allergens: [{ label: 'Végétarien', value: '3 couverts' }, { label: 'Sans porc', value: '2 couverts' }, { label: 'Sans lactose', value: '1 couvert' }],
+    infos: [{ label: 'Accès', value: 'Chapelle au 2100 Las Vegas Blvd, voiturier inclus' }, { label: 'Navette', value: 'Limousine depuis l’hôtel à 21h15' }, { label: 'Hébergement', value: 'Hôtel du Strip, 20 chambres au même étage' }],
+    vendor: { arrival: 'Arrivée 19h30, répétition de la cérémonie à 20h', access: 'Parking arrière de la chapelle, emplacement réservé', contact: 'Kevin · 07 55 30 74 61' },
+  },
+
 };
 
 /** Le contenu d'un univers, avec le contenu de Black & White en secours. */

@@ -8,7 +8,7 @@ export interface WeddingStyle {
   id: string;
   name: string;
   tagline: string;
-  category?: 'minimal' | 'nature' | 'urbain' | 'concept' | 'sauvage';
+  category?: 'minimal' | 'nature' | 'urbain' | 'concept' | 'sauvage' | 'classique';
   ink: string;
   muted: string;
   accent: string;
@@ -45,6 +45,7 @@ export const THEME_CATEGORIES: ThemeCategory[] = [
   { id: 'urbain', label: 'Nocturne & Fête 02h17', description: 'Rooftops, clubs secrets, néons et sound system' },
   { id: 'concept', label: 'Radical & Insolite', description: 'Bunkers de béton, supermarché 22h, motel désert et fanzines' },
   { id: 'sauvage', label: 'Sauvage & Éphémère', description: 'Falaises bretonnes, feux d’asado en clairière, road-trip motel' },
+  { id: 'classique', label: 'Traditionnel & Famille', description: 'Église, banquet, orchestre : le classique exécuté à la perfection' },
 ];
 
 export const WEDDING_STYLES: WeddingStyle[] = [
@@ -548,6 +549,131 @@ export const WEDDING_STYLES: WeddingStyle[] = [
       badge: 'Renaissance Joyeuse',
     },
   },
+  {
+    id: 'traditionnel',
+    name: 'Traditionnel Élégant',
+    tagline: 'Église, banquet, orchestre. Le classique parfait.',
+    category: 'classique',
+    manifesto: 'Le mariage tel qu’on se le raconte depuis toujours, mais exécuté sans une fausse note : messe à l’église, cortège, banquet assis, orchestre et brunch du lendemain.',
+    synopsis: 'Rien d’insolite, tout est soigné. Dragées, livret de messe, plan de table calligraphié, pièce montée, ouverture de bal et animateur : la liste complète, tenue par une cheffe d’orchestre.',
+    ink: '#1B1B1F',
+    muted: '#8A8378',
+    accent: '#B08D57',
+    dark: false,
+    image: '/images/traditionnel.jpg',
+    aura: ['#FBF7F0', '#F0E6D6', '#DEC9A8'],
+    humanMissions: [
+      { role: 'Wedding Planner Cérémonie & Réception', mission: 'Orchestration complète : église, cortège, banquet, brunch du lendemain', essentialSkill: 'Chef d’orchestre du jour J' },
+      { role: 'Traiteur Banquet Traditionnel', mission: 'Repas assis cinq services, service à l’assiette et pièce montée', essentialSkill: 'Service à la française' },
+      { role: 'Orchestre de Bal & Animateur', mission: 'Ouverture de bal, variété française et dancefloor jusqu’à 04h00', essentialSkill: 'Tenir une piste toute la nuit' },
+    ],
+    complementaryStyleIds: ['chateau-moderne', 'garden-party', 'corse'],
+    vendorToolkit: {
+      title: 'Carnet de Cérémonie Complet',
+      description: 'Livret de messe, plans de table, ordre du cortège et coordination des prestataires en un seul carnet.',
+      badge: 'Classique Sans Fausse Note',
+    },
+  },
+  {
+    id: 'corse',
+    name: 'Corse Sauvage',
+    tagline: 'Maquis, pierre sèche, chants polyphoniques.',
+    category: 'sauvage',
+    manifesto: 'Une bergerie de pierre sur la crête, le maquis pour tout décor, et des chants polyphoniques qui montent du vallon quand le soleil descend.',
+    synopsis: 'Mariage dans l’île : longues tables de bois, cochon de lait à la broche, vin de Patrimonio et baignade au petit matin. Personne n’est reparti avant le lendemain.',
+    ink: '#F6F2E9',
+    muted: '#B9AE97',
+    accent: '#7C8A5A',
+    dark: true,
+    image: '/images/corse.jpg',
+    aura: ['#3A3B32', '#2A2B24', '#1B1C17'],
+    humanMissions: [
+      { role: 'Berger Hôte & Cuisinier au Feu', mission: 'Cochon de lait à la broche, fromages de brebis et repas servi sur la crête', essentialSkill: 'Cuisine au feu de bois' },
+      { role: 'Groupe Polyphonique Corse', mission: 'Chants traditionnels pendant la cérémonie et au coucher du soleil', essentialSkill: 'Polyphonie à trois voix' },
+      { role: 'Guide Randonnée & Baignade', mission: 'Accès au site par le sentier, baignade du lendemain en calanque', essentialSkill: 'Connaissance des sentiers' },
+    ],
+    complementaryStyleIds: ['garden-party', 'phare-atlantique', 'reunion'],
+    vendorToolkit: {
+      title: 'Carnet de la Crête',
+      description: 'Sentiers, horaires de navette par le col, météo du maquis et plan des tables de pierre.',
+      badge: 'Île & Feu de Bois',
+    },
+  },
+  {
+    id: 'reunion',
+    name: 'La Réunion Créole',
+    tagline: 'Varangue, frangipanier, maloya.',
+    category: 'nature',
+    manifesto: 'Une varangue créole ouverte sur les palmiers, des carrys parfumés et un maloya qui fait lever tout le monde à la fin du repas.',
+    synopsis: 'Mariage tropical : accueil au rougail, table sous les frangipaniers, séga et maloya en soirée, et la mer à dix minutes. Le lendemain, tout le monde se baigne.',
+    ink: '#1E2422',
+    muted: '#87897E',
+    accent: '#E07A5F',
+    dark: false,
+    image: '/images/reunion.jpg',
+    aura: ['#FFF6EC', '#FBE3CE', '#F0C8A8'],
+    humanMissions: [
+      { role: 'Chef Créole Marmite & Carry', mission: 'Carry boucané, rougail saucisse et cari de poisson servi sous la varangue', essentialSkill: 'Maîtrise des épices créoles' },
+      { role: 'Groupe Séga & Maloya', mission: 'Concert live de la fin du repas jusqu’à l’aube, roulèr et kayanm', essentialSkill: 'Faire danser tout le monde' },
+      { role: 'Fleuriste Tropical & Décoration', mission: 'Frangipaniers, aloès et vaisselle de terre cuite sur les longues tables', essentialSkill: 'Compositions tropicales' },
+    ],
+    complementaryStyleIds: ['garden-party', 'corse', 'club'],
+    vendorToolkit: {
+      title: 'Carnet Créole',
+      description: 'Menus des carrys, plannings des groupes, rotation des navettes et plan des varangues.',
+      badge: 'Île Intense',
+    },
+  },
+  {
+    id: 'new-york',
+    name: 'New York Skyline',
+    tagline: 'Brooklyn, taxi jaune, skyline.',
+    category: 'urbain',
+    manifesto: 'Un rooftop à Brooklyn, la skyline pour mur de fond, des lumières accrochées entre deux réservoirs d’eau et un dîner qui commence quand le soleil descend sur Manhattan.',
+    synopsis: 'Mariage américain : limousine jaune, discours au micro, dîner sur les toits et brunch le lendemain dans un diner. Le rythme de la ville fait la musique.',
+    ink: '#111827',
+    muted: '#7C8598',
+    accent: '#F4B942',
+    dark: false,
+    image: '/images/new-york.jpg',
+    aura: ['#F4F6FB', '#E2E8F4', '#C9D4E8'],
+    humanMissions: [
+      { role: 'Wedding Planner New-Yorkais', mission: 'Permis de rooftop, coordination des prestataires et timing à l’américaine', essentialSkill: 'Exécution au quart d’heure' },
+      { role: 'Chef & Bar à Cocktails', mission: 'Dîner sur le toit, bar à cocktails et food truck de fin de soirée', essentialSkill: 'Cuisine de rooftop' },
+      { role: 'Saxophoniste & DJ Set', mission: 'Cocktail au saxophone live, puis set jusqu’à la fermeture du lieu', essentialSkill: 'Ambiance new-yorkaise' },
+    ],
+    complementaryStyleIds: ['rooftop-paris', 'club', 'vegas'],
+    vendorToolkit: {
+      title: 'Carnet Manhattan',
+      description: 'Autorisations de rooftop, plan des ascenseurs, rotation des navettes et adresses du brunch.',
+      badge: 'Rythme New-Yorkais',
+    },
+  },
+  {
+    id: 'vegas',
+    name: 'Las Vegas',
+    tagline: 'Chapelle rose, Elvis, limousine.',
+    category: 'concept',
+    manifesto: 'Une chapelle en néon rose à 22h00, Elvis qui vous marie sous une arche de fleurs en plastique, et une limousine pour repartir. C’est assumé, c’est joyeux.',
+    synopsis: 'Le mariage le plus rapide du monde, version festive : cérémonie de trente minutes, champagne au strip, buffet nocturne et machine à sous pour le gâteau.',
+    ink: '#FFF5F8',
+    muted: '#C9A5B4',
+    accent: '#FF4D8D',
+    dark: true,
+    image: '/images/vegas.jpg',
+    aura: ['#2A1220', '#1D0C17', '#12070E'],
+    humanMissions: [
+      { role: 'Elvis Officiant & Maître de Cérémonie', mission: 'Cérémonie en vingt minutes, mimiques, et photos sous les néons', essentialSkill: 'Showmanship absolu' },
+      { role: 'Photographe Néon', mission: 'Portraits de nuit sous les enseignes, tirages sépia instantanés', essentialSkill: 'Lumière artificielle intense' },
+      { role: 'Chauffeur de Limousine', mission: 'Fontaine de champagne, chauffeur du strip aux motels du désert', essentialSkill: 'Conduite de nuit sur le Strip' },
+    ],
+    complementaryStyleIds: ['desert', 'club', 'new-york'],
+    vendorToolkit: {
+      title: 'Chapelle Éclair',
+      description: 'Créneaux de chapelle, licence express, contrat en vingt minutes et galerie envoyée le soir même.',
+      badge: 'Express & Festif',
+    },
+  },
 ];
 
 export function getDirectionArtistiqueImage(styleId: string): string {
@@ -566,7 +692,14 @@ export function getDirectionArtistiqueImage(styleId: string): string {
     'orient-express': '/images/da-train.jpg',
     'phare-atlantique': '/images/da-phare.jpg',
   };
-  return mapping[styleId] || '/images/table-noir.jpg';
+  const direct: Record<string, string> = {
+    traditionnel: '/images/traditionnel.jpg',
+    corse: '/images/corse.jpg',
+    reunion: '/images/reunion.jpg',
+    'new-york': '/images/new-york.jpg',
+    vegas: '/images/vegas.jpg',
+  };
+  return mapping[styleId] || direct[styleId] || '/images/table-noir.jpg';
 }
 
 export function styleById(id: string): WeddingStyle {

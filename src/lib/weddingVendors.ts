@@ -10,6 +10,7 @@
  */
 
 import type { WeddingStyle } from './weddingStyles';
+import { contentFor } from './universeContent';
 
 export interface Vendor {
   /** Le métier tel qu'il s'affiche sur la carte. */
@@ -20,6 +21,8 @@ export interface Vendor {
   /** Ce que ce prestataire apporte, en une ligne. */
   specialty: string;
   portrait: string;
+  /** Où ce prestataire intervient : la ville du mariage de son univers. */
+  location: string;
   /** L'univers dont ce métier vient — porté par le lien « Revendiquer ». */
   styleId: string;
   styleName: string;
@@ -185,6 +188,8 @@ export function vendorsForStyles(styles: WeddingStyle[]): Vendor[] {
   const vendors: Vendor[] = [];
 
   for (const style of styles) {
+    const lieu = contentFor(style).couple.city;
+
     for (const mission of (style.humanMissions ?? []).slice(0, 3)) {
       const haystack = normalize(mission.role);
       const family = FAMILIES.find((f) => f.keywords.some((k) => haystack.includes(k))) ?? FALLBACK;
@@ -211,6 +216,7 @@ export function vendorsForStyles(styles: WeddingStyle[]): Vendor[] {
         name,
         specialty: family.specialty,
         portrait,
+        location: lieu,
         styleId: style.id,
         styleName: style.name,
         accent: style.accent,
