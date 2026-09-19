@@ -93,7 +93,7 @@ export default function LecteurHero({ carte, enLecture, onBasculer, onFermer }: 
 
       {/* Ce que le média raconte, et ses commandes */}
       {/* Les commandes se posent au-dessus de la bande, qui remonte sur le hero. */}
-      <div className="vp-page absolute inset-x-0 bottom-0 z-10 pb-28 sm:pb-32">
+      <div className="vp-page absolute inset-x-0 bottom-0 z-10 pb-44 sm:pb-48">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
             <span className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-white/60">
@@ -114,7 +114,7 @@ export default function LecteurHero({ carte, enLecture, onBasculer, onFermer }: 
               aria-label={enLecture ? 'Mettre en pause' : 'Reprendre'}
               className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0B0C12] shadow-[0_10px_28px_rgba(0,0,0,0.4)] transition hover:scale-105 active:scale-95"
             >
-              {enLecture ? <Pause size={17} /> : <Play size={17} className="ml-0.5" />}
+              {enLecture ? <Pause size={17} /> : <Play size={17} className="ml-0.5 fill-current" />}
             </button>
             <span className="hidden items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-2 font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/70 backdrop-blur sm:flex">
               <Volume2 size={11} /> {carte.media.video ? 'Vidéo' : 'Le morceau joue'}

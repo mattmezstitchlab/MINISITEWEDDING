@@ -33,7 +33,7 @@ export default function VendorStudio() {
         <img src={style.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C12] via-[#0B0C12]/85 to-[#0B0C12]/40" />
 
-        <div className="vp-page relative pb-16 pt-24">
+        <div className="vp-page relative pb-44 pt-24">
           {/* Le retour occupe sa propre ligne : rien ne vient se poser dessus. */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 font-mono text-[9.5px] font-bold uppercase tracking-[0.16em] text-black">

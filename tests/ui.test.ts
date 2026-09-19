@@ -934,8 +934,8 @@ check('et plus de panneau d’univers', entete.includes('univers VOWS'), false);
 check('la bande des univers est sur l’accueil', accueil.includes('Les univers'), true);
 check('la bande ne montre que des univers', accueil.includes('Vue d’ensemble'), false);
 check('elle s’annonce sous le hero', accueil.indexOf('Les univers') > accueil.indexOf('</header>'), true);
-check('elle remonte sur le bas du hero', accueil.includes('-mt-16') && accueil.includes('sm:-mt-20'), true);
-check('et se pose sur blanc', accueil.includes('-mt-16 border-b border-black/5 bg-white'), true);
+check('les cartes sont à moitié sur le hero', accueil.includes('-mt-32') && accueil.includes('sm:-mt-36'), true);
+check('et se posent sur blanc', accueil.includes('-mt-32 border-b border-black/5 bg-white'), true);
 /* Trois cartes au centre, celle du milieu plus grande, et les flèches. */
 check('la bande ne garde que trois cartes', (accueil.match(/Aimer /g) ?? []).length, 3);
 check('une flèche de chaque côté', ['Carte précédente', 'Carte suivante'].every((f) => accueil.includes(f)), true);
@@ -1202,9 +1202,16 @@ const carteBande = accueil.slice(accueil.indexOf('Les univers'));
 check('les cartes sont celles de la playlist', accueil.includes('w-[172px]') && accueil.includes('sm:w-[188px]'), true);
 check('elles grossissent au centre', carteBande.includes('scale('), true);
 check('et les cartes de côté sont en retrait', accueil.includes('hidden opacity-60'), true);
-check('elles portent la pastille de la playlist', carteBande.includes('bg-black/75 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-white'), true);
-check('le badge est celui de l’univers', carteBande.includes('Urbain') || carteBande.includes('Sauvage'), true);
+check('elles portent la pastille de la playlist', carteBande.includes('rounded-[20px] p-2.5'), true);
+/* Plus de badge d'univers sur les cartes : ni pastille, ni ligne d'univers. */
+check('plus de pastille noire d’univers', carteBande.includes('bg-black/75 px-2 py-0.5'), false);
+check('et plus de ligne d’univers', carteBande.includes('inset-x-2.5 bottom-2 truncate'), false);
+check('le titre de l’univers est écrit une fois', (carteBande.match(/Vegas/g) ?? []).length > 0, true);
 check('chaque carte porte son play', carteBande.includes('Lancer '), true);
+check('un triangle noir plein, posé sur la pochette', carteBande.includes('fill-current'), true);
+/* Le sous-titre défile, comme sur une radio. */
+check('le sous-titre défile dans la carte', carteBande.includes('vp-defile'), true);
+check('et il est écrit deux fois pour boucler', (carteBande.match(/text-\[10\.5px\] text-black\/55/g) ?? []).length >= 2, true);
 check('et son cœur, avec le nombre d’avis', carteBande.includes('Aimer '), true);
 check('sans texte d’avis', carteBande.includes('Avis ·'), false);
 check('et sans compte de métiers', carteBande.includes('métiers ·'), false);
@@ -1273,7 +1280,8 @@ check('les avis de deux univers ne se mélangent pas', apresAvis?.avis['univers|
 const cartesUnivers = cartesDesUnivers(() => '/le-mariage/vegas');
 check('un univers donne une carte vivante', cartesUnivers.length, ALL_STYLES.length);
 check('avec sa clé d’avis', cartesUnivers[0]?.cle, `univers|${ALL_STYLES[0]!.id}`);
-check('avec son badge de magazine', cartesUnivers[1]?.badge, badgeDUnivers(ALL_STYLES[1]!.id));
+check('sans badge : le nom lui suffit', cartesUnivers[1]?.badge, undefined);
+check('et sans ligne d’univers', cartesUnivers[1]?.etiquette, undefined);
 check('et un morceau à jouer', String(cartesUnivers[1]?.media.audio ?? '').startsWith('/audio/'), true);
 
 const cartesProduits = cartesDesProduits(SHOP_PRODUCTS.slice(0, 4));

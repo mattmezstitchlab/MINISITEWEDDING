@@ -63,7 +63,7 @@ export default function Shop() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
 
-        <div className="vp-page relative w-full pb-10 sm:pb-14">
+        <div className="vp-page relative w-full pb-40 sm:pb-44">
           <span className="vp-eyebrow !text-white/70">Le Shop Super Mariage</span>
           <h1
             className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"

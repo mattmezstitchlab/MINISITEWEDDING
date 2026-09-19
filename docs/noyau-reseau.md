@@ -925,3 +925,34 @@ plus de bouton « Découvrir » ; le hero de l'accueil porte le titre du premier
 univers montré ; trois cartes exactement, les flèches, le milieu marqué, les
 cartes de côté en retrait ; la bande remonte sur le bas du hero),
 `npm run build` OK.
+
+## 28. Les cartes à cheval sur le hero, le sous-titre qui défile (passe 33)
+
+**Les cartes sont à moitié sur le hero.** La bande remonte de la moitié d'une
+carte (`-mt-32 sm:-mt-36`) : les trois cartes se voient à cheval sur le bas du
+visuel, le bas sur le blanc, le haut sur la photo. Les heros qui posaient leur
+texte en bas laissent donc la place (`pb-44`, `pb-40 sm:pb-44` sur l'univers, le
+métier, l'article, le shop, la fiche produit et l'espace prestataire) : rien
+n'est caché. Le lecteur suit (`pb-44 sm:pb-48` pour ses commandes).
+
+**Plus de badges d'univers sur les cartes.** Le nom de l'univers est déjà le
+titre de la carte : on ne l'écrit plus deux fois. La pastille du haut ne reste
+que là où elle dit **autre chose que le nom** — l'heure d'un moment, le mode
+d'un produit, le domaine d'un métier — et la petite ligne d'univers en bas de la
+pochette a disparu partout. Le voile de la pochette s'allège d'autant
+(`from-black/40 via-transparent to-black/20`) : il n'a plus de texte à porter.
+
+**Le sous-titre défile dans la carte**, comme le titre et l'artiste sur une
+radio : deux fois le texte, un glissement de la moitié, la boucle est sans
+couture (`.vp-defile`, 14 s, `prefers-reduced-motion` respecté). La carte dit
+tout ce qu'elle a à dire — et le hero n'a plus à le répéter : il porte le titre
+de l'univers, la carte porte le reste.
+
+**Le picto play est un triangle noir plein** (`fill-current`), sur la pastille
+blanche posée au centre de la pochette — et dans le lecteur du hero aussi.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+178 / 55 / **396** (les cartes à moitié sur le hero et leur fond blanc ; plus de
+pastille d'univers, plus de ligne d'univers, le nom écrit une fois ; le triangle
+plein ; le sous-titre qui défile, écrit deux fois pour boucler),
+`npm run build` OK.

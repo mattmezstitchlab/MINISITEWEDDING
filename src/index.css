@@ -251,6 +251,26 @@ body {
 }
 
 /* ------------------------------------------------------------------ *
+ *  Le sous-titre qui défile
+ *
+ *  Comme le titre et l'artiste sur une radio : deux fois le texte, un
+ *  glissement de la moitié — la boucle est sans couture.
+ * ------------------------------------------------------------------ */
+
+.vp-defile {
+  animation: vp-defile 14s linear infinite;
+}
+
+@keyframes vp-defile {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vp-defile { animation: none; }
+}
+
+/* ------------------------------------------------------------------ *
  *  Le plan du lecteur
  *
  *  Quand une carte vivante se lance, le visuel du hero avance lentement —

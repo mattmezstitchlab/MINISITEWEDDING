@@ -70,7 +70,7 @@ export default function ShopProduct() {
           </span>
         </span>
 
-        <div className="vp-page relative w-full pb-10 sm:pb-14">
+        <div className="vp-page relative w-full pb-40 sm:pb-44">
           <Link
             to="/shop"
             className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-white/60 transition hover:text-white"

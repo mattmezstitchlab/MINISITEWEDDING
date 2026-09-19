@@ -11,7 +11,12 @@ import type { CarteVivante } from '../lib/cartesVivantes';
  *
  * Deux gestes, et rien d'autre : **le play** (le média s'enclenche) et **le
  * cœur** avec son nombre (l'avis du public). Aucune mention d'état sur la
- * carte : c'est la bande qui dit où l'on est, en centrant la carte courante.
+ * carte : c'est la bande qui dit où l'on est, au milieu.
+ *
+ * **Pas de badge, pas de ligne d'univers** : le nom de l'univers est déjà le
+ * titre de la carte, on ne l'écrit pas deux fois. Et **le sous-titre défile**,
+ * comme le titre et l'artiste sur une radio : la carte dit tout ce qu'elle a à
+ * dire, et le hero n'a pas à le répéter.
  */
 
 interface CarteVivanteProps {
@@ -65,7 +70,7 @@ export default function CarteVivanteUI({
             }`}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20" />
 
         {carte.badge && (
           <span className="absolute left-2.5 top-2.5 rounded-full border border-white/10 bg-black/75 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-md">
@@ -81,15 +86,9 @@ export default function CarteVivanteUI({
               aria-label={joue ? `Arrêter ${carte.titre}` : `Lancer ${carte.titre}`}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-2xl transition-transform duration-300 hover:scale-110"
             >
-              {joue ? <Pause size={13} /> : <Play size={13} className="ml-0.5" />}
+              {joue ? <Pause size={13} /> : <Play size={13} className="ml-0.5 fill-current" />}
             </button>
           </div>
-        )}
-
-        {carte.etiquette && (
-          <span className="absolute inset-x-2.5 bottom-2 truncate font-mono text-[9px] uppercase tracking-wider text-white/80">
-            {carte.etiquette}
-          </span>
         )}
       </div>
 
@@ -109,7 +108,15 @@ export default function CarteVivanteUI({
           <span className="block truncate text-[13px] font-bold leading-tight text-[#0B0C12]">{carte.titre}</span>
         </button>
         {carte.sousTitre && (
-          <div className="mt-0.5 truncate text-[10.5px] text-black/55">{carte.sousTitre}</div>
+          /* Il défile, comme sur une radio : la carte se lit sans s'arrêter. */
+          <div className="mt-0.5 overflow-hidden">
+            <div className="vp-defile flex w-max">
+              <span className="pr-6 text-[10.5px] text-black/55">{carte.sousTitre}</span>
+              <span className="pr-6 text-[10.5px] text-black/55" aria-hidden="true">
+                {carte.sousTitre}
+              </span>
+            </div>
+          </div>
         )}
         <div className="mt-2 flex items-center justify-between border-t border-black/8 pt-1.5">
           <button

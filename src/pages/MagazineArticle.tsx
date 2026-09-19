@@ -53,7 +53,7 @@ export default function MagazineArticle() {
       <header className="relative flex min-h-[100svh] w-full flex-col justify-end overflow-hidden">
         <img src={article.cover} alt={article.title} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/40 to-black/30" />
-        <div className="relative pb-10 pt-28">
+        <div className="relative pb-44 pt-28">
           <div className="vp-page vp-page-read">
             <span className="rounded-full bg-white/95 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-black">
               {article.kicker}

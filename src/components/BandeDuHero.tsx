@@ -7,8 +7,9 @@ import LecteurHero from './LecteurHero';
  * LA BANDE, SOUS LE HERO — ET LE LECTEUR DANS LE HERO
  *
  * Les pages posent ce composant juste après leur hero. La bande, sur fond
- * blanc, **remonte un peu sur le hero** — elle est sa continuité, pas une
- * section de plus — et la carte de la page y est centrée.
+ * blanc, **remonte à moitié sur le hero** : les trois cartes se voient à
+ * cheval sur le bas du visuel — elles sont sa continuité, pas une section de
+ * plus — et la carte de la page est au milieu.
  *
  * Quand on lance une carte, **le média prend le hero** : le lecteur se pose
  * juste au-dessus de la bande, sur la hauteur d'un écran. La bande, elle, reste
@@ -59,7 +60,7 @@ export default function BandeDuHero({
   }, [enLecture, onLecture]);
 
   return (
-    <section className="relative z-40 -mt-16 border-b border-black/5 bg-white pb-6 pt-5 sm:-mt-20 sm:pb-8 sm:pt-6">
+    <section className="relative z-40 -mt-32 border-b border-black/5 bg-white pb-6 pt-5 sm:-mt-36 sm:pb-8 sm:pt-6">
       {/* Le média prend le hero : le lecteur se pose au-dessus de la bande,
           sur la hauteur d'un écran. */}
       {carte && (
