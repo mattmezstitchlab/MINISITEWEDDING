@@ -6,6 +6,7 @@ import VendorPhoneScreen from './phone/VendorPhoneScreen';
 import { contentFor } from '../lib/universeContent';
 import { previewPath } from '../lib/previewSite';
 import { styleById, type WeddingStyle } from '../lib/weddingStyles';
+import { signatureFor, signatureLabel } from '../lib/themeSignatures';
 
 /**
  * LE DÉFILÉ DES MINI-SITES
@@ -45,14 +46,14 @@ const ROLE_LABEL: Record<Role, string> = {
 
 /** Le tour du catalogue : huit univers, et les trois côtés du mariage. */
 const RAIL: Array<{ styleId: string; role: Role }> = [
-  { styleId: 'traditionnel', role: 'invite' },
-  { styleId: 'corse', role: 'prestataire' },
+  { styleId: 'vegas', role: 'invite' },
+  { styleId: 'laverie', role: 'prestataire' },
   { styleId: 'new-york', role: 'maries' },
-  { styleId: 'chateau-moderne', role: 'invite' },
-  { styleId: 'brutal', role: 'prestataire' },
-  { styleId: 'reunion', role: 'invite' },
-  { styleId: 'vegas', role: 'maries' },
-  { styleId: 'club', role: 'prestataire' },
+  { styleId: 'cinema', role: 'invite' },
+  { styleId: 'corse', role: 'prestataire' },
+  { styleId: 'club', role: 'maries' },
+  { styleId: 'traditionnel', role: 'invite' },
+  { styleId: 'chateau-moderne', role: 'prestataire' },
 ];
 
 /**
@@ -80,6 +81,8 @@ function MiniSiteWindow({ style }: { style: WeddingStyle }) {
     heroTitle: content.hero.title,
     heroSubtitle: content.hero.subtitle,
     hiddenSections: HORS_ECRAN,
+    // Pas de capsule de navigation dans le châssis : la Dynamic Island gagne.
+    hideHeader: true,
   });
 
   return (
@@ -202,7 +205,7 @@ export default function MiniSiteRail() {
                 <div
                   key={`${item.styleId}-${item.role}`}
                   className="w-[264px] shrink-0 snap-center sm:w-[292px]"
-                  aria-label={`${ROLE_LABEL[item.role]} · ${style.name}`}
+                  aria-label={`${ROLE_LABEL[item.role]} · ${style.name} · ${signatureLabel(item.styleId)}`}
                 >
                   <motion.div
                     initial={{ opacity: 0, y: 24 }}
@@ -216,6 +219,7 @@ export default function MiniSiteRail() {
                           style={style}
                           content={content}
                           mission={style.humanMissions[0]}
+                          signature={signatureFor(item.styleId)}
                         />
                       ) : (
                         <MiniSiteWindow style={style} />
@@ -225,7 +229,11 @@ export default function MiniSiteRail() {
 
                   <div className="mt-4 px-1 text-center">
                     <div className="text-[13px] font-bold text-white">{style.name}</div>
-                    <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-white/45">
+                    {/* Le geste de l'univers : c'est ce qu'on vient voir. */}
+                    <div className="mt-1 text-[11.5px] font-semibold" style={{ color: style.accent }}>
+                      {signatureLabel(item.styleId)}
+                    </div>
+                    <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-white/45">
                       {ROLE_LABEL[item.role]}
                     </div>
                   </div>

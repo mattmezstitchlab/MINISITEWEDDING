@@ -9,7 +9,7 @@ import { NAV_LINKS } from './navLinks';
 
 /** Photo plein écran, navigation flottante et compte à rebours. */
 export default function Hero() {
-  const { site, theme, fonts, headWeight, accent, btnR, ink, names, preview, scrolled, menuOpen, setMenuOpen } = useSiteView();
+  const { site, theme, fonts, headWeight, accent, btnR, ink, names, preview, hideHeader, scrolled, menuOpen, setMenuOpen } = useSiteView();
 
   return (
     <header className="relative flex min-h-[100svh] flex-col overflow-hidden bg-[#05060C]">
@@ -25,8 +25,13 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#05060C]/55 via-[#05060C]/25 to-[#05060C]/72" />
       </div>
 
-      {/* Le header : la même capsule blanche que l'accueil du site */}
-      <nav className="fixed top-3 left-1/2 z-40 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
+      {/* Le header : la même capsule blanche que l'accueil du site. Dans le
+          châssis d'un iPhone, la Dynamic Island prend sa place : on l'éteint. */}
+      <nav
+        className={`fixed top-3 left-1/2 z-40 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4 ${
+          hideHeader ? 'hidden' : ''
+        }`}
+      >
         <div
           className={`flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 ring-1 ring-black/5 transition-shadow duration-500 sm:px-5 ${
             scrolled ? 'shadow-[0_10px_34px_rgb(0,0,0,0.14)]' : 'shadow-[0_8px_30px_rgb(0,0,0,0.08)]'
@@ -67,7 +72,11 @@ export default function Hero() {
         </div>
       </nav>
 
-      <div className="relative flex flex-1 flex-col items-center justify-center px-6 pb-16 pt-24 text-center">
+      <div
+        className={`relative flex flex-1 flex-col items-center justify-center px-6 text-center ${
+          hideHeader ? 'pb-16 pt-16' : 'pb-16 pt-24'
+        }`}
+      >
         <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/75 sm:text-[13px]">
           {site.hero_subtitle || 'Nous nous marions'}
         </motion.p>

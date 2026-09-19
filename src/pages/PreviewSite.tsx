@@ -29,9 +29,13 @@ export default function PreviewSite() {
     [styleId, params],
   );
 
+  // `entete=0` : l'aperçu se monte sans la capsule de navigation du site, pour
+  // les fenêtres étroites (le défilé d'iPhones de l'accueil).
+  const sansEntete = params.get('entete') === '0';
+
   return (
     <div className="vp-env min-h-screen">
-      <PublicSiteView data={data} />
+      <PublicSiteView data={data} hideHeader={sansEntete} />
     </div>
   );
 }

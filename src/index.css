@@ -117,6 +117,22 @@ body {
   color: #f4f5fb;
 }
 
+/* ------------------------------------------------------------------ *
+ *  Les signatures d'univers : le fond du thème, et le néon
+ * ------------------------------------------------------------------ */
+
+/* La signature repeint le fond : on éteint le dégradé de la coquille. */
+.vp-sg-fond::before {
+  background: none;
+}
+
+/* Les titres s'allument — c'est le geste du néon, et seulement lui. */
+.vp-sg-lueur :is(h1, h2, h3, .vp-title) {
+  text-shadow:
+    0 0 14px color-mix(in srgb, var(--vp-accent) 85%, transparent),
+    0 0 44px color-mix(in srgb, var(--vp-accent) 45%, transparent);
+}
+
 .vp-env-dark::before {
   background: linear-gradient(180deg, var(--vp-env-dark-a) 0%, var(--vp-env-dark-b) 55%, var(--vp-env-dark-c) 100%);
 }

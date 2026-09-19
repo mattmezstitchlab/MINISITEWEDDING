@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, BadgeEuro, Check, ExternalLink, Info, Plus, RotateCcw, Trash2, Users,
+  BadgeEuro, Check, ExternalLink, Info, Plus, RotateCcw, Trash2, Users,
 } from 'lucide-react';
 import PhoneFrame from './phone/PhoneFrame';
 import VendorPhoneScreen from './phone/VendorPhoneScreen';
@@ -10,6 +10,7 @@ import { styleById, type WeddingStyle } from '../lib/weddingStyles';
 import { DOMAINES, domaineDe, metiersParDomaine } from '../lib/weddingVendors';
 import { donneesMetier, estIntermittent, missionPourStyle, modulesDuMetier } from '../lib/vendorModules';
 import { previewPath } from '../lib/previewSite';
+import { signatureFor } from '../lib/themeSignatures';
 import {
   HEURES_INTERMITTENCE, avancementCachets, chargerDraft, draftParDefaut,
   enregistrerDraft, heuresCachets, oublierDraft, partageAvecLesMaries,
@@ -51,6 +52,8 @@ export default function VendorSiteStudio({
 
   const style = styleById(styleId);
   const content = useMemo(() => contentFor(style), [style]);
+  /** Le geste de l'univers : l'aperçu du téléphone le porte aussi. */
+  const signature = signatureFor(style.id);
   const mission = missionPourStyle(style, role);
   const intermittent = estIntermittent(role);
 
@@ -122,7 +125,7 @@ export default function VendorSiteStudio({
         <div className="rounded-[28px] border border-black/8 bg-[#F6F4F0] p-5">
           <div className="mb-4 flex items-center justify-between">
             <span className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
-              Aperçu en direct
+              Aperçu
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 font-mono text-[9px] uppercase tracking-wider text-black/50">
               <Check size={10} className="text-emerald-600" />
@@ -137,13 +140,13 @@ export default function VendorSiteStudio({
               mission={mission}
               metier={draft.modules}
               heures={heures}
+              signature={signature}
             />
           </PhoneFrame>
 
           <p className="mt-4 text-[11.5px] leading-relaxed text-black/55">
-            Le hero ne change jamais : c'est le visuel de l’univers{' '}
-            <span className="font-semibold text-black/75">{style.name}</span>. Ce qui change, ce sont
-            les modules — et leur langue.
+            Le visuel est celui de l’univers <span className="font-semibold text-black/75">{style.name}</span>.
+            Les modules sont les vôtres.
           </p>
         </div>
 
@@ -167,8 +170,7 @@ export default function VendorSiteStudio({
               ))}
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-black/45">
-              Tous les métiers de ce mariage lisent le même site. Personne ne se téléphone pour se
-              demander l’heure du dîner.
+              Tous les métiers de ce mariage lisent le même programme.
             </p>
           </div>
         )}
@@ -181,8 +183,10 @@ export default function VendorSiteStudio({
             {role} · {domaine.label}
           </div>
           <p className="mt-1 text-[12px] leading-relaxed text-black/55">
-            {domaine.description}. Vos textes s’écrivent ici, dans votre langue — et restent les
-            vôtres : changer d’univers ne réécrit pas votre page.
+            {signature
+              ? `Univers ${style.name} — ${signature.nom.toLowerCase()}.`
+              : `Univers ${style.name}.`}{' '}
+            Vos textes s’écrivent ici, et changer d’univers ne les réécrit pas.
           </p>
 
           {/* Le domaine */}
@@ -252,7 +256,7 @@ export default function VendorSiteStudio({
                 <div>
                   <div className="text-[13px] font-semibold">Intermittent du Spectacle</div>
                   <div className="text-[11px] text-white/55">
-                    Votre métier vit du spectacle : vos cachets se déclarent, et vos heures comptent.
+                    Vos cachets se déclarent, vos heures comptent.
                   </div>
                 </div>
               </div>
@@ -352,8 +356,8 @@ export default function VendorSiteStudio({
             </div>
 
             <div className="border-t border-white/10 px-5 py-3 text-[11px] leading-relaxed text-white/50">
-              Ces lignes alimentent votre module « Cachets ». Elles ne partent jamais sur le site
-              public : ni cachets, ni IBAN, ni papiers.
+              Ces lignes remplissent votre module « Cachets ». Elles ne partent pas sur le site
+              public.
             </div>
           </div>
         )}
@@ -371,7 +375,7 @@ export default function VendorSiteStudio({
                 >
                   <div>
                     <div className="font-mono text-[9.5px] font-bold uppercase tracking-[0.18em] text-black/40">
-                      Nav · {module.nav}
+                      Onglet · {module.nav}
                     </div>
                     <div className="mt-0.5 text-[14px] font-semibold text-black">{module.titre}</div>
                   </div>
@@ -385,7 +389,7 @@ export default function VendorSiteStudio({
                     <div className="grid gap-3 sm:grid-cols-2">
                       <label className="block">
                         <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-black/40">
-                          Sur-titre du module
+                          Titre au-dessus
                         </span>
                         <input
                           value={module.eyebrow}
@@ -395,7 +399,7 @@ export default function VendorSiteStudio({
                       </label>
                       <label className="block">
                         <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-black/40">
-                          Onglet dans la nav
+                          Nom de l’onglet
                         </span>
                         <input
                           value={module.nav}
@@ -449,15 +453,14 @@ export default function VendorSiteStudio({
                       >
                         <Plus size={12} /> Ajouter une ligne
                       </button>
-                      <span className="font-mono text-[10px] text-black/30">
-                        module {module.id}
-                        {module.cachets ? ' · privé' : ''}
-                      </span>
+                      {module.cachets && (
+                        <span className="font-mono text-[10px] text-black/30">privé</span>
+                      )}
                     </div>
 
                     <label className="block">
                       <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-black/40">
-                        La note du bas
+                        Phrase du bas
                       </span>
                       <textarea
                         value={module.note ?? ''}
@@ -481,12 +484,6 @@ export default function VendorSiteStudio({
           >
             <RotateCcw size={13} /> Repartir des textes du métier
           </button>
-          <Link
-            to={`/prestataire?role=${encodeURIComponent(role)}&style=${styleId}`}
-            className="inline-flex items-center gap-2 rounded-full bg-[#0B0C12] px-4 py-2 text-[12px] font-semibold text-white no-underline transition hover:bg-neutral-800"
-          >
-            Adresse de cet éditeur <ArrowRight size={13} />
-          </Link>
           <span className="font-mono text-[10px] text-black/35">
             Enregistré sur cet appareil · {draft.modules.length} modules
           </span>
@@ -499,9 +496,7 @@ export default function VendorSiteStudio({
               <Info size={15} className="text-black/45" />
               <div>
                 <div className="text-[13px] font-semibold text-black">Ce qui vient des mariés</div>
-                <div className="text-[11.5px] text-black/55">
-                  Cinq lectures du même site — vous n’avez rien à ressaisir, et rien à demander.
-                </div>
+                <div className="text-[11.5px] text-black/55">Rien à ressaisir.</div>
               </div>
             </div>
             <Link
@@ -510,7 +505,7 @@ export default function VendorSiteStudio({
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-[11.5px] font-semibold text-black/70 no-underline transition hover:text-black"
             >
-              Ouvrir leur mini-site <ExternalLink size={12} />
+              Leur mini-site <ExternalLink size={12} />
             </Link>
           </div>
 

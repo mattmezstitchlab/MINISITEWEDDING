@@ -25,6 +25,8 @@ export interface PreviewSiteOptions {
   announcement?: string;
   /** Les sections retirées : elles n'apparaissent pas dans l'aperçu. */
   hiddenSections?: string[];
+  /** Monte l'aperçu sans la capsule de navigation du site (défilé d'iPhones). */
+  hideHeader?: boolean;
 }
 
 const SITE_ID = 0;
@@ -117,5 +119,6 @@ export function previewPath(options: PreviewSiteOptions): string {
   if (options.heroSubtitle) params.set('sous-titre', options.heroSubtitle);
   if (options.announcement) params.set('annonce', options.announcement);
   if (options.hiddenSections?.length) params.set('sans', options.hiddenSections.join(','));
+  if (options.hideHeader) params.set('entete', '0');
   return `/apercu?${params.toString()}`;
 }

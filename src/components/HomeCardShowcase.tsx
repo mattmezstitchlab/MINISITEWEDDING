@@ -32,19 +32,13 @@ export default function HomeCardShowcase() {
             <br />
             <span className="text-black/40">Le mini-site suit.</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-[#0B0C12]/60 lg:mx-0">
-            Quelques questions — votre nom, votre ville, la date — et la carte ouvre le mini-site de
-            votre mariage. Vos informations y sont déjà écrites : le programme, les lieux, le RSVP
-            et la cagnotte se remplissent depuis ce que vous avez dit.
+          <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-[#0B0C12]/60 lg:mx-0">
+            Votre nom, votre ville, votre date — et votre mini-site s’écrit tout seul.
           </p>
-          <div className="mt-7 flex flex-col items-center gap-3 lg:items-start">
+          <div className="mt-7 flex justify-center lg:justify-start">
             <Link to="/creer" className="vp-btn vp-press !px-8 !py-3.5">
               Créer ma carte <ArrowRight size={16} />
             </Link>
-            <p className="text-[12.5px] leading-snug text-[var(--vp-muted)]">
-              Aucun univers à choisir avant : il se découvre sur votre site, et se change à tout
-              moment dans l’éditeur.
-            </p>
           </div>
         </div>
 

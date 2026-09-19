@@ -155,31 +155,31 @@ export function partageAvecLesMaries(data: MetierData): Partage[] {
     {
       id: 'programme',
       titre: 'Le jour J',
-      origine: 'Le programme publié par les mariés sur leur mini-site',
+      origine: 'Le programme du site',
       lignes: jourDuMariage(data),
     },
     {
       id: 'regimes',
       titre: 'Les régimes',
-      origine: 'Les régimes déclarés sur le site, à couvrir le jour J',
+      origine: 'Les régimes déclarés',
       lignes: regimesDeclares(data),
     },
     {
       id: 'acces',
       titre: 'Accès & contacts',
-      origine: 'La logistique écrite par les mariés, visible par leurs prestataires',
+      origine: 'Les accès et les contacts',
       lignes: accesSurPlace(data),
     },
     {
       id: 'chiffres',
       titre: 'Le mariage en chiffres',
-      origine: 'Les compteurs du site : couverts, réponses, lieu, date',
+      origine: 'Les compteurs du site',
       lignes: chiffresDuMariage(data),
     },
     {
       id: 'decor',
       titre: 'Le décor et la tenue',
-      origine: `L’univers ${data.styleName} choisi par les mariés`,
+      origine: `L’univers ${data.styleName}`,
       lignes: decorDuJour(data),
     },
   ];

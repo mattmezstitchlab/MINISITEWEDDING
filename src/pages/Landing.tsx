@@ -188,16 +188,6 @@ export default function Landing() {
                   >
                     Découvrir <ArrowRight size={16} />
                   </button>
-                  <p className="max-w-md text-[12.5px] leading-snug text-white/65">
-                    La carte d’abord, le mini-site juste après : l’univers se choisit ensuite, dans
-                    l’éditeur.
-                  </p>
-                  <Link
-                    to="/carte"
-                    className="text-[12.5px] font-semibold text-white/80 underline underline-offset-4 transition hover:text-white"
-                  >
-                    J’ai déjà une carte — l’ouvrir
-                  </Link>
                 </div>
               </ErrorBoundary>
             )}
@@ -289,6 +279,9 @@ export default function Landing() {
           <div className="flex flex-wrap items-center justify-center gap-5">
             <Link to="/creer" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
               Créer ma carte
+            </Link>
+            <Link to="/carte" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
+              J’ai déjà une carte
             </Link>
             <Link to="/prestataire" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
               Espace prestataire

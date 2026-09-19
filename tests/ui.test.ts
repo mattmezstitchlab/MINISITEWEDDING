@@ -27,15 +27,20 @@ import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
 import Landing from '../src/pages/Landing';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
+import PreviewSite from '../src/pages/PreviewSite';
 import {
   CONVIVES, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
 } from '../src/lib/superMariage';
+import { SIGNATURES, signatureFor, signatureLabel } from '../src/lib/themeSignatures';
+import SignatureBlock from '../src/components/themes/ThemeSignature';
+import { previewPath } from '../src/lib/previewSite';
+import VendorPhoneScreen from '../src/components/phone/VendorPhoneScreen';
 import VendorBridges from '../src/components/VendorBridges';
 import { contentFor } from '../src/lib/universeContent';
 import { donneesMetier, estIntermittent, modulesDuMetier } from '../src/lib/vendorModules';
 import { CACHETS_DEFAUT, heuresCachets } from '../src/lib/vendorDraft';
 import { ALL_STYLES, WEDDING_STYLES, styleById } from '../src/lib/weddingStyles';
-import { EMPTY_CARD, type CardData } from '../src/lib/weddingCard';
+import { EMPTY_CARD, cardRoleLabel, type CardData } from '../src/lib/weddingCard';
 import {
   adoptPersonKey,
   createCard,
@@ -277,13 +282,13 @@ const studioDe = (role: string, styleId: string) =>
 const studioChef = studioDe('Traiteur Haute Gastronomie', 'chateau-moderne');
 check('l’éditeur du métier s’ouvre sur l’espace prestataire', studioChef.includes('Espace prestataire'), true);
 check('les modules parlent la cuisine', studioChef.includes('Ce qui passe en cuisine'), true);
-check('les onglets portent les mots du métier', studioChef.includes('Nav · Menus') && studioChef.includes('Nav · Régimes'), true);
+check('les onglets portent les mots du métier', studioChef.includes('Onglet · Menus') && studioChef.includes('Onglet · Régimes'), true);
 check('la fiche mission vient de la carte', studioChef.includes('La même fiche que celle de votre carte'), true);
 check('rien n’est à ressaisir du site des mariés', studioChef.includes('Ce qui vient des mariés'), true);
 
 const studioPhoto = studioDe('Photographe Néon', 'vegas');
-check('un autre métier parle une autre langue', studioPhoto.includes('Nav · Repérages'), true);
-check('le déroulé du jour J suit le programme', studioPhoto.includes('Nav · Déroulé'), true);
+check('un autre métier parle une autre langue', studioPhoto.includes('Onglet · Repérages'), true);
+check('le déroulé du jour J suit le programme', studioPhoto.includes('Onglet · Déroulé'), true);
 
 const studioCachets = studioDe('Groupe Polyphonique Corse', 'corse');
 check('les artistes ont leur volet à part', studioCachets.includes('Intermittent du Spectacle'), true);
@@ -364,6 +369,72 @@ check(
 /* L'accueil ouvre le magasin. */
 check('l’accueil ouvre le magasin', accueil.includes('/supermarriage'), true);
 check('l’accueil annonce les courses', accueil.includes('Faire mes courses'), true);
+
+/* ------------------- les signatures d'univers : un geste par mini-site */
+
+/*
+ * Chaque univers a un geste que les autres n'ont pas. Le Supermarché a son
+ * ticket ; Las Vegas a sa chapelle rose et ses néons ; la laverie son hublot ;
+ * New York sa ligne. Le mini-site applique la signature : fond, accent, et un
+ * module juste sous le hero.
+ */
+const vegas = SIGNATURES.vegas;
+check('Las Vegas a sa chapelle rose', vegas?.nom, 'Chapelle rose & néon');
+check('Las Vegas passe au néon', vegas?.lueur, true);
+check('le fond de Las Vegas est rose', vegas?.fond.toLowerCase(), '#ffe3f1');
+check('chaque signature a un geste et ses lignes', Boolean(SIGNATURES.laverie?.module.lignes.length), true);
+check('la laverie a son hublot', SIGNATURES.laverie?.kind, 'hublot');
+check('New York a son plan de ligne', SIGNATURES['new-york']?.kind, 'ligne');
+check('le Supermarché n’a pas de signature : le ticket EST la page', signatureFor('supermarche'), undefined);
+check('l’univers vierge n’a pas de geste — c’est sa promesse', signatureFor('vierge'), undefined);
+check('la légende du défilé nomme le geste', signatureLabel('cinema'), 'Séance & affiche');
+
+const blocVegas = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(SignatureBlock as never, { signature: vegas } as never)),
+);
+check('le module de signature s’affiche', blocVegas.includes('data-signature="enseigne"'), true);
+check('et porte les mots de l’univers', blocVegas.includes('La chapelle rose'), true);
+check('le geste du néon s’allume', blocVegas.includes('vp-sg-lueur'), true);
+
+const apercuVegas = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/apercu?style=vegas'] },
+    createElement(PreviewSite as never),
+  ),
+);
+check('le mini-site de Las Vegas prend son fond', apercuVegas.includes('#FFE3F1'), true);
+check('et son module de signature', apercuVegas.includes('La chapelle rose'), true);
+
+const apercuNu = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/apercu?style=vegas&entete=0'] },
+    createElement(PreviewSite as never),
+  ),
+);
+check('l’aperçu sans entête existe pour le défilé', apercuNu.length > 5_000, true);
+check('le défilé demande l’aperçu sans entête', previewPath({ styleId: 'vegas', hideHeader: true }).includes('entete=0'), true);
+
+/* L'écran prestataire d'un univers à signature rappelle où l'on travaille. */
+const styleLaverie = styleById('laverie');
+const ecranLaverie = renderToStaticMarkup(
+  createElement(VendorPhoneScreen as never, {
+    style: styleLaverie,
+    content: contentFor(styleLaverie),
+    signature: SIGNATURES.laverie,
+  }),
+);
+check('l’écran du métier nomme le geste de l’univers', ecranLaverie.includes('Tambour 7'), true);
+check('et garde l’étiquette du rôle', ecranLaverie.includes('Écran prestataire'), true);
+
+/* La carte de l'accueil : le visuel plein cadre, le nom, le rôle. */
+check('la carte met le nom par-dessus le visuel', accueil.includes('Votre nom'), true);
+check('et son rôle', accueil.includes(cardRoleLabel(EMPTY_CARD)), true);
+
+/* Les cartes des métiers de l'accueil : le titre par-dessus le visuel. */
+check('les éditeurs se présentent en visuel', accueil.includes('/images/prestataires/'), true);
+check('avec le titre du métier par-dessus', accueil.includes('Photo &amp; Vidéo'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

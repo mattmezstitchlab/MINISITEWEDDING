@@ -10,6 +10,7 @@ import type { UniverseContent } from '../../lib/universeContent';
 import { euros } from '../../lib/universeContent';
 import type { WeddingStyle, HumanMissionRequirement } from '../../lib/weddingStyles';
 import { getScenesForStyle } from '../../lib/themeTimelineScenarios';
+import type { ThemeSignature } from '../../lib/themeSignatures';
 import { formatDateLong } from '../../lib/format';
 
 /**
@@ -35,6 +36,9 @@ export interface MetierPhoneModule {
   note?: string;
   cachets?: boolean;
 }
+
+/** Le module qui rappelle l'univers : il a la forme d'un module de métier. */
+type PhonemoduleUnivers = Omit<MetierPhoneModule, 'cachets'>;
 
 /** Les icônes de la nav, une par famille de module. */
 const ICONES: Record<string, LucideIcon> = {
@@ -99,6 +103,7 @@ export default function VendorPhoneScreen({
   mission,
   metier,
   heures,
+  signature,
 }: {
   style: WeddingStyle;
   content: UniverseContent;
@@ -107,12 +112,32 @@ export default function VendorPhoneScreen({
   metier?: MetierPhoneModule[];
   /** Le compteur des intermittents, affiché dans le module des cachets. */
   heures?: HeuresCachets;
+  /** Le geste de l'univers où l'on travaille : l'écran prend son accent. */
+  signature?: ThemeSignature;
 }) {
   const scenes = getScenesForStyle(style.id);
   const role = mission?.role ?? style.humanMissions[0]?.role ?? 'Prestataire';
+  // Sur un univers à signature, le téléphone s'allume de son accent : c'est la
+  // façon la plus courte de rappeler au prestataire où il travaille.
+  const styleSigne = signature ? { ...style, accent: signature.accent } : style;
 
-  const modules: PhoneModuleDef[] = metier && metier.length > 0
-    ? metier.map((module) => ({
+  const moduleUnivers: PhonemoduleUnivers | null = signature
+    ? {
+        id: 'univers',
+        nav: 'L’univers',
+        eyebrow: `Dans l’univers · ${style.name}`,
+        titre: signature.module.titre,
+        lignes: signature.module.lignes,
+        note: `${signature.nom} — ${signature.phrase}`,
+      }
+    : null;
+
+  const listeMetier = metier && metier.length > 0
+    ? (moduleUnivers ? [...metier, moduleUnivers] : metier)
+    : null;
+
+  const modules: PhoneModuleDef[] = listeMetier && listeMetier.length > 0
+    ? listeMetier.map((module) => ({
         id: module.id,
         label: module.nav,
         icon: ICONES[module.id] ?? Sparkles,
@@ -231,12 +256,12 @@ export default function VendorPhoneScreen({
 
   return (
     <PhoneShell
-      style={style}
+      style={styleSigne}
       modules={modules}
       hero={
         <PhoneHero
           image={scenes[0]?.image ?? style.image}
-          badge="Écran prestataire"
+          badge={signature ? `Écran prestataire · ${signature.nom}` : 'Écran prestataire'}
           title={role}
           date={content.couple.countdown}
           venue={content.couple.venue}

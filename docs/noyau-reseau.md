@@ -294,3 +294,37 @@ Plus une : **l'annonce** du couple, une seule, en haut.
   l'aperçu du Supermarché 22H et l'éditeur des métiers. Le bandeau de l'accueil
   (`src/components/SuperMariageTeaser.tsx`, ancre `#supermarriage`) et le pied de
   page y mènent.
+
+## 13. Les signatures d'univers
+
+- **Chaque univers a un geste que les autres n'ont pas.** Le Supermarché 22H a
+  son ticket de caisse — sa page entière ; les vingt-trois autres ont désormais
+  leur signature (`src/lib/themeSignatures.ts`) : Las Vegas sa chapelle rose et
+  ses néons, la laverie son hublot qui tourne, New York son plan de ligne, le
+  traditionnel son faire-part, le brutal son plan d'architecte, le phare ses
+  marées. L'univers vierge n'en a aucune : c'est exactement sa promesse.
+- **Huit gestes, vingt-trois univers.** Les gestes sont des mises en page
+  (`src/components/themes/ThemeSignature.tsx`) : enseigne, affiche, faire-part,
+  étiquettes, ligne, plan, hublot, marée. Ce qui change d'un univers à l'autre,
+  ce sont les mots — horaires, lieu, tenue — tirés des scènes et du contenu.
+- **La signature repeint le mini-site.** `signatureStyle()` pose le fond et
+  l'encre du geste, et remplace `--vp-accent` : les boutons, les sur-titres et
+  le module prennent la couleur du lieu. Quand la signature est un néon
+  (`lueur`), les titres s'allument (`.vp-sg-lueur`). Le module se pose juste
+  après le hero, dans le flux des sections.
+- **Le défilé montre les gestes.** La bande d'iPhones ouvre les univers les plus
+  reconnaissables et nomme le geste sous chaque écran. Les aperçus se montent
+  avec `entete=0` : la capsule de navigation du site disparaît, parce que la
+  Dynamic Island occupe déjà le haut du châssis (`hideHeader` dans
+  `PublicSiteView` et `sections/Hero.tsx`).
+- **Les écrans des métiers suivent l'univers.** `VendorPhoneScreen` reçoit la
+  signature : l'accent du téléphone devient celui du geste, l'étiquette du hero
+  dit où l'on travaille, et un onglet « L'univers » rappelle le lieu — c'est ce
+  qui manquait aux écrans prestataires pour représenter leur univers.
+- **Ce qui a été allégé.** Le hero de l'accueil ne porte plus qu'un bouton ; la
+  section « Votre carte » tient en une phrase et un bouton ; les cartes des
+  métiers de l'accueil sont devenues des visuels avec le titre par-dessus ; la
+  carte (recto) est un visuel plein cadre avec le nom et le rôle, et la page
+  prestataire a perdu son jargon (« Onglet · », « Titre au-dessus », « Phrase du
+  bas »). Le pied de page garde les trois portes : carte, espace prestataire,
+  SuperMariage.
