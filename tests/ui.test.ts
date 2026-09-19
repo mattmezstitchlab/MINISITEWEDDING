@@ -32,7 +32,7 @@ import {
   PLAYLIST_DEPART, chargerPlaylist, chercherMorceaux, morceauParId, morceauxDeLaPlaylist,
   repartitionParMoment,
 } from '../src/lib/weddingPlaylist';
-import { aPartirDe, magasinFor } from '../src/lib/weddingPage';
+import { magasinFor } from '../src/lib/weddingPage';
 import RecapCourses from '../src/components/RecapCourses';
 import { contentFor } from '../src/lib/universeContent';
 import { styleById } from '../src/lib/weddingStyles';
