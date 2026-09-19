@@ -11,6 +11,7 @@ import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import EditorShowcase from '../components/EditorShowcase';
 import VendorEditorsShowcase from '../components/VendorEditorsShowcase';
+import SuperMariageTeaser from '../components/SuperMariageTeaser';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 
 import UniversePhoneScreens from '../components/UniversePhoneScreens';
@@ -233,6 +234,11 @@ export default function Landing() {
         <MiniSiteRail />
       </div>
 
+      {/* LE MAGASIN : on coche ses horaires et ses métiers, le ticket suit */}
+      <div id="supermarriage">
+        <SuperMariageTeaser />
+      </div>
+
       {/* SECTION SUGGESTIONS COMPLÉMENTAIRES D'UNIVERS & MISSIONS */}
       <div id="univers">
         <ComplementaryThemes
@@ -286,6 +292,9 @@ export default function Landing() {
             </Link>
             <Link to="/prestataire" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
               Espace prestataire
+            </Link>
+            <Link to="/supermarriage" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
+              SuperMariage
             </Link>
           </div>
         </div>

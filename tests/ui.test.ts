@@ -26,6 +26,10 @@ import WeddingCard from '../src/components/WeddingCard';
 import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
 import Landing from '../src/pages/Landing';
 import VendorStudio from '../src/pages/VendorStudio';
+import SuperMariage from '../src/pages/SuperMariage';
+import {
+  CONVIVES, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
+} from '../src/lib/superMariage';
 import VendorBridges from '../src/components/VendorBridges';
 import { contentFor } from '../src/lib/universeContent';
 import { donneesMetier, estIntermittent, modulesDuMetier } from '../src/lib/vendorModules';
@@ -317,6 +321,49 @@ check('et la porte de leur éditeur', pont.includes('/prestataire?role='), true)
 /* L'accueil annonce l'éditeur des métiers, intermittents compris. */
 check('l’accueil ouvre l’éditeur des métiers', accueil.includes('Le même éditeur, un par métier'), true);
 check('l’accueil distingue les intermittents', accueil.includes('Intermittent du Spectacle'), true);
+
+/* ----------------------- SuperMariage : on coche, et le ticket se calcule */
+
+/*
+ * Le magasin : des rayons (les domaines de métiers), les horaires du programme
+ * du Supermarché 22H, des petits prix, trois menus — et en face, le ticket de
+ * caisse qui se remplit à mesure qu'on coche.
+ */
+const supermarchePage = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(SuperMariage as never)),
+);
+const magasin = supermarchePage.replace(/&amp;/g, '&');
+
+check('le magasin s’appelle SuperMariage', magasin.includes('SuperMariage'), true);
+check('les rayons portent les domaines', magasin.includes('Rayon Cuisine & Traiteur'), true);
+check('les horaires du programme sont à cocher', magasin.includes('22:17 · Cérémonie'), true);
+check('le rayon 7 est en promotion', magasin.includes('Promo rayon 7'), true);
+check('les petits prix sont là', magasin.includes('Rayon Petits prix'), true);
+check('les menus du magasin sont proposés', magasin.includes('Menu Caddie'), true);
+check('le ticket est en cours avant la caisse', magasin.includes('Ticket en cours'), true);
+check('le ticket porte son numéro', /SM-0\d-[A-Z0-9]{4}/.test(supermarchePage), true);
+check('les tarifs s’annoncent indicatifs', magasin.includes('Tarifs indicatifs'), true);
+
+/* La caisse : un vrai calcul, sur un vrai panier. */
+check('le caddie de départ se calcule', totalCaisse(PANIER_DEPART).total, 6570);
+check('la TVA est incluse, jamais ajoutée', totalCaisse(PANIER_DEPART).tva, 1095);
+check('un menu débloque la carte de fidélité', totalCaisse(PANIER_DEPART, 'super-caddie').remise, 1047);
+check('la remise se déduit du total', totalCaisse(PANIER_DEPART, 'super-caddie').total, 9423);
+check('le ticket compte une ligne par article coché', lignesDuTicket(PANIER_DEPART).length, 4);
+check(
+  'le numéro du ticket ne dépend pas de l’ordre des coches',
+  numeroDeTicket(['a', 'b']),
+  numeroDeTicket(['b', 'a']),
+);
+check(
+  'ce qui se compte par invité suit le nombre de convives',
+  articlesDuPanier(['sup-manteaux'])[0]?.quantite,
+  CONVIVES,
+);
+
+/* L'accueil ouvre le magasin. */
+check('l’accueil ouvre le magasin', accueil.includes('/supermarriage'), true);
+check('l’accueil annonce les courses', accueil.includes('Faire mes courses'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

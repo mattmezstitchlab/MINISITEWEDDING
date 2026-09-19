@@ -267,3 +267,30 @@ Plus une : **l'annonce** du couple, une seule, en haut.
   navigateur, comme le reste de la base locale : on écrit, on recharge, on
   retrouve ses textes. Publier un site de prestataire est une étape à part,
   encore à écrire.
+
+## 12. SuperMariage : les courses, et le ticket
+
+- **Une page, `/supermarriage`.** Le mini-site du Supermarché 22H avait son ticket
+  de caisse ; SuperMariage en fait un magasin : on coche des horaires, on prend
+  des métiers, on ajoute des petits prix, on choisit un menu — et on passe à la
+  caisse. Le ticket, en face, se calcule en direct.
+- **Le catalogue est dérivé, jamais inventé.** `src/lib/superMariage.ts` monte
+  ses rayons sur ce qui existe déjà : les horaires viennent du programme de
+  `THEME_CONFIGS.supermarche`, les métiers de `metiersParDomaine()` (les rôles du
+  Supermarché 22H sont servis en premier, marqués « Promo rayon 7 »), les trois
+  menus des `packages` du thème, et les quantités par personne du nombre de
+  convives du contenu. Seuls les prix sont indicatifs.
+- **La caisse calcule pour de vrai** — sous-total, carte de fidélité (-10 % dès
+  qu'un menu est pris), TVA 20 % **incluse** (montrée, jamais ajoutée), total,
+  nombre de lignes. `totalCaisse()` et `numeroDeTicket()` sont pures : le numéro
+  du ticket ne dépend pas de l'ordre des coches, et le code-barres se lit dans ce
+  numéro — donc rien ne change d'un rendu à l'autre.
+- **Le ticket est le composant** (`src/components/TicketCaisse.tsx`) : papier
+  thermique, article principal (le couple), une ligne par article coché avec sa
+  quantité, le tampon « Payé » après la caisse, et la mention « Tarifs
+  indicatifs — aucun paiement réel ». Rien n'est facturé, rien n'est réservé.
+- **Une fois payé, le ticket devient un plan** : les coches renvoient au
+  programme, aux métiers et aux formules — d'où les portes vers `/creer`,
+  l'aperçu du Supermarché 22H et l'éditeur des métiers. Le bandeau de l'accueil
+  (`src/components/SuperMariageTeaser.tsx`, ancre `#supermarriage`) et le pied de
+  page y mènent.
