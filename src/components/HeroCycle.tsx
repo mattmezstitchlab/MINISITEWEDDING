@@ -49,7 +49,7 @@ export default function HeroCycle({ children, activeStyleId, bas }: HeroCyclePro
   return (
     <header
       className={`relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-[#0B0C12] px-5 pt-24 sm:px-8 ${
-        bas ? 'pb-44' : 'pb-24'
+        bas ? 'pb-[264px] sm:pb-[300px]' : 'pb-24'
       }`}
     >
       {/* Visuels plein écran, en fondu enchaîné, avec un léger souffle */}

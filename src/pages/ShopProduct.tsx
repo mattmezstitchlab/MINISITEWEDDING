@@ -49,7 +49,7 @@ export default function ShopProduct() {
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
       {/* Le hero : le visuel de la pièce, en plein cadre */}
-      <header className="relative flex min-h-[68vh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
+      <header className="relative flex min-h-[100svh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
         <motion.img
           key={produit.slug}
           initial={{ opacity: 0, scale: 1.04 }}

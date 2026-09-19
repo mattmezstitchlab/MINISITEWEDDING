@@ -1,8 +1,9 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
-import { articleBySlug, relatedArticles } from '../lib/magazine';
+import { articleBySlug, badgeDUnivers, relatedArticles, UNIVERSE_ARTICLES } from '../lib/magazine';
 import { styleById } from '../lib/weddingStyles';
+import BandeauHero from '../components/BandeauHero';
 import RichText from '../components/RichText';
 
 /**
@@ -23,11 +24,12 @@ export default function MagazineArticle() {
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      {/* La couverture */}
-      <header className="relative h-[52vh] min-h-[340px] w-full overflow-hidden">
-        <img src={article.cover} alt={article.title} className="h-full w-full object-cover" />
+      {/* La couverture : la même hauteur que le hero de l'accueil, et la bande
+          des univers en bas — on passe d'un article à l'autre d'un geste. */}
+      <header className="relative flex min-h-[100svh] w-full flex-col justify-end overflow-hidden">
+        <img src={article.cover} alt={article.title} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/40 to-black/30" />
-        <div className="absolute inset-x-0 bottom-0 pb-10">
+        <div className="relative pb-10 pt-28">
           <div className="vp-page vp-page-read">
             <span className="rounded-full bg-white/95 px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-black">
               {article.kicker}
@@ -47,6 +49,26 @@ export default function MagazineArticle() {
               </span>
               {univers && <span>· Univers {univers.name}</span>}
             </div>
+          </div>
+        </div>
+
+        {/* La bande : les mêmes cartes d'univers que partout — ici, elles
+            mènent d'un article à l'autre. */}
+        <div className="relative pb-8 pt-2">
+          <div className="vp-page">
+            <BandeauHero
+              libelle="Changer d’univers"
+              note={`${UNIVERSE_ARTICLES.length} articles · cliquez pour lire`}
+              cartes={UNIVERSE_ARTICLES.map((un) => ({
+                id: un.slug,
+                titre: styleById(un.universeId ?? '')?.name ?? un.kicker,
+                badge: un.universeId ? badgeDUnivers(un.universeId) : un.kicker,
+                image: un.cover,
+                accent: un.universeId ? styleById(un.universeId)?.accent : undefined,
+                actif: un.universeId === article.universeId,
+                to: `/magazine/${un.slug}`,
+              }))}
+            />
           </div>
         </div>
       </header>

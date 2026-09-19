@@ -596,6 +596,19 @@ export const MAGAZINE_HERO_REPLI = '/images/table-noir.jpg';
 
 export const ALL_ARTICLES: Article[] = [...UNIVERSE_ARTICLES, ...GUIDE_ARTICLES, ...INSOLITE_ARTICLES];
 
+/**
+ * Le badge d'un univers, tel qu'il s'écrit sur les cartes du magazine :
+ * « Urbain », « Île & Tropiques », « Sauvage & Éphémère »…
+ */
+export function badgeDUnivers(styleId: string): string {
+  return contentFor(styleById(styleId)).hero.kicker.replace('Univers · ', '');
+}
+
+/** L'article d'un univers : c'est là qu'on découvre le mieux. */
+export function articleDUnivers(styleId: string): Article | undefined {
+  return ALL_ARTICLES.find((article) => article.universeId === styleId);
+}
+
 export function articleBySlug(slug: string): Article | undefined {
   return ALL_ARTICLES.find((a) => a.slug === slug);
 }

@@ -123,7 +123,7 @@ export default function PageProfil() {
     <div className="vp-env min-h-screen">
       {/* ═════════════════ LA COUVERTURE : l'univers, et le timbre ═════════════════ */}
       <header className="relative">
-        <div className="relative h-[240px] overflow-hidden bg-[#0B0C12] sm:h-[320px]">
+        <div className="relative min-h-[100svh] overflow-hidden bg-[#0B0C12]">
           {visuel && <img src={visuel} alt="" className="absolute inset-0 h-full w-full object-cover" />}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C12] via-[#0B0C12]/55 to-[#0B0C12]/25" />
           <div className="vp-page relative flex h-full flex-col justify-end pb-5">

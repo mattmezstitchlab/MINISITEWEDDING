@@ -4,23 +4,28 @@ import { Link } from 'react-router-dom';
 /**
  * LA BANDE DU HERO
  *
- * Le hero de chaque page se termine par la même bande : des cartes à faire
- * défiler à l'horizontale, toujours au même endroit, qui font passer d'un
- * univers à l'autre — ou d'un métier à l'autre. C'est la navigation de la page,
- * posée là où le regard arrive : plus besoin d'ouvrir un menu déroulant pour
- * changer d'univers, on le fait d'un geste, et on voit où l'on est.
+ * Le hero de chaque page se termine par la même bande : de grandes cartes à
+ * faire défiler à l'horizontale, toujours au même endroit. C'est la charte du
+ * site — le visuel de l'univers, le badge blanc du magazine, le nom en
+ * majuscules — et c'est aussi la navigation de la page : d'un geste on change
+ * d'univers, de métier ou d'article, sans ouvrir de menu.
  *
- * Elle ne pose aucun contenant : la page l'installe dans le sien
- * (`.vp-page`), comme le reste de ses blocs.
+ * Ce que fait un clic dépend de la page, jamais de la bande : changer l'univers
+ * montré (l'accueil), ouvrir la page de l'univers, ou passer à l'article de cet
+ * univers — c'est la page qui le décide.
+ *
+ * Elle ne pose aucun contenant : la page l'installe dans le sien (`.vp-page`).
  */
 
 export interface CarteBandeau {
   id: string;
-  /** Le nom, écrit sur la carte. */
+  /** Le nom, écrit en majuscules sur le visuel. */
   titre: string;
-  /** La précision, en petit au-dessus : un domaine, un registre… */
+  /** Le badge blanc, comme sur les cartes du magazine. */
+  badge?: string;
+  /** La ligne de dessous, à la place du badge quand il n'y a pas de visuel. */
   sousTitre?: string;
-  /** Le visuel de la carte, quand elle en a un. */
+  /** Le visuel de la carte. */
   image?: string;
   /** La pastille de couleur : l'accent de l'univers. */
   accent?: string;
@@ -33,67 +38,68 @@ export interface CarteBandeau {
 }
 
 interface BandeauHeroProps {
-  /** Ce que la bande annonce : « Les univers », « Les métiers de cet univers ». */
+  /** Ce que la bande annonce : « Les univers », « Les métiers d'à côté ». */
   libelle: string;
   cartes: CarteBandeau[];
   /** Le petit mot de droite, à la place du compte par défaut. */
   note?: string;
 }
 
+/** La carte, dans la charte du site : visuel, badge blanc, titre en capitales. */
 function Carte({ carte }: { carte: CarteBandeau }): ReactNode {
-  const commun =
-    'group relative flex h-[94px] w-[168px] shrink-0 snap-start flex-col overflow-hidden rounded-[16px] border no-underline transition duration-300';
-  const etat = carte.actif
-    ? 'border-white/70 ring-2 ring-white/50'
-    : 'border-white/15 hover:border-white/45 hover:-translate-y-0.5';
+  const etat = carte.actif ? 'ring-2 ring-white ring-offset-2 ring-offset-black/30' : 'hover:-translate-y-1';
 
   const dedans = carte.image ? (
     <>
-      <img
-        src={carte.image}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-[1.06]"
-      />
-      <span className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/35 to-black/10" />
-      {carte.accent && (
-        <span className="absolute left-2 top-2 h-2 w-2 rounded-full shadow-sm" style={{ background: carte.accent }} />
-      )}
-      {carte.actif && (
-        <span className="absolute right-2 top-2 rounded-full bg-white px-1.5 py-0.5 font-mono text-[8.5px] font-bold uppercase tracking-wider text-black">
-          Ici
-        </span>
-      )}
-      <span
-        className="absolute inset-x-2 bottom-2 text-[12.5px] font-semibold leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]"
-      >
-        {carte.titre}
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[16px]">
+        <img
+          src={carte.image}
+          alt=""
+          className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.05]"
+        />
+        <span className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/10" />
+        {carte.badge && (
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-white/95 px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-black">
+            {carte.badge}
+          </span>
+        )}
+        {carte.actif && (
+          <span className="absolute right-2.5 top-2.5 rounded-full bg-black/80 px-2 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
+            Ici
+          </span>
+        )}
+      </div>
+      <span className="mt-2 flex items-center gap-2 px-0.5">
+        {carte.accent && <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: carte.accent }} />}
+        <span className="truncate text-[13px] font-bold uppercase tracking-[0.08em] text-white">{carte.titre}</span>
       </span>
     </>
   ) : (
     <>
-      <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/55">{carte.sousTitre}</span>
-      {carte.actif && (
-        <span className="absolute right-2 top-2 rounded-full bg-white px-1.5 py-0.5 font-mono text-[8.5px] font-bold uppercase tracking-wider text-black">
-          Ici
+      <div className="relative flex aspect-[16/10] flex-col justify-end rounded-[16px] border border-white/15 bg-white/8 p-3 backdrop-blur transition group-hover:bg-white/14">
+        <span className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/60">{carte.badge ?? carte.sousTitre}</span>
+        {carte.actif && (
+          <span className="absolute right-2.5 top-2.5 rounded-full bg-black/70 px-2 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur">
+            Ici
+          </span>
+        )}
+        <span className="mt-6 block text-[13px] font-bold uppercase leading-tight tracking-[0.08em] text-white">
+          {carte.titre}
         </span>
-      )}
-      <span className="mt-auto block pr-1 text-[12.5px] font-semibold leading-tight text-white">{carte.titre}</span>
-      <span
-        className="mt-1.5 block h-[3px] w-7 rounded-full"
-        style={{ background: carte.accent ?? 'rgba(255,255,255,0.5)' }}
-      />
+        <span
+          className="mt-2 block h-[3px] w-8 rounded-full"
+          style={{ background: carte.accent ?? 'rgba(255,255,255,0.5)' }}
+        />
+      </div>
     </>
   );
 
-  const classeImage = carte.image ? '' : 'bg-white/8 p-2.5 backdrop-blur hover:bg-white/14';
+  const classe =
+    'group relative flex w-[248px] shrink-0 snap-start flex-col text-left no-underline transition duration-300 sm:w-[288px]';
 
   if (carte.to) {
     return (
-      <Link
-        to={carte.to}
-        aria-current={carte.actif ? 'true' : undefined}
-        className={`${commun} ${etat} ${classeImage}`}
-      >
+      <Link to={carte.to} aria-current={carte.actif ? 'true' : undefined} className={`${classe} ${etat}`}>
         {dedans}
       </Link>
     );
@@ -105,7 +111,7 @@ function Carte({ carte }: { carte: CarteBandeau }): ReactNode {
       onClick={carte.onChoisir}
       aria-current={carte.actif ? 'true' : undefined}
       aria-pressed={carte.actif}
-      className={`${commun} ${etat} ${classeImage} text-left`}
+      className={`${classe} ${etat}`}
     >
       {dedans}
     </button>
@@ -117,14 +123,14 @@ export default function BandeauHero({ libelle, cartes, note }: BandeauHeroProps)
 
   return (
     <div className="w-full">
-      <div className="mb-2 flex items-baseline justify-between gap-3">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
         <span className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-white/60">{libelle}</span>
         <span className="hidden font-mono text-[9.5px] uppercase tracking-[0.18em] text-white/40 sm:inline">
           {note ?? `${cartes.length} · faites défiler`}
         </span>
       </div>
 
-      <div className="no-scrollbar -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1">
+      <div className="no-scrollbar -mx-1 flex snap-x gap-3.5 overflow-x-auto px-1 pb-2">
         {cartes.map((carte) => (
           <Carte key={carte.id} carte={carte} />
         ))}

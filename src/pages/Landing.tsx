@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 import { contentFor } from '../lib/universeContent';
+import { articleDUnivers, badgeDUnivers } from '../lib/magazine';
 import HeroCycle from '../components/HeroCycle';
 import BandeauHero from '../components/BandeauHero';
 import SiteHeader from '../components/SiteHeader';
@@ -13,7 +14,6 @@ import EditorShowcase from '../components/EditorShowcase';
 import SuperMariageTeaser from '../components/SuperMariageTeaser';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 
-import UniversePhoneScreens from '../components/UniversePhoneScreens';
 import ErrorBoundary from '../components/ErrorBoundary';
 import HomeCardShowcase from '../components/HomeCardShowcase';
 
@@ -49,11 +49,16 @@ export default function Landing() {
     return () => clearInterval(interval);
   }, [selectedStyle]);
 
-  /** « Découvrir » descend d'un écran : la carte, puis le mini-site. */
-  const descendreVersLaCarte = () => {
-    if (selectedStyle) setSelectedStyle(null);
-    const el = document.getElementById('ecran');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /**
+   * « DÉCOUVRIR » — le changement de paradigme
+   *
+   * On ne descend plus dans un écran : on va là où l'univers se raconte, son
+   * article de magazine. Sans univers choisi, c'est le magazine entier — le
+   * même bouton, la même promesse : découvrir.
+   */
+  const decouvrir = () => {
+    const article = selectedStyle ? articleDUnivers(selectedStyle.id) : null;
+    navigate(article ? `/magazine/${article.slug}` : '/magazine');
   };
 
   const handleSelectStyle = (style: WeddingStyle | null) => {
@@ -84,6 +89,7 @@ export default function Landing() {
         ...WEDDING_STYLES.map((univers) => ({
           id: univers.id,
           titre: univers.name,
+          badge: badgeDUnivers(univers.id),
           image: univers.image,
           accent: univers.accent,
           actif: selectedStyle?.id === univers.id,
@@ -123,21 +129,6 @@ export default function Landing() {
                 <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-white/80">
                   {contentFor(selectedStyle).hero.subtitle}
                 </p>
-
-                {/* Les informations propres à cet univers */}
-                <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-2.5">
-                  {contentFor(selectedStyle).hero.facts.map((fact) => (
-                    <span
-                      key={fact.label}
-                      className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12px] text-white backdrop-blur-sm"
-                    >
-                      <span className="font-mono text-[10px] uppercase tracking-wider text-white/55">
-                        {fact.label}
-                      </span>
-                      <span className="ml-1.5 font-semibold">{fact.value}</span>
-                    </span>
-                  ))}
-                </div>
               </motion.div>
             </div>
           ) : (
@@ -169,34 +160,28 @@ export default function Landing() {
             transition={{ delay: 0.25, duration: 0.8 }}
             className="mt-4 w-full"
           >
-            {!selectedStyle && (
-              <ErrorBoundary>
-                <div id="hero-ai-container" className="mt-6 flex w-full flex-col items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={descendreVersLaCarte}
-                    className="vp-btn vp-press !bg-white !px-8 !py-3.5 !text-black shadow-2xl hover:!bg-white/90"
-                  >
-                    Découvrir <ArrowRight size={16} />
-                  </button>
-                </div>
-              </ErrorBoundary>
-            )}
+            <ErrorBoundary>
+              <div id="hero-ai-container" className="mt-6 flex w-full flex-col items-center gap-3">
+                <button
+                  type="button"
+                  onClick={decouvrir}
+                  className="vp-btn vp-press !bg-white !px-8 !py-3.5 !text-black shadow-2xl hover:!bg-white/90"
+                >
+                  Découvrir <ArrowRight size={16} />
+                </button>
+              </div>
+            </ErrorBoundary>
           </motion.div>
         </div>
       </HeroCycle>
       </div>
 
-      {/* LA CARTE AVANT LE SITE : sous le hero, la carte remplace l'écran — on
-          voit ce qu'il reste à remplir. Sur un univers précis, les trois écrans
-          de cet univers prennent sa place. */}
+      {/* LA CARTE AVANT LE SITE : sous le hero, la carte — on voit ce qu'il
+          reste à remplir. Les écrans de téléphone ont disparu : un univers se
+          découvre dans son article. */}
       <ErrorBoundary>
         <div id="ecran">
-          {selectedStyle ? (
-            <UniversePhoneScreens currentStyle={selectedStyle} />
-          ) : (
-            <HomeCardShowcase />
-          )}
+          <HomeCardShowcase />
         </div>
       </ErrorBoundary>
 

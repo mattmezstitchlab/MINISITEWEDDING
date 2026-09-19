@@ -95,7 +95,7 @@ export default function SuperMariage() {
       </div>
 
       {/* ——————————————————————————— le magasin ——————————————————————————— */}
-      <header className="relative overflow-hidden border-b border-white/10">
+      <header className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden border-b border-white/10">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.18]"
           style={{
@@ -104,7 +104,7 @@ export default function SuperMariage() {
           }}
           aria-hidden="true"
         />
-        <div className="vp-page relative pb-14 pt-14 sm:pb-20 sm:pt-20">
+        <div className="vp-page relative pb-16 pt-24">
           <span
             className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-black"
             style={{ background: VERT }}

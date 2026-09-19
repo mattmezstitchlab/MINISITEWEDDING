@@ -49,7 +49,7 @@ export default function Shop() {
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
       {/* Le hero du shop : le visuel, puis tout ce qui s'y trouve */}
-      <header className="relative flex min-h-[64vh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
+      <header className="relative flex min-h-[100svh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
         <img
           src={visuelHero}
           alt=""

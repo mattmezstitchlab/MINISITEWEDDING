@@ -60,7 +60,7 @@ import Magazine from '../src/pages/Magazine';
 import MagazineArticle from '../src/pages/MagazineArticle';
 import Shop from '../src/pages/Shop';
 import ShopProduct from '../src/pages/ShopProduct';
-import { ALL_ARTICLES } from '../src/lib/magazine';
+import { ALL_ARTICLES, UNIVERSE_ARTICLES, articleDUnivers, badgeDUnivers } from '../src/lib/magazine';
 import { SHOP_PRODUCTS } from '../src/lib/shopData';
 import {
   CONVIVES, PANIER_DEPART, articlesDuPanier, lignesDuTicket, numeroDeTicket, totalCaisse,
@@ -1166,6 +1166,48 @@ check('le timbre annonce son propriétaire', timbre.includes('Son timbre · Clar
 check('et porte la date courte', timbre.includes('12.06.2027'), true);
 check('sans photo, il montre les initiales', timbre.includes('>CM<'), true);
 check('il reste dentelé', timbre.includes('border-dashed'), true);
+
+/* ---------- la charte de la bande, le hero d'univers, l'article, les héros ----- */
+
+/* Les cartes de la bande reprennent la charte : visuel, badge blanc, majuscules. */
+const carteBande = accueil.slice(accueil.indexOf('Les univers'));
+check('les cartes de la bande sont grandes', accueil.includes('w-[248px]') && accueil.includes('sm:w-[288px]'), true);
+check('elles portent le badge blanc du magazine', carteBande.includes('bg-white/95 px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase'), true);
+check('et le nom de l’univers en majuscules', carteBande.includes('font-bold uppercase tracking-[0.08em] text-white'), true);
+check('le badge est celui de l’univers', carteBande.includes('Urbain') || carteBande.includes('Sauvage'), true);
+
+/* Choisir un univers : le hero montre son titre, sans les badges, et Découvrir. */
+const accueilVegas = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/?univers=vegas'] }, createElement(Landing as never)),
+);
+check('le hero prend le titre de l’univers', accueilVegas.includes(contentFor(styleById('vegas')).hero.title), true);
+check('il garde son chapô', accueilVegas.includes(contentFor(styleById('vegas')).hero.subtitle), true);
+check('les badges lieu, invités et programme ont disparu', />(Lieu|Invités|Programme)</.test(accueilVegas), false);
+check('et « Découvrir » reste', accueilVegas.includes('Découvrir'), true);
+check('l’univers choisi est marqué dans la bande', accueilVegas.includes('>Ici<'), true);
+
+/* « Découvrir » mène à l'article de l'univers : c'est là qu'on découvre. */
+check('l’article d’un univers se retrouve par son identifiant', articleDUnivers('vegas')?.slug, 'univers-vegas');
+check('et son badge est celui du magazine', badgeDUnivers('vegas'), 'Express & Festif');
+check('chaque univers a le sien', badgeDUnivers('corse'), 'Sauvage & Éphémère');
+
+/* Les téléphones ont quitté l'accueil. */
+check('plus de bande de téléphones sur l’accueil', accueil.includes('Trois téléphones'), false);
+check('plus de capsule « Un univers »', accueil.includes('Un univers ·'), false);
+
+/* La même hauteur de hero partout : celle de l'accueil. */
+check(
+  'toutes les pages ont le hero de l’accueil',
+  [accueil, universBande, metierBande, pageMagazine, pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageArticle].every((h) =>
+    h.includes('min-h-[100svh]'),
+  ),
+  true,
+);
+
+/* L'article porte la même bande, et l'on passe d'un article à l'autre. */
+check('l’article porte la bande des univers', pageArticle.includes('Changer d’univers'), true);
+check('elle annonce les articles', pageArticle.includes(`${UNIVERSE_ARTICLES.length} articles · cliquez pour lire`), true);
+check('et mène bien à un autre article', (pageArticle.match(/\/magazine\/univers-/g) ?? []).length > 5, true);
 
 /* ------------------------------------------------------------------- bilan */
 

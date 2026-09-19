@@ -34,7 +34,7 @@ export default function Magazine() {
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
       
       {/* Le hero : le visuel, puis ce que contient le magazine */}
-      <header className="relative flex min-h-[62vh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
+      <header className="relative flex min-h-[100svh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
         {visuelHero && (
           <img
             src={MAGAZINE_HERO}

@@ -737,3 +737,41 @@ le noir du site.
   noir et pictos blancs, header sans bouton Univers, bande des univers sur
   l'accueil et sur la page d'un univers avec l'univers courant marqué, bande des
   métiers sur la page d'un métier), `npm run build` OK.
+
+## 23. La bande à la charte du site, le hero partout, découvrir par l'article (passe 28)
+
+La bascule se fait en douceur : la même bande, la même hauteur, et « Découvrir »
+qui mène enfin là où l'on découvre.
+
+- **La bande prend la charte du site.** `BandeauHero` abandonne les petites
+  vignettes pour les cartes du magazine : visuel en 16/10, **badge blanc** en
+  haut à gauche (le badge d'un univers, `badgeDUnivers(styleId)` — « Urbain »,
+  « Sauvage & Éphémère »…), **nom en majuscules** sous la carte, pastille
+  d'accent, et la mention « Ici » sur l'élément courant. 248 px de large, 288 px
+  à partir de 640 px : la même taille qu'ouvrait le menu du header. Quand il n'y
+  a pas de visuel (les métiers), la carte garde le même gabarit 16/10.
+- **Choisir un univers change le hero, sans les badges.** Sur l'accueil, un clic
+  sur une carte montre le titre et le chapô de cet univers — le titre qui existe
+  déjà dans son contenu — et rien d'autre : les pastilles Lieu, Invités et
+  Programme ont disparu. « Découvrir » reste là, comme sur la première vue.
+- **« Découvrir » mène à l'article.** Changement de paradigme : on ne descend
+  plus dans un écran, on va là où l'univers se raconte — son article de magazine
+  (`articleDUnivers(styleId)`). Sans univers choisi, c'est le magazine entier.
+- **Les téléphones s'en vont.** `UniversePhoneScreens` disparaît de l'accueil :
+  sous le hero il ne reste que la carte, et un univers se découvre dans son
+  article.
+- **Un seul hero, partout.** La même hauteur que l'accueil (`min-h-[100svh]`)
+  sur la page d'un univers, d'un métier, d'un article, d'une personne, du
+  magazine, du shop, d'une fiche produit, de l'espace prestataire et du
+  magasin : ça respire, et le contenu respire avec. La bande du hero se pose au
+  bas de ce hero, toujours au même endroit.
+- **Dans l'article, la bande change d'article.** La couverture d'un article
+  porte la même bande d'univers (`Changer d'univers`, les vingt-quatre articles
+  d'univers) : d'un clic on passe à l'article de l'univers voisin, l'article
+  courant marqué « Ici ».
+- **Contrôles.** `npx tsc -b` 0, eslint 0 sur tout ce qui a bougé, `npm test`
+  173 / 55 / **343** (cartes à la charte : grandes, badge blanc, majuscules ;
+  le hero d'un univers montre son titre et plus aucun badge Lieu / Invités /
+  Programme, avec « Découvrir » ; plus de téléphones sur l'accueil ; toutes les
+  pages en `min-h-[100svh]` ; la bande de l'article mène d'un article à
+  l'autre), `npm run build` OK.
