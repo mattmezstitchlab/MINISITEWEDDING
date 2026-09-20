@@ -87,6 +87,13 @@ import {
   PALIERS as PALIERS_LUMIERE, feteDuPrenom, joursDuPrenom, miseEnLumiere, profilDeBase,
 } from '../src/lib/miseEnLumiere';
 import MiseEnLumiere from '../src/components/MiseEnLumiere';
+import LeChiffre from '../src/components/LeChiffre';
+import {
+  CONFIDENTIALITE_CHIFFRE, MAITRES, METHODE_PAR_DEFAUT, MOTS, SYSTEME, anneePersonnelle, chargerChiffre,
+  chiffreAdeux, chiffreDePersonnalite, chiffreDUneDate, chiffreDuNom, chiffreIntime, chiffresDeLaPersonne,
+  consonnesDe, effacerChiffre, enregistrerChiffre, estMaitre, laRegle, lettresDe, lireDate, motsDuChiffre,
+  reduire, sansAccents, valeurDeLettre, voyellesDe,
+} from '../src/lib/chiffre';
 import HeroEnchaine from '../src/components/HeroEnchaine';
 import ManifestePersonne from '../src/components/ManifestePersonne';
 import UniversDeLaPersonne from '../src/components/UniversDeLaPersonne';
@@ -2441,6 +2448,110 @@ check(
 check('et garde la visibilité de ses contacts', personneLocale.contact_visibility, carteLocale.contactVisibility);
 
 viderSelection();
+
+/* ————————— LE CHIFFRE : LA RÈGLE, LES MOTS, ET RIEN DE PLUS ————————— */
+
+check('le système employé est dit', SYSTEME, 'pythagoricien');
+check('les accents tombent avant le calcul', sansAccents('Élodie'), 'ELODIE');
+check('et les ligatures se séparent', sansAccents('cœur'), 'COEUR');
+check('A vaut 1, R vaut 9, S repart à 1', [valeurDeLettre('A'), valeurDeLettre('R'), valeurDeLettre('S')], [1, 9, 1]);
+check('un mot ne garde que ses lettres', lettresDe('Claire Martin!').length, 12);
+check('la réduction garde les maîtres', [reduire(38), reduire(29), reduire(12)], [11, 11, 3]);
+check('mais sans les garder, elle descend', reduire(38, false), 2);
+check('onze, vingt-deux et trente-trois sont des maîtres', MAITRES.map((m) => estMaitre(m)), [true, true, true]);
+check('quarante-quatre n’en est pas un', estMaitre(44), false);
+
+check('MATT donne neuf', chiffreDuNom('MATT').nombre, 9);
+check('et le calcul se montre', chiffreDuNom('MATT').pas.length >= 2, true);
+check('la date se lit des deux façons', [lireDate('14.06.1992'), lireDate('1992-06-14')], [lireDate('1992-06-14'), lireDate('1992-06-14')]);
+check('une date illisible ne donne rien', lireDate('n’importe quoi'), null);
+check('le chemin de vie de 14/06/1992 est 5', chiffreDUneDate('1992-06-14'), 5);
+check('la méthode de référence est écrite', METHODE_PAR_DEFAUT, 'par-composant');
+check(
+  'les deux méthodes sont possibles, et donnent ici la même chose',
+  [chiffreDUneDate('1985-11-29'), lireDate('1985-11-29') !== null],
+  [9, true],
+);
+check(
+  'par composant, un maître apparaît au passage — et c’est dit',
+  chiffresDeLaPersonne('', '', '1985-11-29').chemin?.maitreEnChemin,
+  true,
+);
+
+check('les voyelles donnent le nombre intime', chiffreIntime('ELODIE').nombre, 7);
+check('Élodie et Elodie donnent le même chiffre', chiffreIntime('Elodie').nombre, chiffreIntime('Élodie').nombre);
+check(
+  'le Y sonne « i » : il compte comme voyelle',
+  [voyellesDe('YVES'), consonnesDe('YVES')],
+  [['Y', 'E'], ['V', 'S']],
+);
+check(
+  'sauf quand il sonne consonne, devant une voyelle',
+  [voyellesDe('YANN'), consonnesDe('YANN').slice(0, 1)],
+  [['A'], ['Y']],
+);
+check('les consonnes donnent la personnalité', chiffreDePersonnalite('CLAIRE MARTIN').nombre, 8);
+check('l’année personnelle, elle, bouge', anneePersonnelle('1992-06-14', 2026), 3);
+
+check(
+  'à deux, on montre les deux chiffres, et leur somme',
+  chiffreAdeux('1992-06-14', '1990-11-03'),
+  { premier: 5, second: 6, ensemble: 11 },
+);
+check('sans les deux dates, il n’y a pas de somme', chiffreAdeux('1992-06-14', null).ensemble, null);
+check('sans personne, il n’y a rien', chiffreAdeux(null, undefined), { premier: null, second: null, ensemble: null });
+
+check('les mots couvrent les neuf familles et les trois maîtres', Object.keys(MOTS).length, 12);
+check('chaque famille dit quelque chose', Object.values(MOTS).every((m) => m.mots.length > 25), true);
+check(
+  'un maître ne vaut pas mieux : c’est dit',
+  MAITRES.every((m) => MOTS[m]!.mots.includes('ce n’est pas mieux')),
+  true,
+);
+const MOTS_INTERDITS = ['compatib', 'karma', 'dette', 'supérieur', 'meilleur que', 'prédi', 'destin', 'soigne'];
+check(
+  'aucun mot ne juge personne',
+  Object.values(MOTS).every((m) => !MOTS_INTERDITS.some((mot) => m.mots.toLowerCase().includes(mot))),
+  true,
+);
+check(
+  'et la règle dit qu’il n’en est pas un',
+  laRegle().some((r) => r.includes('ni un diagnostic, ni une prédiction, ni un jugement')),
+  true,
+);
+check('un nombre inconnu n’invente pas de sens', motsDuChiffre(0), null);
+check('le chiffre du mariage se calcule comme une date', chiffreDUneDate('2027-08-21'), 22);
+
+const regle = laRegle().join(' ');
+check('la règle dit le système, l’alphabet et le nom de naissance', regle.includes('pythagoricien') && regle.includes('sans accents') && regle.includes('nom de naissance'), true);
+check('elle dit la méthode, et les maîtres non réduits', regle.includes('par composant') && regle.includes('11, 22 et 33 ne sont pas réduits'), true);
+check('et elle finit par ce que le chiffre n’est pas', regle.includes('ni un diagnostic, ni une prédiction, ni un jugement'), true);
+
+/* Le chiffre d’une personne : facultatif, privé, et effaçable. */
+effacerChiffre();
+check('sans rien donné, rien n’est gardé', chargerChiffre(), null);
+check('une case vide ne crée pas de donnée', enregistrerChiffre({ prenom: '', nomDeNaissance: '', date: '', cible: 'public' }), null);
+enregistrerChiffre({ prenom: 'Claire', nomDeNaissance: 'Martin', date: '1992-06-14', cible: 'public' });
+check('ce qui est donné se relit', [chargerChiffre()?.prenom, chargerChiffre()?.date], ['Claire', '1992-06-14']);
+enregistrerChiffre({ prenom: 'Claire', nomDeNaissance: 'Martin', date: '1992-06-14', cible: 'inconnu' });
+check('et l’on retombe toujours sur privé', chargerChiffre()?.cible, 'prive');
+check('les trois cibles sont celles du journal', CONFIDENTIALITE_CHIFFRE.map((c) => c.id), ['public', 'cercle', 'prive']);
+check('et la dernière est le défaut', CONFIDENTIALITE_CHIFFRE[2]!.qui.includes('c’est le défaut'), true);
+
+effacerChiffre();
+const chiffreVide = renderToStaticMarkup(createElement(LeChiffre, null));
+check('le bloc s’annonce', chiffreVide.includes('Un chiffre, et sa règle'), true);
+check('et il ne demande rien d’obligatoire', chiffreVide.includes('Facultatif, et privé'), true);
+effacerChiffre();
+
+enregistrerChiffre({ prenom: 'Claire', nomDeNaissance: 'Martin', date: '1992-06-14', cible: 'prive' });
+const chiffreRendu = renderToStaticMarkup(createElement(LeChiffre, null));
+check('le chiffre se montre', chiffreRendu.includes('Chemin de vie') && chiffreRendu.includes('>5<'), true);
+check('avec ses mots', chiffreRendu.includes(motsDuChiffre(5)!.mots.slice(0, 30)), true);
+check('et le calcul s’ouvre sur demande', chiffreRendu.includes('Voir le calcul'), true);
+check('ce qu’il ne fera jamais est écrit', chiffreRendu.includes('Il ne compare personne'), true);
+check('et la personne garde la main', chiffreRendu.includes('Effacer'), true);
+effacerChiffre();
 
 /* ------------------------------------------------------------------- bilan */
 

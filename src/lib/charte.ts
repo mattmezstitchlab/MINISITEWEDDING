@@ -77,7 +77,13 @@ export const CHARTE: Regle[] = [
     regle: 'Le cadre est constant : page 1180, lecture 820, trois tailles de titre, pas quatre.',
     pourquoi: 'c’est ce qui permet de tout aligner — les jours, les heures, les gens, et l’autre bout du monde.',
   },
+  {
+    id: 'le-chiffre',
+    regle: 'Le chiffre dit sa règle, ne juge personne, et ne se demande qu’à qui veut bien le donner.',
+    pourquoi: 'un repère symbolique qui s’explique reste un repère ; un repère qui se tait devient une croyance.',
+  },
 ];
+
 
 /** La charte, en une ligne, pour la tête de page. */
 export const CHARTE_RESUME = `${CHARTE.length} règles, tenues et vérifiées — signées ${SIGNATURE_EDITEUR}.`;

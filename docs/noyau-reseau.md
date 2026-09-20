@@ -1824,3 +1824,71 @@ sur la mise en lumière.
 sans carte remplie, mais avec une sélection, la page s'ouvre tout de même — la
 carte vide tient la place, le hero tient l'enchaînement, et le mot « brouillon »
 reste là jusqu'à la publication.
+
+---
+
+## §45 — Le chiffre : la tradition, sa règle, et ses limites
+
+**Le site calculait déjà un chiffre pour le jour.** `clesDuJour` en tire un de la
+date, et `SENS_DES_CHIFFRES` en donne les neuf sens. `src/lib/chiffre.ts` fait le
+**même geste pour une personne** : sa date de naissance et son nom donnent un
+nombre — **le chiffre de la personne** — quand le premier est **le chiffre du
+jour**, et le troisième **le chiffre du mariage**. Un mot, trois échelles.
+
+**Ce qui est calculé** : le **chemin de vie** (date complète), le **nombre
+d'expression** (toutes les lettres du nom), le **nombre intime** (les voyelles),
+le **nombre de personnalité** (les consonnes), l'**année personnelle** (la seule
+qui bouge), et **le chiffre à deux** — qui ne donne **jamais** de verdict.
+
+**Trois règles, écrites dans le module, et tenues par les tests :**
+
+1. **Le chiffre dit sa règle.** `laRegle()` rend la règle entière : système
+   **pythagoricien**, **alphabet latin sans accents** (É=E, Ç=C, Œ=OE), **nom de
+   naissance**, méthode **par composant** (jour, mois, année réduits séparément —
+   c'est celle qui laisse voir un maître au passage : un 29 donne 11, et l'on
+   garde le 11), et **11, 22 et 33 jamais réduits**. L'affichage montre le calcul
+   pas à pas (`Detail.pas`) et la règle sur un clic.
+2. **Le chiffre ne juge personne.** Neuf familles (`MOTS`), **les mêmes pour tout
+   le monde** ; pour les maîtres, la même phrase : *ce n'est pas mieux que deux,
+   c'est le même avec ses deux chiffres visibles*. Aucun mot ne contient
+   compatibilité, karma, dette, supériorité, prédiction — **le test le vérifie
+   littéralement**.
+3. **Il est facultatif, et privé par défaut.** `vows:chiffre` reste vide si l'on
+   ne donne rien (« une case vide n'est pas une donnée »), la cible retombe
+   toujours sur `prive`, et **la personne peut effacer** — le bouton est là.
+
+**La règle du Y, écrite parce qu'elle est discutable** : il sonne « i », donc il
+compte comme **voyelle** (« Yves »), sauf quand il ouvre un mot devant une
+voyelle — « Yann », « yoga » — où il sonne consonne. La règle est dans le code,
+donc elle peut être discutée : c'est exactement ce qu'on veut.
+
+**Le chiffre à deux** (`chiffreAdeux`) : on montre **les deux chiffres**, et leur
+somme **seulement si les deux l'ont donné**. Sans les deux dates, il n'y a pas de
+somme — et jamais de « compatibilité ».
+
+**Le droit, vérifié** (et c'est ce qui a guidé les textes) : la voyance n'est pas
+une profession réglementée en France, mais elle est soumise au Code de la
+consommation — **interdiction des pratiques commerciales trompeuses** (L121-1,
+L121-8, jusqu'à 300 000 € et 2 ans d'emprisonnement), et la Cour de cassation a
+rappelé en 2020 que **le caractère divinatoire n'exonère pas des obligations
+d'information et de loyauté**. La DGCCRF contrôle, et le secteur lui-même
+recommande de rappeler le caractère ludique et non scientifique, et de ne jamais
+prédire la santé. `LeChiffre.tsx` écrit donc, sur la page : *« Il ne compare
+personne », « ni dette, ni mieux, ni moins bien », « il ne prédit rien, et jamais
+la santé »*.
+
+**La neuvième règle de la charte** : *le chiffre dit sa règle, ne juge personne,
+et ne se demande qu'à qui veut bien le donner* — « un repère qui s'explique reste
+un repère ; un repère qui se tait devient une croyance ».
+
+**Où il vit** : `LeChiffre.tsx` sur `/magazine`, entre les éditions et la mise en
+lumière. Il se branchera ensuite sur la carte (le nom, le prénom) et sur le
+profil — `people.card` étant un `jsonb`, **aucune migration n'est nécessaire**.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 854**, `npm run
+build` OK. Les vérifications de la passe : les valeurs des lettres, les accents et
+les ligatures, la réduction et les maîtres, les deux méthodes, la règle du Y, les
+quatre nombres, l'année personnelle, le chiffre à deux, les neuf familles et les
+trois maîtres, **l'absence de tout mot qui juge**, la règle dite, le stockage
+(vide → rien, donné → relu, cible inconnue → privé, effaçable), et le rendu du
+bloc (le chiffre, ses mots, le calcul sur demande, ce qu'il ne fera jamais).

@@ -16,6 +16,7 @@ import CouvertureSemaine from '../components/CouvertureSemaine';
 import EditionSemaine from '../components/EditionSemaine';
 import FluxDuJour from '../components/FluxDuJour';
 import MiseEnLumiere from '../components/MiseEnLumiere';
+import LeChiffre from '../components/LeChiffre';
 
 /**
  * LE MAGAZINE — UN JOUR, UNE COUVERTURE, ET ON GLISSE
@@ -452,6 +453,11 @@ export default function Magazine() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ———————————————— LE CHIFFRE : UN NOMBRE, SES MOTS, SA RÈGLE ———————————————— */}
+      <section className="border-t border-black/8 bg-white pt-10">
+        <LeChiffre />
       </section>
 
       {/* ———————————————— LA MISE EN LUMIÈRE ———————————————— */}
