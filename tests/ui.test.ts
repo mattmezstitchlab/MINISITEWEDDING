@@ -71,8 +71,13 @@ import {
   lignesDuTicket as lignesDuTicketFooter, validationDuDocument,
 } from '../src/lib/superFooter';
 import {
-  annonceDuJour, chargerDemandes, demanderDocument, marquerDisponible, oublierDemande,
-} from '../src/lib/documents';
+  MENTION_DROITS, PALIERS, actionsPossibles, annonceCourante, annoncerDocument, annoncerMessage,
+  annoncerNotification, annoncesNouvelles, changerEtatAnnonce, chargerAnnonces, fermerFente,
+  ouvrirFente, palierDuPoint, palierDuPointInfo, retirerAnnonce, titreDuType,
+} from '../src/lib/annonces';
+import BoutonEtat from '../src/components/BoutonEtat';
+import { SUPER_HEROS, herosDuPalier, herosParId } from '../src/lib/superHeros';
+import { CATEGORIES_WALLET, axeDuDocument, chargerWallet, classerDocument, rangerAuWallet, walletParCategorie } from '../src/lib/wallet';
 import MenuProfil from '../src/components/MenuProfil';
 import LecteurHero from '../src/components/LecteurHero';
 import Magazine from '../src/pages/Magazine';
@@ -1656,7 +1661,7 @@ check(
 
 /* Le ticket se compose tout seul. */
 check('sans coche, rien ne s’ouvre', documentsOuverts(CHOIX_VIDE).length, 0);
-const choixEtudiant = { options: ['etudiant', 'voyager', 'hebergement' in {} ? '' : 'visa'], lignes: ['mentions'] };
+const choixEtudiant = { options: ['etudiant', 'voyager', 'visa'], lignes: ['mentions'] };
 check('un étudiant qui veut voyager ouvre ses documents', documentsOuverts(choixEtudiant).length >= 3, true);
 check(
   'et le ticket les écrit',
@@ -1681,24 +1686,102 @@ check('et les entrées à cocher', pageFooter.includes('Intermittent·e du spect
 check('et les lignes du footer', pageFooter.includes('Ce que votre footer porte'), true);
 check('sans coche, le ticket invite à en poser', pageFooter.includes('Cochez votre situation'), true);
 
-/* La fente : le ticket qui sort en haut, et seulement quand il y a à dire. */
-oublierDemande(chargerDemandes()[0]?.id ?? 'rien');
-const fenteVide = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(FenteDocuments as never)));
-check('sans demande, la fente ne dit rien', fenteVide.includes('Document'), false);
-const posee = demanderDocument('Attestation d’hébergement', 'SUPER MARIÉS', 'un proche');
-const fentePleine = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(FenteDocuments as never)));
-check('une demande fait sortir le ticket', fentePleine.includes('Document demandé'), true);
-check('avec le document', fentePleine.includes('Attestation d’hébergement'), true);
-check('qui l’a demandé', fentePleine.includes('demandé par SUPER MARIÉS'), true);
-check('et pour qui', fentePleine.includes('pour un proche'), true);
-check('ce que la fente annonce est la dernière demande', annonceDuJour(chargerDemandes())?.id, posee.id);
-marquerDisponible(posee.id);
-check('quand il est prêt, elle le dit', chargerDemandes()[0]?.etat, 'disponible');
+/* ————————————— LE POINT D'ÉTAT, LA FENTE, ET LES TICKETS ————————————— */
+
+/* On part d'une fente fermée, et sans annonce. */
+for (const a of chargerAnnonces()) retirerAnnonce(a.id);
+for (const p of chargerWallet()) {
+  /* le portefeuille repart vide, lui aussi */
+  void p;
+}
+fermerFente();
+const pointEteint = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(BoutonEtat as never)));
+check('sans rien à voir, le point est éteint', pointEteint.includes('rien à voir'), true);
+check('et sa couleur se dit', palierDuPointInfo(palierDuPoint([])).hex, '#3F3F46');
+
+/* Les six paliers : du plus calme au plus grave. */
 check(
-  'et la demande se retire',
-  (oublierDemande(posee.id), chargerDemandes().some((d) => d.id === posee.id)),
-  false,
+  'six paliers, dans l’ordre',
+  PALIERS.map((p) => p.id),
+  ['vert', 'bleu', 'mauve', 'fuchsia', 'orange', 'rouge'],
 );
+check('chacun a sa couleur', new Set(PALIERS.map((p) => p.hex)).size, 6);
+check('le plus grave est rouge', PALIERS[5]!.hex, '#EF4444');
+
+/* La fente ne sort que quand il y a un ticket. */
+const fenteFermee = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(FenteDocuments as never)));
+check('fente fermée : rien à lire', fenteFermee.includes('Vos droits') || fenteFermee.includes('imprimer'), false);
+ouvrirFente();
+const fenteSansTicket = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(FenteDocuments as never)));
+check('ouverte mais vide : toujours rien', fenteSansTicket.includes('imprimer'), false);
+
+/* Un document demandé : le ticket sort, et le point s'allume. */
+const ici = annoncerDocument('Attestation d’hébergement', 'SUPER MARIÉS', 'un proche', 'attestation-hebergement');
+const fenteDoc = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(FenteDocuments as never)));
+check('le ticket sort', fenteDoc.includes('Document disponible'), true);
+check('avec le document', fenteDoc.includes('Attestation d’hébergement'), true);
+check('qui l’a demandé, et pour qui', fenteDoc.includes('demandé par SUPER MARIÉS · pour un proche'), true);
+check('et la mention de vos droits', fenteDoc.includes('Vous n’êtes pas obligé d’ouvrir'), true);
+check('et l’on n’imprime pas', fenteDoc.includes('Aucune impression nécessaire'), true);
+check('trois gestes sont proposés', fenteDoc.includes('Ne pas ouvrir') && fenteDoc.includes('Valider') && fenteDoc.includes('Négocier'), true);
+check('le point s’allume au palier du ticket', palierDuPoint(chargerAnnonces()), ici.palier);
+const pointAllume = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(BoutonEtat as never)));
+check('et le bouton le montre', pointAllume.includes(PALIERS[ici.palier - 1]!.hex), true);
+
+/* Un message, une notification : le même passage. */
+annoncerMessage('Sandrine', 'Une question sur le contrat', 4);
+check('le palier le plus haut mène la couleur', palierDuPoint(chargerAnnonces()), 4);
+check('l’annonce du moment est la plus grave', annonceCourante(chargerAnnonces())?.type, 'message');
+check('et le ticket dit ce que c’est', titreDuType('message'), 'Message reçu');
+annoncerNotification('Une habitude', 'Toujours à la même heure', 1);
+check('une notification ne propose que le refus', actionsPossibles({ type: 'notification', palier: 1, id: 'n', titre: '', detail: '', etat: 'nouveau', quand: '', droits: MENTION_DROITS }).length, 1);
+
+/* Les états : écarté, validé, négocié — et ce qui les distingue. */
+changerEtatAnnonce(ici.id, 'ecarte');
+check('écarté n’est plus à voir', annoncesNouvelles(chargerAnnonces()).some((a) => a.id === ici.id), false);
+changerEtatAnnonce(ici.id, 'negocie');
+check('négocié non plus', annoncesNouvelles(chargerAnnonces()).some((a) => a.id === ici.id), false);
+
+/* ————————————————— LE PORTEFEUILLE : TOUT SE RANGE TOUT SEUL ————————————————— */
+
+const domicile = DOCUMENTS.find((d) => d.id === 'justificatif-domicile')!;
+check('une pièce se classe toute seule', classerDocument(domicile).label, 'Domicile');
+check('sur une famille connue, elle n’en crée pas', classerDocument(domicile).creee, false);
+/* Une pièce qu'aucune famille ne connaît : c'est l'axe qui la nomme. */
+const neuf = {
+  id: 'piece-inconnue',
+  nom: 'Certificat de tradition locale',
+  ouvrePar: ['benevole'],
+  demandePar: 'Une autorité locale',
+  auNomDe: 'La personne concernée',
+  pieces: ['Un cachet rare', 'Une date'],
+  source: 'Autorité locale',
+};
+check('une pièce inconnue ouvre sa famille', classerDocument(neuf).creee, true);
+check('et cette famille vient de son axe', classerDocument(neuf).label, 'Qui vous êtes');
+check('chaque pièce sait de quel axe elle vient', axeDuDocument(domicile)?.id, 'statut');
+
+const rangee = rangerAuWallet(domicile, 'SUPER MARIÉS');
+check('valider range la pièce', chargerWallet()[0]?.id, rangee.id);
+check('dans sa famille', chargerWallet()[0]?.categorieLabel, 'Domicile');
+const familles = walletParCategorie(chargerWallet());
+check('le portefeuille se lit par famille', familles.length, 1);
+check('avec sa pièce dedans', familles[0]?.pieces.length, 1);
+check('et ses familles par défaut sont prêtes', CATEGORIES_WALLET.length >= 8, true);
+
+/* ———————————————————— LES SUPER HÉROS : VINGT SPÉCIALISTES ———————————————————— */
+
+check('vingt super héros', SUPER_HEROS.length, 20);
+check('chacun son nom', new Set(SUPER_HEROS.map((h) => h.id)).size, 20);
+check(
+  'chacun sa spécialité, ce qu’il surveille, et ce qu’il fait',
+  SUPER_HEROS.every((h) => h.specialite && h.surveille && h.pouvoir),
+  true,
+);
+check('et sa place dans l’échelle', SUPER_HEROS.every((h) => h.palier >= 1 && h.palier <= 6), true);
+check('tous les paliers ont leurs héros', PALIERS.every((_, i) => herosDuPalier(i + 1).length >= 1), true);
+check('le gardien veille au plus grave', herosParId('gardien')?.palier, 6);
+check('et le passeur fait le pont', herosParId('passeur_de_lien')?.pouvoir.includes('pont'), true);
 
 /* LE MENU DU PROFIL : ses entrées, et « voir en tant que ». */
 /* Le profil, c'est **moi** : on repose le rôle par défaut avant de le lire. */

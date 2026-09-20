@@ -4,6 +4,7 @@ import BottomCapsuleNav from './BottomCapsuleNav';
 import NavVerticale from './NavVerticale';
 import BoutonParametres from './BoutonParametres';
 import FenteDocuments from './FenteDocuments';
+import BoutonEtat from './BoutonEtat';
 
 /**
  * LA NAVIGATION DU SITE, POSÉE UNE SEULE FOIS
@@ -61,7 +62,9 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       <NavVerticale />
       {/* En bas à gauche : les paramètres, c'est-à-dire l'éditeur du mini-site. */}
       <BoutonParametres />
-      {/* En haut, la fente : un document demandé s'annonce là. */}
+      {/* En bas à droite : le point d'état. Il s'allume, on clique, la fente sort. */}
+      <BoutonEtat />
+      {/* En haut, la fente : le ticket sort quand il y a quelque chose à voir. */}
       <FenteDocuments />
       {/* Le dock est fixe : la page laisse la place au bas. */}
       <div className="pb-24">{children}</div>

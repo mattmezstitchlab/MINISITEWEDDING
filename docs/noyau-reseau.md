@@ -1264,3 +1264,50 @@ annonce puis se tait), `npm run build` OK.
 marraine du projet et à l'avocate — ce qui est collecté, où c'est stocké, ce qui
 touche des données sensibles, ce qui doit être validé avant de sortir du
 navigateur.
+
+## 37. Le point d'état, la fente, le Wallet, et vingt héros (passe 42)
+
+**Un point qui s'allume, en bas à droite.** Bouton noir, picto blanc, et un point
+qui prend la couleur de ce qui arrive : **vert** (routine), **bleu** (à savoir),
+**mauve** (à faire), **fuchsia** (important), **orangé** (urgent), **rouge**
+(critique). Le point suit **le palier le plus haut** de ce qui reste à voir, il
+bat, et il porte le compte. À côté, en bas à gauche, le bouton **Paramètres** est
+devenu noir à picto blanc, comme lui.
+
+**La fente ne sort que quand il y a un ticket.** On clique le point : la fente
+s'ouvre. Un document, un message, une notification arrivent : elle s'ouvre toute
+seule. Le reste du temps, elle n'existe pas. C'est `src/lib/annonces.ts` — un
+seul passage pour tout ce qui circule (`document`, `message`, `notification`),
+avec les états *nouveau*, *lu*, *validé*, *négocié*, *écarté*.
+
+**Le ticket dit vos droits.** « Vous n'êtes pas obligé d'ouvrir ce ticket, ni de
+l'imprimer. Ne pas l'ouvrir est un droit : votre choix et son heure sont
+enregistrés ici, pour que personne ne puisse dire le contraire. » Et trois gestes :
+**ne pas ouvrir** (le choix est écrit, rien ne s'imprime), **valider** (la pièce
+descend au portefeuille, l'autre est prévenu), **négocier** (un retour part, la
+négociation reste sur le ticket). Aucune valeur probante n'est revendiquée : le
+site dit ce qu'il enregistre, les juristes diront ce que cela vaut.
+
+**Le Wallet range tout seul.** Chaque pièce validée se classe dans sa famille
+(identité, domicile, revenus, travail, études, famille, frontières, entreprise,
+droits) ; **si aucune ne correspond, la famille se crée** sur le nom de l'axe dont
+la pièce vient, et porte la mention « créée ». C'est ainsi qu'un portefeuille
+apprend : à force de demandes, à travers le monde, des familles apparaissent.
+`src/lib/wallet.ts`, clé `vows:wallet`.
+
+**Vingt SUPER HÉROS.** `src/lib/superHeros.ts` : vingt spécialistes, chacun avec
+sa spécialité, ce qu'il **surveille**, ce qu'il **fait**, et son palier — de
+l'ARCHIVISTE (les pièces manquantes) au GARDIEN (qui voit quoi), en passant par
+la BOUSSOLE (les frontières), la BALANCE (les négociations), le PASSEUR (faire
+parler les anciens mariés aux futurs). Ils ne décident pas : ils voient, et
+allument le point. C'est de là que naissent les **SUPER MATCH**.
+
+**La page est publique**, comme le reste : SUPER FOOTER se visite, coche, et
+demande — et la documentation du menu profil y mène.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **568** (six
+paliers et leurs couleurs ; la fente muette sans ticket, et bavarde avec ; le
+ticket qui dit le document, qui l'a demandé, la mention de droits et les trois
+gestes ; le point qui s'allume au palier le plus haut ; les états écarté, validé,
+négocié ; le classement automatique, la famille créée pour une pièce inconnue ;
+vingt héros, tous les paliers couverts), `npm run build` OK.

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Check, FileText, Send } from 'lucide-react';
+import { Check, FileText, FolderOpen, Send, Wallet } from 'lucide-react';
 import {
   AXES_FOOTER, CHOIX_VIDE, LIGNES_FOOTER, basculer, documentsOuverts, etatDuDocument, lignesDuTicket,
   validationDuDocument, type ChoixDeFooter, type DocumentPossible,
 } from '../lib/superFooter';
-import { demanderDocument } from '../lib/documents';
+import { annoncerDocument } from '../lib/annonces';
+import { walletParCategorie, useWallet } from '../lib/wallet';
 import { usePersonaCourante } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_FOOTER } from '../lib/navDesPages';
@@ -37,11 +38,14 @@ export default function SuperFooter() {
     return () => enregistrerNavVerticale(null);
   }, []);
 
+  const pieces = useWallet();
+  const familles = useMemo(() => walletParCategorie(pieces), [pieces]);
   const documents = useMemo(() => documentsOuverts(choix), [choix]);
   const lignes = useMemo(() => lignesDuTicket(choix), [choix]);
 
+  /** Demander un document : **le ticket sort de la fente**, et l'on répond là-haut. */
   const demander = (doc: DocumentPossible) => {
-    demanderDocument(doc.nom, moi.nom, undefined);
+    annoncerDocument(doc.nom, moi.nom, undefined, doc.id);
     setEnvoyes((liste) => [...liste, doc.id]);
   };
 
@@ -192,6 +196,50 @@ export default function SuperFooter() {
             </div>
           </div>
           <div className="h-3 rotate-180 bg-[radial-gradient(circle_at_6px_0px,_transparent_6px,_#FFFEF7_6px)] bg-[length:12px_12px] bg-repeat-x" />
+
+          {/* —————————————— MON PORTEFEUILLE : TOUT SE RANGE TOUT SEUL —————————————— */}
+          <section id="wallet" className="mt-6 rounded-[18px] border border-white/10 bg-white/[0.03] p-5">
+            <h2 className="flex items-center gap-2 text-[16px] font-bold tracking-tight">
+              <Wallet size={15} className="text-[#00FF88]" /> Mon portefeuille
+            </h2>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-white/55">
+              Ce que vous validez se range ici, **classé par famille** — et si une pièce
+              n’entre dans aucune famille connue, la famille se crée. C’est comme ça qu’un
+              portefeuille apprend, à force de demandes.
+            </p>
+
+            {familles.length === 0 ? (
+              <p className="mt-4 text-[12.5px] text-white/40">
+                Rien encore. Validez un document au-dessus : il descendra ici, à sa place.
+              </p>
+            ) : (
+              <div className="mt-4 grid gap-3">
+                {familles.map((famille) => (
+                  <div key={famille.id} className="rounded-[12px] border border-white/10 p-3">
+                    <div className="flex items-center gap-2">
+                      <FolderOpen size={13} className="text-white/45" />
+                      <span className="text-[12.5px] font-semibold">{famille.label}</span>
+                      <span className="font-mono text-[10px] text-white/40">
+                        {famille.pieces.length}
+                      </span>
+                      {famille.creee && (
+                        <span className="ml-auto rounded-full border border-[#00FF88]/50 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#00FF88]">
+                          créée
+                        </span>
+                      )}
+                    </div>
+                    <ul className="mt-2 grid gap-1">
+                      {famille.pieces.map((piece) => (
+                        <li key={piece.id} className="text-[12px] leading-relaxed text-white/60">
+                          {piece.nom}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </aside>
       </div>
 
