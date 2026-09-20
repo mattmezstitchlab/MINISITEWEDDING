@@ -30,6 +30,7 @@ import {
   LE_RÊVE,
   ligneImprimée,
   OBJETS_IMPRIMÉS,
+  rêveDécrit,
   stickerDe,
   type Sticker,
 } from '../lib/codeDuMariage';
@@ -120,11 +121,15 @@ export default function LaCaisse() {
   const [vols, setVols] = useState<Vol[]>([]);
   const [avis, setAvis] = useState<string | null>(null);
   const [cible, setCible] = useState('voyage');
+  /** **Le rêve, dans les mots des mariés.** Il vit dans l'adresse (`?reve=`),
+   *  comme le caddie : ce qu'on partage aux invités, c'est le mariage entier. */
+  const [description, setDescription] = useState(() => params.get('reve') ?? '');
   const [stickers, setStickers] = useState<Sticker[]>([]);
   const [heure] = useState(() => Math.floor(heureDeLaCapsule()));
   const passage = useRef(0);
   const rangSticker = useRef(0);
 
+  const rêve = useMemo(() => rêveDécrit(description), [description]);
   const coches = état.coches;
   const lignesCochées = useMemo(() => LIGNES_DU_TICKET.filter((l) => coches.includes(l.id)), [coches]);
 
@@ -133,7 +138,7 @@ export default function LaCaisse() {
   const totaux = totauxDuTicket(lignesCochées);
   const compte = compteParCatégorie(coches);
   const prises = compteParFamille(coches);
-  const budget = budgetDuRêve(coches, LE_RÊVE);
+  const budget = budgetDuRêve(coches, rêve);
   const comptesDesPortefeuilles = useMemo(() => compteDesPortefeuilles(coches), [coches]);
   const portefeuilles = PORTEFEUILLES.map((p) => ({
     id: p.id,
@@ -150,10 +155,12 @@ export default function LaCaisse() {
     else suite.delete('demande');
     if (état.écran === 'ticket') suite.set('ecran', 'ticket');
     else suite.delete('ecran');
+    if (rêve.mot !== LE_RÊVE.mot) suite.set('reve', description);
+    else suite.delete('reve');
     setParams(suite, { replace: true });
     // L'adresse est la sortie, jamais l'entrée : on ne suit que ce qu'on coche.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coches, état.demande, état.écran]);
+  }, [coches, état.demande, état.écran, rêve.mot, description]);
 
   /* ——————————————— LA LUMIÈRE, LE MAGAZINE, LE VISUEL ——————————————— */
 
@@ -307,6 +314,7 @@ export default function LaCaisse() {
         code={code}
         lignes={coches.length}
         total={totaux.total}
+        part={budget.part}
         surCode={() => {
           const suite = new URLSearchParams(params);
           suite.delete('code');
@@ -439,7 +447,16 @@ export default function LaCaisse() {
           lignes: coches.length,
           total: totaux.total,
         }}
-        rêve={LE_RÊVE}
+        rêve={rêve}
+        description={description}
+        surDécrire={setDescription}
+        surPartager={() => {
+          const adresse = `${window.location.origin}${window.location.pathname}?code=${code}${
+            coches.length ? `&coches=${coches.join(',')}` : ''
+          }${rêve.mot !== LE_RÊVE.mot ? `&reve=${encodeURIComponent(description)}` : ''}`;
+          void navigator.clipboard?.writeText(adresse);
+          unAvis('le lien du mariage est copié — envoyez-le aux invités');
+        }}
         budget={budget}
         cible={cible}
         surCible={setCible}

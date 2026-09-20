@@ -145,6 +145,7 @@ import {
   OBJETS_IMPRIMÉS,
   budgetDuRêve,
   codeAccepté,
+  rêveDécrit,
   codeDepuis,
   codeDuMariage,
   ligneImprimée,
@@ -2573,7 +2574,7 @@ check(
 );
 check(
   'elle se colle en haut, et elle est translucide — c’est ça, plus moderne',
-  /data-bande="barre" class="sticky top-0[^"]*"/.test(ticketVide) &&
+  /data-bande="barre"[^>]*class="sticky top-0[^"]*"/.test(ticketVide) &&
     /backdrop-filter: saturate\(180%\) blur\(20px\)/.test(readFileSync('src/index.css', 'utf8')),
   true,
 );
@@ -2590,9 +2591,43 @@ check(
   })(),
   true,
 );
+/* « Les mariés décrivent leur rêve » : le rêve s'écrit dans leurs mots, et il
+   part sur l'écran, sur le ticket, et dans le lien envoyé aux invités. */
+check(
+  'le rêve s’écrit dans les mots des mariés',
+  rêveDécrit('dormir sous les étoiles, à deux').mot,
+  'DORMIR SOUS LES ÉTOILES, À DEUX',
+);
+check(
+  'et s’ils ne décrivent rien, il reste le rêve de la maison',
+  [rêveDécrit('   ').mot, rêveDécrit('').prix],
+  [LE_RÊVE.mot, LE_RÊVE.prix],
+);
+check(
+  'décrire son rêve ne change pas son prix — c’est la cible, pas le devis',
+  [rêveDécrit('Vegas en janvier').prix, rêveDécrit('Vegas en janvier').id],
+  [LE_RÊVE.prix, LE_RÊVE.id],
+);
+check(
+  'l’appareil laisse écrire le rêve, et partager le lien aux invités',
+  ticketVide.includes('data-appareil-reve-champ="vrai"') &&
+    ticketVide.includes('data-appareil-reve-envoyer="vrai"') &&
+    ticketVide.includes('data-action="partager-aux-invités"'),
+  true,
+);
+const ticketDuRêve = rendreLeTicket('/?reve=Vegas%20en%20janvier');
+check('et le ticket du voyage porte les mots du couple', ticketDuRêve.includes('VEGAS EN JANVIER · LE VOYAGE'), true);
 check(
   'la barre dit où en est le ticket, sans qu’on descende',
   [ticketVide.includes('data-barre-compte="0"'), ticketPlein.includes(`data-barre-compte="${cochesDessai.length}"`)],
+  [true, true],
+);
+check(
+  'et la barre porte la cible : la part du rêve déjà financée',
+  [
+    ticketVide.includes('data-barre-part="0"'),
+    ticketPlein.includes('data-barre-part="' + String(Math.min(100, Math.round((budgetDuRêve(cochesDessai).misDeCôté / LE_RÊVE.prix) * 100))) + '"'),
+  ],
   [true, true],
 );
 check(

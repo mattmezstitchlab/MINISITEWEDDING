@@ -32,7 +32,7 @@ Trois principes plus fins tiennent l'ensemble :
 
 | Le principe | Chez nous | Où |
 | --- | --- | --- |
-| la barre collante | marque `AIME`, quatre portes, **l'état du ticket** (le compte, le total), le code du mariage, pastille d'encre « Ouvrir le ticket » ; sur un téléphone les portes glissent sous la marque, sans menu à ouvrir | `BarreDeLAime` |
+| la barre collante | marque `AIME`, quatre portes, **la cible** (la part du rêve déjà financée), **l'état du ticket** (le compte, le total), le code du mariage, pastille d'encre « Ouvrir le ticket » ; elle **se resserre quand on descend**, et sur un téléphone les portes glissent sous la marque, sans menu à ouvrir | `BarreDeLAime` |
 | le titre unique et sa phrase | « Tout le mariage, sur un seul ticket. » | `LeTitre` |
 | la suite numérotée | **quatre gestes** 01→04 : on coche, le ticket calcule, il sort de la fente, chacun a son papier | `LesGestes` |
 | trois colonnes égales | **les trois familles** : LE JOUR J (48), VOTRE SITE (20), LES DOCUMENTS (31), chacune avec sa porte | `LesTroisFamilles` |

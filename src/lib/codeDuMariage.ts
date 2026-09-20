@@ -95,6 +95,20 @@ export const LE_RÊVE: Rêve = {
 };
 
 /**
+ * **Le rêve, tel que les mariés le décrivent.** Leurs mots — « dormir sous les
+ * étoiles, à deux » — deviennent le **titre de l'écran** et la **ligne du
+ * voyage** sur le ticket. S'ils ne décrivent rien, on retombe sur le rêve de la
+ * maison : il y a toujours une cible, sinon rien ne se met d'accord.
+ *
+ * Le prix ne change pas : c'est celui du rêve, et il se finance ligne à ligne.
+ */
+export function rêveDécrit(texte: string, base: Rêve = LE_RÊVE): Rêve {
+  const propres = texte.replace(/\s+/g, ' ').trim();
+  if (!propres) return base;
+  return { ...base, mot: propres.toUpperCase().slice(0, 34).trim(), sous: propres };
+}
+
+/**
  * **Ce qu'on met de côté.** Une règle simple, et une seule : chaque ligne cochée
  * au mariage est une ligne qu'on paie moins cher que prévu — dix-huit lignes
  * valent un vol. On ne promet pas de miracles : la mise de côté ne dépasse

@@ -3,7 +3,7 @@ import { ArrowRight, CornerDownLeft, Lock, Plane, Receipt } from 'lucide-react';
 import { OBJETS_DE_LA_FABRIQUE, pictoDuRipple } from '../lib/ripple';
 import { LIGNES_DU_TICKET, type LigneDuTicket } from '../lib/categoriesDuTicket';
 import type { BudgetDuRêve, Rêve, Sticker } from '../lib/codeDuMariage';
-import { OBJETS_IMPRIMÉS, ligneImprimée, partDuRêve } from '../lib/codeDuMariage';
+import { LE_RÊVE, OBJETS_IMPRIMÉS, ligneImprimée, partDuRêve } from '../lib/codeDuMariage';
 import { LES_HÉROS, LE_SPÉCIALISTE, type HérosDeLaLanding } from '../lib/bandesDeLAime';
 import { euros } from '../lib/superMariage';
 
@@ -148,6 +148,11 @@ export interface AppareilDuMariageProps {
   avatar: { noms: string; date: string; lieu: string; convives: number; lignes: number; total: number };
   /** Le rêve, et où en est son budget. */
   rêve: Rêve;
+  /** **Le rêve, dans les mots des mariés** — ce qu'ils décrivent ici. */
+  description: string;
+  surDécrire: (texte: string) => void;
+  /** Le lien du mariage, à envoyer aux invités : on se met d'accord dessus. */
+  surPartager: () => void;
   budget: BudgetDuRêve;
   /** Le rêve affiché sur l'écran, et de quoi en changer. */
   cible: string;
@@ -169,6 +174,9 @@ export default function AppareilDuMariage({
   code,
   avatar,
   rêve,
+  description,
+  surDécrire,
+  surPartager,
   budget,
   cible,
   surCible,
@@ -181,6 +189,8 @@ export default function AppareilDuMariage({
   surCode,
 }: AppareilDuMariageProps) {
   const héros: HérosDeLaLanding = LES_HÉROS.find((h) => h.id === cible) ?? LES_HÉROS[0]!;
+  /** Le rêve s'écrit ici, dans les mots du couple — puis il part sur le papier. */
+  const [mot, setMot] = useState(description);
   const marqués = OBJETS_IMPRIMÉS.filter((o) => marques.includes(o.id));
 
   return (
@@ -335,6 +345,41 @@ export default function AppareilDuMariage({
 
           {/* ————————————————— LE TICKET : CE QUI S'IMPRIME ————————————————— */}
           <div className="flex flex-col gap-4">
+            {/* **Le rêve, décrit par les mariés.** Deux lignes, pas plus : on
+                écrit ce dont on a envie, et l'écran comme le ticket suivent. */}
+            <form
+              data-appareil-reve="vrai"
+              onSubmit={(e) => {
+                e.preventDefault();
+                surDécrire(mot);
+              }}
+              className="rounded-[3px] border border-[color:var(--vp-line)] bg-white px-3 py-2.5"
+            >
+              <label
+                htmlFor="le-reve-des-maries"
+                className="block font-mono text-[9.5px] uppercase tracking-[0.14em] text-[color:var(--vp-muted)]"
+              >
+                Décrivez votre rêve — il s'écrit sur l'écran et sur le ticket
+              </label>
+              <span className="mt-1.5 flex items-center gap-2 border-b border-[color:var(--vp-line)] pb-1.5">
+                <input
+                  id="le-reve-des-maries"
+                  data-appareil-reve-champ="vrai"
+                  value={mot}
+                  onChange={(e) => setMot(e.target.value)}
+                  placeholder={LE_RÊVE.sous}
+                  className="min-w-0 flex-1 bg-transparent text-[14px] tracking-[-0.01em] outline-none placeholder:text-[color:var(--vp-muted-2)]"
+                />
+                <button
+                  type="submit"
+                  data-appareil-reve-envoyer="vrai"
+                  className="shrink-0 font-mono text-[10px] uppercase tracking-[0.12em] text-[color:var(--vp-muted)] transition hover:text-[color:var(--vp-ink)]"
+                >
+                  écrire
+                </button>
+              </span>
+            </form>
+
             <div
               data-ticket-de-lappareil="vrai"
               className="rounded-[3px] bg-[#FFFEF7] px-5 py-5 font-mono text-[11.5px] leading-relaxed text-black shadow-[0_20px_50px_rgba(12,14,24,0.12)]"
@@ -468,6 +513,14 @@ export default function AppareilDuMariage({
                 className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-muted)] underline decoration-[color:var(--vp-line)] underline-offset-4 transition hover:text-[color:var(--vp-ink)]"
               >
                 changer de code
+              </button>
+              <button
+                type="button"
+                data-action="partager-aux-invités"
+                onClick={surPartager}
+                className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-ink)] underline decoration-[color:var(--vp-line)] underline-offset-4 transition hover:decoration-[color:var(--vp-ink)]"
+              >
+                partager aux invités — le lien, avec le code
               </button>
             </div>
           </div>

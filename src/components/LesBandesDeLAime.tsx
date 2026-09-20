@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowRight, Check, Music2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -42,14 +43,29 @@ export function BarreDeLAime({
   code,
   lignes,
   total,
+  part,
   surCode,
 }: {
   code: string;
   /** Ce qu'il y a sur le ticket : le compte, et le total. */
   lignes: number;
   total: number;
+  /** **La part du rêve** déjà financée, de zéro à un : la cible, dans la barre. */
+  part: number;
   surCode: () => void;
 }) {
+  const pourcent = Math.round(part * 100);
+  /* La barre se resserre dès qu'on descend : elle prend moins de place quand on
+     lit, et reprend sa taille quand on remonte. */
+  const [serrée, setSerrée] = useState(false);
+
+  useEffect(() => {
+    const auDéfilement = () => setSerrée(window.scrollY > 24);
+    auDéfilement();
+    window.addEventListener('scroll', auDéfilement, { passive: true });
+    return () => window.removeEventListener('scroll', auDéfilement);
+  }, []);
+
   const porte = (lien: { mot: string; vers: string }, taille: string) =>
     lien.vers.startsWith('/') ? (
       <Link key={lien.mot} to={lien.vers} data-lien={lien.mot} className={taille}>
@@ -65,7 +81,13 @@ export function BarreDeLAime({
     'shrink-0 font-mono text-[10.5px] uppercase tracking-[0.12em] text-[color:var(--vp-muted)] transition hover:text-[color:var(--vp-ink)]';
 
   return (
-    <div data-bande="barre" className="sticky top-0 z-50 px-3 pt-3 pb-1 sm:px-5">
+    <div
+      data-bande="barre"
+      data-barre-serrée={serrée ? 'vrai' : 'false'}
+      className={`sticky top-0 z-50 px-3 pb-1 transition-[padding] duration-300 sm:px-5 ${
+        serrée ? 'pt-1.5' : 'pt-3'
+      }`}
+    >
       <div className="vp-barre-flottante mx-auto max-w-[1180px] px-3 py-2 sm:px-4">
         <div className="flex items-center justify-between gap-3">
           <a href="#l-appareil" className="flex items-baseline gap-2" data-marque="AIME">
@@ -84,8 +106,19 @@ export function BarreDeLAime({
             {/* L'état du ticket, toujours sous les yeux : le compte, le total. */}
             <span
               data-barre-compte={lignes}
-              className="hidden items-baseline gap-2 rounded-full bg-[color:var(--vp-ink)]/[0.045] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[color:var(--vp-ink)] sm:flex"
+              data-barre-part={pourcent}
+              className="hidden items-center gap-2 rounded-full bg-black/[0.045] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[color:var(--vp-ink)] sm:flex"
             >
+              <span className="block h-1.5 w-10 overflow-hidden rounded-full bg-black/10 md:w-14">
+                <i
+                  className="block h-full bg-[color:var(--vp-ink)] transition-[width] duration-500"
+                  style={{ width: `${pourcent}%` }}
+                />
+              </span>
+              <span className="tabular-nums">{pourcent} % du rêve</span>
+              <span aria-hidden="true" className="text-[color:var(--vp-line)]">
+                |
+              </span>
               <span className="tabular-nums">
                 {lignes} ligne{lignes > 1 ? 's' : ''}
               </span>

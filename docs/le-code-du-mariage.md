@@ -51,8 +51,15 @@ l'appareil, en haut du ticket, et au début de chaque ligne d'objet imprimé
 ## 3. Le rêve, et le budget
 
 Le site a **une cible** : les mariés le partagent à leurs invités pour **faire
-des économies et se payer leur voyage de rêve**. Le rêve est écrit une fois, en
-données (`LE_RÊVE`) : Joshua Tree, deux vols, six nuits, une voiture — **4 320 €**.
+des économies et se payer leur voyage de rêve**.
+
+**Le rêve, ce sont les mariés qui le décrivent.** Dans l'appareil, un champ —
+« décrivez votre rêve » — prend leurs mots ; l'écran les affiche en titre, le
+ticket les imprime sur la ligne du voyage (`VEGAS EN JANVIER · LE VOYAGE`), et
+la description part dans l'adresse (`?reve=…`), donc dans le lien envoyé aux
+invités. S'ils n'écrivent rien, il reste le rêve de la maison (`LE_RÊVE` :
+Joshua Tree, deux vols, six nuits, une voiture — **4 320 €**) : il y a toujours
+une cible, sinon rien ne se met d'accord.
 
 Le budget suit le ticket, il ne se saisit pas :
 
@@ -61,7 +68,7 @@ Le budget suit le ticket, il ne se saisit pas :
 | chaque ligne cochée met de côté | **180 €** (`ÉCONOMIE_PAR_LIGNE`) |
 | ce qui est mis de côté | `lignes × 180`, **jamais plus que le prix du rêve** |
 | ce qu'il reste à financer | `prix − mis de côté`, jamais négatif |
-| la jauge | la part du rêve, de 0 % à 100 % |
+| la jauge | la part du rêve, de 0 % à 100 % — sur l'écran **et dans la barre**, pour la voir sans descendre |
 | quand c'est payé | « ✓ LE VOYAGE EST PAYÉ » — et le mariage reste à payer |
 
 Tous ces nombres sortent de `budgetDuRêve()` (`src/lib/codeDuMariage.ts`) ; le
@@ -117,4 +124,5 @@ le haut.
 | `/` | la porte, fermée |
 | `/?code=A7K-241` | le site, ouvert |
 | `/?code=A7K-241&coches=…` | le site avec un ticket déjà rempli |
+| `/?code=A7K-241&reve=…` | le site avec le rêve, dans les mots des mariés |
 | `/caisse?face=recto` | la grande page d'avant, sans porte |
