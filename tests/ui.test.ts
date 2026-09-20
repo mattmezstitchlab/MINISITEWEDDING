@@ -60,10 +60,47 @@ import {
 } from '../src/lib/capsuleCommande';
 import { angleDeLHeure, angleDuChapitre } from '../src/components/CadranDuMagazine';
 import SceneEditoriale from '../src/components/SceneEditoriale';
-import MosaiqueDuTemps from '../src/components/MosaiqueDuTemps';
+import GrilleDuMonde from '../src/components/GrilleDuMonde';
 import Feuille from '../src/components/Feuille';
 import SiteChrome from '../src/components/SiteChrome';
-import { tailleVoulue } from '../src/lib/echelleDeLaMosaique';
+import {
+  ECHELLES_DE_LA_GRILLE,
+  ajustementDeRemplissage,
+  borner,
+  colonnesDeLaGrille,
+  cranDeLEchelle,
+  densiteDeLaTaille,
+  echelleDuCran,
+  tailleDeLaCase,
+} from '../src/lib/echelleDeLaGrille';
+import {
+  FAMILLES,
+  MODULES,
+  MODULES_DE_COMPOSITION,
+  MINI_SITE_INVITE,
+  MINI_SITE_PRESTATAIRE,
+  NŒUDS_DU_MONDE,
+  UNIVERS_DU_JOUR,
+  caseDUnJour,
+  caseParId,
+  casesParIds,
+  cleDuJour,
+  composerLeMiniSite,
+  densiteDuMonde,
+  mondeDeLAnnee,
+  mondeDeLId,
+  mondeDeLaBoutique,
+  mondeDeLaMusique,
+  mondeDeLaGalerie,
+  mondeDesArticles,
+  mondeDesHeures,
+  mondeDesMagazines,
+  mondeDesMetiers,
+  mondeDesPersonnes,
+  mondeDuJour,
+  mondeDUneHeure,
+  mondeDuMiniSite,
+} from '../src/lib/grilleDuMonde';
 import { lumiereDeLHeure, teinteDeLHeure, melangeHex } from '../src/lib/lumiereDuJour';
 import { publierImmersif } from '../src/lib/modeImmersif';
 import { legendeDeLHeure } from '../src/components/CouvertureJour';
@@ -1265,7 +1302,7 @@ check(
   true,
 );
 check('les pages de lecture prennent le même contenant', [pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageUniversHtml, pageMetierHtml].every((h) => h.includes('vp-page')), true);
-check('le magazine, lui, est une application plein écran', pageMagazine.includes('h-[100svh]') && pageMagazine.includes('overflow-hidden'), true);
+check('le magazine, lui, est une application plein écran', pageMagazine.includes('h-svh') && pageMagazine.includes('overflow-hidden'), true);
 check('le magazine ne recopie plus ses propres largeurs', pageMagazine.includes('mx-auto max-w-6xl'), false);
 check('le shop non plus', pageShop.includes('mx-auto max-w-6xl'), false);
 check('le contenant est posé une fois, pas deux', pageShop.split('vp-page').length <= 9, true);
@@ -1897,11 +1934,12 @@ check('l’édition du moment est celle de cette semaine', editionDuMoment().num
 check('et les quatre saisons sont quatre numéros différents', new Set(lesQuatreSaisons().map((e) => e.numero)).size, 4);
 check('chacune prise dans sa saison', lesQuatreSaisons().every((e) => e.saison.id === e.carte.saison.id), true);
 
-/* ——————————— LA PAGE : LE VISUEL, LE TITRE, ET LES CARTES DESSOUS ——————————— */
+/* ——————————— LA PAGE : L'IMAGE DERRIÈRE, LA GRILLE DEVANT ——————————— */
 
-const heroMagazine = revue.slice(revue.indexOf('data-scene="editoriale"'), revue.indexOf('data-mosaique'));
+const heroMagazine = revue.slice(revue.indexOf('data-scene="editoriale"'), revue.indexOf('data-grille'));
 check('l’écran s’ouvre sur la scène', heroMagazine.length > 0, true);
-check('et rien d’autre ne s’intercale avant la mosaïque', heroMagazine.includes('data-tuile='), false);
+check('et rien d’autre ne s’intercale avant la grille', heroMagazine.includes('data-case='), false);
+check('la grille prend l’écran', revue.includes('data-grille="du-monde"'), true);
 
 /* ————————————— LA SCÈNE ÉDITORIALE : UNE IMAGE, TROIS LIGNES ————————————— */
 
@@ -1934,32 +1972,114 @@ check(
   true,
 );
 
-/* ————————————— LA MOSAÏQUE DU TEMPS : LA TIMELINE, REFaite ————————————— */
+/* ————————————— LA GRILLE DU MONDE : L'ÉCRAN ENTIER ————————————— */
 
-/* Une seule surface de navigation : des vignettes carrées, bord à bord, et des
-   rangées qui s'ouvrent au zoom. On la teste par sa donnée et par son rendu. */
-const tuiles = (n: number, actif = -1) => Array.from({ length: n }, (_, i) => ({
-  id: `t-${i}`, fond: '#2A3C4E', encre: '#F4F5FB', label: String(i + 1).padStart(2, '0'),
-  actif: i === actif, onChoisir: () => {},
+/* Il n'y a plus de timeline en bas de page : **la grille est la page**. Des
+   cases carrées, bord à bord, qu'on parcourt dans les deux sens, qui montrent
+   de plus en plus d'elles-mêmes quand on zoome, et qui s'ouvrent. */
+const leJourDeLaGrille = new Date(2026, 8, 20, 12);
+const leMondeDuJour = mondeDuJour(leJourDeLaGrille);
+const grille = renderToStaticMarkup(createElement(GrilleDuMonde as never, {
+  monde: leMondeDuJour,
+  echelle: echelleDuCran(3),
+  onEchelle: () => {},
+  caseActive: 'univers-musique',
+  selection: ['univers-lieux', 'univers-people'],
 }));
-const mosaique = renderToStaticMarkup(createElement(MosaiqueDuTemps as never, {
-  rangees: [
-    { id: 'annee', quoi: 'l’année', tuiles: tuiles(54, 37) },
-    { id: 'semaine', quoi: 'la semaine', tuiles: tuiles(7, 3) },
-  ],
-  niveau: 2,
-  onNiveau: () => {},
-}));
-check('la mosaïque est la timeline', mosaique.includes('data-mosaique="du-temps"'), true);
-check('elle dit son échelle', mosaique.includes('data-niveau="2"'), true);
-check('elle ouvre une rangée par cran', (mosaique.match(/data-rangee="/g) ?? []).length, 2);
-check('l’année est graduée une fois par magazine', (mosaique.match(/data-tuile="t-[0-9]+"/g) ?? []).length, 61);
-check('la tête de lecture marque l’instant', (mosaique.match(/data-tuile="t-[0-9]+" data-actif="true"/g) ?? []).length, 2);
-check('et elle se voit', mosaique.includes('h-[3px] bg-white'), true);
-check('les crans d’échelle sont quatre', (mosaique.match(/data-cran="/g) ?? []).length, 4);
-check('sans carte arrondie ni ombre portée', /rounded-(lg|xl|2xl)/.test(mosaique), false);
-check('et sans texte explicatif', mosaique.includes('cliquez'), false);
-check('les quatre crans ouvrent les rangées', [1, 2, 3, 4].map((n) => tailleVoulue(n)), [58, 78, 106, 136]);
+check('la grille du monde est là', grille.includes('data-grille="du-monde"'), true);
+check('elle dit le monde qu’elle porte', grille.includes('data-monde="jour-09-20"'), true);
+check('et son échelle', grille.includes('data-cran="3"'), true);
+check('elle compte ses cases', (grille.match(/data-case="/g) ?? []).length, leMondeDuJour.cases.length);
+check('chaque case dit son module et son ouverture', /data-module="[a-z]+" data-famille="[a-z]+"/.test(grille), true);
+check('cinq crans d’échelle, pas quatre', (grille.match(/data-cran-grille="/g) ?? []).length, 5);
+check('la tête de lecture marque la case active', (grille.match(/data-actif="true"/g) ?? []).length >= 1, true);
+check('les cases choisies sont marquées', (grille.match(/data-choisi="true"/g) ?? []).length, 2);
+check('et la barre de sélection dit ce qu’on peut en faire',
+  ['composer', 'masquer', 'partager', 'effacer'].every((a) => grille.includes(`data-action="${a}"`)), true);
+check('sans carte arrondie ni ombre portée', /rounded-(lg|xl|2xl)|shadow-(lg|xl|2xl)/.test(grille), false);
+check('et sans texte explicatif', /cliquez|double-cliquez|pour naviguer/.test(grille), false);
+
+/* La densité : c'est la taille réelle qui décide, jamais l'échelle en soi. */
+check('une case de quinze pixels ne dit rien', densiteDeLaTaille(15), 1);
+check('une case de trois cents pixels dit tout', densiteDeLaTaille(300), 5);
+check('et la densité ne redescend jamais', [40, 70, 100, 150, 200, 400].every((t, i, l) => i === 0 || densiteDeLaTaille(t) >= densiteDeLaTaille(l[i - 1]!)), true);
+check('cinq échelles, du monde au contenu', ECHELLES_DE_LA_GRILLE.length, 5);
+check('la première montre tout', echelleDuCran(1) < echelleDuCran(5), true);
+check('et le cran se retrouve depuis l’échelle', cranDeLEchelle(ECHELLES_DE_LA_GRILLE[2]!), 3);
+check('l’échelle est tenue entre ses bornes', borner(99) > borner(0), true);
+check('la taille d’une case suit l’échelle', tailleDeLaCase(1) === 2 * tailleDeLaCase(0.5), true);
+check('un monde de trois cent soixante-cinq jours s’ouvre large', colonnesDeLaGrille(365, 1280, 820), 24);
+check('un monde de huit cases reste serré', colonnesDeLaGrille(8, 1280, 820), 4);
+check('et un petit monde remplit l’écran', ajustementDeRemplissage(4, 2, 1280, 820) > 1, true);
+
+/* Le clic entre dans la case : la grille rapporte, la page décide. */
+check('un clic sans doigt qui bouge ne se perd pas',
+  renderToStaticMarkup(createElement(GrilleDuMonde as never, { monde: leMondeDuJour, echelle: 0.42, onEchelle: () => {}, onOuvrir: () => {} })).includes('data-porte="true"'), true);
+
+/* ————————————— LE MONDE EN CASES : TOUT EST UNE CASE ————————————— */
+
+/* Rien n'échappe à la grille : le calendrier, les articles, la musique, les
+   objets, les métiers, les gens, les images. Chaque collection devient un monde,
+   et chaque monde se parcourt comme le premier. */
+
+const le21SeptembreGrille = new Date(2026, 8, 21, 12);
+const caseDu21 = caseDUnJour(le21SeptembreGrille);
+check('le monde s’ouvre sur dix portes', mondeDeLId('monde', le21SeptembreGrille).cases.length, 10);
+check('chaque nœud du monde se construit', NŒUDS_DU_MONDE.every((n) => mondeDeLId(n.id, le21SeptembreGrille).cases.length > 0), true);
+check('et chacun dit d’où il vient', NŒUDS_DU_MONDE.every((n) => n.source.length >= 8), true);
+check('un jour dit sa date en surtitre', caseDu21.surTitre, '21 SEPT. 2026');
+check('son nom est celui du calendrier', caseDu21.titre, 'MATTHIEU');
+check('et il ouvre son propre monde', caseDu21.ouvre, 'jour-09-21');
+check('son détail nomme le magazine', caseDu21.detail?.some((d) => d.label === 'MAGAZINE' && d.valeur === '38'), true);
+check('et le chapitre du jour', caseDu21.detail?.some((d) => d.valeur.includes('La Fête')), true);
+check('la clé d’un jour est son adresse', cleDuJour(le21SeptembreGrille), '09-21');
+check('l’année compte trois cent soixante-cinq cases', mondeDeLAnnee(new Date(2026, 5, 1)).cases.length, 365);
+check('le jour contient huit univers, et la porte des heures', mondeDuJour(le21SeptembreGrille).cases.length, UNIVERS_DU_JOUR.length + 1);
+check('les huit univers sont ceux du magazine', UNIVERS_DU_JOUR.map((u) => u.titre),
+  ['HISTOIRE', 'VOYAGE', 'MÉTÉO', 'MARIAGE', 'MUSIQUE', 'LIEUX', 'PEOPLE', 'ÉVÉNEMENTS']);
+check('et chacun ouvre une mosaïque', mondeDuJour(le21SeptembreGrille).cases.filter((c) => c.ouvre?.startsWith('univers-')).length, 8);
+check('une journée, ce sont vingt-quatre heures', mondeDesHeures(le21SeptembreGrille).cases.length, 24);
+check('la première est minuit', mondeDesHeures(le21SeptembreGrille).cases[0]!.titre, 'MINUIT');
+check('et dix-huit heures s’appelle la golden hour', mondeDesHeures(le21SeptembreGrille).cases[18]!.sousTitre, 'GOLDEN HOUR');
+check('chaque heure ouvre sa page', mondeDesHeures(le21SeptembreGrille).cases[16]!.ouvre, 'heure-16');
+check('et une page porte ses modules', mondeDUneHeure(16, le21SeptembreGrille).cases.some((c) => c.module === 'audio'), true);
+check('les cinquante-quatre magazines sont cinquante-quatre cases', mondeDesMagazines(le21SeptembreGrille).cases.length, NOMBRE_DE_MAGAZINES);
+check('les articles de la rédaction sont des cases', mondeDesArticles().cases.length, ALL_ARTICLES.length);
+check('la musique donne un morceau par jour', mondeDeLaMusique(le21SeptembreGrille).cases.length, 365);
+check('la boutique donne un objet par case', mondeDeLaBoutique().cases.length, SHOP_PRODUCTS.length);
+check('les métiers et les gens ont leurs cases', mondeDesMetiers().cases.length > 40 && mondeDesPersonnes().cases.length > 10, true);
+check('et la galerie ne montre que ce qui est livré', mondeDeLaGalerie(le21SeptembreGrille).cases.length, VISUELS_LIVRES);
+check('une case se retrouve par son identifiant', caseParId('jour-09-21', le21SeptembreGrille)?.titre, 'MATTHIEU');
+check('un morceau aussi', caseParId('piste-200', le21SeptembreGrille)?.module, 'audio');
+check('et une porte nommée reste une porte', caseParId('chapitre-38-5', le21SeptembreGrille)?.ouvre, 'chapitre-38-5');
+check('une adresse de cases garde son ordre',
+  casesParIds(['piste-200', 'jour-09-21', 'porte-annee'], le21SeptembreGrille).map((c) => c.id),
+  ['piste-200', 'jour-09-21', 'porte-annee']);
+check('et ne retient que ce qui existe', casesParIds(['rien-du-tout'], le21SeptembreGrille).length, 0);
+check('huit modules de case… non : dix-huit', MODULES.length, 18);
+check('une composition garde les cases choisies', composerLeMiniSite([], mondeDuJour(le21SeptembreGrille).cases.slice(0, 3)).length, 3);
+check('et reprend leur ouverture', composerLeMiniSite([], [mondeDuJour(le21SeptembreGrille).cases[0]!])[0]!.famille, 'public');
+check('les modules de composition sont là', MODULES_DE_COMPOSITION.length >= 20, true);
+check('un invité compose son espace en onze blocs', composerLeMiniSite(MINI_SITE_INVITE).length, MINI_SITE_INVITE.length);
+check('un professionnel en neuf', composerLeMiniSite(MINI_SITE_PRESTATAIRE).length, MINI_SITE_PRESTATAIRE.length);
+check('et le mini-site se parcourt comme un monde', mondeDuMiniSite(composerLeMiniSite(MINI_SITE_INVITE)).cases.length, MINI_SITE_INVITE.length);
+check('quatre familles d’ouverture', FAMILLES.map((f) => f.id), ['public', 'invites', 'famille', 'prive']);
+check('chacune a sa marque, et rien de plus', FAMILLES.every((f) => f.marque.length >= 1 && f.mot.length > 3), true);
+check('de loin, l’année ne dit que ses images', densiteDuMonde(mondeDeLAnnee(le21SeptembreGrille), echelleDuCran(1)), 1);
+check('de près, les dix portes disent tout', densiteDuMonde(mondeDeLId('monde', le21SeptembreGrille), echelleDuCran(5)), 5);
+
+/* Une case privée le dit d'un seul signe — et rien du tout quand elle est publique. */
+const uneCasePublique = mondeDuJour(le21SeptembreGrille).cases[0]!;
+const ouverteATous = composerLeMiniSite([], [uneCasePublique]);
+const gardee = composerLeMiniSite([], [uneCasePublique], { [uneCasePublique.id]: 'prive' });
+check('une case privée porte sa marque, minuscule',
+  renderToStaticMarkup(createElement(GrilleDuMonde as never, {
+    monde: mondeDuMiniSite(gardee), echelle: echelleDuCran(5), onEchelle: () => {},
+  })).includes('data-famille="prive"'), true);
+check('et une case publique n’en porte aucune',
+  renderToStaticMarkup(createElement(GrilleDuMonde as never, {
+    monde: mondeDuMiniSite(ouverteATous), echelle: echelleDuCran(5), onEchelle: () => {},
+  })).includes('data-famille="prive"'), false);
 
 /* La lumière des heures : la même image, vingt-quatre fois. */
 check('la nuit est plus sombre que midi', lumiereDeLHeure(2).clarte < lumiereDeLHeure(12).clarte, true);
@@ -1979,9 +2099,20 @@ check('et l’on sait mélanger deux couleurs', melangeHex('#000000', '#FFFFFF',
 const appMagazine = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(Magazine as never)),
 );
-/** Le quatrième cran : tout est ouvert, jusqu'aux pages et aux articles. */
+/** Le cinquième cran : les cases disent tout ce qu'elles savent. */
 const appZoom = renderToStaticMarkup(
-  createElement(MemoryRouter, { initialEntries: ['/magazine?niveau=4'] }, createElement(Magazine as never)),
+  createElement(MemoryRouter, { initialEntries: ['/magazine?niveau=5&monde=univers-musique'] }, createElement(Magazine as never)),
+);
+/** L'année entière, en une seule vue : trois cent soixante-cinq cases. */
+const appAnnee = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?monde=annee&niveau=1'] }, createElement(Magazine as never)),
+);
+/** Une composition partagée : des cases, et des modules. */
+const appComposition = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?monde=mini-site&cases=jour-09-20,musique,rsvp'] }, createElement(Magazine as never)),
+);
+const appComposer = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?feuille=composer'] }, createElement(Magazine as never)),
 );
 const appJour = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?jour=09-21'] }, createElement(Magazine as never)),
@@ -1993,25 +2124,24 @@ const appEditeur = renderToStaticMarkup(
 const appProfil = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?feuille=profil'] }, createElement(Magazine as never)),
 );
-check('le magazine est un écran, pas une page qui défile', appMagazine.includes('h-[100svh]') && appMagazine.includes('overflow-hidden'), true);
+check('le magazine est un écran, pas une page qui défile', appMagazine.includes('h-svh') && appMagazine.includes('overflow-hidden'), true);
 check('la scène est dedans', appMagazine.includes('data-scene="editoriale"'), true);
-check('la mosaïque aussi', appMagazine.includes('data-mosaique="du-temps"'), true);
-check('et la mosaïque ferme l’écran', appMagazine.indexOf('data-mosaique') > appMagazine.indexOf('data-scene'), true);
-check(
-  'au cran de départ, deux rangées : l’année, la semaine',
-  ['l’année', 'la semaine'].every((r) => appMagazine.includes(`aria-label="${r}"`)) &&
-    !appMagazine.includes('aria-label="la journée"'),
-  true,
-);
-check('au quatrième cran, les cinq rangées sont ouvertes', ['l’année', 'la semaine', 'la journée', 'le numéro', 'les articles'].every((r) => appZoom.includes(`aria-label="${r}"`)), true);
-check('et vingt-quatre heures sont posées dessus', (appZoom.match(/data-tuile="heure-/g) ?? []).length, 24);
-check('les vingt-quatre pages aussi', (appZoom.match(/data-tuile="page-/g) ?? []).length, 24);
-check('et les articles, avec leurs images', (appZoom.match(/data-tuile="article-/g) ?? []).length >= 6, true);
-check('les articles sont bien une rangée de la mosaïque', appZoom.includes('aria-label="les articles"'), true);
+check('la grille aussi', appMagazine.includes('data-grille="du-monde"'), true);
+check('et la grille ferme l’écran', appMagazine.indexOf('data-grille') > appMagazine.indexOf('data-scene'), true);
+check('on arrive devant les grandes portes du monde', (appMagazine.match(/data-case="porte-/g) ?? []).length >= 8, true);
+check('l’année entière tient en une vue', (appAnnee.match(/data-case="jour-/g) ?? []).length, 365);
+check('et de si loin, elle ne dit que ses images', appAnnee.includes('data-densite="1"'), true);
+check('de très près, une case dit son détail', appZoom.includes('data-densite="5"'), true);
+check('et la musique est bien un monde à part', appZoom.includes('data-monde="univers-musique"'), true);
+check('on arrive dans une case par son adresse', appJour.includes('data-monde="jour-09-21"'), true);
+check('la composition traverse l’adresse', appComposition.includes('data-monde="mini-site"') && (appComposition.match(/data-case="bloc-/g) ?? []).length >= 3, true);
+check('et la feuille de composition est là', appComposer.includes('data-composition="mini-site"'), true);
 check('l’adresse ouvre le jour qu’elle annonce', appJour.includes('21 SEPTEMBRE') && appJour.includes('LA FÊTE'), true);
 check('aucun panneau permanent ne subsiste', /data-bloc-magazine|NavVerticale|vp-env-dark/.test(appMagazine), false);
 check('le mot « carreau » a quitté l’écran', /carreau|trèfle|pique|Roi de|Dame de|Valet de|♠|♥|♦|♣/.test(appMagazine), false);
-check('les deux portes sont discrètes', appMagazine.includes('l’éditeur') && appMagazine.includes('la collection'), true);
+check('et le mot « tuile » aussi', appMagazine.includes('data-tuile'), false);
+check('les trois portes sont discrètes',
+  ['l’éditeur', 'la collection', 'votre profil'].every((p) => appMagazine.includes(p)), true);
 check('et le composeur n’encombre plus l’écran', appMagazine.includes('Ville de naissance'), false);
 check('mais il est là dès qu’on demande la feuille', appEditeur.includes('Ville de naissance'), true);
 check('et l’adresse peut ouvrir une feuille', appEditeur.includes('data-feuille="ouverte"'), true);
@@ -2035,7 +2165,7 @@ check('en immersif, le contenu est seul', chromeImmersif.includes('la scène') &
 check('et le dock a quitté l’écran', chromeImmersif.includes('aria-label="Le Point Zéro"'), false);
 check('hors immersif, le site est là', chromeAccueil.includes('aria-label="Le Point Zéro"'), true);
 check('le signe des saisons a quitté l’écran', SAISONS_DE_LA_COLLECTION.every((s) => !revue.includes(s.symbole)), true);
-check('les huit rubriques sont sur les vignettes des pages', RUBRIQUES.every((r) => appZoom.includes(r.toUpperCase())), true);
+check('les huit rubriques sont des cases du jour', RUBRIQUES.every((r) => mondeDeLId('univers-evenements', leJourDeLaGrille).cases.some((c) => c.titre === r.toUpperCase())), true);
 check(
   'on peut relire au passé et au futur',
   ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => appEditeur.includes(t)),
@@ -2131,7 +2261,7 @@ check('et l’action parfaite est une seule chose', filRougeDuJour(unJour.date).
 const pageOuverte = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(Magazine as never)),
 );
-check('la semaine se feuillette dans la mosaïque', (appMagazine.match(/data-tuile="jour-/g) ?? []).length, 7);
+check('la grille d’ouverture compte ses portes', (appMagazine.match(/data-case="porte-/g) ?? []).length, 10);
 
 check(
   'la couverture ouvre les deux aiguilles du cadran',

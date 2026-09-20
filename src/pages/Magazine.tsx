@@ -1,83 +1,84 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import { MARQUE_MAGAZINE } from '../lib/aimeMagazine';
-import { ALL_ARTICLES, type Article } from '../lib/magazine';
-import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
-import { usePersonaCourante } from '../lib/personaCourant';
-import { composerEdition, HEURES } from '../lib/aimeMoteur';
-import { couvertureDuJour } from '../lib/couvertureDuJour';
-import { CHAPITRES } from '../lib/chapitres';
-import { jourDuMagazine } from '../lib/jourDuMagazine';
-import {
-  MAGAZINES, jourDuChapitre, joursDuMagazine, magazineDeLaDate, niveauxDuJour, positionDansLeMagazine,
-} from '../lib/semaines';
-import { visuelDeLaCouverture, visuelDuChapitre, visuelsDuJour } from '../lib/visuelsDuMagazine';
+import { composerEdition } from '../lib/aimeMoteur';
+import { MOIS_LONGS } from '../lib/calendrier';
 import {
   choisirMoment, HEURE_DES_MOMENTS, heureDeLaCapsule, MOMENTS_DE_LA_CAPSULE,
 } from '../lib/capsuleCommande';
+import {
+  FAMILLES,
+  MODULES_DE_COMPOSITION,
+  MINI_SITE_INVITE,
+  MINI_SITE_PRESTATAIRE,
+  composerLeMiniSite,
+  casesParIds,
+  cleDuJour,
+  moduleDeComposition,
+  mondeDeLId,
+  mondeEnCache,
+  mondeDuMiniSite,
+  type BlocDeMiniSite,
+  type CaseDuMonde,
+  type Famille,
+} from '../lib/grilleDuMonde';
+import { echelleDuCran } from '../lib/echelleDeLaGrille';
+import { lumiereDeLHeure } from '../lib/lumiereDuJour';
 import { publierImmersif } from '../lib/modeImmersif';
-import { lumiereDeLHeure, teinteDeLHeure } from '../lib/lumiereDuJour';
 import { partDeLHeure } from '../lib/moments';
-import { MOIS_LONGS } from '../lib/calendrier';
+import { roleDuneAdresse } from '../lib/personaSuites';
+import { usePersonaCourante } from '../lib/personaCourant';
+import { magazineDeLaDate, niveauxDuJour } from '../lib/semaines';
+import { visuelsDuJour } from '../lib/visuelsDuMagazine';
 import CadranDuMagazine from '../components/CadranDuMagazine';
-import CouvertureJour from '../components/CouvertureJour';
 import ChampDuMagazine from '../components/ChampDuMagazine';
 import EditionSemaine from '../components/EditionSemaine';
-import GalerieCouvertures from '../components/GalerieCouvertures';
 import Feuille from '../components/Feuille';
+import GalerieCouvertures from '../components/GalerieCouvertures';
+import GrilleDuMonde from '../components/GrilleDuMonde';
 import MiseEnLumiere from '../components/MiseEnLumiere';
-import MosaiqueDuTemps, { type RangeeDuTemps, type TuileDuTemps } from '../components/MosaiqueDuTemps';
 import SceneEditoriale from '../components/SceneEditoriale';
 
 /**
- * AIME MAGAZINE — L'APPLICATION
+ * AIME MAGAZINE — LA GRILLE COMME APPLICATION
  *
  * ```
- * ┌───────────────────────────────────────────────────┐
- * │ 20 SEPTEMBRE                     (cadran)          │
- * │ Septembre doré                                     │  LA SCÈNE
- * │ L'ART DE RECEVOIR                                  │
- * ├───────────────────────────────────────────────────┤
- * │ [54][51][52][53][54]…          l'année            │
- * │ [17][18][19][20][21][22][23]   la semaine         │  LA MOSAÏQUE
- * │ [00][01]…[18][19]…[23]         la journée         │  (la timeline)
- * │ [00][01]…[23]                  le numéro          │
- * │ [IMG][IMG][IMG]…               les articles       │
- * └───────────────────────────────────────────────────┘
+ * ┌────────────────────────────────────────────────────────────┐
+ * │ 20 SEPTEMBRE          la scène : l'image, et trois lignes   │
+ * │ Septembre doré                                              │
+ * │ ┌────┬────┬────┬────┬────┬────┬────┬────┐                  │
+ * │ │IMG │IMG │IMG │IMG │IMG │IMG │IMG │IMG │  la grille       │
+ * │ ├────┼────┼────┼────┼────┼────┼────┼────┤  du monde        │
+ * │ │IMG │IMG │IMG │IMG │IMG │IMG │IMG │IMG │                  │
+ * │ └────┴────┴────┴────┴────┴────┴────┴────┘                  │
+ * └────────────────────────────────────────────────────────────┘
  * ```
  *
- * **La mosaïque, c'est l'application.** Elle occupe toute la largeur, en bas, et
- * elle porte presque tout : les 54 magazines de l'année, les sept jours du
- * magazine ouvert, les vingt-quatre heures de la journée, les vingt-quatre pages
- * du numéro, les articles. On zoome — molette, pincement, clavier, ou les quatre
- * crans — et les rangées s'ouvrent : de loin le monde, de près la page.
+ * **Il n'y a plus de page : il y a un espace.** La grille prend tout l'écran,
+ * elle se parcourt dans les deux sens, et chaque case ouvre un monde — un jour,
+ * un univers, un morceau, un objet, un métier, une personne. Le zoom change la
+ * densité : l'image, la date, le titre, le détail. Cliquer sur une case, c'est
+ * y entrer ; la grille suivante vient de la même famille.
  *
- * **La scène, c'est la lecture.** Une image, trois lignes. Rien d'autre.
+ * La scène ne disparaît pas : elle **passe derrière**. C'est l'image de la case
+ * qu'on regarde, et les interstices de la grille la laissent voir. Entre la
+ * grille et la scène, rien : ni panneau, ni menu, ni dashboard.
  *
- * Tout le reste — l'éditeur, la collection — n'apparaît que si on le demande,
- * dans une feuille. Il n'y a plus de panneaux, plus de colonne, plus de blocs
- * empilés, plus de cartes à jouer : **image + temps + mosaïque + typographie**.
+ * Tout le reste s'ouvre à la demande : l'éditeur (et ses trois temps de
+ * lecture), la collection des 54 magazines, la mise en lumière, et la
+ * **composition** — ce qu'on fait d'une sélection de cases.
  */
 
-/** Ce qu'on regarde : le magazine, un jour, une heure, une page, un article. */
-type Selection =
-  | { type: 'magazine'; numero: number }
-  | { type: 'jour'; date: Date }
-  | { type: 'heure'; date: Date; heure: number }
-  | { type: 'page'; date: Date; heure: number }
-  | { type: 'article'; article: Article };
-
-type FeuilleOuverte = null | 'editeur' | 'collection' | 'profil';
+type FeuilleOuverte = null | 'editeur' | 'collection' | 'profil' | 'composer';
 
 /** **La feuille de l'adresse** : `?feuille=editeur` ouvre l'éditeur en arrivant. */
 function feuilleDeLAdresse(valeur: string | null): FeuilleOuverte {
-  return valeur === 'editeur' || valeur === 'collection' || valeur === 'profil' ? valeur : null;
+  return valeur === 'editeur' || valeur === 'collection' || valeur === 'profil' || valeur === 'composer' ? valeur : null;
 }
 
-/** Le mot de la vignette, pour un chapitre : « Amoureux », « Style », « Fête ». */
-function motDuChapitre(titre: string): string {
-  return titre.replace(/^(Les|Le|La|L’|L')\s+/i, '').split(/[\s,]/)[0]!;
+/** **Les cases de l'adresse** : `?cases=jour-09-20,musique` — ce qu'on a choisi. */
+function casesDeLAdresse(valeur: string | null): string[] {
+  return (valeur ?? '').split(',').map((id) => id.trim()).filter(Boolean);
 }
 
 /** La date, comme sur une couverture : « 20 SEPTEMBRE ». */
@@ -92,18 +93,18 @@ function jourDeLAdresse(valeur: string | null): Date {
   return new Date();
 }
 
-/** **Le cran de l'adresse** : `?niveau=4`, ou le cran de départ — la semaine. */
-function niveauDeLAdresse(valeur: string | null): number {
+/** **Le cran de l'adresse** : `?niveau=3`, ou le troisième — on voit, on lit. */
+function cranDeLAdresse(valeur: string | null): number {
   const n = Number(valeur);
-  return n >= 1 && n <= 4 ? n : 2;
+  return n >= 1 && n <= 5 ? n : 3;
 }
 
-/** L'encre lisible sur un fond : on regarde la luminance, on ne devine pas. */
-function encreSur(fond: string): string {
-  const hex = fond.replace('#', '').slice(0, 6).padEnd(6, '0');
-  const canal = (i: number) => parseInt(hex.slice(i, i + 2), 16);
-  const l = (0.2126 * canal(0) + 0.7152 * canal(2) + 0.0722 * canal(4)) / 255;
-  return l > 0.55 ? '#0B0C12' : '#F4F5FB';
+/** **Le monde de l'adresse** : `?monde=annee`, ou le jour qu'elle annonce. */
+function mondeDeLAdresse(params: URLSearchParams): string {
+  const monde = params.get('monde');
+  if (monde) return monde;
+  const jour = params.get('jour');
+  return jour ? `jour-${cleDuJour(jourDeLAdresse(jour))}` : 'monde';
 }
 
 export default function Magazine() {
@@ -112,281 +113,183 @@ export default function Magazine() {
   const moi = usePersonaCourante();
   const roleId = role?.id ?? moi.id;
 
-  /**
-   * **Le jour, la sélection et le cran viennent de l'adresse** — on les lit au
-   * premier rendu, pas dans un effet : une adresse partagée ouvre exactement ce
-   * qu'elle annonce, sans passer par un état intermédiaire.
-   */
-  const [date, setDate] = useState(() => jourDeLAdresse(params.get('jour')));
-  const [selection, setSelection] = useState<Selection>(() => ({ type: 'jour', date: jourDeLAdresse(params.get('jour')) }));
-  const [niveau, setNiveau] = useState(() => niveauDeLAdresse(params.get('niveau')));
-  /** La feuille ouverte, s'il y en a une — et celle que l'adresse réclame. */
-  const [feuille, setFeuille] = useState<FeuilleOuverte>(() => feuilleDeLAdresse(params.get('feuille')));
+  const [date] = useState(() => jourDeLAdresse(params.get('jour')));
 
-  /** La page est immersive : le site s'efface derrière elle. */
+  /** **Où l'on est** : le monde ouvert, et le chemin qui y a mené. */
+  const [mondeId, setMondeId] = useState(() => mondeDeLAdresse(params));
+  const [chemin, setChemin] = useState<Array<{ id: string; titre: string }>>(() => {
+    const depart = mondeDeLAdresse(params);
+    return depart === 'monde' ? [] : [{ id: depart, titre: '' }];
+  });
+  const [echelle, setEchelle] = useState(() => echelleDuCran(cranDeLAdresse(params.get('niveau'))));
+  const [selection, setSelection] = useState<string[]>(() => casesDeLAdresse(params.get('cases')));
+  const [masquees, setMasquees] = useState<string[]>([]);
+  const [feuille, setFeuille] = useState<FeuilleOuverte>(() => feuilleDeLAdresse(params.get('feuille')));
+  const [apercu, setApercu] = useState<CaseDuMonde | null>(null);
+  const [entree, setEntree] = useState<{ kase: CaseDuMonde; rect: DOMRect | null } | null>(null);
+  const [sortie, setSortie] = useState(false);
+  /** La composition : les cases que l'adresse apporte, ou celles qu'on choisit. */
+  const [blocs, setBlocs] = useState<BlocDeMiniSite[]>(() => {
+    const choisies = casesDeLAdresse(params.get('cases'));
+    if (!choisies.length) return [];
+    return composerLeMiniSite(
+      choisies.filter((id) => moduleDeComposition(id)),
+      casesParIds(choisies, jourDeLAdresse(params.get('jour'))),
+    );
+  });
+  const [familles, setFamilles] = useState<Record<string, Famille>>({});
+  const [avis, setAvis] = useState<string | null>(null);
+
+  /** Le temps de lecture de l'édition, dans la feuille de l'éditeur. */
+  const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
+
+  /* ——————————————————————— LA PAGE EST IMMERSIVE ——————————————————————— */
+
   useEffect(() => {
     publierImmersif(true);
     return () => publierImmersif(false);
   }, []);
 
-  /** Le moment de l'adresse, lui, se pose sur la capsule : `?moment=soir`. */
-  useEffect(() => {
-    const mo = params.get('moment');
-    if (mo) choisirMoment(mo);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ————————————————————————————————— TOUT VIENT DE LA DATE —————————————————————————————————
-
-  /** Le magazine du jour, son chapitre, ses visuels — depuis la source unique. */
-  const magazine = useMemo(() => magazineDeLaDate(date), [date]);
-  const niveaux = useMemo(() => niveauxDuJour(date), [date]);
-  const visuels = useMemo(() => visuelsDuJour(date), [date]);
-  const chapitre = positionDansLeMagazine(date);
-  const joursDuMagazineCourant = useMemo(() => joursDuMagazine(magazine.numero, date.getFullYear()), [magazine.numero, date]);
-
-  /** Le temps de lecture : l'an dernier, cette semaine, l'an prochain. */
-  const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
+  /** L'heure regardée : une case touchée, le moment de l'adresse, la capsule. */
+  const heure =
+    ((params.get('moment') ? HEURE_DES_MOMENTS[params.get('moment')!] : undefined) ?? heureDeLaCapsule()) as number;
+  const lumiere = lumiereDeLHeure(heure);
+  const magazine = magazineDeLaDate(date);
+  const niveaux = niveauxDuJour(date);
+  const visuels = visuelsDuJour(date);
+  const accent = magazine.palette.accent;
 
   /** L'édition composée : ses vingt-quatre pages, une par heure. */
-  const edition = useMemo(
-    () => composerEdition({ numero: magazine.numero, temps, roleId }),
-    [magazine.numero, temps, roleId],
-  );
+  const edition = composerEdition({ numero: magazine.numero, temps, roleId });
 
-  /** Les articles — ceux du métier quand on vient par un métier. */
-  const articles = useMemo(() => (role ? articlesPourRole(role.id) : ALL_ARTICLES), [role]);
+  /* ————————————————————————— LE MONDE COURANT ————————————————————————— */
 
   /**
-   * L'heure regardée : celle d'une vignette touchée, puis celle du moment de
-   * l'adresse (`?moment=midi`), puis celle de la capsule.
+   * Le monde se construit une fois par état : la clé porte le monde, le jour, et
+   * la composition. On peut donc la recalculer à chaque image sans rien payer.
    */
-  const heure =
-    selection.type === 'heure' || selection.type === 'page'
-      ? selection.heure
-      : HEURE_DES_MOMENTS[params.get('moment') ?? ''] ?? heureDeLaCapsule();
-  const lumiere = lumiereDeLHeure(heure);
-
-  const accent = magazine.palette.accent;
-  const encre = encreSur(magazine.palette.fond);
-
-  // ————————————————————————————————— CE QUE MONTRE LA SCÈNE —————————————————————————————————
-
-  const scene = useMemo(() => {
-    const jour = jourDuMagazine(date);
-    const surtitre = `${dateCapitale(date)} · ${niveaux.magazine}`;
-    switch (selection.type) {
-      case 'magazine': {
-        const m = MAGAZINES.find((x) => x.numero === selection.numero) ?? magazine;
-        const semaine = m.semaine ? `Semaine ${m.semaine}` : 'Hors calendrier';
-        return {
-          date: `${semaine} · ${m.saison.nom}`,
-          titre: m.titre,
-          moment: m.style.toUpperCase(),
-          image: visuelDeLaCouverture(m.numero).url,
-          heure,
-        };
-      }
-      case 'heure': {
-        const mot = lumiereDeLHeure(selection.heure).mot ?? HEURES[selection.heure]!.nom;
-        return {
-          date: surtitre,
-          titre: mot.charAt(0).toUpperCase() + mot.slice(1),
-          moment: `${magazine.titre.toUpperCase()} · ${CHAPITRES[chapitre - 1]!.titre.toUpperCase()}`,
-          image: visuels.imageDuChapitre.url ?? visuels.couverture.url,
-          heure: selection.heure,
-        };
-      }
-      case 'page': {
-        const page = edition.pages.find((p) => p.heure === selection.heure) ?? edition.pages[0]!;
-        return {
-          date: surtitre,
-          titre: page.titre,
-          moment: `${page.rubrique.toUpperCase()} · ${String(selection.heure).padStart(2, '0')}:00`,
-          image: visuels.imageDuChapitre.url ?? visuels.couverture.url,
-          heure: selection.heure,
-        };
-      }
-      case 'article':
-        return {
-          date: surtitre,
-          titre: selection.article.title,
-          moment: `${selection.article.kicker.toUpperCase()} · ${selection.article.readingMinutes} MIN`,
-          image: selection.article.cover,
-          heure,
-        };
-      default:
-        return {
-          date: surtitre,
-          titre: magazine.titre,
-          moment: jour.nom
-            ? `${CHAPITRES[chapitre - 1]!.titre.toUpperCase()} · ${jour.nom.toUpperCase()}`
-            : CHAPITRES[chapitre - 1]!.titre.toUpperCase(),
-          image: visuels.imageDuChapitre.url ?? visuels.couverture.url,
-          heure,
-        };
+  const cleDuMonde = `${mondeId}|${cleDuJour(date)}|${blocs.map((b) => `${b.id}:${b.famille}`).join(',')}`;
+  const monde = mondeEnCache(cleDuMonde, () => {
+    // Un mini-site sans bloc n'est pas un monde : on rouvre l'ouverture.
+    if (mondeId === 'mini-site') {
+      return blocs.length ? mondeDuMiniSite(blocs, titreDuMiniSite(blocs)) : mondeDeLId('monde', date);
     }
-  }, [selection, date, magazine, niveaux.magazine, chapitre, visuels, edition.pages, heure]);
+    return mondeDeLId(mondeId, date);
+  });
 
-  // ————————————————————————————————— LES RANGÉES DE LA MOSAÏQUE —————————————————————————————————
+  /** On choisit une heure : la capsule suit, et le cadran avec elle. */
+  const choisirHeure = (h: number) => {
+    const part = partDeLHeure(h);
+    choisirMoment(MOMENTS_DE_LA_CAPSULE.includes(part.id) ? part.id : null);
+  };
 
-  /** Ouvrir un magazine : on entre dans sa semaine. */
-  const choisirMagazine = useCallback(
-    (numero: number) => {
-      const debut = jourDuChapitre(numero, 1, date.getFullYear());
-      setDate(debut);
-      setSelection({ type: 'magazine', numero });
-      setNiveau((n) => Math.max(n, 2));
-    },
-    [date],
-  );
+  /* —————————————————————————— ENTRER, SORTIR —————————————————————————— */
 
-  /** **Le geste principal : toucher une vignette, la scène suit.** */
-  const choisirJour = useCallback((d: Date) => {
-    setDate(d);
-    setSelection({ type: 'jour', date: d });
-  }, []);
+  const entrer = (kase: CaseDuMonde, rect: DOMRect | null) => {
+    const heureDeLaCase = /^heure-(\d{1,2})$/.exec(kase.id);
+    if (heureDeLaCase) choisirHeure(Number.parseInt(heureDeLaCase[1]!, 10));
+    const ouvre = kase.ouvre;
+    if (!ouvre) return;
+    setEntree({ kase, rect });
+    window.setTimeout(() => {
+      setChemin((c) => [...c, { id: ouvre, titre: kase.titre }]);
+      setMondeId(ouvre);
+      setApercu(null);
+      setEntree(null);
+    }, 430);
+  };
 
-  /** Une heure : la scène prend sa lumière, et la capsule s'y pose. */
-  const choisirHeure = useCallback(
-    (h: number) => {
-      setSelection({ type: 'heure', date, heure: h });
-      // L'heure choisie pose la capsule : le cadran suit, la nuit relâche tout.
-      const part = partDeLHeure(h);
-      choisirMoment(MOMENTS_DE_LA_CAPSULE.includes(part.id) ? part.id : null);
-      setNiveau((n) => Math.max(n, 3));
-    },
-    [date],
-  );
+  const remonter = () => {
+    if (chemin.length === 0) return;
+    setSortie(true);
+    const precedent = chemin.length > 1 ? chemin[chemin.length - 2]!.id : 'monde';
+    window.setTimeout(() => {
+      setChemin((c) => c.slice(0, -1));
+      setMondeId(precedent);
+      setSortie(false);
+      setApercu(null);
+    }, 320);
+  };
 
-  const choisirPage = useCallback(
-    (h: number) => {
-      setSelection({ type: 'page', date, heure: h });
-      setNiveau(4);
-    },
-    [date],
-  );
+  /* ——————————————————————— LES GESTES DE LA PAGE ——————————————————————— */
 
-  const choisirArticle = useCallback((article: Article) => {
-    setSelection({ type: 'article', article });
-    setNiveau(4);
-  }, []);
+  /** Le retour du dernier rendu : l'écoute clavier, elle, ne se repose jamais. */
+  const retour = useRef(remonter);
+  useEffect(() => {
+    retour.current = remonter;
+  });
 
-  /** L'image qui sert de fond aux rangées d'heures : le chapitre, ou la semaine. */
-  const imageDuJour = visuels.imageDuChapitre.url ?? visuels.couverture.url;
+  useEffect(() => {
+    const surTouche = (e: KeyboardEvent) => {
+      const cible = e.target as HTMLElement | null;
+      if (cible && ['INPUT', 'TEXTAREA', 'SELECT'].includes(cible.tagName)) return;
+      if (e.key !== 'Escape') return;
+      if (feuille) return; // la feuille ferme la première
+      if (selection.length) {
+        setSelection([]);
+        return;
+      }
+      retour.current();
+    };
+    window.addEventListener('keydown', surTouche);
+    return () => window.removeEventListener('keydown', surTouche);
+  }, [feuille, selection.length]);
 
-  const rangees = useMemo<RangeeDuTemps[]>(() => {
-    const annee: TuileDuTemps[] = MAGAZINES.map((m) => ({
-      id: `magazine-${m.numero}`,
-      url: visuelDeLaCouverture(m.numero).url,
-      fond: m.palette.fond,
-      encre: encreSur(m.palette.fond),
-      label: String(m.numero).padStart(2, '0'),
-      actif: m.numero === magazine.numero,
-      onChoisir: () => choisirMagazine(m.numero),
-    }));
+  /* —————————————————————— LA COMPOSITION —————————————————————— */
 
-    const semaine: TuileDuTemps[] = joursDuMagazineCourant.map((d) => {
-      const numero = positionDansLeMagazine(d);
-      return {
-        id: `jour-${d.getDate()}-${d.getMonth()}`,
-        url: visuelDuChapitre(magazine.numero, numero).url,
-        fond: magazine.palette.fond,
-        encre,
-        label: String(d.getDate()).padStart(2, '0'),
-        mot: motDuChapitre(CHAPITRES[numero - 1]!.titre).toUpperCase(),
-        actif: d.getDate() === date.getDate() && d.getMonth() === date.getMonth(),
-        onChoisir: () => choisirJour(d),
-      };
+  const composer = (ids: string[]) => {
+    const choisies = monde.cases.filter((c) => ids.includes(c.id));
+    setBlocs((actuels) => {
+      const modules = actuels.filter((b) => b.id.startsWith('module-')).map((b) => b.id.replace('module-', ''));
+      return composerLeMiniSite(modules, choisies, familles);
     });
+    setFeuille('composer');
+  };
 
-    const journee: TuileDuTemps[] = HEURES.map((h) => {
-      const l = lumiereDeLHeure(h.heure);
-      return {
-        id: `heure-${h.heure}`,
-        url: imageDuJour,
-        fond: teinteDeLHeure(h.heure, magazine.palette.fond, accent),
-        encre: '#F4F5FB',
-        label: String(h.heure).padStart(2, '0'),
-        mot: l.mot,
-        clarte: l.clarte,
-        voile: l.voile,
-        alpha: l.alpha,
-        actif: (selection.type === 'heure' || selection.type === 'page') && selection.heure === h.heure,
-        onChoisir: () => choisirHeure(h.heure),
+  /** Partager une sélection : l'adresse la porte, et rien d'autre. */
+  const partager = (ids: string[]) => {
+    const adresse = `${window.location.origin}/magazine?monde=${mondeId}&cases=${ids.join(',')}`;
+    void navigator.clipboard?.writeText(adresse);
+    setAvis(`${ids.length} cases — le lien est copié`);
+    window.setTimeout(() => setAvis(null), 2600);
+  };
+
+  /* ——————————————————————————— L'ÉCRAN ——————————————————————————— */
+
+  const scene = apercu
+    ? {
+        date: apercu.surTitre ?? monde.titre,
+        titre: apercu.titre,
+        moment: apercu.sousTitre ?? monde.sous,
+        image: apercu.image ?? null,
+        accent: apercu.couleur,
+      }
+    : {
+        date: `${dateCapitale(date)} · ${niveaux.magazine}`,
+        titre: niveaux.titreDuMagazine,
+        moment: niveaux.titreDuChapitre.toUpperCase(),
+        image: visuels.imageDuChapitre.url ?? visuels.couverture.url,
+        accent,
       };
-    });
-
-    const pages: TuileDuTemps[] = edition.pages.map((page) => {
-      const l = lumiereDeLHeure(page.heure);
-      return {
-        id: `page-${page.heure}`,
-        url: imageDuJour,
-        fond: teinteDeLHeure(page.heure, magazine.palette.fond, accent),
-        encre: '#F4F5FB',
-        label: String(page.heure).padStart(2, '0'),
-        mot: page.rubrique.toUpperCase(),
-        clarte: l.clarte,
-        voile: l.voile,
-        alpha: l.alpha,
-        actif: selection.type === 'page' && selection.heure === page.heure,
-        onChoisir: () => choisirPage(page.heure),
-      };
-    });
-
-    const lesArticles: TuileDuTemps[] = articles.map((a) => ({
-      id: `article-${a.slug}`,
-      url: a.cover,
-      fond: '#14151A',
-      encre: '#F4F5FB',
-      label: a.kicker.toUpperCase().slice(0, 22),
-      mot: `${a.readingMinutes} MIN`,
-      large: true,
-      actif: selection.type === 'article' && selection.article.slug === a.slug,
-      onChoisir: () => choisirArticle(a),
-    }));
-
-    /** Le zoom ouvre les rangées : l'année, puis la semaine, puis les heures, puis le contenu. */
-    const toutes: RangeeDuTemps[] = [
-      { id: 'annee', quoi: 'l’année', tuiles: annee },
-      { id: 'semaine', quoi: 'la semaine', tuiles: semaine },
-      { id: 'journee', quoi: 'la journée', tuiles: journee },
-      { id: 'numero', quoi: 'le numéro', tuiles: pages },
-      { id: 'articles', quoi: 'les articles', tuiles: lesArticles },
-    ];
-    if (niveau <= 1) return [toutes[0]!];
-    if (niveau === 2) return toutes.slice(0, 2);
-    if (niveau === 3) return toutes.slice(0, 3);
-    return toutes;
-  }, [
-    magazine, date, encre, accent, imageDuJour, edition.pages, articles, niveau, selection,
-    joursDuMagazineCourant, choisirMagazine, choisirJour, choisirHeure, choisirPage, choisirArticle,
-  ]);
-
-  // ————————————————————————————————— LE REGARD —————————————————————————————————
-
-  const composition = (
-    <CouvertureJour couverture={couvertureDuJour(date)} visuel={visuels.couverture} niveaux={niveaux} className="h-full max-h-[70svh] w-auto" />
-  );
 
   return (
-    <div className="flex h-[100svh] w-full flex-col overflow-hidden bg-[#0B0C12] text-white">
+    <div data-page="magazine" className="relative h-svh w-full overflow-hidden bg-[#0B0C12] text-white">
+      {/* ————————— LA SCÈNE : L'IMAGE, DERRIÈRE LA GRILLE ————————— */}
       <SceneEditoriale
-        className="flex-1"
+        className="absolute inset-0 z-0"
         date={scene.date}
         titre={scene.titre}
         moment={scene.moment}
         image={scene.image}
-        composition={composition}
-        heure={scene.heure}
+        heure={heure}
         clarte={lumiere.clarte}
         voile={lumiere.voile}
         alpha={lumiere.alpha}
-        accent={accent}
+        accent={scene.accent}
         cadran={
           <CadranDuMagazine
             heure={heure}
-            chapitre={chapitre}
+            chapitre={niveaux.numeroDeChapitre}
             fond="#0B0C12"
             encre="#F3F1ED"
             accent={accent}
@@ -394,38 +297,102 @@ export default function Magazine() {
             className="h-9 w-9"
           />
         }
-        action={
-          selection.type === 'article' ? (
-            <Link
-              to={`/magazine/${selection.article.slug}`}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#0B0C12] no-underline transition hover:bg-white/88"
-            >
-              Lire l’article <ArrowRight size={12} />
-            </Link>
-          ) : undefined
-        }
       />
+      <span aria-hidden="true" className="absolute inset-0 z-[1] bg-[#0B0C12]/78" />
 
-      {/* Les deux portes contextuelles : discrètes, en haut de la mosaïque. */}
-      <div className="relative z-10 flex items-center gap-4 bg-[#0B0C12] px-4 pt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/35 sm:px-6">
-        <button type="button" onClick={() => setFeuille('editeur')} className="transition hover:text-white/80">
-          l’éditeur
-        </button>
-        <button type="button" onClick={() => setFeuille('collection')} className="transition hover:text-white/80">
-          la collection
-        </button>
-        <button type="button" onClick={() => setFeuille('profil')} className="transition hover:text-white/80">
-          votre profil
-        </button>
-        <span className="ml-auto truncate text-white/25">
-          {role ? `choisi pour ${role.nom.toLowerCase()}` : '54 magazines · 7 chapitres · 365 jours'}
+      {/* ————————— LA GRILLE : TOUT L'ÉCRAN ————————— */}
+      <div
+        className="relative z-10 h-full w-full"
+        style={{
+          opacity: sortie ? 0 : 1,
+          transform: sortie ? 'scale(0.94)' : 'none',
+          transition: 'opacity 300ms ease, transform 340ms cubic-bezier(.22,.9,.24,1)',
+        }}
+      >
+        <GrilleDuMonde
+          monde={monde}
+          echelle={echelle}
+          onEchelle={(e) => setEchelle(e)}
+          onOuvrir={entrer}
+          onApercu={setApercu}
+          selection={selection}
+          onSelection={setSelection}
+          onComposer={composer}
+          onMasquer={(ids) => {
+            setMasquees((m) => [...new Set([...m, ...ids])]);
+            setSelection([]);
+          }}
+          onPartager={partager}
+          masquees={masquees}
+          sortie={sortie}
+        />
+      </div>
+
+      {/* ————————— LES PORTES : L'ÉDITEUR, LA COLLECTION, LE PROFIL ————————— */}
+      <div className="absolute right-12 top-3 z-20 flex flex-col items-end gap-1 sm:right-14 sm:top-4">
+        {([
+          ['editeur', 'l’éditeur'],
+          ['collection', 'la collection'],
+          ['profil', 'votre profil'],
+        ] as const).map(([id, mot]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setFeuille(id)}
+            className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/55 transition hover:text-white"
+          >
+            {mot}
+          </button>
+        ))}
+        <span className="mt-1 max-w-[16ch] text-right font-mono text-[9px] uppercase tracking-[0.16em] text-white/35">
+          {role ? `choisi pour ${role.nom.toLowerCase()}` : `${MARQUE_MAGAZINE} · 54 · 7 · 365`}
         </span>
       </div>
 
-      {/* ————————————— LA MOSAÏQUE : LA TIMELINE, PLEINE LARGEUR ————————————— */}
-      <MosaiqueDuTemps rangees={rangees} niveau={niveau} onNiveau={setNiveau} />
+      {/* ————————— LE CHEMIN : OÙ L'ON EST, ET D'OÙ L'ON VIENT ————————— */}
+      <div data-chemin="monde" className="absolute bottom-3 left-3 z-20 flex flex-wrap items-center gap-1.5 pr-24 sm:left-5">
+        {[{ id: 'monde', titre: 'LE MONDE' }, ...chemin].map((etape, i) => (
+          <span key={`${etape.id}-${i}`} className="flex items-center gap-1.5">
+            {i > 0 && <span className="font-mono text-[9px] text-white/30">›</span>}
+            <button
+              type="button"
+              onClick={() => {
+                setChemin(chemin.slice(0, i));
+                setMondeId(etape.id);
+              }}
+              className={`font-mono text-[10px] uppercase tracking-[0.18em] transition ${
+                i === chemin.length ? 'text-white/80' : 'text-white/40 hover:text-white/80'
+              }`}
+            >
+              {etape.titre || 'le monde'}
+            </button>
+          </span>
+        ))}
+        {masquees.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setMasquees([])}
+            className="ml-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40 transition hover:text-white"
+          >
+            {masquees.length} masquée{masquees.length > 1 ? 's' : ''} · tout revoir
+          </button>
+        )}
+      </div>
 
-      {/* ————————————— LES FEUILLES : TOUT LE RESTE, À LA DEMANDE ————————————— */}
+      {/* ————————— L'AVIS : CE QUI VIENT DE SE PASSER ————————— */}
+      {avis && (
+        <span
+          data-avis="magazine"
+          className="absolute bottom-14 left-1/2 z-30 -translate-x-1/2 border border-white/15 bg-[#0B0C12]/85 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/75 backdrop-blur-md"
+        >
+          {avis}
+        </span>
+      )}
+
+      {/* ————————— LE ZOOM : LA CASE DEVIENT L'ÉCRAN ————————— */}
+      {entree && <ZoomDEntree kase={entree.kase} rect={entree.rect} />}
+
+      {/* ————————— LES FEUILLES ————————— */}
       <Feuille
         ouverte={feuille === 'editeur'}
         surtitre={MARQUE_MAGAZINE}
@@ -454,6 +421,20 @@ export default function Magazine() {
       </Feuille>
 
       <Feuille
+        ouverte={feuille === 'collection'}
+        surtitre={MARQUE_MAGAZINE}
+        titre="La collection — les 54 magazines"
+        onFermer={() => setFeuille(null)}
+      >
+        <GalerieCouvertures />
+        <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-black/45">
+          <Link to="/le-mariage" className="underline decoration-black/20 underline-offset-4 hover:text-black">
+            Le mariage, de fond en comble
+          </Link>
+        </p>
+      </Feuille>
+
+      <Feuille
         ouverte={feuille === 'profil'}
         surtitre={MARQUE_MAGAZINE}
         titre="Se montrer, et élever les autres"
@@ -463,24 +444,241 @@ export default function Magazine() {
       </Feuille>
 
       <Feuille
-        ouverte={feuille === 'collection'}
-        surtitre={MARQUE_MAGAZINE}
-        titre="La collection — les 54 magazines"
+        ouverte={feuille === 'composer'}
+        surtitre="Composer avec des cases"
+        titre="Votre mini-site"
         onFermer={() => setFeuille(null)}
       >
-        <GalerieCouvertures annee={date.getFullYear()} />
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Link
-            to="/le-mariage"
-            className="inline-flex items-center gap-2 rounded-full bg-[#0B0C12] px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-white no-underline"
-          >
-            Les univers <ArrowRight size={12} />
-          </Link>
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/40">
-            {magazine.etiquette} · {magazine.titre}
-          </span>
-        </div>
+        <Composition
+          blocs={blocs}
+          familles={familles}
+          onBlocs={setBlocs}
+          onFamille={(id, famille) => setFamilles((f) => ({ ...f, [id]: famille }))}
+          onOuvrir={() => {
+            setMondeId('mini-site');
+            setChemin((c) => [...c, { id: 'mini-site', titre: 'VOTRE MINI-SITE' }]);
+          }}
+          onFermer={() => setFeuille(null)}
+        />
       </Feuille>
+
+    </div>
+  );
+}
+
+/** Le titre d'un mini-site, selon les blocs qu'on y a posés. */
+function titreDuMiniSite(blocs: BlocDeMiniSite[]): string {
+  const modules = blocs.map((b) => b.module);
+  if (modules.includes('prix') || modules.includes('personne')) return 'L’ESPACE DU PROFESSIONNEL';
+  if (modules.includes('formulaire')) return 'L’ESPACE DES INVITÉS';
+  return 'VOTRE MINI-SITE';
+}
+
+/* ——————————————————————— LE ZOOM D'ENTRÉE ——————————————————————— */
+
+/**
+ * **Entrer dans une case** : elle grandit jusqu'à l'écran, et le monde qu'elle
+ * contenait arrive derrière. On ne change pas de page — on descend d'un cran
+ * dans la même matière.
+ */
+function ZoomDEntree({ kase, rect }: { kase: CaseDuMonde; rect: DOMRect | null }) {
+  const [grand, setGrand] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setGrand(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const depart = rect ?? { left: window.innerWidth / 2 - 60, top: window.innerHeight / 2 - 60, width: 120, height: 120 };
+
+  return (
+    <span
+      aria-hidden="true"
+      data-zoom="case"
+      className="pointer-events-none fixed z-40 overflow-hidden"
+      style={{
+        left: grand ? 0 : depart.left,
+        top: grand ? 0 : depart.top,
+        width: grand ? '100vw' : depart.width,
+        height: grand ? '100vh' : depart.height,
+        background: kase.couleur,
+        transition:
+          'left 430ms cubic-bezier(.22,.9,.24,1), top 430ms cubic-bezier(.22,.9,.24,1), width 430ms cubic-bezier(.22,.9,.24,1), height 430ms cubic-bezier(.22,.9,.24,1)',
+      }}
+    >
+      {kase.image && <img src={kase.image} alt="" className="h-full w-full object-cover" />}
+    </span>
+  );
+}
+
+/* ——————————————————— LA COMPOSITION : DES CASES ET DES MODULES ——————————————————— */
+
+/**
+ * **Composer un mini-site avec des cases.** Ce qu'on a choisi dans la grille est
+ * en haut ; on ajoute des modules en dessous — RSVP, plan, météo, playlist ; on
+ * glisse pour changer l'ordre ; et chaque bloc dit à qui il est ouvert, d'un
+ * seul symbole. Rien d'autre.
+ */
+function Composition({
+  blocs,
+  familles,
+  onBlocs,
+  onFamille,
+  onOuvrir,
+  onFermer,
+}: {
+  blocs: BlocDeMiniSite[];
+  familles: Record<string, Famille>;
+  onBlocs: (blocs: BlocDeMiniSite[]) => void;
+  onFamille: (id: string, famille: Famille) => void;
+  onOuvrir: () => void;
+  onFermer: () => void;
+}) {
+  const [glisse, setGlisse] = useState<number | null>(null);
+  const [surIndex, setSurIndex] = useState<number | null>(null);
+  const refs = useRef(new Map<number, HTMLElement>());
+
+  /** Le glissement : on prend un bloc, on le repose ailleurs. */
+  useEffect(() => {
+    if (glisse === null) return;
+    const surBouge = (e: PointerEvent) => {
+      let cible: number | null = null;
+      refs.current.forEach((el, i) => {
+        const r = el.getBoundingClientRect();
+        if (e.clientY >= r.top && e.clientY <= r.bottom) cible = i;
+      });
+      setSurIndex(cible);
+    };
+    const surHaut = () => {
+      if (surIndex !== null && surIndex !== glisse) {
+        const suivants = [...blocs];
+        const [pris] = suivants.splice(glisse, 1);
+        suivants.splice(surIndex, 0, pris!);
+        onBlocs(suivants);
+      }
+      setGlisse(null);
+      setSurIndex(null);
+    };
+    window.addEventListener('pointermove', surBouge);
+    window.addEventListener('pointerup', surHaut);
+    return () => {
+      window.removeEventListener('pointermove', surBouge);
+      window.removeEventListener('pointerup', surHaut);
+    };
+  }, [blocs, glisse, onBlocs, surIndex]);
+
+  const ajouter = (id: string) => {
+    const suite = composerLeMiniSite([id], [], familles);
+    onBlocs([...blocs, ...suite]);
+  };
+
+  const poserPreset = (ids: string[]) => {
+    onBlocs(composerLeMiniSite(ids, [], familles));
+  };
+
+  return (
+    <div data-composition="mini-site">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/45">Poser d’un coup</span>
+        <button
+          type="button"
+          data-preset="invite"
+          onClick={() => poserPreset(MINI_SITE_INVITE)}
+          className="border border-black/15 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-black/70 transition hover:border-black/45 hover:text-black"
+        >
+          un invité
+        </button>
+        <button
+          type="button"
+          data-preset="prestataire"
+          onClick={() => poserPreset(MINI_SITE_PRESTATAIRE)}
+          className="border border-black/15 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-black/70 transition hover:border-black/45 hover:text-black"
+        >
+          un professionnel
+        </button>
+      </div>
+
+      <ul data-blocs={blocs.length} className="mt-5 divide-y divide-black/8 border-y border-black/8">
+        {blocs.map((bloc, i) => (
+          <li
+            key={`${bloc.id}-${i}`}
+            ref={(el) => {
+              if (el) refs.current.set(i, el);
+              else refs.current.delete(i);
+            }}
+            data-bloc={bloc.id}
+            data-survol={surIndex === i ? 'true' : 'false'}
+            className={`flex items-center gap-3 px-1 py-3 ${glisse === i ? 'opacity-45' : ''} ${surIndex === i && glisse !== null && glisse !== i ? 'bg-black/4' : ''}`}
+          >
+            <button
+              type="button"
+              aria-label={`Déplacer ${bloc.mot}`}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                setGlisse(i);
+              }}
+              className="cursor-grab font-mono text-[11px] leading-none text-black/30 hover:text-black/70"
+            >
+              ⠿
+            </button>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/40">{bloc.module}</span>
+              <span className="truncate text-[15px] text-[#0B0C12]">{bloc.mot}</span>
+            </span>
+            <button
+              type="button"
+              aria-label={`Ouverture de ${bloc.mot} : ${bloc.famille}`}
+              onClick={() => {
+                const i2 = FAMILLES.findIndex((f) => f.id === bloc.famille);
+                const suivant = FAMILLES[(i2 + 1) % FAMILLES.length]!.id;
+                onFamille(bloc.id, suivant);
+                onBlocs(blocs.map((b) => (b.id === bloc.id ? { ...b, famille: suivant } : b)));
+              }}
+              className="font-mono text-[11px] leading-none text-black/50 transition hover:text-black"
+            >
+              {FAMILLES.find((f) => f.id === bloc.famille)?.marque}
+            </button>
+            <button
+              type="button"
+              aria-label={`Retirer ${bloc.mot}`}
+              onClick={() => onBlocs(blocs.filter((_, j) => j !== i))}
+              className="font-mono text-[11px] leading-none text-black/30 transition hover:text-black"
+            >
+              ×
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-5 flex flex-wrap gap-1.5">
+        {MODULES_DE_COMPOSITION.map((module) => (
+          <button
+            key={module.id}
+            type="button"
+            data-module-ajoute={module.id}
+            onClick={() => ajouter(module.id)}
+            className="border border-black/12 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-black/60 transition hover:border-black/45 hover:text-black"
+          >
+            {module.mot}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-7 flex items-center justify-between gap-3">
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/40">
+          {blocs.length} bloc{blocs.length > 1 ? 's' : ''} · {new Set(blocs.map((b) => b.module)).size} modules
+        </span>
+        <button
+          type="button"
+          data-ouvrir-mini-site="vrai"
+          onClick={() => {
+            onOuvrir();
+            onFermer();
+          }}
+          className="bg-[#0B0C12] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white"
+        >
+          ouvrir mon mini-site
+        </button>
+      </div>
     </div>
   );
 }

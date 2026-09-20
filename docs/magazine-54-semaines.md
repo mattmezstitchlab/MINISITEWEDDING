@@ -300,6 +300,11 @@ contenu, jamais de place.
 
 ## 13. Refonte : la mosaïque, et rien d'autre
 
+> **Itération précédente.** La bande décrite ici a été remplacée par la grille
+> plein écran — voir §14. Ce qui compte y reste : les cases carrées bord à bord,
+> la tête de lecture, la lumière des heures, et l'idée qu'une vignette est une
+> porte.
+
 L'expérience a été reprise de fond en comble. **Une seule idée est conservée :
 la timeline** — son principe et son fonctionnement temporel. Tout le reste a été
 refait, et ce qui restait de l'ancienne interface a été retiré.
@@ -367,3 +372,127 @@ de lecture), **la collection** (les 54 couvertures, par saison), **votre profil*
 `/magazine?jour=09-21&niveau=4&moment=soir&feuille=collection` — le jour, le cran
 d'échelle, le moment de la capsule, la feuille. Tout est partageable, et lu au
 premier rendu.
+
+## 14. La grille du monde : la timeline devient tout l'écran
+
+L'expérience a changé de nature. Il n'y a plus de bande posée en bas d'une
+page : **la grille prend tout l'écran**, elle se parcourt horizontalement et
+verticalement, et chaque case ouvre un monde. Ce n'est plus une page qu'on
+parcourt, c'est un territoire.
+
+```
+                    ┌──┬──┬──┬──┬──┬──┬──┬──┬──┐
+                    │  │  │  │  │  │  │  │  │  │   on glisse partout,
+                    ├──┼──┼──┼──┼──┼──┼──┼──┼──┤   on pince pour changer
+                    │  │▓▓│▓▓│  │  │  │  │  │  │   de densité, on clique
+                    ├──┼──┼──┼──┼──┼──┼──┼──┼──┤   pour entrer
+                    │  │  │  │  │  │  │  │  │  │
+                    └──┴──┴──┴──┴──┴──┴──┴──┴──┘
+```
+
+### Une seule brique : la case
+
+Tout ce qui existe dans le produit existe **quelque part sous forme de case**.
+`src/lib/grilleDuMonde.ts` ne réécrit aucune donnée : il découpe le monde en
+cases, à partir des sources du site.
+
+| monde | cases | ce qu'une case est | d'où elle vient |
+| --- | --- | --- | --- |
+| `monde` | 10 | les grandes portes | tout le site |
+| `annee` | 365 | un jour | `semaines` · `saintsDuJour` · `visuelsDuMagazine` |
+| `jour-09-21` | 9 | les 8 univers, + les 24 heures | `semaines` · `jourDuMagazine` |
+| `univers-musique` | 8 | un morceau du jour | `playlistDeLAnnee` |
+| `heures` | 24 | une heure et sa lumière | `lumiereDuJour` · `l'édition` |
+| `heure-18` | 7 | un module de la page | `l'édition` · `shopData` · la playlist |
+| `magazines` | 54 | un magazine | `semaines` |
+| `articles` | 34 | un article | `magazine` |
+| `musique` | 365 | un morceau par jour | `playlistDeLAnnee` |
+| `boutique` | 43 | un objet, son prix | `shopData` |
+| `metiers` | 72 | un métier, son porteur | `metierPage` · `personas` |
+| `personnes` | 27 | un rôle du mariage | `personas` |
+| `galerie` | 25 | une image livrée | `bibliothequeMagazine` |
+| `mini-site` | n | un bloc composé | la composition (§15) |
+
+Une case porte un **module** (image, texte, audio, article, produit, personne,
+lieu, date, météo, carte, galerie, formulaire…), une **couleur** — jamais
+inventée : c'est le fond du magazine auquel elle appartient — et une
+**ouverture** : `ouvre: 'chapitre-38-05'`. C'est tout.
+
+### Les cinq densités
+
+C'est **la taille réelle de la case** qui décide de ce qu'elle a le droit de
+dire — jamais l'échelle en soi (`echelleDeLaGrille.ts`).
+
+| densité | la case fait | elle montre |
+| --- | --- | --- |
+| 1 | moins de 64 px | l'image, rien d'autre |
+| 2 | 64 → 96 px | l'image et la date |
+| 3 | 96 → 132 px | et le titre |
+| 4 | 132 → 190 px | et la ligne de contexte |
+| 5 | plus de 190 px | et son détail, ligne à ligne |
+
+Cinq crans d'échelle (`0.42 · 0.62 · 0.86 · 1.2 · 1.7`) se posent sur cette
+règle : au premier, l'année entière tient à l'écran ; au dernier, la case dit
+tout. Un petit monde — huit univers, un morceau — remplit l'écran de lui-même :
+la grille s'ajuste, la densité suit.
+
+### Les gestes
+
+| geste | ce qu'il fait |
+| --- | --- |
+| glisser | se déplacer dans le territoire, dans les deux sens |
+| molette · `Maj`+molette | descendre, monter · aller à droite, à gauche |
+| pincer · `⌘`/`Ctrl`+molette · `+` `−` · `1`…`5` | changer de densité, sous le doigt |
+| cliquer une case | **entrer** — la case grandit jusqu'à l'écran, son monde arrive |
+| `Échap` · le chemin, en bas à gauche | remonter d'un cran |
+| `+` (en haut à droite) | armer la sélection : cliquer coche, glisser encadre |
+| `Maj`+clic | cocher une case sans armer la sélection |
+
+Rien de tout cela n'ajoute d'interface : **la grille fait déjà tout**. Les
+flèches du clavier déplacent, les chiffres changent l'échelle, et les cinq
+crans sont cinq traits à droite de l'écran.
+
+### Ce qui a disparu
+
+La bande du temps, la scène pleine page, la barre de navigation, les panneaux,
+les cartes arrondies, les ombres, les badges, les explications. Il reste :
+**des images, des cases, du temps, de la typographie, et la scène en dessous** —
+l'image de la case qu'on regarde passe derrière la grille, et ses interstices la
+laissent voir. La hiérarchie ne change pas : l'image d'abord, puis la date et le
+titre, puis le contenu.
+
+## 15. Composer : les mêmes cases, un autre site
+
+Puisque tout est une case, on peut **composer avec**. La sélection (le `+`, ou
+`Maj`) marque des cases ; la barre qui monte dit ce qu'on peut en faire :
+
+```
+2 cases   composer   masquer   partager   effacer
+```
+
+**Composer** ouvre la feuille : les cases choisies y sont posées, dans l'ordre,
+et l'on ajoute des **modules** — PHOTO, DATE, LIEU, PLAN, HORAIRES, MÉTÉO,
+MUSIQUE, RSVP, HÉBERGEMENT, TRANSPORT, ITINÉRAIRE, GALERIE, CONTACT, PORTFOLIO,
+TARIFS, DISPONIBILITÉ, SERVICES, VIDÉOS, ZONE, LOGO, PORTRAIT. On glisse un bloc
+pour changer son rang ; on ouvre le mini-site pour le parcourir **comme un
+monde** : une case par bloc.
+
+Deux compositions toutes faites : **un invité** (onze blocs) et **un
+professionnel** (neuf blocs). C'est le même moteur pour tout le monde.
+
+### Les droits, sans bruit
+
+Chaque bloc porte une **famille** — `public`, `invités`, `famille`, `privé` — et
+d'un seul symbole (`○ ◔ ♥ ●`) on la fait tourner. Dans la grille, la marque
+n'apparaît qu'à partir de la densité 4, et **jamais** pour une case publique :
+on ne décore pas une mosaïque avec des cadenas.
+
+### L'adresse porte tout
+
+```
+/magazine?jour=09-21&monde=univers-musique&niveau=4&moment=soir&feuille=composer&cases=jour-09-20,musique,rsvp
+```
+
+Le jour, le monde, la densité, le moment de la capsule, la feuille, et les cases
+choisies. **Partager** copie cette adresse : une composition s'ouvre exactement
+telle qu'on l'a laissée.
