@@ -27,12 +27,32 @@ import {
  * elle ouvre ensuite l'éditeur — puis le mini-site complet.
  */
 
-/** Ce que l'accueil transmet : l'univers et le rôle déjà choisis dans le hero. */
-function useEntryState(): { preselectedStyle: string; roleId: string } {
-  const state = useLocation().state as { preselectedStyle?: string; roleId?: string } | null;
+/**
+ * Ce que l'accueil transmet : le rôle et l'univers déjà choisis dans le hero,
+ * **et les réponses du champ du magazine** — les deux prénoms et la date, écrits
+ * dans la première vue. Ce qui est déjà répondu ne se redemande pas.
+ */
+function useEntryState(): {
+  preselectedStyle: string;
+  roleId: string;
+  partner1: string;
+  partner2: string;
+  weddingDate: string;
+} {
+  const state = useLocation().state as {
+    preselectedStyle?: string;
+    roleId?: string;
+    partner1?: string;
+    partner2?: string;
+    weddingDate?: string;
+  } | null;
+  const net = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
   return {
-    preselectedStyle: typeof state?.preselectedStyle === 'string' ? state.preselectedStyle : '',
-    roleId: typeof state?.roleId === 'string' ? state.roleId : '',
+    preselectedStyle: net(state?.preselectedStyle),
+    roleId: net(state?.roleId),
+    partner1: net(state?.partner1),
+    partner2: net(state?.partner2),
+    weddingDate: net(state?.weddingDate),
   };
 }
 
@@ -52,6 +72,10 @@ export default function Onboarding() {
     const base = savedOrEmpty();
     return {
       ...base,
+      // Ce qui vient de l'accueil gagne : c'est la réponse la plus récente.
+      partner1: entree.partner1 || base.partner1,
+      partner2: entree.partner2 || base.partner2,
+      date: entree.weddingDate || base.date,
       access: accessFromRole(entree.roleId),
       styleId: entree.preselectedStyle || base.styleId,
     };
@@ -167,6 +191,13 @@ export default function Onboarding() {
             le RSVP, la cagnotte, la galerie. L’univers, lui, se choisit dans l’éditeur : vous le découvrirez sur
             votre site.
           </p>
+          {entree.partner1 && (
+            <p className="mt-4 inline-block rounded-full border border-white/25 px-3 py-1.5 text-[12px] font-semibold text-white/85">
+              Déjà répondu dans l’accueil : {entree.partner1}
+              {entree.partner2 ? ` & ${entree.partner2}` : ''}
+              {entree.weddingDate ? ` · ${entree.weddingDate}` : ''}
+            </p>
+          )}
         </div>
       </header>
 

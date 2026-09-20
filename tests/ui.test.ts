@@ -26,6 +26,8 @@ import { MemStorage } from './memStorage';
 import WeddingCard from '../src/components/WeddingCard';
 import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
 import Landing from '../src/pages/Landing';
+import ChampDuMagazine from '../src/components/ChampDuMagazine';
+import { prenomsDuChamp } from '../src/lib/champDuMagazine';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LeMariage from '../src/pages/LeMariage';
@@ -3224,6 +3226,36 @@ check('et sa fiche est un texte', ficheToussaint.manquant.length > 0, true);
 const avecPorte = joursAvecPorte(2026);
 check('trente-cinq journées ont déjà une porte', avecPorte.length, 35);
 check('et chacune dit par où l’on entre', avecPorte.every((f) => f.portes.length > 0 || f.ponts.length > 0), true);
+
+/* ---------------------------------------------------------------------------
+ * LE CHAMP DU MAGAZINE — la première vue, et la seule question
+ *
+ * L'accueil ouvre désormais sur un seul champ : les deux prénoms, la date. On ne
+ * demande rien d'autre, parce que tout le reste existe déjà (les 365 journées,
+ * leurs couvertures, leurs cartes, les univers, la playlist). Et celui qui ne
+ * répond rien n'est pas bloqué : le magazine du jour existe toujours.
+ */
+
+check('« Paul & Emma » donne deux prénoms', prenomsDuChamp('Paul & Emma').join('|'), 'Paul|Emma');
+check('« Paul et Emma » aussi', prenomsDuChamp('Paul et Emma').join('|'), 'Paul|Emma');
+check('« Paul + Emma » aussi', prenomsDuChamp('Paul + Emma').join('|'), 'Paul|Emma');
+check('« Paul, Emma » aussi', prenomsDuChamp('Paul, Emma').join('|'), 'Paul|Emma');
+check('« Paul · Emma » aussi', prenomsDuChamp('Paul · Emma').join('|'), 'Paul|Emma');
+check('un seul prénom ne fabrique pas le second', prenomsDuChamp('Paul').join('|'), 'Paul|');
+check('un champ vide ne fabrique rien', prenomsDuChamp('   ').join('|'), '|');
+
+const champVide = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(ChampDuMagazine as never, {})),
+);
+check('le champ demande les deux prénoms', champVide.includes('Vos deux prénoms'), true);
+check('et la date', champVide.includes('La date'), true);
+check('et il est une entrée du site, pas un formulaire', champVide.includes('Paul &amp; Emma'), true);
+check('sans réponse, il propose le magazine du jour', champVide.includes('Voir le magazine du jour'), true);
+check('et il dit que l’année entière existe déjà', champVide.includes('365 magazines'), true);
+
+check('le champ est la première chose du hero de l’accueil', accueil.indexOf('Vos deux prénoms') < accueil.indexOf('Qui êtes-vous dans ce mariage'), true);
+check('et il est bien dans le hero', accueil.indexOf('id="hero"') < accueil.indexOf('Vos deux prénoms'), true);
+check('et le hero garde sa question à lui', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

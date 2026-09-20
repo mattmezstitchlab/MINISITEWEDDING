@@ -2193,7 +2193,7 @@ courte) et **les 349 fiches à documenter**, avec ce qui manque à chacune.
 documenté*. Un jour sans fiche n'a **pas** de prompt — il a la liste de ce qui lui
 manque. C'est ce qui empêche la série de se remplir d'associations inventées.
 
-**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 1179**, `npm run
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 1194**, `npm run
 prompts` reproductible. Les vérifications de la passe : les trois raisons du noir
 et leur compte exact (52 / 10 / 1, et 63 en tout), les 73 jours assombris par
 famille (27 / 28 / 18), l'encre claire des temps clos, `studioDuJour` sur les
@@ -2278,7 +2278,7 @@ septembre en premier. **Ensuite seulement**, on remplace le fond des couvertures
 les visuels, sans toucher à la mise en page.
 
 **Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm run prompts`
-reproductible (deux documents, mêmes comptes), `npm test` **178 / 55 / 1179**,
+reproductible (deux documents, mêmes comptes), `npm test` **178 / 55 / 1194**,
 `npx vite build` OK. Les vérifications ajoutées couvrent : le sens des prénoms (une
 phrase, jamais vide, jamais inventée), l'absence de prénom sans signification, les
 patronages (métier → saint → porte) et les portes du jour, la catégorie d'un jour
@@ -2286,3 +2286,84 @@ patronages (métier → saint → porte) et les portes du jour, la catégorie d'
 des journées nommées**, la liste des manquants, et **l'écran** : le jour sans fiche
 qui montre quand même le sens de son prénom, sa source, ses métiers, ses portes, et
 qui nomme ce qui manque.
+
+---
+
+## §52 — Le champ du magazine : une seule question dans la première vue, et la revue avant de valider
+
+**La demande.** « Au-dessus du hero de l'accueil, en première vue, juste un champ
+de saisie pour générer notre magazine sur base d'infos à demander — ensuite on
+peaufine avec ce qu'on a déjà dans l'accueil. Ou alors en bas de la page d'accueil
+pour compléter les infos et générer un magazine qui permettrait de cocher ce qu'on
+garde et ce qu'on ne garde pas, et ce qu'on souhaite modifier, avant de le valider,
+pour que **la page profil soit la couverture d'un magazine et que chacun ait ses
+24 pages**. »
+
+**Ce qu'on en fait : deux entrées, un seul objet.** Le champ du haut et le
+formulaire du bas ne sont pas deux choses — c'est le même magazine, abordé deux
+fois. **En haut, une seule question**, parce qu'un visiteur qui arrive ne donnera
+pas vingt réponses ; **en bas, la finition**, pour celui qui a tout regardé et
+veut maintenant compléter. On ne remplit pas un formulaire à l'entrée du site : on
+**prend la seule information que le site ne peut pas deviner**, et le reste existe
+déjà.
+
+**Ce qui est construit (le haut).** `ChampDuMagazine` est désormais **la première
+chose du hero**, avant la question « Qui êtes-vous dans ce mariage ? ». Il demande
+**deux prénoms et une date** — et rien d'autre. Il accepte ce que les gens
+écrivent : l'esperluette, le « et », le « + », la virgule, le point médian, le
+slash (`prenomsDuChamp`, dans `lib/champDuMagazine.ts`). Un seul prénom passe
+aussi : le second sera demandé, **jamais inventé**.
+
+**Il n'y a pas de cul-de-sac.** Sans une seule réponse, le bouton devient « Voir
+le magazine du jour » : **365 magazines, un par jour**, celui d'aujourd'hui
+toujours ouvert. Le champ dit lui-même ce qui va se passer ensuite — *une question
+à la fois, puis on coche ce qu'on garde, ce qu'on modifie, ce qu'on retire*.
+
+**Pourquoi dans le hero, et pas dans une bande blanche au-dessus.** L'accueil
+s'ouvre par le générique (`OuvertureSite`), puis la barre du site, puis l'image
+plein cadre. Une bande blanche au-dessus du hero couperait cet enchaînement pour
+gagner trois centimètres. Le champ est donc **le premier élément du hero**, sur le
+verre : première vue, sans casser l'ouverture. **S'il faut le déplacer** — au-dessus
+du hero, ou en bas de page pour la finition — c'est **un bloc, une ligne**.
+
+**La passation, déjà en place.** Le champ envoie les réponses à la création avec
+l'état de route : l'onboarding reprend **prénoms et date déjà écrits** (« Déjà
+répondu dans l'accueil : Paul & Emma · 2027-06-12 »), la carte se remplit à droite,
+et **les cinq questions continuent une à une** — l'accès, les mariés, le jour, les
+événements, la musique. Ce qui est déjà répondu ne se redemande pas ; rien n'est
+déduit d'un prénom.
+
+**Ce qui reste à construire : la revue.** Entre la génération et l'éditeur, l'écran
+qui manque — **le magazine proposé, bloc par bloc**, avec trois gestes par bloc :
+**je garde**, **je modifie**, **je retire**. Puis **valider**. Trois règles :
+
+1. **Rien n'est publié avant la validation.** Ce qui sort de la revue est privé
+   jusque-là ; le profil ne devient public que validé (RGPD : on demande, on
+   n'expose pas).
+2. **Ce qui est proposé est déjà dans le site** — les 365 journées, les
+   couvertures, les cartes, les personnages, les métiers, les portes, les univers,
+   la playlist, les 24 pages. La revue n'invente rien : elle **assemble**, et
+   chaque bloc porte son **niveau de correspondance** (🟢 directe, 🔵 culturelle,
+   🟣 éditoriale assumée, ⚪ inspiration), donc ce qu'on garde reste **signé**.
+3. **Jumo explique.** La revue est le canevas : l'IA bienveillante qui **propose,
+   rectifie sans jugement et dit pourquoi** — et qui **demande l'autorisation**
+   avant d'aller chercher une carte, un magazine ou une page ailleurs.
+
+**Après la validation : le profil est la couverture.** La page d'une personne
+**est** la couverture de son magazine — et **chacun a ses 24 pages**. Ce n'est pas
+une promesse neuve : c'est la règle depuis le §39 et le §46 — **`PAGES_EDITION` =
+24**, une page par heure, **8 rubriques × 3**, même sommaire chaque jour, et la
+composition qui suit **vos** choix. La couverture suit l'heure : elle ouvre sur la
+page du moment, pas sur la une figée.
+
+**Ce qu'on ne fait pas.** Pas de génération qui invente (rien n'est écrit sans
+source) ; pas de formulaire à l'entrée qui décourage ; pas de second téléphone sur
+l'accueil ; pas de timeline en bas de l'accueil ; la charte ne bouge pas — le champ
+est en verre, dans les couleurs de la maison, sans emoji.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npx vite build` OK, `npm test` **178 /
+55 / 1194**. Les vérifications ajoutées : les six façons d'écrire deux prénoms et
+leurs résultats, **l'absence de fabrication** (un seul prénom n'en donne pas deux,
+un champ vide ne donne rien), le champ à l'écran (les deux champs, la date, le
+bouton du jour quand rien n'est répondu, la phrase des 365 magazines), et **sa
+place** : dans le hero, avant la question du hero.

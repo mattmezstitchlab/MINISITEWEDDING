@@ -11,6 +11,7 @@ import HeroCycle from '../components/HeroCycle';
 import PictoPersonnage from '../components/PictoPersonnage';
 import OuvertureSite from '../components/OuvertureSite';
 import BandeDuHero from '../components/BandeDuHero';
+import ChampDuMagazine from '../components/ChampDuMagazine';
 import { cartesDesDomaines, cartesDesPersonas, type CarteVivante } from '../lib/cartesVivantes';
 import { choisirCarte } from '../lib/selection';
 import {
@@ -215,6 +216,12 @@ export default function Landing() {
       <div id="hero" ref={surveillerLeHero}>
         <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id}>
           <div className="flex flex-col items-center text-center">
+            {/* LE CHAMP DU MAGAZINE : la première chose qu'on voit, avant le
+                titre. On demande le strict nécessaire — les deux prénoms, la
+                date — et le magazine commence. Sans réponse, c'est le magazine
+                du jour : il y a toujours quelque chose à ouvrir. */}
+            <ChampDuMagazine className="mb-8 sm:mb-10" />
+
             <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
 
             {/* LE TITRE DU MOMENT : la grande famille, et son picto */}
