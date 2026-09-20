@@ -284,7 +284,7 @@ structure est parfaite) :
 
 ---
 
-## 6. Les questions à valider
+## 6. Les questions du premier tour
 
 1. **YHWH** : je tiens la formulation « le Nom s'écrit et ne se dit pas ; la
    tradition contemplative le respire », je **sépare Yeshua du tétragramme**, et
@@ -300,3 +300,146 @@ structure est parfaite) :
    le glisser-déposer en plus — d'accord ?
 6. **L'ordre** : on commence par **le temps commun** (passe 49), parce que tout
    le reste s'y accroche ?
+
+
+---
+
+# Deuxième lecture — le canevas, LE MONDE AIME, l'alphabet, le footer
+
+> Ce que tu as tranché le 20 septembre, et ce que ça change dans l'audit.
+> Toujours **aucune ligne de code touchée** : on vérifie avant de poser.
+
+## 7.1 Ce que tu as décidé
+
+| Décision | Ce qu'elle remplace |
+|---|---|
+| **La page secrète est un canevas** : notes, gribouillis, moodboard, post-it, écriture — **tout est privé avec Jumo**, et **tout existe déjà sur le site** | une page de conversation avec l'agent |
+| **Jumo veille, sans juger** : un bienveillant, un confident ; il **rectifie** s'il est autorisé, il **remonte des cartes**, des magazines, des pages du magazine **en expliquant** | l'agent qui « range » seulement |
+| **LE MONDE AIME** : au fil du temps, le journal d'une personne devient un journal, et **tous les journaux du monde fusionnent** en un seul, **passé dans toutes les langues** — et ce journal s'appelle **LE MONDE AIME** | un espace personnel |
+| **L'alphabet remplace YHWH** : une **grille de toutes les lettres**, sur laquelle chacun fait ce qu'il veut ; une **mosaïque de l'alphabet** sur l'accueil, **fruit de la fusion de tous les utilisateurs**, avec son texte descriptif et sa musique | les quatre lettres |
+| **La timeline est validée** — et elle **descend au footer**, au plus bas, **peut-être le footer lui-même** | — |
+
+## 7.2 « Il faut que tout existe déjà » — ce qui existe, bloc par bloc
+
+C'est la bonne exigence, et elle est presque tenue. Voici l'état exact, canevas
+par canevas :
+
+| Le bloc du canevas | Ce qui existe **déjà** | Ce qui manque |
+|---|---|---|
+| **Écrire une note** | le champ de texte du site (`editor/Row.tsx`, `textarea` partout) et **le texte privé du journal** (`journal.ts`) | la **surface libre** : on écrit là où on veut, pas dans un formulaire |
+| **Le post-it** | le **papier** : `CartePostale`, `Timbre`, `RsvpTicket`, `TicketCaisse` — le site sait fabriquer des **objets de papier** (dentelure, tampon, ombre, inclinaison) | le post-it **déplaçable** sur un canevas |
+| **Le gribouilli** | `PortraitStudio` **dessine déjà en SVG** à partir d'une graine ; `Timbre` et `TicketCaisse` aussi | la **capture du geste** (le trait qui suit le doigt) |
+| **Le moodboard** | la **bibliothèque d'images** (`localStore.media`, `MEDIA_SEED`), l'import d'images (recompressé), les visuels d'univers | le **mur d'images** qu'on compose |
+| **La couleur** | la palette du jeu (`accent` par univers), les deux fonds du studio (blanc / noir) | la couleur **libre** choisie par la personne (voir la charte, §3) |
+| **La musique** | `trackForText` (les **mots** donnent le morceau), `composerEdition` (FNV-1a : une **clé** donne une édition), le catalogue sonore | la musique **des couleurs** ; l'association forme → son |
+| **Jumo remonte une carte** | `cartesVivantes` (les mêmes cartes partout), `superHeros` (20 héros par palier), `HEROS` (14, opérationnels chaque jour) | le lien **carte → explication** dans le canevas |
+| **Jumo remonte une page du magazine** | `editionDuJour`, `pageFor`, `EditionSemaine` (24 pages), `aimeMagazine` (les couvertures), `magazine.ts` (34 articles), **`ouEstLeMot`** (le mot qu'on ouvre) | le fait de **citer une page** dans le canevas, avec sa raison |
+| **Le privé** | **la confidentialité à trois cibles** (`public` / `cercle` / `prive`), **le défaut privé**, la validation (`valider`, `pagesPubliques`) | — **rien** : c'est déjà écrit, et c'est le point le plus important |
+| **Le sceau** | le **timbre dentelé** et le **sceau rond**, le tampon « validé », les 31 documents, la fente | le **logo personnel** (voir §7.4) |
+
+**La seule vraie surprise, et elle est bonne** : l'architecture du journal est
+**déjà** celle d'un canevas — des blocs datés, une source, une cible de
+confidentialité, une validation. Le canevas n'est pas un autre objet : c'est la
+**surface** de ces blocs.
+
+## 7.3 LE MONDE AIME — le journal fusionné
+
+**Ce qui existe déjà, et c'est beaucoup** :
+
+- **Le comptoir partagé** : `terminalLive.ts` (`chargerLive`, `envoyerGeste`),
+  `liveRules.ts` (`Geste`, `appliquerGeste`, `gestesDuRecu`, `invitesAuComptoir`,
+  `gesteDepuis`), `server/live.js`, `api/wedding-live.js`, et la table `live`
+  dans `supabase/schema.sql`. **Le site sait déjà faire converger les gestes de
+  plusieurs personnes au même endroit** — c'est la mécanique exacte d'une fusion.
+- **Le journal** (`journal.ts`) : 11 sections, la date, la source, la cible.
+- **La règle** : `pagesPubliques()` — seul ce qui est **public** sort.
+
+**Ce qui manque, et qu'il faut regarder en face** :
+
+1. **Aucune langue étrangère n'existe dans le site.** Pas d'i18n, pas de fichier
+   de traduction : tout est écrit en français, en dur. C'est la plus grosse
+   brique de ton idée, et elle ne s'improvise pas. **Ma proposition** : le
+   journal s'écrit **dans la langue de la personne**, et c'est **Jumo qui
+   restitue** dans la langue du lecteur — **avec la mention « restitué par
+   l'agent »**, jamais en faisant passer une traduction pour l'original. La règle
+   `source-dite` l'exige, et c'est aussi ce qui protège le texte de quelqu'un.
+2. **Le consentement.** Une fusion mondiale ne peut prendre **que** ce qui est
+   `public` et **validé** — jamais le `cercle`, jamais le `prive`. Le canevas est
+   privé avec Jumo : **il n'entre dans LE MONDE AIME que s'il est publié**.
+3. **L'échelle.** Le comptoir tient aujourd'hui des compteurs par univers. Un
+   journal mondial demande un entrepôt (Supabase est là, `schema.sql` aussi) et
+   des **règles de conservation** (ce que la `revue-juridique.md` demande déjà).
+4. **Le rythme.** 24 pages par jour × 364 jours = **8 736 pages par personne et
+   par an**. On ne les stocke pas : on stocke **les gestes** (une sélection, une
+   forme, un mot), et **les pages se rejouent** — c'est déjà comme ça que
+   `composerEdition` fonctionne (une clé, une édition, la même à l'identique).
+   C'est la règle `meme-edition` qui rend le journal mondial possible.
+
+**Et le texte descriptif de l'œuvre**, « émotionnel mais vrai, réel, profond » :
+l'émotion ne se fabrique pas, elle se lit dans les faits. La description de la
+mosaïque dira **ce qui s'est réellement passé** : *« 4 128 lettres, 973 mains,
+19 langues, du 1ᵉʳ janvier à aujourd'hui — la couleur la plus posée est le bleu
+des jours de pluie. »* C'est vrai, c'est vérifiable, et c'est bouleversant
+**précisément parce que c'est vrai**.
+
+## 7.4 L'alphabet — et pourquoi c'est mieux que le tétragramme
+
+Tu as raison de changer. L'alphabet :
+
+- **n'a besoin d'aucune mise au point théologique** : il n'y a rien à vérifier,
+  rien à expliquer, personne qui puisse dire « ce n'est pas ça ». Le risque tombe
+  de lui-même, et le propos devient plus large ;
+- **marche pour toutes les langues** — ce qui est exactement la promesse de LE
+  MONDE AIME (un alphabet, plusieurs alphabets, une seule œuvre) ;
+- **est déjà graphique** : une grille de lettres est une **matrice** — on la
+  reconnaît avant de la lire, comme nos couvertures.
+
+**Comment je le tiens techniquement** : la grille et les lettres sont **un
+dessin** (SVG, comme `PortraitStudio`), pas du texte — donc **aucune police n'est
+touchée** (ta règle tient), et chaque lettre peut porter **la couleur, la forme
+et le son** de celui qui l'a travaillée. La mosaïque de l'accueil est la
+**somme** de ces lettres : au début, elle est faite de quelques-unes (les
+tiennes, celles de la maison) ; au fil du temps, du monde.
+
+**Deux questions** : **quels alphabets d'abord** (latin, puis grec, cyrillique,
+hébreu, arabe, chinois…), et la grille de l'accueil est-elle **le résultat de la
+fusion** (donc elle change à chaque visite) ou **une œuvre figée à une date** —
+je penche pour la seconde : **une œuvre datée**, qu'on peut citer, photographier,
+et dont on dit la source.
+
+## 7.5 La musique — ce qu'on peut dire, et ce qu'on ne dira pas
+
+Ce qui existe : `trackForText` (**les mots** donnent le morceau, dans une
+bibliothèque choisie) et `composerEdition` (une **clé** — les couleurs, la date,
+le prénom — donne une édition stable). Donc « musique basée sur les couleurs, les
+mots, le texte » est **déjà faisable**.
+
+Ce que je n'écrirai pas : « **vibrations** » au sens de mesure physique. On ne
+mesure aucune vibration : on **choisit** une musique à partir des couleurs et des
+mots, et **on le dit** (`source-dite`). La formulation juste : *« la musique est
+composée des couleurs et des mots de l'œuvre — un choix, assumé comme un choix. »*
+
+## 7.6 La timeline, dans le footer
+
+Le **SUPER FOOTER** existe déjà (`/footer`) : `#axes` (« Qui vous êtes » — les
+situations de vie), `#footer` (les 54 coches), `#wallet`, `#documents` (31). Deux
+façons de faire, et ce n'est pas la même chose :
+
+| Option | Ce que ça fait | Ce que ça touche |
+|---|---|---|
+| **A — une section `#temps` en bas du footer** | la timeline de la personne (ses gestes datés, ses cartes, ses pages, ses formes) posée **sous** `#documents` | rien de validé ne bouge : on ajoute un bloc |
+| **B — le footer devient la timeline** | les axes du footer deviennent **les chapitres du temps** (les situations de vie sont déjà, en soi, une chronologie : on arrive, on travaille, on se marie, on transmet) | on réécrit la structure du SUPER FOOTER (validé en passe 41) — c'est un choix fort, et il faut le vouloir |
+
+Je penche pour **A d'abord** (on ajoute le temps en bas), puis **B si l'axe se
+révèle juste** — parce que B est une décision de composition, pas de fonction.
+
+## 7.7 L'ordre des passes, révisé
+
+| Passe | Ce qu'elle construit | Pourquoi dans cet ordre |
+|---|---|---|
+| **49 — Le temps commun** | un seul journal du temps (`vows:temps`) : chaque geste **déjà** existant écrit une ligne datée (qui, quoi, quand, où) ; la timeline existante le lit | tout le reste s'y accroche : le canevas, le footer, la mosaïque, la fusion |
+| **50 — La timeline au footer** | l'option A : la section `#temps` en bas du SUPER FOOTER, nourrie par la passe 49 | la timeline existe déjà ; on la **rebranche** au lieu de la refaire |
+| **51 — Le canevas** | la page secrète : notes, post-it, gribouillis, moodboard, images, sons — **privé par défaut**, Jumo à côté qui propose (et ne juge pas) | c'est **la** page qui manque ; tout le reste lui donne sa matière |
+| **52 — Jumo** | la conversation, le rangement, la citation des cartes et des pages (« voici pourquoi celle-ci ») | il a besoin du canevas pour écrire, et du temps pour se souvenir |
+| **53 — L'alphabet et la mosaïque** | la grille des lettres, la lettre qu'on travaille, la mosaïque datée sur l'accueil, son texte et sa musique | il faut des lettres **avant** de faire une œuvre : elle vient après le canevas |
+| **54 — LE MONDE AIME** | la fusion (comptoir + entrepôt), la restitution en langue par Jumo, la page de l'œuvre | c'est le bout du chemin : ça demande des gens, des langues, et des règles |
