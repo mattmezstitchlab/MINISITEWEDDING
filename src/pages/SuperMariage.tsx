@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight, BadgeEuro, Check, Printer, RotateCcw, ScanBarcode, ShoppingCart, Sparkles, Store,
 } from 'lucide-react';
+import LogoSuperMariage from '../components/LogoSuperMariage';
 import TicketCaisse from '../components/TicketCaisse';
 import {
   MAGASIN, PACKAGES, PANIER_DEPART, RAYONS, TICKET_COUPLE,
@@ -112,8 +113,10 @@ export default function SuperMariage() {
             <Store size={12} /> Nouveau rayon
           </span>
 
+          {/* LE SOLEIL-CADRAN : le logo, en grand, au-dessus du nom. */}
+          <LogoSuperMariage taille={46} className="mt-5 text-white" />
           <h1
-            className="mt-5 max-w-[820px] font-black leading-[0.95] tracking-[-0.03em]"
+            className="mt-4 max-w-[820px] font-black leading-[0.95] tracking-[-0.03em]"
             style={{ fontSize: 'clamp(2.6rem, 7vw, 5.2rem)' }}
           >
             SuperMariage

@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
-  BookOpen, Check, ChevronRight, CircleHelp, Contrast, Download, Eye, House, Inbox,
+  BookOpen, ChevronRight, CircleHelp, Contrast, Download, House, Inbox,
   LogOut, Settings, User, Users,
 } from 'lucide-react';
-import { AIDE_PROFIL, MENU_PROFIL, SORTIE_PROFIL, rolesDuMenu, type ItemDeMenu } from '../lib/menuProfil';
+import { AIDE_PROFIL, MENU_PROFIL, SORTIE_PROFIL, type ItemDeMenu } from '../lib/menuProfil';
 import { definirPersonaCourant, usePersonaCourante } from '../lib/personaCourant';
 
 /**
  * LE BOUTON PROFIL — TOUT PART DE LÀ
  *
  * À droite de la barre, une seule chose : **le profil**. C'est lui qui ouvre le
- * menu du site — le vôtre — et c'est par lui qu'on **choisit son rôle**, et
- * qu'on regarde le site **en tant que quelqu'un d'autre**.
+ * menu du site — le vôtre. On a simplifié : le « voir en tant que » est parti,
+ * le temps de trouver le bon mécanisme final — le composeur porte l'essentiel.
  *
  * Les portes du Shop et du Magazine, elles, ne sont plus dans la barre : la nav
  * verticale les porte, sur toutes les pages, et elles suivent le rôle survolé.
@@ -33,7 +33,6 @@ const PICTOS: Record<string, typeof User> = {
 };
 
 export default function MenuProfil() {
-  const navigate = useNavigate();
   const moi = usePersonaCourante();
   const [ouvert, setOuvert] = useState(false);
   const boite = useRef<HTMLDivElement>(null);
@@ -54,13 +53,6 @@ export default function MenuProfil() {
       document.removeEventListener('keydown', surTouche);
     };
   }, [ouvert]);
-
-  /** Prendre un rôle : le site devient le sien, partout. */
-  const prendreLeRole = (id: string) => {
-    definirPersonaCourant(id);
-    setOuvert(false);
-    navigate('/');
-  };
 
   return (
     <div ref={boite} className="relative">
@@ -89,41 +81,8 @@ export default function MenuProfil() {
             </div>
           </div>
 
-          <Separateur />
-
-          {/* VOIR EN TANT QUE : on prend un rôle, et l'on devient lui. */}
-          <div className="flex items-center gap-3 px-4 pb-2 pt-3">
-            <Eye size={16} className="text-white/55" />
-            <span className="text-[13.5px] text-white/85">Voir en tant que</span>
-          </div>
-          <div className="px-4 pb-3">
-            {rolesDuMenu().map(({ titre, roles }) => (
-              <div key={titre.id} className="mt-2 first:mt-0">
-                <div className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-white/40">
-                  {titre.nom}
-                </div>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {roles.map((role) => (
-                    <button
-                      key={role.id}
-                      type="button"
-                      onClick={() => prendreLeRole(role.id)}
-                      aria-pressed={role.id === moi.id}
-                      className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11.5px] transition ${
-                        role.id === moi.id
-                          ? 'border-white/60 bg-white text-[#1F1F1E]'
-                          : 'border-white/12 text-white/75 hover:border-white/40 hover:text-white'
-                      }`}
-                    >
-                      {role.id === moi.id && <Check size={11} />}
-                      {role.nom.replace('SUPER ', '')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
+          {/* Le « voir en tant que » est retiré : on simplifie, le temps de
+              trouver le bon mécanisme final. */}
           <Separateur />
 
           {MENU_PROFIL.map((item) => (
@@ -138,19 +97,18 @@ export default function MenuProfil() {
 
           <Separateur />
 
-          <button
-            type="button"
+          <Link
+            to={SORTIE_PROFIL.to}
             role="menuitem"
             onClick={() => {
               definirPersonaCourant('maries');
               setOuvert(false);
-              navigate(SORTIE_PROFIL.to);
             }}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13.5px] text-white/85 transition hover:bg-white/8"
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13.5px] text-white/85 no-underline transition hover:bg-white/8"
           >
             <LogOut size={16} className="text-white/55" />
             {SORTIE_PROFIL.label}
-          </button>
+          </Link>
         </div>
       )}
     </div>

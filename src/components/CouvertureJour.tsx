@@ -8,6 +8,9 @@ import { photoDuPlan } from '../lib/photosDuMagazine';
  * vingt-quatre heures, une branche par heure de l'édition —, le nom du jour, et
  * la date en bas. Rien ne passe jamais sur la création.
  *
+ * Les typos sont **celles du site** : la police spatiale pour les titres, la
+ * mono pour les petites capitales — jamais une police que le site ne connaît pas.
+ *
  * Tout est en **SVG**, dessiné ici : rien à téléverser, rien à installer, et
  * **la même date donne toujours la même couverture**. Ce dessin n'est pas une
  * illustration posée sur une page : c'est la couverture, et elle est la même au
@@ -156,9 +159,10 @@ export default function CouvertureJour({
         y="88"
         textAnchor="middle"
         fill={encre}
-        fontFamily="Georgia, 'Times New Roman', serif"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Inter', 'Manrope', system-ui, sans-serif"
+        fontWeight="650"
         fontSize={titreLong ? 6.2 : 7.6}
-        letterSpacing="0.2"
+        letterSpacing="-0.1"
       >
         {couverture.titre}
       </text>
@@ -169,7 +173,8 @@ export default function CouvertureJour({
           textAnchor="middle"
           fill={encre}
           opacity="0.72"
-          fontFamily="Georgia, 'Times New Roman', serif"
+          fontFamily="-apple-system, BlinkMacSystemFont, 'Inter', 'Manrope', system-ui, sans-serif"
+          fontWeight="500"
           fontSize="3.2"
           fontStyle="italic"
         >

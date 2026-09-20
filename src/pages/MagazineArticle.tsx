@@ -91,13 +91,15 @@ export default function MagazineArticle() {
           moments du Jour J** — l'heure sur la carte, le morceau du moment, le
           cœur du public. Sur un guide, ce sont les univers, et l'on change
           d'article d'un clic. */}
-      <BandeDuHero
-        libelle={estUnivers ? 'Les moments du Jour J' : 'Changer d’univers'}
-        styleId={article.universeId ?? universTour ?? 'traditionnel'}
-        cartes={estUnivers ? moments : cartesDArticles}
-      />
+      <div id="moments">
+        <BandeDuHero
+          libelle={estUnivers ? 'Les moments du Jour J' : 'Changer d’univers'}
+          styleId={article.universeId ?? universTour ?? 'traditionnel'}
+          cartes={estUnivers ? moments : cartesDArticles}
+        />
+      </div>
 
-      <main className="py-12">
+      <main id="article" className="py-12">
         <div className="vp-page vp-page-read">
           {/* L'essentiel de l'article, en chiffres — le réflexe magazine */}
           <div className="grid gap-px overflow-hidden rounded-[20px] border border-black/8 bg-black/8 sm:grid-cols-2 lg:grid-cols-4">

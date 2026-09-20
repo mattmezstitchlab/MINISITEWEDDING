@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import LogoSuperMariage from './LogoSuperMariage';
 import MenuProfil from './MenuProfil';
 import { usePersonaSurvolee } from '../lib/personaCourant';
 import { NOM_DU_SITE } from '../lib/nomDuSite';
@@ -38,7 +39,9 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
         aria-label="La barre du site"
         className="fixed inset-x-0 top-3 z-50 flex items-center justify-between gap-3 px-4 sm:top-4 sm:px-7"
       >
-        <Link to="/" className="flex items-baseline gap-2">
+        <Link to="/" className="flex items-center gap-2">
+          {/* LE SOLEIL-CADRAN : le logo de SUPER MARIAGE, à côté du nom. */}
+          <LogoSuperMariage taille={19} className="shrink-0 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]" />
           <span
             data-nom={nom}
             className="vp-title text-[14px] font-bold italic tracking-[0.1em] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] transition-colors sm:text-[17px] sm:tracking-[0.14em]"

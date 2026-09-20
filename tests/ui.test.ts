@@ -48,6 +48,7 @@ import {
   type AttenduVisuel, type CandidatVisuel,
 } from '../src/lib/castingVisuels';
 import { MOMENTS_VISUELS } from '../src/lib/promptsVisuels';
+import { routeOutil } from '../src/lib/outilsDuDock';
 import { PHOTOS_LIVREES, photoDuPlan } from '../src/lib/photosDuMagazine';
 import CouvertureJour from '../src/components/CouvertureJour';
 import { couvertureDuJour } from '../src/lib/couvertureDuJour';
@@ -1623,7 +1624,7 @@ check('sans choix, on est les mariés', personaCourant(), 'maries');
 const dockDefaut = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/le-mariage/vegas'] }, createElement(BottomCapsuleNav as never)),
 );
-check('le dock porte le personnage', dockDefaut.includes(`aria-label="Entrer comme ${PERSONNAGES[0]!.nom}"`), true);
+check('le dock a son entrée stable : créer sa carte', dockDefaut.includes('aria-label="Créer sa carte"'), true);
 check(
   'et ses outils, un par un',
   PERSONNAGES[0]!.entrees.every((e) => dockDefaut.includes(e)),
@@ -1639,7 +1640,7 @@ const photo = PERSONNAGES.find((p) => p.id === 'photographe')!;
 const dockPhoto = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(BottomCapsuleNav as never)),
 );
-check('le dock suit le personnage', dockPhoto.includes(photo.nom) && dockPhoto.includes(`Entrer comme ${photo.nom}`), true);
+check('le dock suit le personnage par ses outils, pas par son bouton', dockPhoto.includes('aria-label="Créer sa carte"') && !dockPhoto.includes('Entrer comme'), true);
 check(
   'et montre ses outils à lui',
   photo.entrees.every((e) => dockPhoto.includes(e)),
@@ -1820,7 +1821,6 @@ check('chacune prise dans sa saison', lesQuatreSaisons().every((e) => e.saison.i
 
 const heroMagazine = revue.slice(0, revue.indexOf('</header>'));
 check('le magazine a un hero', revue.indexOf('</header>') > 0, true);
-check('il porte un visuel', /<img[^>]+src="\/images\/aime\//.test(heroMagazine), true);
 check('et le titre, au centre', heroMagazine.includes('SUPER MAGAZINE') && heroMagazine.includes('text-center'), true);
 check('les cartes magazine sont en dessous du hero', revue.indexOf(COUVERTURES[0]!.theme) > revue.indexOf('</header>'), true);
 check('les quatre saisons s’affichent en premier', revue.indexOf('Les quatre saisons') < revue.indexOf(COUVERTURES[0]!.theme), true);
@@ -1830,9 +1830,7 @@ check('le jour du magazine est là', revue.includes('Le jour du magazine'), true
 check('avec ses huit rubriques', RUBRIQUES.every((r) => revue.includes(`>${r}<`)), true);
 check('et les treize semaines de la saison', revue.includes('les treize semaines'), true);
 check('on peut relire au passé et au futur', ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => revue.includes(t)), true);
-check('le hero montre la création de la saison, adoucie en fond', (/<img[^>]+src="\/images\/aime\/[^"]+"[^>]+blur/.test(heroMagazine)), true);
 check('et le flux des jours, dedans', heroMagazine.includes('Le flux des jours'), true);
-check('le fond du hero est celui de la saison', heroMagazine.includes(saisonDeLaSemaine(editionDuMoment().numero).fond), true);
 check('le hero porte aussi la carte du moment', heroMagazine.includes(editionDuMoment().carte.nom), true);
 check('un joker ne dit pas de semaine', composerEdition({ numero: 53 }).carte.joker, true);
 check('et il a sa propre édition', composerEdition({ numero: 53 }).pages.length, PAGES_EDITION);
@@ -2232,7 +2230,8 @@ check(
 check('avec le compteur qui attend', MENU_PROFIL[1]!.badge, '1');
 check('et le raccourci des réglages', MENU_PROFIL[2]!.raccourci, '⌘ .');
 check('chaque entrée mène à une page du site', [...MENU_PROFIL, ...AIDE_PROFIL].every((i) => i.to.startsWith('/')), true);
-/* « Voir en tant que » : tous les rôles du site, rangés par titre. */
+/* Les rôles du site restent rangés par titre dans la lib — mais le menu ne les
+   affiche plus : le « voir en tant que » est retiré, on simplifie. */
 check('voir en tant que, un groupe par titre', rolesDuMenu().map((g) => g.titre.nom), TITRES.map((t) => t.nom));
 check(
   'et tous les rôles y sont',
@@ -2324,7 +2323,7 @@ const ancresAttendues: Record<string, string[]> = {
   footer: ['axe-statut', 'documents', 'footer'],
   univers: ['article', 'programme', 'carte-fidelite'],
   metier: ['playlist', 'ticket'],
-  article: ['article'],
+  article: ['article', 'moments'],
   shop: ['pieces', 'modes'],
   produit: ['details', 'similaires'],
   prestataire: ['editeur'],
@@ -3643,6 +3642,57 @@ check('l’écran de composition laisse passer', superComposition.includes('Pass
 check('l’accueil a sa section de magazine', accueil.includes('id="votre-magazine"'), true);
 check('et elle porte son titre', accueil.includes('Votre magazine, maintenant'), true);
 check('le composeur y est aussi', (accueil.match(/Ville de naissance/g) ?? []).length, 2);
+
+/* ---------------------------------------------------------------------------
+ * LA SIMPLIFICATION DU JOUR — LE MAGAZINE, LE LOGO, LE DOCK, LE MENU
+ *
+ * Le hero du magazine passe au noir, sans sous-titre, et le flux montre les
+ * couvertures — pas les personnages. Le soleil-cadran devient le logo de
+ * SUPER MARIAGE. Le dock du bas a son bouton stable et des outils qui mènent
+ * à des pages réelles. Et le « voir en tant que » se retire : on simplifie,
+ * le temps de trouver le bon mécanisme final.
+ */
+
+/* ——— LE MAGAZINE : HERO NOIR, SANS SOUS-TITRE, LA COUVERTURE À LA PLACE DU PERSONNAGE ——— */
+check('le hero du magazine n’a plus de sous-titre', revue.includes('Une couverture par jour'), false);
+check('et le rôle n’y est plus écrit non plus', heroMagazine.includes('Choisi pour'), false);
+check('le fond du hero est noir', heroMagazine.includes('bg-[#0B0C12]'), true);
+check('et ce n’est plus le visuel de la saison', heroMagazine.includes('object-cover blur'), false);
+check('le flux montre la couverture, pas le personnage', (flux.match(/AIME MAGAZINE/g) ?? []).length >= 2, true);
+check('le flux n’a plus de portrait de studio', flux.includes('Studio blanc') || flux.includes('Studio noir'), false);
+check('la couverture du flux garde sa marque', flux.includes('N°'), true);
+
+/* ——— LES TYPOS DES COUVERTURES SUIVENT LE DESIGN DU SITE ——— */
+check('la couverture prend la police du site', svgCouverture.includes('Inter'), true);
+check('et quitte Georgia', svgCouverture.includes('Georgia'), false);
+
+/* ——— LE SOLEIL-CADRAN : LE LOGO DE SUPER MARIAGE ——— */
+check('la barre du site porte le logo', chromeMetier.includes('Le soleil-cadran'), true);
+check('le pied aussi, partout', chromeAccueil.includes('Le soleil-cadran'), true);
+check('et la page du magasin', magasin.includes('Le soleil-cadran'), true);
+
+/* ——— LE DOCK : UN BOUTON BLANC STABLE, DES OUTILS QUI MÈNENT À DES PAGES RÉELLES ——— */
+check('le bouton blanc propose toujours de créer sa carte', chromeAccueil.includes('aria-label="Créer sa carte"'), true);
+check('et il ne change plus avec le rôle', chromeAccueil.includes('Entrer comme'), false);
+check('la playlist mène à la playlist de l’univers', routeOutil('Playlist', 'supermarche', 'maries'), '/le-mariage/supermarche#playlist');
+check('le planning mène au programme', routeOutil('Planning', 'supermarche', 'maries'), '/le-mariage/supermarche#programme');
+check('les invités mènent à la carte', routeOutil('Invités', 'supermarche', 'maries'), '/carte');
+check('les photos aussi', routeOutil('Photos', 'supermarche', 'maries'), '/carte');
+check('le lieu mène à la page de l’univers', routeOutil('Lieu', 'supermarche', 'maries'), '/le-mariage/supermarche');
+check('les papiers mènent à l’espace prestataire', routeOutil('Contrats et papiers', 'supermarche', 'maries'), '/prestataire');
+check('et la table mène au shop filtré', routeOutil('Menu', 'supermarche', 'photographe'), '/shop?role=photographe');
+check('la playlist de l’univers a bien son ancre', universBande.includes('id="playlist"'), true);
+check('et son programme aussi', universBande.includes('id="programme"'), true);
+
+/* ——— LES ANCRES DE L’ARTICLE SONT BIEN DANS LA PAGE DE L’ARTICLE ——— */
+check('la page de l’article porte son ancre à elle', pageArticle.includes('id="article"'), true);
+check('et celle des moments aussi', pageArticle.includes('id="moments"'), true);
+
+/* ——— LE « VOIR EN TANT QUE » EST RETIRÉ : ON SIMPLIFIE ——— */
+const menuFerme = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(MenuProfil as never)));
+check('le menu ne propose plus de voir en tant que', menuFerme.includes('Voir en tant que'), false);
+check('le bouton profil reste là', menuFerme.includes('aria-haspopup="menu"'), true);
+
 
 /* ------------------------------------------------------------------- bilan */
 

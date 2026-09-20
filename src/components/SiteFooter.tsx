@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import LogoSuperMariage from './LogoSuperMariage';
 import { ASSOCIATION, SIGNATURE_EDITEUR } from '../lib/charte';
 
 /**
@@ -25,8 +26,11 @@ export default function SiteFooter() {
     <footer className="border-t border-black/8 bg-white">
       <div className="vp-page grid gap-8 py-10 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] sm:items-start">
         <div>
-          <Link to="/" className="vp-title text-[17px] font-bold italic tracking-wider text-black/85 no-underline">
-            SUPER MARIAGE
+          <Link to="/" className="flex items-center gap-2 no-underline">
+            <LogoSuperMariage taille={20} className="shrink-0 text-black/80" />
+            <span className="vp-title text-[17px] font-bold italic tracking-wider text-black/85">
+              SUPER MARIAGE
+            </span>
           </Link>
           <p className="mt-3 max-w-[420px] text-[12.5px] leading-relaxed text-black/55">
             Mille mariages, jamais marié, pas d’enfants : ce magazine tient ce qu’il a vu.

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { JourDuMagazine } from '../lib/jourDuMagazine';
-import PortraitStudio from './PortraitStudio';
+import { couvertureDuJour } from '../lib/couvertureDuJour';
+import CouvertureJour from './CouvertureJour';
 
 /**
  * LE FLUX DES JOURS — ON GLISSE D'UN JOUR À L'AUTRE
@@ -90,14 +91,12 @@ export default function FluxDuJour({
                 type="button"
                 onClick={() => onOuvrir(jour)}
                 aria-label={`Ouvrir le magazine du jour — ${jour.nom}`}
-                className="rounded-[20px] transition hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                className="overflow-hidden rounded-[14px] transition hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                <PortraitStudio
-                  nom={jour.nom}
-                  date={jour.date}
-                  studio={jour.studio}
-                  saison={jour.saison}
-                />
+                {/* LA COUVERTURE DU JOUR — pas de personnage : c'est elle, le
+                    matériau. Le même dessin tient toutes les couvertures, et le
+                    swipe passera d'un jour à l'autre sur lui. */}
+                <CouvertureJour couverture={couvertureDuJour(jour.date)} largeur={240} />
               </button>
               <p className="text-center text-[12px] leading-relaxed text-white/75">
                 {jour.meteo.resume}

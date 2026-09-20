@@ -1,12 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  Camera, CalendarDays, ChevronLeft, ChevronRight, Clapperboard, Lightbulb, MapPin,
-  MessageCircle, Music2, ScrollText, Sparkles, Users, UtensilsCrossed,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Wand2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useControlesBande, usePersonaCourante } from '../lib/personaCourant';
 import { WEDDING_STYLES } from '../lib/weddingStyles';
-import PictoPersonnage from './PictoPersonnage';
+import { iconeOutil, routeOutil } from '../lib/outilsDuDock';
 
 /**
  * LA CAPSULE DU BAS — LE DOCK DU RÔLE
@@ -29,35 +26,7 @@ interface Outil {
   route: string;
 }
 
-/** Les mots d'un outil qui disent à quoi il sert : le picto suit. */
-const PICTOS: Array<[RegExp, LucideIcon]> = [
-  [/playlist|setlist|demande|régie|son\b/i, Music2],
-  [/photo|galerie|rush|film/i, Camera],
-  [/planning|horaire|date|alerte|agenda/i, CalendarDays],
-  [/invité|convive|équipe|part|famille|témoin/i, Users],
-  [/menu|gâteau|dessert|service|carte\b/i, UtensilsCrossed],
-  [/lieu|scène|piste|bar|stock|installation|trajet|nuit|voyage|livraison/i, MapPin],
-  [/contact|texte|discours|message/i, MessageCircle],
-  [/lumière|projecteur|éclairage/i, Lightbulb],
-  [/contrat|pièce|document|papier/i, ScrollText],
-  [/moment|souvenir|cérémonie/i, Clapperboard],
-];
 
-/** Le picto d'un outil : il vient de ce qu'il fait, jamais du hasard. */
-function iconeOutil(label: string): LucideIcon {
-  return PICTOS.find(([motif]) => motif.test(label))?.[1] ?? Sparkles;
-}
-
-/** Où mène un outil : la page qui porte le sujet, dans l'univers de la page. */
-function routeOutil(label: string, styleId: string, roleId: string): string {
-  const t = label.toLowerCase();
-  if (/invitation|ma part|souvenir/.test(t)) return '/carte';
-  if (/playlist|setlist|demande|régie|son\b/.test(t)) return `/le-mariage/${styleId}#bande-son`;
-  if (/photo|galerie|rush|film|moment/.test(t)) return '/magazine';
-  if (/contrat|pièce|document|papier/.test(t)) return '/prestataire';
-  if (/menu|gâteau|convive|service|carte\b|bar|stock/.test(t)) return `/shop?role=${roleId}`;
-  return `/le-mariage/${styleId}`;
-}
 
 export default function BottomCapsuleNav() {
   const navigate = useNavigate();
@@ -88,16 +57,17 @@ export default function BottomCapsuleNav() {
       )}
 
       <div className="no-scrollbar pointer-events-auto flex min-w-0 items-center gap-1 overflow-x-auto rounded-full border border-white/12 bg-[#0B0C12]/95 p-1.5 shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-        {/* Le rôle d'abord : son picto, puis ses outils — c'est lui qui donne
-            les pictos du dock, à la place de ceux du site. */}
+        {/* L'entrée du dock, toujours la même : **créer sa carte**. Le bouton ne
+            change plus avec le rôle — il dit une seule chose, et il y mène. Ce
+            qu'il deviendra ensuite se décidera une fois, et pour tout le site. */}
         <button
           type="button"
           onClick={() => navigate('/creer', { state: { roleId: persona.id } })}
-          aria-label={`Entrer comme ${persona.nom}`}
-          title={persona.nom}
+          aria-label="Créer sa carte"
+          title="Créer sa carte"
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#0B0C12] shadow-[0_6px_16px_rgba(0,0,0,0.45)] transition hover:scale-105 sm:h-10 sm:w-10"
         >
-          <PictoPersonnage picto={persona.picto} size={16} />
+          <Wand2 size={16} />
         </button>
         <span className="mx-1 h-6 w-px shrink-0 bg-white/15" aria-hidden="true" />
 

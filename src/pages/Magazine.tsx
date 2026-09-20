@@ -119,30 +119,16 @@ export default function Magazine() {
       {/* ————————— LE HERO : LE FLUX DES JOURS, ET LE TITRE AU CENTRE ————————— */}
       <header
         ref={surveiller}
-        className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden"
-        style={{ background: saison.fond }}
+        className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden bg-[#0B0C12]"
       >
-        {/* La création de la saison : le fond du hero, adouci pour rester un fond. */}
-        <img
-          src={saison.visuel}
-          alt=""
-          className="absolute inset-0 h-full w-full scale-110 object-cover blur-[12px] brightness-[0.4] saturate-[0.9]"
-        />
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/70" />
-
         <div className="vp-page relative flex flex-col items-center pb-6 pt-20 text-center text-white">
           <span className="vp-eyebrow !text-white/70">{MARQUE_MAGAZINE}</span>
           <h1
-            className="vp-title mt-4 text-center text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+            className="vp-title mt-4 text-center text-white"
             style={{ fontSize: 'clamp(2.1rem, 5vw, 3.6rem)', lineHeight: 1.04 }}
           >
             SUPER MAGAZINE
           </h1>
-          <p className="mt-3 text-[13px] text-white/70">
-            Une couverture par jour — {JEU_DE_54.length} numéros dans l’année, et 364 prénoms du calendrier.
-            {role ? ` Choisi pour ${role.nom}.` : ''}
-          </p>
 
           <div className="mt-6 w-full">
             <FluxDuJour

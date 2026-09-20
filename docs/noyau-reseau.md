@@ -2769,3 +2769,72 @@ l'entonnoir **dans l'ordre**, chaque tour sortant exactement le candidat qu'il d
 (le soir, le paysage, le rouge, la voiture), chaque élimination avec sa raison,
 **les deux images retenues à égalité, chacune répondant à son jour**, la décision
 qui raconte les tours, et le cas à vide (*le dessin garde sa place*).
+
+---
+
+## §58 — Simplifier : le magazine en noir, le soleil-cadran en logo, et le dock qui mène où il faut
+
+**Le retour.** « Nickel. Sur la page magazine : **supprime le sous-titre** en
+dessous de SUPER MAGAZINE, et **pour l'instant ne mets pas de personnage, ça
+fait moche**, et **le fond derrière, mets le noir**. Tout ce qu'il y a en
+dessous, il faut que ça reste, comme aperçu pour moi et toi — mais ça servira de
+construction à tous les magazines, on est bien d'accord. Le but, ce sera d'avoir
+**le système de swipe**, donc les autres éditions, les couv, c'est pas ça, mais
+on garde pour l'instant. Ce qui serait pas mal, c'est d'avoir **le soleil-cadran
+que tu as fait, pour que ce soit le logo de SUPER MARIAGE** — et surtout, **les
+typos sur les couv doivent respecter le design du site**. Attention, **les
+boutons du dock ne mènent pas tous là où il faut** ; et le dock du bas, **le
+bouton blanc à gauche change parfois et on ne comprend pas** — on définira bien
+ça ensuite. Et les **« vu en tant que », ce ne sera pas nécessaire** : pour
+l'instant, ne pas le mettre, sinon on va s'embrouiller. Là on simplifie, on a
+trouvé le mécanisme — il faut juste trouver le bon mécanisme final. »
+
+**On est bien d'accord** : ce qui reste sous le hero n'est pas du décor, c'est
+**le matériau de construction de tous les magazines** — les saisons, le jour
+ouvert, les éditions, le kiosque des 365, le profil du jour, les six temps, le
+chiffre, la mise en lumière. Tout cela tient, et le **swipe** passera dessus.
+
+**Le hero du magazine passe au noir.** Le sous-titre est parti, le visuel de
+saison aussi : **un fond noir**, la marque, le titre — rien d'autre. Et dans le
+flux, **la couverture remplace le personnage** : le même dessin tient toutes les
+couvertures, c'est lui qu'on feuillette, et c'est sur lui que le swipe se
+construira. Le personnage reviendra quand il sera prêt — par la photo, pas par
+le portrait de studio.
+
+**Les typos des couvertures suivent le design du site** : la police spatiale
+pour les titres (le même poids, le même resserrement que les titres du site), la
+mono pour les petites capitales — **plus jamais une police que le site ne
+connaît pas**.
+
+**Le soleil-cadran devient le logo de SUPER MARIAGE.** C'est le même dessin que
+la création des couvertures — vingt-quatre branches autour d'un disque, quatre
+d'entre elles plus marquées aux quatre temps de la journée. Il se pose **à côté
+du nom dans la barre du site**, **dans le pied, partout**, et **en tête de la
+page du magasin** — en `currentColor` : blanc sur le noir, noir sur le blanc.
+
+**Le dock mène où il faut, maintenant.** Les outils du dock du bas sont écrits
+une fois, dans `src/lib/outilsDuDock.ts`, et chaque outil mène **à la page qui
+porte réellement le sujet** : la musique → la page de l'univers, **à sa
+playlist** ; le planning → **au programme heure par heure** ; les invités et les
+photos → **la carte**, qui les porte ; les papiers → l'espace prestataire ; la
+table → le shop filtré. Les ancres manquantes sont posées : la page de l'article
+a maintenant **`#article` et `#moments`** — la nav verticale n'annonce plus une
+section qui n'existe pas.
+
+**Le bouton blanc du dock ne change plus.** Il proposait « entrer comme tel
+rôle », et son picto changeait avec le personnage — sans qu'on comprenne. Il dit
+maintenant **une seule chose : créer sa carte**, et il y mène. Ce qu'il
+deviendra dans le mécanisme final se décidera une fois, et pour tout le site.
+
+**Le « voir en tant que » est retiré du menu du profil.** On simplifie : le
+composeur porte l'essentiel, et les rôles se reverront quand le bon mécanisme
+final sera trouvé.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm test`
+**178 / 55 / 1361**. Vérifications ajoutées : le hero sans sous-titre et sur
+fond noir, le flux qui montre la couverture et plus le portrait, les typos du
+site sur les couvertures (et plus de Georgia), **le logo dans la barre, le pied
+et la page du magasin**, le bouton blanc stable (« Créer sa carte », et plus
+« Entrer comme »), **les sept routes des outils du dock**, les ancres de la
+playlist et du programme dans l'univers, les ancres de l'article dans la page de
+l'article, et le menu du profil sans « voir en tant que ».
