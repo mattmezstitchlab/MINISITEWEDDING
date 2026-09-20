@@ -135,6 +135,7 @@ import { couvertureDuJour } from '../src/lib/couvertureDuJour';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LaCaisse from '../src/pages/LaCaisse';
+import { fileDeLaFamille, lAgentFaitPasser, motDeLaFamille } from '../src/lib/agentDuTicket';
 import {
   CATÉGORIES_DU_TICKET,
   GROUPES_DU_TICKET,
@@ -2038,20 +2039,37 @@ check(
 );
 check('le papier est celui du magasin, au même format', portefeuillesDessai[0]!.papierLignes[0]!.label.length > 2, true);
 
-/* La page : une landing verticale, et la machine au centre du héros. */
+/* La page : la machine, seule, sur un fond blanc — et rien d'autre. */
+
 const rendreLeTicket = (url: string) =>
   renderToStaticMarkup(
     createElement(MemoryRouter, { initialEntries: [url] }, createElement(LaCaisse as never)),
   ).replace(/&amp;/g, '&');
 const ticketVide = rendreLeTicket('/');
 const ticketPlein = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}`);
+const ticketDuReçu = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}&ecran=ticket`);
+const ticketSansRien = rendreLeTicket('/?demande=zzz');
 
 check('on arrive sur le ticket', ticketVide.includes('data-page="ticket"'), true);
-check('et la page défile, comme une landing', ticketVide.includes('min-h-svh') && !ticketVide.includes('fixed inset-0'), true);
-check('les quatre temps de la page sont là', ['coche', 'jour', 'site', 'documents', 'ticket', 'portefeuilles'].every((t) => ticketVide.includes(`data-section`)) && ticketVide.includes('data-section="coche"') && ticketVide.includes('data-section="ticket"') && ticketVide.includes('data-section="portefeuilles"'), true);
+check(
+  'et la page ne défile plus : elle tient dans un écran',
+  ticketVide.includes('h-svh') && ticketVide.includes('overflow-hidden') && !ticketVide.includes('min-h-svh'),
+  true,
+);
+check(
+  'autour de la machine, un fond blanc — aucun visuel, aucun texte',
+  ticketVide.includes('bg-white') && !ticketVide.includes('data-visuel') && !ticketVide.includes('<img'),
+  true,
+);
+check(
+  'et plus rien à parcourir sous la machine',
+  /data-(section|hero|portefeuilles|catégorie)="?/.test(ticketVide),
+  false,
+);
 
-/* La machine de Ripple : le petit écran, les boutons ronds, et la fente. */
-check('la machine est au centre du héros', ticketVide.includes('data-machine="ripple"') && ticketVide.includes('data-hero="ticket"'), true);
+/* La machine de Ripple : l'écran, les deux touches, la fente, les ronds, le champ. */
+
+check('la machine est là, seule', ticketVide.includes('data-machine="ripple"'), true);
 check('son petit écran est là', ticketVide.includes('data-ecran="ripple"'), true);
 check('la fente aussi', ticketVide.includes('data-fente="vrai"'), true);
 check(
@@ -2066,25 +2084,123 @@ check(
   ),
   true,
 );
-check('et des boutons ronds pour les catégories', (ticketVide.match(/data-machine-catégorie=/g) ?? []).length > 0 && (ticketVide.match(/data-machine-famille=/g) ?? []).length, 3);
-check('l’écran dit l’heure, les convives, le total et le compte', ['data-hero-heure', 'data-hero-compte', 'data-hero-total'].every((a) => ticketVide.includes(a)), true);
-check('le visuel est derrière, les infos dessus', ticketVide.includes('data-visuel="couverture"') && ticketVide.includes('data-hero-noms="vrai"') && ticketVide.includes('Nora & Adam'), true);
-check('tous les 99 articles sont là, rangés par catégorie', (ticketVide.match(/data-ligne=/g) ?? []).length, LIGNES_DU_TICKET.length);
-check('et chaque catégorie a sa section', (ticketVide.match(/data-catégorie="/g) ?? []).length, CATÉGORIES_DU_TICKET.length);
-check('rien de coché : le papier est en cours, la fente muette', ticketVide.includes('Ticket en cours'), true);
-check('et les portefeuilles attendent', ticketVide.includes('data-portefeuilles="vides"') && ticketVide.includes('les portefeuilles attendent'), true);
-
-/* Ce qu’on coche : le papier se remplit, et les portefeuilles reçoivent. */
-check('l’adresse porte le caddie : le lien est le reçu', ticketPlein.includes('data-cochees="5"'), true);
-check('le papier s’imprime', ticketPlein.includes('Payé · merci') && /SM-\d\d-[A-Z0-9]{4}/.test(ticketPlein), true);
 check(
-  'chaque portefeuille reçoit le sien',
-  (ticketPlein.match(/data-portefeuille=/g) ?? []).length,
-  portefeuillesDesCoches(cochesDessai).length,
+  'et trois boutons ronds pour les familles',
+  (ticketVide.match(/data-machine-famille=/g) ?? []).length,
+  3,
 );
-check('et le porte à l’écran', ticketPlein.includes('data-portefeuilles="pleins"') && ticketPlein.includes('data-papier="metier"'), true);
-check('on peut emporter le reçu, l’imprimer, ou vider', ['emporter', 'imprimer', 'vider'].every((a) => ticketPlein.includes(`data-action="${a}"`)), true);
-check('et prendre tout un rayon d’un bouton', ticketPlein.includes('data-action="tout-le-rayon"'), true);
+check(
+  'deux boutons ronds ne portent jamais le même mot',
+  (() => {
+    const mots = [...ticketVide.matchAll(/data-rond-mot="([^"]+)"/g)].map((m) => m[1]!);
+    return mots.length === 3 && new Set(mots).size === mots.length;
+  })(),
+  true,
+);
+check(
+  '« votre site » n’est plus écrit deux fois',
+  (ticketVide.match(/VOTRE SITE/g) ?? []).length,
+  1,
+);
+check(
+  'et le mot d’un bouton rond respire : un mot par ligne, dans un cercle large',
+  (() => {
+    const cercles = [...ticketVide.matchAll(/data-machine-famille="[^"]+"[^>]*class="([^"]*)"/g)].map((m) => m[1]!);
+    return (
+      cercles.length === 3 &&
+      cercles.every((c) => c.includes('w-[78px]') && c.includes('px-2') && c.includes('leading-')) &&
+      [...ticketVide.matchAll(/<span class="block">([^<]+)<\/span>/g)].map((m) => m[1]).join(' ') ===
+        GROUPES_DU_TICKET.map((g) => g.mot).join(' ')
+    );
+  })(),
+  true,
+);
+check(
+  'deux touches rondes : on valide, ou on passe',
+  ticketVide.includes('data-touche="valider"') && ticketVide.includes('data-touche="passer"'),
+  true,
+);
+check(
+  'les touches sont sous l’écran, la fente en dessous',
+  ticketVide.indexOf('data-touche="valider"') < ticketVide.indexOf('data-fente="vrai"'),
+  true,
+);
+check(
+  'la rangée de boutons ronds est remontée, et le champ est dessous',
+  ticketVide.indexOf('data-boutons="familles"') < ticketVide.indexOf('data-ia="champ"'),
+  true,
+);
+check(
+  'le champ est là : on dit ce qu’on veut, et on envoie',
+  ticketVide.includes('data-ia="champ"') &&
+    ticketVide.includes('data-ia="envoyer"') &&
+    ticketVide.includes('dites ce qu’il vous faut'),
+  true,
+);
+check(
+  'rien à cocher en dehors de la machine : au repos, aucune ligne n’est offerte',
+  ticketVide.includes('data-ligne=') || ticketVide.includes('data-proposition='),
+  false,
+);
+check(
+  'l’écran dit toujours le compte et le total',
+  ticketVide.includes('data-écran-corps="repos"') && ticketVide.includes('0 LIGNE'),
+  true,
+);
+
+/* Le reçu, sur l'écran : le ticket entier, et où il part. */
+
+const portefeuillesDuReçu = portefeuillesDesCoches(cochesDessai);
+check('l’adresse porte le caddie : le lien est le reçu', ticketPlein.includes('data-cochees="5"'), true);
+check(
+  'le ticket entier s’ouvre sur l’écran',
+  ticketDuReçu.includes('data-écran="ticket"') &&
+    ticketDuReçu.includes('data-écran-corps="ticket"') &&
+    (ticketDuReçu.match(/data-ligne=/g) ?? []).length === cochesDessai.length,
+  true,
+);
+check(
+  'chaque portefeuille dit ses lignes et son total, dans l’écran',
+  portefeuillesDuReçu.every((t) =>
+    ticketDuReçu.includes(`data-portefeuille="${t.portefeuille}" data-lignes="${t.lignes.length}" data-total="${t.total}"`),
+  ),
+  true,
+);
+check('et le reçu s’emporte', ticketDuReçu.includes('data-action="emporter"'), true);
+check(
+  '✗ vide le ticket, ✓ revient aux propositions',
+  ticketDuReçu.includes('data-touche-mot="vider"') && ticketDuReçu.includes('data-touche-mot="retour"'),
+  true,
+);
+
+/* L’agent : il fait passer les choses à l’écran, une par une. */
+
+check(
+  'une demande fait venir ses lignes, et l’écran le dit',
+  ticketSansRien.includes('data-écran-corps="proposition"') && ticketSansRien.includes('JE FAIS PASSER TOUT'),
+  true,
+);
+check('« dîner » fait venir les menus', lAgentFaitPasser('un dîner pour vingt').lignes.some((l) => l.catégorie.startsWith('menu-')), true);
+check('et le meilleur d’abord : la ligne qui porte le mot', /d[iî]ner/i.test(lAgentFaitPasser('diner').lignes[0]!.label), true);
+check('la cérémonie fait venir les horaires', lAgentFaitPasser('la cérémonie').lignes.some((l) => l.catégorie === 'rayon-horaires'), true);
+check('les photos font venir les photographes', lAgentFaitPasser('des photos').lignes.some((l) => /photo/i.test(l.label)), true);
+check(
+  'l’agent ne propose jamais ce qui est déjà sur le ticket',
+  lAgentFaitPasser('diner', ['menu-super-essentiel']).lignes.every((l) => l.id !== 'menu-super-essentiel'),
+  true,
+);
+check('un mot qu’il ne connaît pas : il fait passer tout le magasin', lAgentFaitPasser('zzz').àVide, true);
+check('et sans une demande, il fait passer les 99 lignes', lAgentFaitPasser('').lignes.length, LIGNES_DU_TICKET.length);
+check(
+  'les trois familles font passer tout le catalogue, et rien que lui',
+  [fileDeLaFamille('jour').length, fileDeLaFamille('site').length, fileDeLaFamille('documents').length],
+  [48, 20, 31],
+);
+check('et une famille ne re-propose pas ce qui est pris', (() => {
+  const première = fileDeLaFamille('site')[0]!.id;
+  return fileDeLaFamille('site', [première]).every((l) => l.id !== première);
+})(), true);
+check('les familles portent les mots de l’écran', [motDeLaFamille('jour'), motDeLaFamille('site'), motDeLaFamille('documents')], ['LE JOUR J', 'VOTRE SITE', 'LES DOCUMENTS']);
 
 /* Le papier sort de la fente, et part : deux animations, deux `transform`. */
 check('le ticket sort de la fente', LePapierSortDeLaFente(), true);

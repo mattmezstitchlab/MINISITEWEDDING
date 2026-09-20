@@ -685,7 +685,7 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
 
 @keyframes vol-du-ticket {
   from { transform: translate3d(-50%, 0, 0) scale(1); opacity: 0.9; }
-  to   { transform: translate3d(calc(-50% + (var(--vol) - 2) * 19vw), 62svh, 0) scale(0.14); opacity: 0; }
+  to   { transform: translate3d(calc(-50% + (var(--vol) - 2) * 9vw), 34svh, 0) scale(0.2); opacity: 0; }
 }
 
 .vol-du-ticket {

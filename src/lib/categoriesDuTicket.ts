@@ -214,6 +214,15 @@ export function prixDuneLigne(ligne: LigneDuTicket): number {
   return ligne.incluse ? 0 : ligne.prix * (ligne.quantite ?? 1);
 }
 
+/** Combien de lignes prises, famille par famille : le compte des boutons ronds. */
+export function compteParFamille(cochées: string[]): Record<CatégorieDuTicket['groupe'], number> {
+  const compte = { jour: 0, site: 0, documents: 0 };
+  CATÉGORIES_DU_TICKET.forEach((c) => {
+    compte[c.groupe] += c.lignes.filter((l) => cochées.includes(l.id)).length;
+  });
+  return compte;
+}
+
 /** Combien de lignes, par catégorie : ce que la liste affiche à droite du mot. */
 export function compteParCatégorie(cochées: string[]): Record<string, number> {
   const compte: Record<string, number> = {};

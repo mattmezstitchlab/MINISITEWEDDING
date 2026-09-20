@@ -1,33 +1,45 @@
+import { useState } from 'react';
+import { Check, CornerDownLeft, X } from 'lucide-react';
 import { OBJETS_DE_LA_FABRIQUE, pictoDuRipple } from '../lib/ripple';
-import { CATÉGORIES_DU_TICKET, GROUPES_DU_TICKET } from '../lib/categoriesDuTicket';
+import {
+  GROUPES_DU_TICKET,
+  type CatégorieDuTicket,
+  type LigneDuTicket,
+} from '../lib/categoriesDuTicket';
+import { motDeLaFamille } from '../lib/agentDuTicket';
+import { motDuPortefeuille } from '../lib/portefeuille';
 import { euros } from '../lib/superMariage';
 
-/* LA MACHINE — LE PETIT ÉCRAN, LES BOUTONS RONDS, ET LA FENTE
+/* LA MACHINE — L'ÉCRAN, LA FENTE, LES BOUTONS RONDS, ET LE CHAMP
  *
- * C'est la machine de Ripple, au centre du héros : un petit écran qui dit où
- * l'on en est, des **boutons ronds** — les objets du Ripple (reçu, carte,
- * timbre, tampon, ticket, avion, sticker) **et les catégories** — et par-dessus
- * tout, **la fente** : c'est de là que le ticket sort.
+ * Il n'y a plus qu'un objet sur la page, et il tient dans un écran. **Tout ce
+ * qui se coche arrive par l'écran** : on appuie sur une famille, ou on écrit ce
+ * qu'on veut dans le champ du bas, et l'agent fait passer les lignes **une par
+ * une**. En face, deux touches rondes : **✓ on valide, ✗ on passe.**
  *
  * ```
- * ┌──────────────────────────────────┐
- * │ ┌──────────────────────────────┐ │  l'écran
- * │ │ SUPER MARIAGE      CAISSE 3  │ │
- * │ │ 22:00 · LE SOIR    64 CONVIVES│ │
- * │ │ > 22:17 · CÉRÉMONIE — RAYON 7 │ │
- * │ │ 7 LIGNES      TOTAL  5 472 €  │ │
- * │ └──────────────────────────────┘ │
- * │ ▬▬▬▬▬▬▬▬▬  LA FENTE  ▬▬▬▬▬▬▬▬▬▬ │
- * │        ┌────────────────┐        │  le ticket qui sort
- * │        │ 22:17 · CÉRÉM. │        │
- * │        └────────────────┘        │
- * │  (●)(✉)(♦)(◉)(▤)(✈)(★)           │  les boutons ronds : les objets
- * │  (LE JOUR J)(VOTRE SITE)(DOCS)   │  les boutons ronds : les familles
- * │  (HORAIRES)(CUISINE)(IMAGES)…    │  les boutons ronds : les catégories
- * └──────────────────────────────────┘
+ * ┌──────────────────────────────────────────┐
+ * │  SUPER MARIAGE       CAISSE 3 · 22:00    │
+ * │  VOUS VOULEZ : dîner            3 / 12   │   l'écran
+ * │  23:00 · Dîner — caisse 3                │
+ * │  LE JOUR J · HORAIRES                    │
+ * │  1 200 €          → le couple · les invités
+ * │  7 LIGNES                      5 472 €   │
+ * └──────────────────────────────────────────┘
+ *      ( ✓ valider )      ( ✗ passer )           les touches rondes
+ *  ══════════════ LA FENTE ══════════════         la fente
+ *        ┌──────────────────────┐                 le papier qui sort
+ *        └──────────────────────┘
+ *   (●)(✉)(♦)(◉)(▤)(✈)(★)                        les objets du Ripple
+ *   (LE JOUR J)(VOTRE SITE)(LES DOCUMENTS)        les familles
+ *   ┌──────────────────────────────┐  (→)        le champ
+ *   └──────────────────────────────┘
  * ```
  *
- * La machine ne décide de rien : elle montre l'état, elle rapporte les gestes.
+ * La machine ne décide de rien : elle montre ce que l'agent propose, elle
+ * rapporte les gestes, et **le papier sort de la fente** quand on valide.
+ * L'adresse, elle, est le reçu (`?coches=…`) — et la demande aussi
+ * (`?demande=…`).
  */
 
 export interface SortieDeLaFente {
@@ -36,89 +48,285 @@ export interface SortieDeLaFente {
   vers: string;
 }
 
+/** Ce que l'écran montre : une ligne, son rang dans la file, et pourquoi elle. */
+export interface PropositionDeLEcran {
+  ligne: LigneDuTicket;
+  /** Le mot de la demande qui l'a fait venir — `null` quand elle vient d'une famille. */
+  motif: string | null;
+  /** Le rang dans la file, et sa taille : « 3 / 12 ». */
+  rang: number;
+  taille: number;
+  /** D'où elle vient : sa famille, et sa catégorie. */
+  groupe: CatégorieDuTicket['groupe'];
+  catégorie: string;
+}
+
+/** La demande, telle que l'agent l'a entendue. */
+export interface DemandeEntendue {
+  /** Ce qu'on a écrit, mot pour mot. */
+  texte: string;
+  /** Les mots qu'il a vraiment entendus. */
+  mots: string[];
+  /** Il n'a rien trouvé : il fait passer le magasin entier. */
+  àVide: boolean;
+}
+
 export interface MachineDeRippleProps {
   /** L'heure du ticket, et son mot : « LE SOIR », « GOLDEN HOUR ». */
   heure: number;
-  lumiere: string;
-  /** Ce que l'écran annonce, ligne à ligne. */
+  /** Ce qui est pris, et ce que ça coûte. */
   lignes: number;
   total: number;
-  convives: number;
-  /** La catégorie ouverte, et ce qu'elle contient déjà. */
-  catégorie: string;
-  compte: Record<string, number>;
+  /** L'écran : les propositions de l'agent, ou le ticket entier. */
+  écran: 'propositions' | 'ticket';
+  /** Ce que l'agent propose maintenant — `null` quand il n'y a plus rien. */
+  proposition: PropositionDeLEcran | null;
+  /** La file est finie : tout a été passé. */
+  finie: boolean;
+  /** La demande entendue, quand il y en a une. */
+  demande: DemandeEntendue | null;
+  /** Le ticket, pour l'écran du même nom. */
+  ticket: LigneDuTicket[];
+  /** Les portefeuilles, comptés : ce qui part, et à qui. */
+  portefeuilles: Array<{ id: string; mot: string; marque: string; lignes: number; total: number }>;
+  /** Ce qui est déjà pris, famille par famille — le compte des boutons ronds. */
+  prises: Record<string, number>;
   /** Le mot du dernier geste — il s'affiche sur l'écran. */
-  mot: string | null;
-  /** Le papier qui sort de la fente, et les marques posées dessus. */
+  marche: string | null;
+  /** Le papier qui sort de la fente, et les marques posées sur le ticket. */
   sortie: SortieDeLaFente | null;
   marques: string[];
   /** Les gestes. */
-  onCatégorie: (id: string) => void;
+  onValider: () => void;
+  onPasser: () => void;
+  onFamille: (groupe: CatégorieDuTicket['groupe']) => void;
   onObjet: (id: string) => void;
+  onDemande: (texte: string) => void;
+  onRetirer: (id: string) => void;
+  onEmporter: () => void;
 }
 
-/** Ce que la machine compte dans une famille — la somme de ses lignes cochées. */
-function lignesPrisesDans(groupe: string, compte: Record<string, number>): number {
-  return CATÉGORIES_DU_TICKET.filter((c) => c.groupe === groupe).reduce((n, c) => n + (compte[c.id] ?? 0), 0);
+/** Le prix d'une ligne, écrit comme sur le papier — jamais autrement. */
+function prixDeLaLigne(ligne: LigneDuTicket): string {
+  return ligne.incluse ? 'inclus' : euros(ligne.prix * (ligne.quantite ?? 1));
 }
 
 export default function MachineDeRipple({
   heure,
-  lumiere,
   lignes,
   total,
-  convives,
-  catégorie,
-  compte,
-  mot,
+  écran,
+  proposition,
+  finie,
+  demande,
+  ticket,
+  portefeuilles,
+  prises,
+  marche,
   sortie,
   marques,
-  onCatégorie,
+  onValider,
+  onPasser,
+  onFamille,
   onObjet,
+  onDemande,
+  onRetirer,
+  onEmporter,
 }: MachineDeRippleProps) {
-  const ouverte = CATÉGORIES_DU_TICKET.find((c) => c.id === catégorie) ?? CATÉGORIES_DU_TICKET[0]!;
-  const catégoriesDuGroupe = CATÉGORIES_DU_TICKET.filter((c) => c.groupe === ouverte.groupe);
+  /** Ce qui est en train de s'écrire dans le champ : ça n'appartient qu'à l'écran. */
+  const [texte, setTexte] = useState('');
+
+  const auTicket = écran === 'ticket';
+  const motValider = auTicket ? 'retour' : 'valider';
+  const motPasser = auTicket ? 'vider' : 'passer';
+  const corps = auTicket ? 'ticket' : proposition ? 'proposition' : finie ? 'fin' : 'repos';
+
+  const envoyer = () => {
+    const propre = texte.trim();
+    if (!propre) return;
+    onDemande(propre);
+    setTexte('');
+  };
 
   return (
-    <div data-machine="ripple" className="relative w-full max-w-[560px]">
-      <div className="relative rounded-[26px] border border-white/12 bg-gradient-to-b from-[#1B1D24] to-[#0E1015] p-3 shadow-[0_40px_90px_rgba(0,0,0,0.65)] sm:p-4">
+    <div
+      data-machine="ripple"
+      className="relative w-full max-w-[420px] origin-center [@media(max-height:620px)]:scale-[0.86]"
+    >
+      <div className="relative rounded-[28px] border border-black/[0.06] bg-gradient-to-b from-[#1C1F27] to-[#0C0E13] p-3 shadow-[0_30px_60px_rgba(15,17,22,0.28)] sm:p-4">
         {/* ————————————————— LE PETIT ÉCRAN ————————————————— */}
         <div
           data-ecran="ripple"
-          className="rounded-[12px] border border-white/10 bg-[#06120C] px-3 py-2.5 font-mono text-[10.5px] leading-relaxed text-[#7DE2B0] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]"
+          className="flex h-[196px] flex-col rounded-[14px] border border-white/10 bg-[#06120C] px-3 py-2.5 font-mono text-[10.5px] leading-relaxed text-[#7DE2B0] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]"
         >
-          <span className="flex items-baseline justify-between gap-3 text-[#7DE2B0]/70">
+          <span className="flex items-baseline justify-between gap-3 text-[#7DE2B0]/60">
             <span className="uppercase tracking-[0.18em]">SUPER MARIAGE</span>
-            <span className="uppercase tracking-[0.18em]">CAISSE 3</span>
-          </span>
-          <span className="mt-0.5 flex items-baseline justify-between gap-3 text-[#7DE2B0]/50">
             <span className="uppercase tracking-[0.16em]">
-              {String(heure).padStart(2, '0')}:00 · {lumiere}
+              CAISSE 3 · {String(heure).padStart(2, '0')}:00
             </span>
-            <span className="uppercase tracking-[0.16em]">{convives} CONVIVES</span>
           </span>
 
-          {/* La dernière ligne cochée : c'est elle que la fente vient de sortir. */}
-          <span className="mt-1.5 block truncate text-[11.5px] text-[#7DE2B0]">
-            {'> '}
-            {sortie ? `${sortie.label} — ${sortie.prix}` : `> ${ouverte.mot} — cochez une ligne`}
-          </span>
-          <span className="block truncate text-[10px] text-[#7DE2B0]/45">
-            {sortie ? `▸ ${sortie.vers}` : `▸ ${ouverte.sous}`}
-          </span>
+          {/* Le corps de l'écran : une seule chose à la fois. */}
+          <div data-écran-corps={corps} className="mt-2 min-h-0 flex-1 overflow-hidden">
+            {corps === 'proposition' && proposition && (
+              <span className="block">
+                <span className="flex items-baseline justify-between gap-2 text-[9.5px] uppercase tracking-[0.14em] text-[#7DE2B0]/55">
+                  <span data-demande-mots={demande?.mots.join(',') ?? ''} className="truncate">
+                    {demande
+                      ? demande.àVide
+                        ? 'JE FAIS PASSER TOUT'
+                        : `VOUS VOULEZ : ${demande.mots.join(' · ')}`
+                      : 'LA MACHINE PROPOSE'}
+                  </span>
+                  <span className="shrink-0 tabular-nums" data-rang={proposition.rang} data-file={proposition.taille}>
+                    {proposition.rang} / {proposition.taille}
+                  </span>
+                </span>
 
-          <span className="mt-1.5 flex items-baseline justify-between gap-3 border-t border-[#7DE2B0]/20 pt-1.5">
+                <span
+                  data-proposition={proposition.ligne.id}
+                  data-vers={proposition.ligne.vers.join(',')}
+                  data-famille={proposition.ligne.famille}
+                  className="mt-1.5 line-clamp-2 block text-[13.5px] leading-[1.25] text-[#9BF3C6]"
+                >
+                  {proposition.ligne.label}
+                </span>
+                <span className="mt-0.5 block truncate text-[9px] uppercase tracking-[0.12em] text-[#7DE2B0]/45">
+                  {motDeLaFamille(proposition.groupe)} · {proposition.catégorie}
+                </span>
+                <span className="mt-1.5 flex items-baseline justify-between gap-2">
+                  <span className="text-[12px] tabular-nums">{prixDeLaLigne(proposition.ligne)}</span>
+                  <span className="truncate text-[9.5px] uppercase tracking-[0.1em] text-[#7DE2B0]/60">
+                    → {proposition.ligne.vers.map((p) => motDuPortefeuille(p)).join(' · ')}
+                  </span>
+                </span>
+                {proposition.motif && (
+                  <span className="mt-0.5 block truncate text-[9px] uppercase tracking-[0.12em] text-white/35">
+                    entendu : « {proposition.motif} »
+                  </span>
+                )}
+              </span>
+            )}
+
+            {corps === 'repos' && (
+              <span className="block">
+                <span className="block text-[12px] text-[#9BF3C6]">LE TICKET EST OUVERT</span>
+                <span className="mt-1 block text-[9.5px] uppercase leading-relaxed tracking-[0.12em] text-[#7DE2B0]/50">
+                  une famille, ou dites ce qu’il vous faut — l’agent fait passer, vous validez
+                </span>
+                {marche && (
+                  <span data-ecran-mot="vrai" className="mt-2 block truncate text-[9.5px] uppercase tracking-[0.14em] text-white/45">
+                    {marche}
+                  </span>
+                )}
+              </span>
+            )}
+
+            {corps === 'fin' && (
+              <span className="block">
+                <span className="block text-[12px] text-[#9BF3C6]">C’EST TOUT — RIEN D’AUTRE À PASSER</span>
+                <span className="mt-1 block text-[9.5px] uppercase leading-relaxed tracking-[0.12em] text-[#7DE2B0]/50">
+                  {demande ? `demande : ${demande.texte}` : 'la famille est passée en entier'}
+                </span>
+                <span className="mt-2 block text-[9.5px] uppercase tracking-[0.12em] text-[#7DE2B0]/60">
+                  ✓ pour garder ce qui est sur le ticket · ✗ pour tout vider
+                </span>
+              </span>
+            )}
+
+            {corps === 'ticket' && (
+              <span className="flex h-full flex-col">
+                <span className="flex items-baseline justify-between gap-2 text-[9.5px] uppercase tracking-[0.14em] text-[#7DE2B0]/55">
+                  <span>LE TICKET, ENTIER</span>
+                  <span className="tabular-nums">
+                    {lignes} LIGNE{lignes > 1 ? 'S' : ''}
+                  </span>
+                </span>
+                <span data-écran-liste="vrai" className="mt-1 min-h-0 flex-1 overflow-y-auto pr-1">
+                  {ticket.length === 0 ? (
+                    <span className="block text-[10px] uppercase tracking-[0.12em] text-[#7DE2B0]/40">
+                      rien encore — validez une proposition
+                    </span>
+                  ) : (
+                    ticket.map((ligne) => (
+                      <button
+                        key={ligne.id}
+                        type="button"
+                        data-ligne={ligne.id}
+                        data-cochee="true"
+                        data-famille={ligne.famille}
+                        data-prix={ligne.prix}
+                        data-vers={ligne.vers.join(',')}
+                        onClick={() => onRetirer(ligne.id)}
+                        className="flex w-full items-baseline justify-between gap-2 py-[1px] text-left text-[10.5px] text-[#9BF3C6]/85 transition hover:text-white"
+                      >
+                        <span className="truncate">{ligne.label}</span>
+                        <span className="shrink-0 tabular-nums text-[#7DE2B0]/60">{prixDeLaLigne(ligne)}</span>
+                      </button>
+                    ))
+                  )}
+                </span>
+                <span className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 border-t border-[#7DE2B0]/20 pt-1">
+                  {portefeuilles
+                    .filter((p) => p.lignes > 0)
+                    .map((p) => (
+                      <span
+                        key={p.id}
+                        data-portefeuille={p.id}
+                        data-lignes={p.lignes}
+                        data-total={p.total}
+                        className="text-[9px] uppercase tracking-[0.1em] text-[#7DE2B0]/60"
+                      >
+                        {p.marque} {p.mot} {p.lignes}
+                      </span>
+                    ))}
+                  {lignes > 0 && (
+                    <button
+                      type="button"
+                      data-action="emporter"
+                      onClick={onEmporter}
+                      className="ml-auto text-[9px] uppercase tracking-[0.12em] text-[#7DE2B0]/70 underline decoration-[#7DE2B0]/30 underline-offset-2 transition hover:text-white"
+                    >
+                      emporter
+                    </button>
+                  )}
+                </span>
+              </span>
+            )}
+          </div>
+
+          <span className="mt-2 flex items-baseline justify-between gap-3 border-t border-[#7DE2B0]/20 pt-1.5">
             <span className="uppercase tracking-[0.16em]">
               {lignes} LIGNE{lignes > 1 ? 'S' : ''}
             </span>
-            <span className="text-[13px] tracking-[0.06em]">{euros(total)}</span>
+            <span className="text-[13px] tabular-nums tracking-[0.06em]">{euros(total)}</span>
           </span>
+        </div>
 
-          {mot && (
-            <span data-ecran-mot="vrai" className="mt-0.5 block truncate text-[10px] uppercase tracking-[0.14em] text-white/55">
-              {mot}
-            </span>
-          )}
+        {/* ——————————————— LES DEUX TOUCHES RONDES ——————————————— */}
+        <div data-touches="vrai" className="mt-2.5 flex items-center justify-center gap-5">
+          <button
+            type="button"
+            data-touche="passer"
+            data-touche-mot={motPasser}
+            disabled={!auTicket && !proposition}
+            onClick={onPasser}
+            className="flex h-12 w-12 flex-col items-center justify-center gap-0.5 rounded-full border border-white/15 text-white/55 transition hover:border-white/50 hover:text-white disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:text-white/55"
+          >
+            <X size={14} />
+            <span className="font-mono text-[7.5px] uppercase tracking-[0.08em]">{motPasser}</span>
+          </button>
+          <button
+            type="button"
+            data-touche="valider"
+            data-touche-mot={motValider}
+            disabled={!auTicket && !proposition}
+            onClick={onValider}
+            className="flex h-12 w-12 flex-col items-center justify-center gap-0.5 rounded-full border border-[#00FF88]/60 bg-[#00FF88] text-black transition hover:brightness-110 disabled:border-white/15 disabled:bg-transparent disabled:text-white/25"
+          >
+            <Check size={15} />
+            <span className="font-mono text-[7.5px] uppercase tracking-[0.08em]">{motValider}</span>
+          </button>
         </div>
 
         {/* ————————————————— LA FENTE, ET LE TICKET QUI EN SORT ————————————————— */}
@@ -126,12 +334,12 @@ export default function MachineDeRipple({
           <span aria-hidden="true" className="absolute inset-x-8 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-[#00FF88]/25" />
         </div>
 
-        <div className="relative flex min-h-[62px] justify-center overflow-hidden pt-1">
+        <div className="relative flex h-[66px] justify-center overflow-hidden pt-1">
           {sortie && (
             <span
               data-presse="fente"
               data-presse-label={sortie.label}
-              className="presse-de-la-fente w-full max-w-[380px] rounded-b-[3px] bg-[#FFFEF7] px-3 py-2 font-mono text-[11px] text-black shadow-[0_18px_40px_rgba(0,0,0,0.5)]"
+              className="presse-de-la-fente w-full max-w-[330px] rounded-b-[3px] bg-[#FFFEF7] px-3 py-2 font-mono text-[11px] text-black shadow-[0_18px_40px_rgba(0,0,0,0.5)]"
             >
               <span className="flex items-baseline justify-between gap-3">
                 <span className="truncate font-bold uppercase tracking-[0.08em]">{sortie.label}</span>
@@ -145,11 +353,11 @@ export default function MachineDeRipple({
         </div>
 
         {/* ————————————————— LES BOUTONS RONDS : LES OBJETS ————————————————— */}
-        <div data-boutons="objets" className="mt-2 flex flex-wrap items-center justify-center gap-2">
+        <div data-boutons="objets" className="mt-1.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
           {OBJETS_DE_LA_FABRIQUE.map((objet) => {
             const picto = pictoDuRipple(objet.pictoParDefaut);
             const Icone = picto.Icone;
-            const posée = marques.includes(objet.id);
+            const posée = objet.id === 'ticket-caisse' ? auTicket : marques.includes(objet.id);
             return (
               <button
                 key={objet.id}
@@ -160,7 +368,7 @@ export default function MachineDeRipple({
                 title={objet.nom}
                 aria-label={`${objet.nom} — ${objet.sens}`}
                 onClick={() => onObjet(objet.id)}
-                className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full border transition sm:h-10 sm:w-10 ${
                   posée
                     ? 'border-transparent bg-[#00FF88] text-black'
                     : 'border-white/15 text-white/60 hover:border-white/45 hover:text-white'
@@ -173,60 +381,61 @@ export default function MachineDeRipple({
         </div>
 
         {/* ————————————————— LES BOUTONS RONDS : LES FAMILLES ————————————————— */}
-        <div data-boutons="familles" className="mt-3 flex flex-wrap items-center justify-center gap-2">
+        <div data-boutons="familles" className="mt-2.5 flex flex-wrap items-center justify-center gap-2.5">
           {GROUPES_DU_TICKET.map((groupe) => {
-            const ici = ouverte.groupe === groupe.id;
-            const prises = lignesPrisesDans(groupe.id, compte);
+            const compte = prises[groupe.id] ?? 0;
             return (
               <button
                 key={groupe.id}
                 type="button"
                 data-machine-famille={groupe.id}
-                data-actif={ici ? 'true' : 'false'}
-                onClick={() => onCatégorie(CATÉGORIES_DU_TICKET.find((c) => c.groupe === groupe.id)!.id)}
-                className={`flex h-14 w-14 flex-col items-center justify-center rounded-full border text-center font-mono text-[8px] uppercase leading-[1.15] tracking-[0.08em] transition sm:h-16 sm:w-16 sm:text-[9px] ${
-                  ici ? 'border-[#00FF88] text-white' : 'border-white/15 text-white/45 hover:border-white/40 hover:text-white/80'
-                }`}
+                data-rond-mot={groupe.mot}
+                data-actif={corps === 'proposition' && proposition?.groupe === groupe.id ? 'true' : 'false'}
+                data-prises={compte}
+                onClick={() => onFamille(groupe.id)}
+                className="relative flex h-[78px] w-[78px] flex-col items-center justify-center rounded-full border border-white/15 px-2 text-center font-mono text-[8.5px] uppercase leading-[1.3] tracking-[0.05em] text-white/55 transition hover:border-white/45 hover:text-white/90"
               >
-                {groupe.mot}
-                {prises > 0 && <span className="mt-0.5 text-[9px] normal-nums text-[#00FF88]">{prises}</span>}
+                {groupe.mot.split(' ').map((mot) => (
+                  <span key={mot} className="block">
+                    {mot}
+                  </span>
+                ))}
+                {compte > 0 && (
+                  <span className="absolute right-2 top-2 text-[8.5px] tabular-nums text-[#00FF88]">{compte}</span>
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* ————————————————— LES BOUTONS RONDS : LES CATÉGORIES ————————————————— */}
-        <div
-          data-boutons="catégories"
-          className="mt-2 flex flex-wrap items-center justify-center gap-1.5"
+        {/* ————————————————— LE CHAMP : ON DIT CE QU'ON VEUT ————————————————— */}
+        <form
+          data-ia="formulaire"
+          onSubmit={(evenement) => {
+            evenement.preventDefault();
+            envoyer();
+          }}
+          className="mt-3 flex items-center gap-2 rounded-full border border-white/15 bg-black/40 px-3 py-1.5 transition focus-within:border-white/45"
         >
-          {catégoriesDuGroupe.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              data-machine-catégorie={c.id}
-              data-actif={c.id === catégorie ? 'true' : 'false'}
-              data-compte={compte[c.id] ?? 0}
-              onClick={() => onCatégorie(c.id)}
-              className={`rounded-full border px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.1em] transition ${
-                c.id === catégorie
-                  ? 'border-white/70 bg-white/10 text-white'
-                  : 'border-white/12 text-white/45 hover:border-white/40 hover:text-white/85'
-              }`}
-            >
-              {c.mot}
-              {(compte[c.id] ?? 0) > 0 && <span className="ml-1 text-[#00FF88]">{(compte[c.id] ?? 0)}</span>}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Le pied de la machine : la marque, et rien d'autre. */}
-      <div className="mt-2 flex items-center justify-between px-1 font-mono text-[9px] uppercase tracking-[0.18em] text-white/30">
-        <span>RIPPLE · LA MACHINE</span>
-        <span>{marques.length > 0 ? `${marques.length} marque${marques.length > 1 ? 's' : ''}` : 'aucune marque'}</span>
+          <input
+            data-ia="champ"
+            value={texte}
+            onChange={(evenement) => setTexte(evenement.target.value)}
+            placeholder="dites ce qu’il vous faut"
+            aria-label="dites ce qu’il vous faut"
+            className="min-w-0 flex-1 bg-transparent font-mono text-[11px] uppercase tracking-[0.08em] text-white outline-none placeholder:text-white/30"
+          />
+          <button
+            type="submit"
+            data-ia="envoyer"
+            aria-label="faire passer"
+            disabled={!texte.trim()}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#00FF88] text-black transition hover:brightness-110 disabled:bg-white/10 disabled:text-white/30"
+          >
+            <CornerDownLeft size={14} />
+          </button>
+        </form>
       </div>
     </div>
   );
 }
-

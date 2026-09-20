@@ -48,8 +48,10 @@ export default function App() {
         <Suspense fallback={<PageFallback />}>
           <Routes>
             {/* ON ARRIVE SUR LE TICKET. Le produit est le spécialiste du ticket de
-                caisse : une liste de catégories à cocher, un visuel qui porte les
-                infos, un papier qui sort du haut de l'écran et part dans les
+                caisse, et la page ne défile plus : **la machine, seule, sur un
+                fond blanc**. Tout ce qui se coche arrive par son écran — une
+                famille, ou une demande écrite dans le champ — et l'on valide ou
+                l'on passe. Le papier sort de la fente et part dans les
                 portefeuilles. `?face=verso` montre le moteur, `?face=recto` rend
                 l'ancienne page d'accueil. */}
             <Route path="/" element={<FaceDuSite grille={<LaCaisse />} recto={<Landing />} monde="magasin" />} />

@@ -49,6 +49,11 @@ export const PORTEFEUILLES: PortefeuilleDéfini[] = [
   { id: 'metier', mot: 'les métiers', qui: 'leurs bons de commande', marque: '✳', papier: 'metier', exemplaires: '12' },
 ];
 
+/** Le mot d'un portefeuille, tel qu'il s'écrit partout : « le couple », « le DJ ». */
+export function motDuPortefeuille(id: Portefeuille): string {
+  return PORTEFEUILLES.find((p) => p.id === id)?.mot ?? id;
+}
+
 /** Un ticket, dans un portefeuille : son papier, ses lignes, son numéro. */
 export interface TicketAuPortefeuille {
   portefeuille: Portefeuille;

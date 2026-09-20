@@ -125,7 +125,8 @@ finis, privés de page. Trois d'entre eux méritent de revenir :
 
 ## 3. La page qui réunifie — **LA CAISSE** (`/caisse`)
 
-Construite ce tour. Un écran, deux moitiés, et rien d'autre.
+Première version de la caisse : un écran, deux moitiés, et rien d'autre. (Elle
+est devenue **la machine seule** au §6 : ce schéma dit d'où l'on vient.)
 
 ```
 ┌───────────────────────────────────────────┬──────────────────────┐
@@ -189,8 +190,7 @@ papier que le couple, l'invité, le DJ et le métier tiennent dans la main.
 
 Le produit faisait trop de choses à la fois. Il n'en fait plus qu'une :
 
-> **Une liste de catégories. On coche. Le ticket sort, et il part dans les
-> portefeuilles.**
+> **On coche. Le ticket sort de la fente, et il part dans les portefeuilles.**
 
 `/` — l'adresse d'entrée du site — est cette page. `/ticket` et `/caisse` la
 servent aussi. `?face=verso` montre le moteur, `?face=recto` rend l'ancienne
@@ -250,66 +250,105 @@ pour rien.
 Et les deux mouvements, en CSS pur (`src/index.css`), deux `transform`, aucune
 mesure :
 
-- **`presse-du-haut`** — le papier sort **par le haut de l'écran** en glissant ;
+- **`presse-de-la-fente`** — le papier sort **de la fente de la machine** en
+  glissant (c'est le nom actuel ; il s'appelait `presse-du-haut` du temps où le
+  ticket tombait du haut de l'écran) ;
 - **`vol-du-ticket`** — il repart en rétrécissant vers le portefeuille concerné,
-  et le portefeuille se met à jour.
+  qui se met à jour sur l'écran.
 
 ### Ce qui a disparu de cette page
 
 La grille dans la caisse, la barre de sélection, l'aperçu au survol, le panneau
-du verso, les cinq seuils de densité à comprendre. Il reste : **un visuel, une
-liste de catégories, des cases à cocher, un papier, cinq portefeuilles.**
+du verso, les cinq seuils de densité à comprendre. Il resta alors : **un visuel,
+une liste de catégories, des cases à cocher, un papier, cinq portefeuilles.**
+Depuis le §6, il reste encore moins : **une machine, son écran, et deux
+touches.**
 
 ---
 
-## 6. La landing verticale, et la machine au centre
+## 6. La machine, seule — l'agent passe, on valide
 
-La page ne se lit plus comme un tableau de bord : elle **défile comme une
-landing**, et elle tient en quatre temps.
+La page ne défile plus, et il n'y a plus rien autour : **un fond blanc, et la
+machine**. Tout ce qui se lit est sur son écran. C'est la correction demandée le
+20 septembre 2026 — « le problème c'est qu'on doit scroller », « met un fond
+blanc sans visuel et sans texte autour », « tout ce qui est cochable doit être
+dans la machine ».
 
-### Le héros : la machine de Ripple
-
-Au centre du héros, **la machine** — celle de Ripple, gardée telle quelle :
+### La machine, de haut en bas
 
 ```
-┌──────────────────────────────────────┐
-│ ┌──────────────────────────────────┐ │  LE PETIT ÉCRAN
-│ │ SUPER MARIAGE          CAISSE 3  │ │  il dit l'heure, les convives,
-│ │ 22:00 · LE SOIR       64 CONVIVES│ │  la dernière ligne, le compte,
-│ │ > 22:17 · CÉRÉMONIE — RAYON 7    │ │  et le total
-│ │ ▸ le couple · les invités        │ │
-│ │ 7 LIGNES              TOTAL 5 472 €│ │
-│ └──────────────────────────────────┘ │
-│ ▬▬▬▬▬▬▬▬▬  LA FENTE  ▬▬▬▬▬▬▬▬▬▬▬▬▬ │  LA FENTE
-│        ┌──────────────────┐          │  le papier en sort
-│        │ 22:17 · CÉRÉMONIE│          │  (presse-de-la-fente)
-│        └──────────────────┘          │
-│  (●)(✉)(♦)(◉)(▤)(✈)(★)               │  LES BOUTONS RONDS : LES OBJETS
-│  (LE JOUR J)(VOTRE SITE)(LES DOCS)   │  LES BOUTONS RONDS : LES FAMILLES
-│  (HORAIRES)(CUISINE)(IMAGES)…        │  LES BOUTONS RONDS : LES CATÉGORIES
-└──────────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│ ┌──────────────────────────────────────────┐ │  L'ÉCRAN
+│ │ SUPER MARIAGE          CAISSE 3 · 22:00  │ │  196 px, jamais plus :
+│ │ VOUS VOULEZ : dîner             3 / 12   │ │  il ne saute pas
+│ │ 23:00 · Dîner — caisse 3                 │ │
+│ │ LE JOUR J · CUISINE                      │ │
+│ │ 1 200 €        → le couple · les invités │ │
+│ │ 7 LIGNES                        5 472 €  │ │
+│ └──────────────────────────────────────────┘ │
+│        ( ✓ valider )   ( ✗ passer )          │  LES DEUX TOUCHES RONDES
+│ ════════════════ LA FENTE ════════════════   │  LA FENTE
+│        ┌──────────────────────┐              │  le papier en sort
+│        └──────────────────────┘              │  (presse-de-la-fente)
+│   (●)(✉)(♦)(◉)(▤)(✈)(★)                      │  LES OBJETS DU RIPPLE, gardés
+│   (LE JOUR J)(VOTRE SITE)(LES DOCUMENTS)     │  LES FAMILLES — un mot par ligne
+│   ┌────────────────────────────────┐  (→)    │  LE CHAMP
+│   │ dites ce qu'il vous faut       │         │  « un dîner pour vingt »
+│   └────────────────────────────────┘         │
+└──────────────────────────────────────────────┘
 ```
 
-- **les objets du Ripple sont gardés** (`OBJETS_DE_LA_FABRIQUE`) : le reçu, la
-  carte postale, le timbre, le tampon, le ticket spectacle, le billet d'avion,
-  le sticker. Un bouton rond = un objet. Le poser **marque le ticket** et
-  l'écran dit ce qu'il fait ;
-- **les catégories sont de nouvelles pastilles rondes** : trois familles
-  (LE JOUR J, VOTRE SITE, LES DOCUMENTS) puis les catégories de la famille
-  ouverte. Un clic choisit la catégorie **et fait défiler la page jusqu'à elle** ;
-- **la fente** : c'est de là que le ticket sort. Le papier qui émerge porte la
-  ligne cochée, son prix et les portefeuilles concernés ; puis il **vole** vers
-  eux (`vol-du-ticket`).
+- **les objets du Ripple sont gardés** (`OBJETS_DE_LA_FABRIQUE`), et ils
+  servent enfin : le **reçu** ouvre **le ticket entier sur l'écran** — la liste
+  des lignes, avec ce que chacune coûte et à qui elle part, et l'on retire d'un
+  clic celle qu'on ne veut plus ; les six autres **marquent le papier** (tampon,
+  timbre, carte postale, ticket spectacle, billet d'avion, sticker) et l'écran
+  dit ce qu'ils font ;
+- **les trois familles** sont trois boutons ronds — LE JOUR J, VOTRE SITE, LES
+  DOCUMENTS. Leur mot s'écrit **un mot par ligne** dans un cercle de 78 px : le
+  texte ne touche plus le bord. Le compte des lignes prises s'affiche dans le
+  coin, sans rien déplacer ;
+- **plus de doublon** : les catégories ne sont plus des pastilles rondes (elles
+  étaient le doublon de « VOTRE SITE »). Elles n'ont pas disparu : elles
+  arrivent **par l'écran** ;
+- **le champ** est en bas, sous la rangée : c'est là qu'on dit ce qu'on veut.
 
-### Les quatre temps
+### L'agent du ticket (`src/lib/agentDuTicket.ts`)
 
-1. **le héros** — le visuel du jour, les infos **dessus** (les noms, la date, le
-   lieu, les convives, l'heure, le total), et la machine au centre ;
-2. **on coche** — les catégories en sections : LE JOUR J (12 rayons + 3 menus),
-   VOTRE SITE (20 blocs), LES DOCUMENTS (31 pièces). 99 lignes ;
-3. **le ticket** — le papier entier, calculé, et les marques posées par les
-   boutons ronds ;
-4. **les portefeuilles** — le couple, les invités, la famille, le DJ, les
-   métiers : ce que chacun reçoit, et son papier.
+**Tout ce qui se coche arrive par l'écran**, et rien d'autre. Deux entrées, une
+seule sortie :
 
-`?face=verso` montre le moteur, `?face=recto` rend l'ancienne page d'accueil.
+1. **une famille** — `fileDeLaFamille('jour' | 'site' | 'documents')` rend ses
+   lignes, dans l'ordre du catalogue, sans celles qui sont déjà prises ;
+2. **une demande** — `lAgentFaitPasser(texte, prises)` range le catalogue par
+   mots : le mot exact, sa tige (les pluriels), et une petite table
+   d'**évocations** écrite à la main (« dîner » → menu, repas, table, traiteur).
+   Rien trouvé ? **Il fait passer tout le magasin** : jamais d'écran muet.
+
+En face, toujours la même chose : **une proposition, deux touches**.
+
+```
+✓ on valide  →  la ligne monte sur le ticket, le papier sort de la fente,
+                et il part vers ses portefeuilles (vol-du-ticket)
+✗ on passe   →  l'agent passe à la suivante
+```
+
+Quand la file est finie : `C'EST TOUT — RIEN D'AUTRE À PASSER`. Sur l'écran du
+ticket, les deux touches changent de mot : **✓ retour** aux propositions,
+**✗ vider** le ticket.
+
+### Ce qui a été retiré de la page, et pourquoi
+
+| Retiré | Pourquoi |
+| --- | --- |
+| le visuel du jour et les infos dessus | « un fond blanc sans visuel et sans texte pour l'instant » |
+| les sections à faire défiler (cocher, le ticket, les portefeuilles) | « on doit scroller » — tout ce qui se coche est **dans** la machine |
+| la rangée des catégories | c'était le doublon de « VOTRE SITE », et ça serrait le texte dans les cercles |
+| « tout prendre » d'un rayon | l'agent fait passer la famille entière : c'est la même chose, sans un bouton de plus |
+| emporter / imprimer / vider sous la page | **emporter** est dans l'écran du ticket, **vider** est la touche ✗ de ce même écran, **imprimer** n'était pas la machine |
+
+### L'adresse
+
+`?coches=…` reste le reçu. Elle porte aussi **la demande** (`?demande=diner`) et
+**l'écran** (`?ecran=ticket`) : un lien peut donc arriver avec le ticket ouvert
+sur les lignes d'un dîner.
