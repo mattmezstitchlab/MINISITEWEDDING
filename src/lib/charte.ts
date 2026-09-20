@@ -12,17 +12,21 @@
  * c'est aussi ce qui fait qu'un portrait envoyé par un inconnu peut passer en
  * couverture à côté de ceux d'un photographe.
  *
- * **Signé : l'éditeur du magazine.** Mille mariages, jamais marié, pas d'enfants —
+ * **Signé : le fondateur.** Le fondateur et créateur d'AIME®, et l'Association Le Monde
+ * Aime — mille mariages, jamais marié, pas d'enfants —
  * la crédibilité, ici, ne vient pas de ce qu'on a vécu : elle vient de
  * **ce qu'on a vu**, et de ce qu'on sait refaire. C'est écrit noir sur blanc, et
  * c'est le sens de ces règles : montrer qui l'on est par ce qu'on tient.
  */
 
-/** La signature du magazine — à nommer quand l'éditeur le décidera. */
-export const SIGNATURE_EDITEUR = 'L’ÉDITEUR';
+/** La signature du magazine. */
+export const SIGNATURE_EDITEUR = 'LE FONDATEUR ET CRÉATEUR D’AIME®';
+
+/** L'association qui porte le monde : elle signe avec lui. */
+export const ASSOCIATION = 'Association Le Monde Aime';
 
 /** Ce qu'on appelle « l'éditeur », en une phrase, pour le pied de page. */
-export const QUI_EDITE = 'Mille mariages, jamais marié, pas d’enfants : ce magazine tient ce qu’il a vu.';
+export const QUI_EDITE = `${SIGNATURE_EDITEUR} et l’${ASSOCIATION} — mille mariages, jamais marié, pas d’enfants : ce magazine tient ce qu’il a vu.`;
 
 export interface Regle {
   id: string;

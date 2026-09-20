@@ -1695,3 +1695,75 @@ accents, les prénoms qui reviennent deux fois, et ceux qui ne sont pas au
 calendrier ; la couverture le jour de sa fête, et seulement ce jour-là ; les
 opportunités qui s'allongent avec le palier ; le bloc qui se rend), `npm run
 build` OK.
+
+---
+
+## §43 — Le monde Aime : la signature, le SUPER JOURNAL, et l'agent
+
+**La signature.** Le magazine n'est plus signé « L'ÉDITEUR » : il est signé par le
+**FONDATEUR ET CRÉATEUR D'AIME®** et par l'**Association Le Monde Aime**
+(`src/lib/charte.ts` : `SIGNATURE_EDITEUR`, `ASSOCIATION`, `QUI_EDITE`). La
+crédibilité ne vient pas de ce qu'on a vécu : elle vient de **ce qu'on a vu**, et
+de ce qu'on sait refaire.
+
+**Le SUPER JOURNAL — la même architecture pour tout le monde.** Le magazine du
+jour est public ; le journal, lui, est **à soi** — et pourtant il a **exactement
+la même architecture** pour tous (`src/lib/journal.ts`, `SECTIONS`) : la
+couverture (le portrait de studio, le jour de la fête, le numéro), le sommaire,
+l'édito, **le jeu de cartes** (une photo par semaine qui devient la face de la
+carte), les notes, l'agenda, le mood, les rêves, les liens et les fichiers, la
+mémoire, la signature. **Le moindre bloc à la bonne place** : c'est ce qui permet
+de lire le journal de quelqu'un qu'on ne connaît pas, et de s'y retrouver.
+
+**JUMO, l'agent de la personne.** Le saint de son propre magazine : il connaît
+tout de celui qui écrit, il **retient**, et il **propose**. `ceQueJumoRetiendrait()`
+lit ce qu'on lui donne et **range** — un rêve va dans les rêves et reste privé,
+un lien va dans les liens, une disponibilité va dans l'agenda et se propose au
+cercle, un mood va dans le mood, une photo peut devenir la face de la carte de la
+semaine, le reste va dans les notes. **Il n'écrit jamais à la place de la
+personne : il propose, elle valide** (`valider()`).
+
+**La confidentialité, choisie, jamais subie** : **public** (tout le monde — le
+journal d'une personne se lit comme un magazine), **le cercle** (ceux qui sont
+alignés : le même jour, le même lieu, le même rôle), **privé** (soi seul et Jumo).
+**Le défaut est privé**, et rien ne devient public tout seul (`pagesPubliques()`).
+La leçon des produits qui ont appris à la place des gens : un journal qu'on n'a
+pas choisi de publier n'est pas un journal, c'est une fuite.
+
+**L'app GIGI, et ce qu'on en retient.** Gigi (Clara Gold, 2024) était une
+application de rencontre dont l'intelligence artificielle servait d'**entremetteuse** :
+elle apprenait le contexte de la personne pour proposer des rencontres. En 2025,
+la fondatrice a **arrêté le dating** et rebasculé le produit vers la mise en
+relation professionnelle ; l'application de rencontre a disparu **sans annonce
+formelle**, ses utilisateurs sans explication. Deux leçons, tenues ici :
+1. **un agent qui apprend le contexte vaut mieux qu'un agent qui vend des gens** —
+   chez nous, Jumo apprend pour **la personne elle-même**, pas pour la faire
+   matcher ;
+2. **ce qui se ferme doit se dire** — et ce qui se publie doit se valider. La
+   confidentialité par défaut, et la validation explicite, sont la réponse
+   directe à cette histoire.
+
+**SUPER SECRET** — la page où l'on parle à l'agent de tout et de rien (des infos,
+des fichiers, des liens, des moods, des confidences, des rêves) : elle garde en
+mémoire, apprend un peu à la fois, et **reconnaît ce qui pourrait être noté dans
+le journal**. Ce qui en sort a l'architecture du SUPER JOURNAL, et porte la cible
+de confidentialité que la personne a choisie. *(Le module de rangement et de
+validation est écrit et testé ; la page elle-même est le chantier suivant.)*
+
+**La page profil — le hero enchaîné.** Le hero d'une personne sera **la suite
+ordonnée de ses univers**, avec **les cartes associées aux cartes qu'elle a
+sélectionnées sur l'accueil** : chaque carte retenue entre dans son hero **dans
+l'ordre**, avec son visuel et sa carte de jeu. Sous le hero, **son manifeste**
+(déjà écrit), puis **sa section Univers**, suite de ses choix. Et dans la section
+**L'ÉDITEUR**, les **appareils** — ordinateur, iPad, iPhone — signalent **sur
+quoi la personne est connectée et ce qu'elle possède** : téléphone ou pas, tablette
+ou pas, donc **adresse fixe ou mobile**, ce qui dit beaucoup (et sert d'abord à
+**garantir l'affichage**, puis à faire **miroir** : disponibilités, rythme,
+présence). *(Chantier suivant, avec le branchement du profil réel.)*
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **759** (la
+signature du fondateur et de l'association ; les sections du journal dans l'ordre,
+chacune disant ce qu'elle contient ; les trois cibles de confidentialité et le
+défaut privé ; le rangement de Jumo — rêve, lien, disponibilité, mood, photo,
+notes — ; rien de public sans validation, et la publication quand la personne
+valide), `npm run build` OK.

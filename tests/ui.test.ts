@@ -77,7 +77,10 @@ import CouvertureSemaine from '../src/components/CouvertureSemaine';
 import FluxDuJour from '../src/components/FluxDuJour';
 import { HEURES } from '../src/lib/aimeMoteur';
 import PortraitStudio from '../src/components/PortraitStudio';
-import { CHARTE, QUI_EDITE, SIGNATURE_EDITEUR } from '../src/lib/charte';
+import { ASSOCIATION, CHARTE, QUI_EDITE, SIGNATURE_EDITEUR } from '../src/lib/charte';
+import {
+  CONFIDENTIALITES, SECTIONS, ceQueJumoRetiendrait, journalVierge, pagesPubliques, valider,
+} from '../src/lib/journal';
 import {
   PALIERS as PALIERS_LUMIERE, feteDuPrenom, joursDuPrenom, miseEnLumiere, profilDeBase,
 } from '../src/lib/miseEnLumiere';
@@ -1869,6 +1872,26 @@ check('et les autres jours, elle ne l’est pas', miseEnLumiere(profilComplet, n
 check('la lumière ouvre des opportunités, et elles grandissent avec le palier', miseEnLumiere(profilComplet).opportunites.length > miseEnLumiere(profilDeBase('Personne')).opportunites.length, true);
 check('sans portrait conforme, on ne monte pas : c’est le prix d’entrée', miseEnLumiere({ ...profilComplet, photoStudio: false }).palier.n, 1);
 check('le bloc se rend', renderToStaticMarkup(createElement(MiseEnLumiere, { profil: profilComplet })).includes('Les six paliers'), true);
+
+/* ————————— LE SUPER JOURNAL : LA MÊME ARCHITECTURE POUR TOUS ————————— */
+
+check('la signature est celle du fondateur', SIGNATURE_EDITEUR, 'LE FONDATEUR ET CRÉATEUR D’AIME®');
+check('et l’association signe avec lui', ASSOCIATION, 'Association Le Monde Aime');
+check('le fondateur est nommé dans le pourquoi', QUI_EDITE.includes('AIME®') && QUI_EDITE.includes('Le Monde Aime'), true);
+check('le journal a ses sections, dans l’ordre', SECTIONS.length >= 8, true);
+check('et la couverture ouvre, la signature ferme', SECTIONS[0]!.id, 'couverture');
+check('chaque section dit ce qu’elle contient', SECTIONS.every((x) => x.role.length > 15), true);
+check('le jeu de cartes y est : une photo par semaine', SECTIONS.some((x) => x.id === 'jeu' && x.role.includes('photo par semaine')), true);
+check('trois cibles de confidentialité', CONFIDENTIALITES.map((c) => c.id).join(','), 'public,cercle,prive');
+check('et le défaut est privé', SECTIONS.length > 0 && journalVierge('Matthieu', '2026-09-21').every((p) => p.cible === 'prive'), true);
+check('un rêve se range dans les rêves, et reste privé', ceQueJumoRetiendrait('j’ai rêvé d’une maison').section, 'reves');
+check('un lien se range dans les liens', ceQueJumoRetiendrait('voilà le http://exemple.fr du devis').section, 'liens');
+check('une disponibilité se range dans l’agenda, et se partage au cercle', ceQueJumoRetiendrait('je suis dispo samedi').cible, 'cercle');
+check('un mood se range dans le mood', ceQueJumoRetiendrait('je me sens fatigué aujourd’hui').section, 'mood');
+check('une photo peut devenir la face de la carte', ceQueJumoRetiendrait('ma photo de la semaine').section, 'jeu');
+check('le reste va dans les notes, et rien de plus', ceQueJumoRetiendrait('tiens, je pensais à ça').retenu.includes('notes'), true);
+check('rien ne devient public tout seul', pagesPubliques(journalVierge('Matthieu', '2026-09-21')).length, 0);
+check('la personne valide, et alors ça se publie', pagesPubliques([valider(journalVierge('Matthieu', '2026-09-21')[0]!, 'public')]).length, 1);
 
 check('la couverture de semaine est un composant', typeof CouvertureSemaine, 'function');
 check('et l’édition aussi', typeof EditionSemaine, 'function');
