@@ -146,6 +146,11 @@ export default function SuperRipple() {
                 Ripple en cours : {touches} endroits mis à jour en une seule saisie
               </p>
             )}
+            <p className="mt-4 max-w-[560px] font-mono text-[10.5px] leading-relaxed text-white/45">
+              LE PRINCIPE : rien n'est stocké en fichier. Un document qui arrive — un PDF, une
+              capture, un SMS — est <strong className="text-white/70">extrait (OCR), reconnu, puis
+              classé</strong>. Le fichier repart, l'information reste, rangée à sa place.
+            </p>
           </div>
         </div>
       </section>

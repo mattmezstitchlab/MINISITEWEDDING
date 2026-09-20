@@ -28,6 +28,7 @@ import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import { PISTES_DE_LANNEE, playlistDeLAnnee } from '../lib/playlistDeLAnnee';
 import SuperMariageTeaser from '../components/SuperMariageTeaser';
 import ComplementaryThemes from '../components/ComplementaryThemes';
+import CadranHero from '../components/CadranHero';
 
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
@@ -212,6 +213,10 @@ export default function Landing() {
 
       {/* Le header du site : la même barre que partout. */}
       <SiteHeader />
+
+      {/* LE CADRAN, DEVANT : la porte du concept. Le hero d'hier descend d'un
+          étage, juste en dessous. */}
+      <CadranHero />
 
       {/* LE HERO : QUI ÊTES-VOUS DANS CE MARIAGE ? */}
       <div id="hero" ref={surveillerLeHero}>

@@ -2109,6 +2109,7 @@ check('et chaque objet choisit son repère', pageFooter.includes('Repère Le re�
 check('le ticket porte le point zéro', pageFooter.includes('Point zéro'), true);
 check('elle dit qu’on ne fabrique pas d’acte', pageFooter.includes('on ne fabrique pas d’acte'), true);
 check('et le but : une saisie, tout se répercute', pageFooter.includes('gagner les années'), true);
+check('le principe : extraire, reconnaître, classer — jamais stocker', pageFooter.includes('extrait (OCR), reconnu, puis'), true);
 check('elle montre les axes', AXES_FOOTER.every((a) => pageFooter.includes(a.label)), true);
 check('et les entrées à cocher', pageFooter.includes('Intermittent·e du spectacle'), true);
 check('et les lignes qui se gardent partout', pageFooter.includes('Ce qui se garde partout'), true);
@@ -3705,6 +3706,16 @@ check('et son repère répond', repereDe('timbre'), 'timbre');
 
 /* Le header porte les grandes entrées du concept. */
 check('la nav du header annonce les grands cœurs', entete.includes('aria-label="Les grandes entrées"'), true);
+
+/* ——— LE CADRAN, AU CENTRE DE L'ACCUEIL : LA VOIX, LES RÔLES, LA VIDÉO ——— */
+
+check('le cadran ouvre l’accueil', accueil.includes('Le cadran du concept'), true);
+check('on peut le faire pivoter', ['Faire pivoter le cadran vers la gauche', 'Faire pivoter le cadran vers la droite'].every((f) => accueil.includes(f)), true);
+check('sans rôle, c’est la voix du concept', accueil.includes('Le centre du cadran — lancer la voix du concept'), true);
+check('et la voix se génère à part', accueil.includes('/audio/explication-concept.mp3'), true);
+check('la vidéo de présentation passe en fond', accueil.includes('/videos/presentation.mp4'), true);
+check('les rôles sont autour du cadran', ['Les mariés', 'Les prestataires', 'Les témoins'].every((r) => accueil.includes(r)), true);
+
 check('le magazine d’abord', ['SUPER MAGAZINE', 'LE MARIAGE', 'SUPER SHOP', 'SUPER RIPPLE'].every((m) => entete.includes(m)), true);
 
 /* La page SUPER RIPPLE se lit : le fond sombre tient, le voile clair est parti. */
