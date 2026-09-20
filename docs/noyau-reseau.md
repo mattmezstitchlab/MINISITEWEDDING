@@ -3036,3 +3036,35 @@ hero est gardé (il marche bien), et trois choses arrivent :
 
 Ça libère le SUPER SHOP de demain : le shop devient le magasin unique, et le
 ticket la façon d'y choisir.
+
+---
+
+## §64 — WEDDING OS : le bloc qui contient tout
+
+Le visuel généré ne convainc pas — tant mieux : l'idée née du bloc « objet
+unique » est plus grande. Le hero accueille désormais **Wedding OS**, un studio
+blanc centré (le design de l'éditeur du mini-site), inspiré du *système* de
+woblo mais pensé pour le grand public : pas une copie, mieux et compréhensible.
+
+**Le bloc :** une barre (logo, nom, bouton **Paramètres** dans le coin), une
+rangée de **pictos** — couverture, typos, couleurs, musiques, visuels,
+timeline, docs, objets, système — et **les champs qui se déplient selon ce
+qu'on touche** : curseurs (taille du titre, arrondi, espace), palette avec
+**pipette**, contraste affiché en ratio WCAG (AAA / AA / à revoir), morceaux
+qui s'écoutent vraiment, visuels des saisons, objets de la fabrique. À droite,
+**l'écran** : l'aperçu de la couverture qui répond à chaque réglage, en
+**Bureau, iPad ou Mobile** — sur ordinateur, la même taille que l'éditeur.
+
+**Le panneau Paramètres :** thème clair/sombre du bloc, appareil de l'aperçu,
+**ce qu'on garde comme règle** (cases à cocher), et l'accessibilité (textes
+plus gros, contraste renforcé, sans animations).
+
+**Le ménage qui va avec :** la nav du haut est retirée (le logo, le nom, le
+profil suffisent) ; les rôles ne tournent plus tout seuls dans le hero (le
+bouton profil ne défile plus) ; les anciennes portes de création — `/creer`,
+`/carte`, `/generer`, `/generation` — redirigent vers la source unique,
+`/ripple`. Une seule source pour régler et indiquer.
+
+**Ensuite, déjà dessiné :** que les réglages « gardés » deviennent vraiment la
+règle du site (le magazine s'habille avec), l'export du design system
+(Tailwind / JSON / DESIGN.md, comme un vrai outil), et les assets en un clic.

@@ -3705,18 +3705,20 @@ check('et son repère répond', repereDe('timbre'), 'timbre');
 /* ——— LA CAPSULE DE COMMANDE, LA LANGUETTE TIMELINE, LA NAV DU HEADER ——— */
 
 /* Le header porte les grandes entrées du concept. */
-check('la nav du header annonce les grands cœurs', entete.includes('aria-label="Les grandes entrées"'), true);
+check('la barre du haut ne porte plus de nav : le logo, le nom, le profil', entete.includes('Les grandes entrées'), false);
 
-/* ——— LE HERO DU CONCEPT : UN SEUL OBJET QUI RÉUNIT TOUT ——— */
+/* ——— WEDDING OS : LE BLOC QUI CONTIENT TOUT, AU CENTRE DU HERO ——— */
 
-check('le concept ouvre l’accueil sur un seul objet', accueil.includes('Un seul objet, qui réunit tout.'), true);
-check('avec le visuel du concept', accueil.includes('/images/concept-super-mariage.jpg'), true);
+check('le studio s’appelle Wedding OS', accueil.includes('WEDDING OS'), true);
+check('il ouvre le hero, centré', accueil.includes('Wedding OS.'), true);
+check('le bouton Paramètres est dans son coin', accueil.includes('Paramètres du studio'), true);
 check(
-  'l’objet unique prend toutes les formes',
-  ['Prendre la forme Le reçu', 'Prendre la forme La carte', 'Prendre la forme Le timbre', 'Prendre la forme Le tampon', 'Prendre la forme Le ticket', 'Prendre la forme Le sticker'].every((f) => accueil.includes(f)),
+  'les pictos déploient les réglages',
+  ['Régler la couverture', 'Régler les typos', 'Régler les couleurs', 'Régler les musiques', 'Régler les visuels', 'Régler la timeline', 'Régler les docs', 'Régler les objets', 'Régler le système'].every((t) => accueil.includes(t)),
   true,
 );
-check('et il porte le point zéro', accueil.includes('Le nom du point zéro'), true);
+check('des curseurs, pas des champs', accueil.includes('Taille du titre') && accueil.includes('Arrondi des cartes'), true);
+check('l’écran répond, en aperçu bureau', accueil.includes('aperçu bureau'), true);
 
 /* ——— LE SHOP UNIQUE : le grand filtre, les coches, le ticket ——— */
 
@@ -3725,7 +3727,7 @@ check('le grand filtre cherche une pièce', pageShop.includes('Chercher une piè
 check('les cartes produits se cochent', pageShop.includes('sur le ticket'), true);
 check('et le ticket attend ses coches', pageShop.includes('VOTRE TICKET'), true);
 
-check('le magazine d’abord', ['SUPER MAGAZINE', 'LE MARIAGE', 'SUPER SHOP', 'SUPER RIPPLE'].every((m) => entete.includes(m)), true);
+check('les rôles ne tournent plus tout seuls dans le profil', accueil.includes('5600'), false);
 
 /* La page SUPER RIPPLE se lit : le fond sombre tient, le voile clair est parti. */
 check('la page super ripple est sombre', pageFooter.includes('vp-env-dark'), true);

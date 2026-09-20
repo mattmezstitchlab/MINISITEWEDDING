@@ -7,8 +7,6 @@ import SiteChrome from './components/SiteChrome';
  * Chaque page est chargée avec gestion propre des routes.
  */
 import Landing from './pages/Landing';
-import Onboarding from './pages/Onboarding';
-import Generating from './pages/Generating';
 import Editor from './pages/Editor';
 import PublicSite from './pages/PublicSite';
 import Theater from './pages/Theater';
@@ -17,7 +15,6 @@ import MagazineArticle from './pages/MagazineArticle';
 import Shop from './pages/Shop';
 import ShopProduct from './pages/ShopProduct';
 import PreviewSite from './pages/PreviewSite';
-import CardStudio from './pages/CardStudio';
 import WeddingPeople from './pages/WeddingPeople';
 import Invitation from './pages/Invitation';
 import VendorStudio from './pages/VendorStudio';
@@ -61,8 +58,8 @@ export default function App() {
             <Route path="/magazine/:slug" element={<MagazineArticle />} />
             <Route path="/aime" element={<Aime />} />
             <Route path="/taxonomie" element={<Aime />} />
-            <Route path="/creer" element={<Onboarding />} />
-            <Route path="/carte" element={<CardStudio />} />
+            <Route path="/creer" element={<Navigate to="/ripple" replace />} />
+            <Route path="/carte" element={<Navigate to="/ripple" replace />} />
             {/* L'espace du prestataire : le même éditeur, dans la langue du métier. */}
             <Route path="/prestataire" element={<VendorStudio />} />
             <Route path="/parametres" element={<EditeurMiniSite />} />
@@ -81,8 +78,8 @@ export default function App() {
             <Route path="/profil/:slug" element={<PageProfil />} />
             <Route path="/mariage/:slug" element={<WeddingPeople />} />
             <Route path="/rejoindre/:slug" element={<Invitation />} />
-            <Route path="/generer" element={<Generating />} />
-            <Route path="/generation" element={<Generating />} />
+            <Route path="/generer" element={<Navigate to="/ripple" replace />} />
+            <Route path="/generation" element={<Navigate to="/ripple" replace />} />
             <Route path="/editeur/:id" element={<Editor />} />
             <Route path="/p/:slug" element={<PublicSite />} />
             {/* L'aperçu d'un mini-site : la même page que le site public, montée

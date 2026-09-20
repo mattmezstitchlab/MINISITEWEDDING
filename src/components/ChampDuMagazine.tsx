@@ -134,7 +134,7 @@ export default function ChampDuMagazine({ className = '' }: { className?: string
   /** Reprendre les questions du site, avec tout ce qui est déjà répondu. */
   const completer = () => {
     const [partner1 = '', partner2 = ''] = personnes.map((p) => p.prenom);
-    navigate('/creer', { state: { partner1, partner2, weddingDate: date, venue: lieu } });
+    navigate('/ripple');
   };
 
   /* ——————————————————— LE MAGAZINE EXISTE : SA COUVERTURE ——————————————————— */

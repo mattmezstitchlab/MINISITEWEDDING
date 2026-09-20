@@ -6,7 +6,6 @@ import {
   DOMAINES_PRESTATAIRES, PERSONNAGES, TITRES, VISUELS_DU_HERO, domainePrestataire,
   personnageParId, porteurDuDomaine,
 } from '../lib/personas';
-import { usePrefersReducedMotion } from '../lib/useReducedMotion';
 import HeroCycle from '../components/HeroCycle';
 import PictoPersonnage from '../components/PictoPersonnage';
 import OuvertureSite from '../components/OuvertureSite';
@@ -28,7 +27,7 @@ import DjPlaylistStudio from '../components/DjPlaylistStudio';
 import { PISTES_DE_LANNEE, playlistDeLAnnee } from '../lib/playlistDeLAnnee';
 import SuperMariageTeaser from '../components/SuperMariageTeaser';
 import ComplementaryThemes from '../components/ComplementaryThemes';
-import HeroConcept from '../components/HeroConcept';
+import WeddingOS from '../components/WeddingOS';
 
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
@@ -60,8 +59,7 @@ export default function Landing() {
   /** Un domaine ouvert : le hero montre ses métiers, et prend son nom. */
   const [domaineOuvert, setDomaineOuvert] = useState<string | null>(null);
   /** Un média occupe le hero : le défilé attend, la carte joue. */
-  const [lectureEnCours, setLectureEnCours] = useState(false);
-  const reduced = usePrefersReducedMotion();
+  const [, setLectureEnCours] = useState(false);
 
   const titre = TITRES[titreIndex] ?? TITRES[0]!;
   const domaine = domaineOuvert ? domainePrestataire(domaineOuvert) ?? null : null;
@@ -133,19 +131,6 @@ export default function Landing() {
   /** Les deux flèches du dock mènent **la bande à l'écran** : ici, les rôles. */
   const surveillerLeHero = useControlesDeBande('roles', { precedent, suivant });
 
-  /** Le défilé : les cartes d'un titre, puis le titre suivant. Il attend qu'on explore. */
-  useEffect(() => {
-    if (reduced || lectureEnCours || domaineOuvert) return;
-    const t = window.setTimeout(() => {
-      if (index + 1 < ids.length) setCarteIndex(index + 1);
-      else {
-        setTitreIndex((i) => (i + 1) % TITRES.length);
-        setCarteIndex(0);
-      }
-    }, 5600);
-    return () => window.clearTimeout(t);
-  }, [index, ids.length, domaineOuvert, reduced, lectureEnCours]);
-
   /** L'univers de la page : celui qui mène l'éditeur, la playlist et la bande. */
   const activeStyleOrFallback = selectedStyle ?? WEDDING_STYLES[0]!;
 
@@ -214,9 +199,26 @@ export default function Landing() {
       {/* Le header du site : la même barre que partout. */}
       <SiteHeader />
 
-      {/* LE CONCEPT, DEVANT : un seul objet qui réunit tout. Le hero d'hier
-          descend d'un étage, juste en dessous. */}
-      <HeroConcept />
+      {/* WEDDING OS, AU CENTRE : le bloc qui contient tout — le studio. */}
+      <section aria-label="Wedding OS" className="vp-page relative pb-10 pt-20">
+        <div className="flex flex-col items-center text-center">
+          <span className="vp-eyebrow">Le studio du concept</span>
+          <h1
+            className="vp-title mt-4 font-black leading-[1.02] tracking-[-0.03em]"
+            style={{ fontSize: 'clamp(2.1rem, 4.6vw, 3.5rem)' }}
+          >
+            Wedding OS.
+          </h1>
+          <p className="mt-4 max-w-[640px] text-[15px] leading-relaxed text-[#0B0C12]/70">
+            Un seul bloc pour régler tout le magazine — typos, couleurs, musiques, visuels,
+            timeline, docs, objets — et le voir répondre dans l'écran. Une seule source :
+            ce qui se règle ici se répercute partout.
+          </p>
+        </div>
+        <div className="mx-auto mt-10 max-w-[1080px]">
+          <WeddingOS />
+        </div>
+      </section>
 
       {/* LE HERO : QUI ÊTES-VOUS DANS CE MARIAGE ? */}
       <div id="hero" ref={surveillerLeHero}>
