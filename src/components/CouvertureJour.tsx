@@ -2,6 +2,9 @@ import type { CouvertureJour } from '../lib/couvertureDuJour';
 import { visuelsDuJour, type Visuel } from '../lib/visuelsDuMagazine';
 import { niveauxDuJour, type NiveauxDuJour } from '../lib/semaines';
 import { CHAPITRES } from '../lib/chapitres';
+import { partDeLHeure } from '../lib/moments';
+import { useTempsDeLaCapsule } from '../lib/capsuleCommande';
+import CadranDuMagazine from './CadranDuMagazine';
 
 /**
  * LA COUVERTURE D'UN JOUR — LE MAGAZINE DE SA SEMAINE, ET SON CHAPITRE
@@ -17,6 +20,11 @@ import { CHAPITRES } from '../lib/chapitres';
  * **son** chapitre : le 21 septembre est *Magazine 38, chapitre 04*. C'est la
  * règle du nouveau modèle, et elle se voit sur la couverture elle-même :
  * la marque, le numéro du magazine, le titre du jour, le chapitre, la date.
+ *
+ * **Le cadran, au centre, porte les aiguilles** : la grande montre **l'heure
+ * qu'on regarde** — celle de la capsule temporelle du bas, ou l'heure réelle —,
+ * et la petite montre **le chapitre** par lequel la date entre dans le magazine.
+ * Un clic sur « le soir » dans le dock, et l'aiguille se pose à 20 h.
  *
  * Les typos sont **celles du site** : la police spatiale pour les titres, la
  * mono pour les petites capitales — jamais une police que le site ne connaît pas.
@@ -54,6 +62,25 @@ interface CouvertureJourProps {
   photo?: string | null;
   /** Les trois niveaux — jour, magazine, chapitre — écrits sur la couverture. */
   niveaux?: NiveauxDuJour;
+  /**
+   * L'heure que montre la grande aiguille. Par défaut, **celle de la capsule** :
+   * le moment choisi dans le dock (l'aube 6 h, le midi 12 h, le soir 20 h), ou
+   * l'heure réelle quand aucun moment n'est choisi.
+   */
+  heure?: number;
+}
+
+/**
+ * **L'HEURE, DITE COMME ON LA LIT** : « 20 H — LE SOIR ». C'est la légende du
+ * cadran, et c'est le lien visible avec la capsule du bas : on clique « le
+ * soir », la légende dit « 20 H — LE SOIR », et l'aiguille s'y pose.
+ */
+export function legendeDeLHeure(heure: number): string {
+  const h = Math.floor(heure) % 24;
+  const minutes = Math.round((heure - Math.floor(heure)) * 60);
+  const part = partDeLHeure(h);
+  const heureEcr = minutes === 0 ? `${h} H` : `${h} H ${String(minutes).padStart(2, '0')}`;
+  return `${heureEcr} — ${part.nom.toUpperCase()}`;
 }
 
 /** La date d'une couverture, à midi — jamais décalée d'un jour. */
@@ -70,11 +97,15 @@ export default function CouvertureJour({
   fond = 'semaine',
   photo,
   niveaux,
+  heure,
 }: CouvertureJourProps) {
   const hauteur = Math.round((largeur * 7) / 5);
   const { fond: fondDuJour, encre, branches } = couverture;
   const date = dateDeLaCouverture(couverture);
   const etages = niveaux ?? niveauxDuJour(date);
+  /** Le temps de la capsule : l'aiguille s'y pose, et la légende le dit. */
+  const capsule = useTempsDeLaCapsule();
+  const heureAffichee = heure ?? capsule.heure;
   const duJour = visuel === undefined ? visuelsDuJour(date) : null;
   /** L'image du fond : celle qu'on nous donne, ou celle que la cascade a trouvée. */
   const image =
@@ -85,34 +116,10 @@ export default function CouvertureJour({
         : null;
   const centreX = 50;
   const centreY = 47;
-  const rayonInterieur = 11;
-  const rayonMaximum = 27;
   const titreLong = couverture.titre.length > 16;
   const chapitre = CHAPITRES[etages.numeroDeChapitre - 1]!;
+  const accentDuMagazine = visuelsDuJour(date).magazine.palette.accent;
 
-
-  /** Une branche : du bord du disque vers l'extérieur, à son heure. */
-  const branche = (longueur: number, heure: number, eclatante: boolean) => {
-    const angle = ((heure / 24) * 360 - 90) * (Math.PI / 180);
-    const x1 = centreX + Math.cos(angle) * rayonInterieur;
-    const y1 = centreY + Math.sin(angle) * rayonInterieur;
-    const r2 = rayonInterieur + longueur * (rayonMaximum - rayonInterieur);
-    const x2 = centreX + Math.cos(angle) * r2;
-    const y2 = centreY + Math.sin(angle) * r2;
-    return (
-      <line
-        key={heure}
-        x1={x1}
-        y1={y1}
-        x2={x2}
-        y2={y2}
-        stroke={encre}
-        strokeWidth={eclatante ? 1.5 : 0.8}
-        strokeLinecap="round"
-        opacity={eclatante ? 0.95 : 0.55}
-      />
-    );
-  };
 
   return (
     <svg
@@ -185,19 +192,22 @@ export default function CouvertureJour({
         </>
       )}
 
-      {/* LA CRÉATION, AU CENTRE : le cadran des vingt-quatre heures. */}
-      <g>
-        <circle cx={centreX} cy={centreY} r={rayonMaximum + 3} fill="none" stroke={encre} strokeWidth="0.3" opacity="0.25" />
-        <circle cx={centreX} cy={centreY} r={rayonInterieur - 3.5} fill="none" stroke={encre} strokeWidth="0.3" opacity="0.35" />
-        {branches.map((b) => branche(b.longueur, b.heure, b.eclatante))}
-        {/* Le centre : le disque du jour, et sa moitié — le jour et la nuit. */}
-        <path
-          d={`M ${centreX - (rayonInterieur - 5)} ${centreY} A ${rayonInterieur - 5} ${rayonInterieur - 5} 0 0 1 ${centreX + (rayonInterieur - 5)} ${centreY} Z`}
-          fill={encre}
-          opacity="0.85"
+      {/* LA CRÉATION, AU CENTRE : LE CADRAN, AVEC SES AIGUILLES.
+          Le tour = les sept chapitres du magazine ; les branches = les heures du
+          jour ; la grande aiguille = l'heure de la capsule temporelle ; la petite
+          = le chapitre où la date entre. */}
+      <svg x={centreX - 30} y={centreY - 30} width="60" height="60" viewBox="0 0 100 100">
+        <CadranDuMagazine
+          heure={heureAffichee}
+          chapitre={etages.numeroDeChapitre}
+          fond={fondDuJour}
+          encre={encre}
+          accent={accentDuMagazine}
+          branches={branches}
+          legende={legendeDeLHeure(heureAffichee)}
+          vignette={vignette}
         />
-        <circle cx={centreX} cy={centreY} r={rayonInterieur - 5} fill="none" stroke={encre} strokeWidth="0.4" opacity="0.6" />
-      </g>
+      </svg>
 
       {/* LE TITRE : le nom du jour, écrit au centre, sous la création. */}
       <text

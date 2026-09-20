@@ -53,11 +53,20 @@ export const NAV_METIER: ActionNav[] = [
   { id: 'prestataires', label: 'Tous les métiers', icone: Users, to: '/prestataire', aide: 'L’espace des prestataires, tous métiers confondus.' },
 ];
 
+/**
+ * LA PAGE DU MAGAZINE : cinq blocs, et ce qu'on vient y chercher.
+ *
+ * Les ancres sont **celles des blocs réels** — la couverture et ses sept
+ * chapitres, l'éditeur, l'atelier du temps, la collection, les articles, la
+ * mise en lumière. La capsule verticale ne mène donc jamais dans le vide.
+ */
 export const NAV_MAGAZINE: ActionNav[] = [
   { id: 'chapitres', label: 'Les sept chapitres', icone: Layers, ancre: 'chapitres', aide: 'Le magazine de la semaine, ses sept univers, et le chapitre où l’on est.' },
-  { id: 'saisons', label: 'Les quatre saisons', icone: CalendarClock, ancre: 'saisons', aide: 'Quatre couvertures de base : un fond uni, une création sur l’amour de la saison.' },
-  { id: 'numero', label: 'Le numéro du moment', icone: BookOpen, ancre: 'numero', aide: 'L’édition de la semaine : huit rubriques, toujours les mêmes.' },
-  { id: 'articles', label: 'Les articles', icone: ListOrdered, ancre: 'articles', aide: 'Les articles de l’édition ouverte, sous sa couverture.' },
+  { id: 'editeur', label: 'L’éditeur', icone: Wand2, ancre: 'editeur', aide: 'La saisie, et le magazine qu’elle compose : vingt-quatre pages, une par heure.' },
+  { id: 'atelier', label: 'L’atelier du temps', icone: CalendarClock, ancre: 'atelier', aide: 'La timeline du site : l’année en cinquante-quatre magazines, un bloc par semaine.' },
+  { id: 'couvertures', label: 'Les cinquante-quatre couvertures', icone: Images, ancre: 'couvertures', aide: 'La collection entière, rangée par saison.' },
+  { id: 'articles', label: 'Les articles', icone: ListOrdered, ancre: 'articles', aide: 'Ce qui se lit dans le magazine — et ce qui parle de votre métier.' },
+  { id: 'lumiere', label: 'La mise en lumière', icone: Sparkles, ancre: 'lumiere', aide: 'Se montrer, et élever les autres : les six paliers du profil.' },
   { id: 'shop', label: 'Faire ses courses', icone: ShoppingBag, to: '/shop', aide: 'Le catalogue, par catégories — et ce qui concerne un rôle.' },
 ];
 

@@ -1,111 +1,128 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, Clock } from 'lucide-react';
-import { COUVERTURES, MARQUE_MAGAZINE } from '../lib/aimeMagazine';
-import { JEU_DE_54, bornesDeLaSemaine, semaineDeLAnnee } from '../lib/jeuDeCartes';
-import { composerEdition, lesQuatreSaisons, numerosDeLaSaison } from '../lib/aimeMoteur';
-import { filRougeDuJour, jourDuMagazine, joursAutour, lesQuatrePortes } from '../lib/jourDuMagazine';
+import { ArrowRight, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { MARQUE_MAGAZINE } from '../lib/aimeMagazine';
+import { ALL_ARTICLES } from '../lib/magazine';
+import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
+import { usePersonaCourante } from '../lib/personaCourant';
+import { composerEdition, HEURES } from '../lib/aimeMoteur';
 import { couvertureDuJour, couverturesDesParts } from '../lib/couvertureDuJour';
 import { niveauxDuJour } from '../lib/semaines';
 import { visuelsDuJour } from '../lib/visuelsDuMagazine';
-import { basculerTimeline, choisirMoment, useMomentDeLaCapsule } from '../lib/capsuleCommande';
-import { HEURES, heureCourante } from '../lib/aimeMoteur';
-import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
-import { useControlesDeBande, usePersonaCourante } from '../lib/personaCourant';
+import { filRougeDuJour, jourDuMagazine, joursAutour } from '../lib/jourDuMagazine';
+import { basculerTimeline, choisirMoment, publierReperes, useTempsDeLaCapsule, useMomentDeLaCapsule } from '../lib/capsuleCommande';
+import { useControlesDeBande } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_MAGAZINE } from '../lib/navDesPages';
-import ChampDuMagazine from '../components/ChampDuMagazine';
+import { legendeDeLHeure } from '../components/CouvertureJour';
 import CouvertureJour from '../components/CouvertureJour';
-import CouvertureMagazine from '../components/CouvertureMagazine';
-import CouvertureSemaine from '../components/CouvertureSemaine';
 import ChapitresDuMagazine from '../components/ChapitresDuMagazine';
+import GalerieCouvertures from '../components/GalerieCouvertures';
+import BlocMagazine from '../components/BlocMagazine';
 import EditionSemaine from '../components/EditionSemaine';
 import MiseEnLumiere from '../components/MiseEnLumiere';
-import LeChiffre from '../components/LeChiffre';
-import GalerieCouvertures from '../components/GalerieCouvertures';
-import ProfilEditorial from '../components/ProfilEditorial';
-import MomentsDuJour from '../components/MomentsDuJour';
+import ChampDuMagazine from '../components/ChampDuMagazine';
+import TimelineTheaterStudio from '../components/TimelineTheaterStudio';
+import type { TimelineTrackItem } from '../lib/timelineTheaterEngine';
+import {
+  adresseDuMagazine,
+  blocsDeLaCollection,
+  graduationsDeLaCollection,
+  teteSurLaSemaineCourante,
+} from '../lib/timelineDeLaCollection';
 
 /**
- * LE MAGAZINE — UN JOUR, UNE COUVERTURE, ET ON GLISSE
+ * LE MAGAZINE — UNE COUVERTURE, UN CADRAN, ET TOUT LE RESTE DERRIÈRE
  *
- * Le hero est **un flux** : chaque écran est un jour de l'année, avec son
- * prénom, son portrait de studio, sa carte et sa météo. On passe au suivant
- * comme on fait défiler — au doigt, à la molette, au clavier ou avec les flèches
- * du dock. **Vers le bas sur un téléphone, vers la droite dès que l'écran est
- * large** : le même flux, décidé en CSS.
+ * La page tient en **une couverture et cinq blocs**, et rien d'autre. On a
+ * retiré ce qui répétait la même idée sous quatre formes (les quatre saisons,
+ * les treize semaines, le mur des 365 couvertures, le profil du jour, les six
+ * temps, le chiffre) : tout cela vit encore ailleurs, ou plus du tout — c'est ce
+ * qu'on appelle simplifier.
  *
- * En dessous, l'année entière :
+ * ```
+ * LA COUVERTURE   l'image du magazine, le cadran à aiguilles dessus,
+ *                 les trois niveaux — et, dessous, ses sept chapitres
+ * 1. L'ÉDITEUR    la saisie, et le magazine qu'elle compose : 24 pages
+ * 2. L'ATELIER    la timeline du site — l'année, ses 54 magazines, ses blocs
+ * 3. LA COLLECTION les 54 couvertures, par saison
+ * 4. LES ARTICLES ce qui se lit dans le magazine
+ * 5. LA LUMIÈRE   se montrer, et élever les autres
+ * ```
  *
- * 1. **les quatre saisons** — fond uni, création digitale au centre, et les
- *    treize semaines de la saison ouverte ;
- * 2. **le jour ouvert** — son édition, huit rubriques, toujours les mêmes, avec
- *    la météo des moyennes du passé, la lune, les portes de l'année et le
- *    chiffre du jour ;
- * 3. **les éditions de thème** — les neuf couvertures d'AIME MAGAZINE.
+ * ## Le cadran, et la capsule
+ *
+ * Le cadran de la couverture porte **deux aiguilles** : la grande montre
+ * **l'heure qu'on regarde** — celle de la capsule temporelle du bas, ou l'heure
+ * réelle —, et la petite montre **le chapitre** où la date entre. Un clic sur
+ * « le soir » dans le dock, et l'aiguille se pose à 20 h ; les branches de
+ * cette heure s'allument. La page **publie ses repères** au dock (le magazine,
+ * le chapitre, le jour) : les deux parlent donc toujours du même moment.
  */
 
-const fadeUp = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-60px' },
-};
-
-/** Le lundi de la semaine d'un numéro : par où le jour commence. */
-function lundiDe(numero: number): Date {
-  const carte = JEU_DE_54.find((c) => c.numero === numero);
-  const semaine = carte?.semaine ?? semaineDeLAnnee(new Date());
-  return bornesDeLaSemaine(new Date().getFullYear(), semaine)[0];
-}
+/** La bascule des trois temps : le même numéro, relu. */
+const TEMPS = [
+  ['passe', 'L’an dernier'],
+  ['present', 'Cette semaine'],
+  ['futur', 'L’an prochain'],
+] as const;
 
 export default function Magazine() {
   const [params] = useSearchParams();
-  const role = roleDuneAdresse(params.get('role'));
-  const moi = usePersonaCourante();
 
   /** Le jour ouvert : aujourd'hui, tant qu'on ne choisit pas autre chose. */
   const [depart, setDepart] = useState(() => new Date());
-  /** Le moment choisi dans la capsule : la couverture s'y éclaire. */
-  const moment = useMomentDeLaCapsule();
   const [index, setIndex] = useState(0);
-  /** Le temps de lecture : l'an dernier, cette semaine, l'an prochain. */
   const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
-  /** L'édition de thème ouverte, sous les couvertures. */
-  const [themeId, setThemeId] = useState<string | null>(null);
-  /** Le magazine du jour est-il ouvert, et à quelle heure ? */
-  const [heureOuverte, setHeureOuverte] = useState<number | null>(null);
 
+  /** L'heure que le dock commande, et le moment choisi. */
+  const capsule = useTempsDeLaCapsule();
+  const moment = useMomentDeLaCapsule();
+
+  /** Le métier de qui regarde : le magazine se range à sa place. */
+  const role = roleDuneAdresse(params.get('role'));
+  const moi = usePersonaCourante();
   const roleId = role?.id ?? moi.id;
-  const jours = useMemo(
-    () => joursAutour(depart, 7).map((d) => jourDuMagazine(d, { roleId, temps })),
-    [depart, roleId, temps],
-  );
+  const articles = useMemo(() => (role ? articlesPourRole(role.id) : ALL_ARTICLES), [role]);
+
+  const jours = useMemo(() => joursAutour(depart, 7).map((d) => jourDuMagazine(d)), [depart]);
   const jour = jours[Math.min(index, jours.length - 1)]!;
-  const { carte, saison, edition } = jour;
-  const semaines = useMemo(() => numerosDeLaSaison(saison.id), [saison.id]);
-  const saisons = useMemo(() => lesQuatreSaisons({ roleId }), [roleId]);
+  const annee = jour.date.getFullYear();
 
   /** Les trois niveaux du jour, et ses visuels — une seule source : `semaines.ts`. */
   const niveaux = useMemo(() => niveauxDuJour(jour.date), [jour.date]);
   const visuels = useMemo(() => visuelsDuJour(jour.date), [jour.date]);
-
-  const siens = useMemo(() => (role ? articlesPourRole(role.id) : null), [role]);
+  const edition = useMemo(
+    () => composerEdition({ numero: visuels.magazine.numero, temps, roleId }),
+    [visuels.magazine.numero, temps, roleId],
+  );
   const fil = useMemo(() => filRougeDuJour(jour.date), [jour.date]);
-  const superSaint = jour.superSaint;
-  const theme = COUVERTURES.find((c) => c.id === themeId) ?? null;
 
-  // La nav de droite : les saisons, le jour, les articles, et le shop.
+  /** L'atelier de l'année : les 54 magazines sur la bande. */
+  const blocs = useMemo(() => blocsDeLaCollection(annee), [annee]);
+  const graduations = useMemo(() => graduationsDeLaCollection(annee), [annee]);
+  const tete = useMemo(() => teteSurLaSemaineCourante(), []);
+
+  // La nav verticale de la page : la collection, l'éditeur, l'atelier.
   useEffect(() => {
     enregistrerNavVerticale(NAV_MAGAZINE);
     return () => enregistrerNavVerticale(null);
   }, []);
 
-  // L'adresse peut amener un jour, un moment, ou la timeline ouverte : la
-  // timeline est fusionnée ici, c'est la page du temps.
+  // **La page dit au dock ce qu'on regarde** : le magazine, le chapitre, le jour.
+  useEffect(() => {
+    publierReperes({
+      magazine: niveaux.magazine,
+      chapitre: niveaux.chapitre,
+      numeroDeChapitre: niveaux.numeroDeChapitre,
+      jour: niveaux.date,
+    });
+    return () => publierReperes(null);
+  }, [niveaux]);
+
+  // L'adresse amène le jour, le moment, la timeline : une fois, à l'arrivée.
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
-    // L'adresse amène le jour, le moment, la timeline : une fois, à l'arrivée.
     const j = params.get('jour');
     if (j) {
       const [m, q] = j.split('-').map(Number);
@@ -118,11 +135,10 @@ export default function Magazine() {
     if (mo) choisirMoment(mo);
     if (params.get('timeline') === '1') basculerTimeline(true);
     /* eslint-enable react-hooks/set-state-in-effect */
-    // Une seule fois, à l'arrivée.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** La couverture du hero : celle du jour, éclairée au moment choisi. */
+  /** La couverture du hero : celle du magazine, éclairée à l'heure qu'on regarde. */
   const couvertureHero = useMemo(() => {
     if (!moment) return couvertureDuJour(jour.date);
     return (
@@ -131,7 +147,13 @@ export default function Magazine() {
     );
   }, [moment, jour.date]);
 
-  /** Les flèches feuillettent les jours ; au bord, la fenêtre glisse d'un jour. */
+  /** **Ouvrir un jour** — la seule façon de changer de date. Les deux navigations y mènent. */
+  const ouvrirJour = (d: Date) => {
+    setDepart(d);
+    setIndex(0);
+  };
+
+  /** Les flèches du dock feuillettent les jours ; au bord, la fenêtre glisse. */
   const feuilleter = (pas: number) => {
     const suivant = index + pas;
     if (suivant >= 0 && suivant < jours.length) {
@@ -148,373 +170,257 @@ export default function Magazine() {
     suivant: () => feuilleter(1),
   });
 
-  /** Choisir une semaine ramène le flux au lundi de cette semaine. */
-  const ouvrirSemaine = (numero: number) => {
-    setDepart(lundiDe(numero));
-    setIndex(0);
-  };
-
-  /**
-   * **Ouvrir un jour précis** — c'est la seule façon de changer de date, et
-   * elle sert les deux navigations : temporelle (le jour suivant) et éditoriale
-   * (le jour qui ouvre le chapitre choisi, dans le même magazine).
-   */
-  const ouvrirJour = (d: Date) => {
-    setDepart(d);
-    setIndex(0);
+  /** Cliquer un magazine dans l'atelier : on l'ouvre au lundi de sa semaine. */
+  const ouvrirMagazine = (item: TimelineTrackItem) => {
+    const numero = Number(item.id.replace('magazine-', ''));
+    if (!Number.isFinite(numero) || numero < 1) return;
+    const [m, q] = adresseDuMagazine(numero, annee).split('jour=')[1]!.split('-').map(Number);
+    ouvrirJour(new Date(annee, (m ?? 1) - 1, q ?? 1, 12));
   };
 
   const dateCourte = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      {/* ————————— LE HERO : LE FLUX DES JOURS, ET LE TITRE AU CENTRE ————————— */}
-      <header
-        ref={surveiller}
-        className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden bg-[#0B0C12]"
-      >
-        <div className="vp-page relative flex flex-col items-center pb-6 pt-20 text-center text-white">
-          <span className="vp-eyebrow !text-white/70">{MARQUE_MAGAZINE}</span>
-          <h1
-            className="vp-title mt-4 text-center text-white"
-            style={{ fontSize: 'clamp(2.1rem, 5vw, 3.6rem)', lineHeight: 1.04 }}
-          >
+      {/* ═══════════════ BLOC 1 — LA COUVERTURE, LE CADRAN, LES CHAPITRES ═══════════════ */}
+      <header ref={surveiller} className="relative overflow-hidden bg-[#0B0C12] pb-10 pt-20 text-white">
+        <div className="vp-page flex flex-col items-center text-center">
+          <span className="vp-eyebrow !text-white/60">
+            {MARQUE_MAGAZINE} · 54 magazines · 7 chapitres par magazine
+          </span>
+          <h1 className="vp-title mt-4 text-center text-white" style={{ fontSize: 'clamp(2rem, 4.6vw, 3.2rem)', lineHeight: 1.05 }}>
             SUPER MAGAZINE
           </h1>
 
-          {/* UNE SEULE COUVERTURE, AU FORMAT DU HERO — pas trois magazines côte à
-              côte : celle du jour ouvert, en grand, adaptée à la hauteur du
-              hero. Les flèches du dock feuillettent les jours. */}
-          <div className="mt-6 flex w-full flex-col items-center">
+          {/* LES TROIS NIVEAUX — quel jour, dans quel magazine, à quel chapitre. */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em]">
+            <span className="rounded-full border border-white/25 px-3 py-1.5 text-white/90">{niveaux.date}</span>
+            <span className="text-white/35">→</span>
+            <span className="rounded-full border border-white/25 px-3 py-1.5 text-white/75">
+              {niveaux.magazine} · {niveaux.titreDuMagazine}
+            </span>
+            <span className="text-white/35">→</span>
+            <span className="rounded-full border border-white/25 px-3 py-1.5 text-white/75">{niveaux.chapitre}</span>
+          </div>
+
+          {/* LA COUVERTURE, ENTRE LES DEUX FLÈCHES DU TEMPS — la couverture du
+              magazine, avec le cadran et ses aiguilles. */}
+          <div className="mt-7 flex w-full items-center justify-center gap-3 sm:gap-6">
             <button
               type="button"
-              onClick={() => setHeureOuverte(heureCourante())}
-              aria-label={`Ouvrir le magazine du jour — ${jour.nom}`}
-              className="h-[54svh] max-h-[560px] overflow-hidden rounded-[16px] transition hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              onClick={() => feuilleter(-1)}
+              aria-label="Le jour précédent"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-white/45 hover:text-white"
             >
+              <ChevronLeft size={18} />
+            </button>
+
+            <div className="overflow-hidden rounded-[18px] shadow-[0_30px_70px_-30px_rgba(0,0,0,0.8)]">
               <CouvertureJour
                 couverture={couvertureHero}
                 visuel={visuels.couverture}
                 niveaux={niveaux}
-                className="h-full w-auto"
+                className="h-[52svh] max-h-[540px] w-auto"
               />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => feuilleter(1)}
+              aria-label="Le jour suivant"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-white/45 hover:text-white"
+            >
+              <ChevronRight size={18} />
             </button>
-            <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-white/50">
-              {jour.nom} · {dateCourte(jour.date)}{moment ? ` · ${moment.replace('-', ' ')}` : ''} ·
-              jour {index + 1} sur {jours.length} · {visuels.couverture.origine === 'dessin'
-                ? 'la couverture du magazine reste à livrer'
-                : `couverture servie par ${visuels.couverture.slot}`} ·
-              cliquer la couverture ouvre les 24 heures
-            </p>
+          </div>
+
+          {/* LE CADRAN ET LA CAPSULE — ce que les aiguilles regardent. */}
+          <p className="mt-5 max-w-[620px] font-mono text-[10px] uppercase leading-relaxed tracking-[0.18em] text-white/55">
+            {legendeDeLHeure(capsule.heure)} · {capsule.pilote ? 'heure choisie dans la capsule' : 'heure réelle'} ·
+            la petite aiguille montre le chapitre {String(niveaux.numeroDeChapitre).padStart(2, '0')} ·
+            la capsule en bas pose les aiguilles
+          </p>
+          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
+            {jour.nom} · {dateCourte(jour.date)} · jour {index + 1} sur {jours.length}
+          </p>
+
+          {/* LES SIX TEMPS DU JOUR, EN UNE LIGNE — les mêmes que la capsule. */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">
+            {(['aube', 'matin', 'midi', 'apres-midi', 'soir'] as const).map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => choisirMoment(moment === id ? null : id)}
+                aria-pressed={moment === id}
+                className={`rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition ${
+                  moment === id
+                    ? 'border-white bg-white text-[#0B0C12]'
+                    : 'border-white/20 text-white/60 hover:border-white/50 hover:text-white'
+                }`}
+              >
+                {id.replace('-', ' ')}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => basculerTimeline(true)}
+              className="rounded-full border border-white/20 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/60 transition hover:border-white/50 hover:text-white"
+            >
+              l’atelier du temps
+            </button>
           </div>
         </div>
       </header>
 
-      {/* ——————— LES SEPT CHAPITRES DU MAGAZINE : LA NAVIGATION ÉDITORIALE ———————
-          La moitié éditoriale du modèle : le magazine de la semaine, ses sept
-          univers, celui où l'on est, et les deux flèches qui font le tour du
-          numéro sans jamais changer de semaine. */}
-      <ChapitresDuMagazine date={jour.date} annee={jour.date.getFullYear()} onChoisirChapitre={ouvrirJour} />
+      {/* LES SEPT CHAPITRES DU MAGAZINE — la navigation éditoriale. */}
+      <ChapitresDuMagazine date={jour.date} annee={annee} onChoisirChapitre={ouvrirJour} />
 
-      {/* LE COMPOSEUR, SUR LA PAGE MAGAZINE : le titre, le champ — c'est ici que
-          le magazine se compose, pas dans le hero de l'accueil. */}
-      <section id="composer" className="bg-[#0B0C12] pb-16 text-white">
-        <div className="vp-page flex flex-col items-center text-center">
-          <span className="vp-eyebrow !text-white/70">Votre magazine, maintenant</span>
-          <ChampDuMagazine className="mt-6 w-full" />
-        </div>
-      </section>
-
-      {/* ————————————— LE MAGAZINE DU JOUR, OUVERT À L'HEURE QU'IL EST ————————————— */}
-      {heureOuverte !== null && (
-        <section id="heures" className="bg-[#0B0C12] py-12 text-white">
-          <div className="vp-page">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">
-                  Le magazine du jour, ouvert
-                </span>
-                <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">
-                  {jour.nom} — les {HEURES.length} heures du jour
-                </h2>
-                <p className="mt-2 max-w-[620px] text-[13px] leading-relaxed text-white/60">
-                  Il est {HEURES[heureOuverte]!.nom} : le magazine s’ouvre là. On glisse d’une heure à
-                  l’autre — l’aube, le matin, le midi, l’après-midi, la golden hour, la soirée, la nuit —
-                  et chaque page dit la lumière de son heure, ce qu’on y fait, et ce que le ciel du jour
-                  y change.
-                </p>
+      <div className="vp-page mt-10 space-y-10 pb-16">
+        {/* ═══════════════ BLOC 2 — L'ÉDITEUR : LES BLOCS DE SUPER RIPPLE ═══════════════ */}
+        {/* L'éditeur parle la langue de la fabrique : un fond d'encre, des blocs
+            `rounded-[18px] border border-white/10 bg-white/[0.03]`, un surtitre en
+            monospace, une phrase d'agent — et, quand il faut écrire, **du papier**
+            (`bg-[#FFFEF7]`, filet pointillé), comme dans SUPER RIPPLE. */}
+        <section id="editeur" className="vp-env-dark -mx-3 rounded-[26px] bg-[#0A0A0A] p-3 text-white sm:-mx-5 sm:p-5">
+          <BlocMagazine
+            ton="sombre"
+            surtitre="L’éditeur · les blocs de la fabrique"
+            titre="Votre magazine, maintenant"
+            resume={
+              <>
+                Trois informations sur le papier, et le magazine se compose : la couverture, ses sept
+                chapitres, ses <strong className="font-semibold text-white/80">{HEURES.length} pages</strong> — une par
+                heure. La saisie est ici, le résultat suit dessous, et rien ne se perd : c’est le même
+                moteur que SUPER RIPPLE.
+              </>
+            }
+            aDroite={
+              <div className="flex flex-wrap items-center gap-1.5">
+                {TEMPS.map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setTemps(id)}
+                    aria-pressed={temps === id}
+                    className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
+                      temps === id
+                        ? 'border-transparent bg-[#00FF88] text-black'
+                        : 'border-white/15 text-white/60 hover:border-white/40 hover:text-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
-              <button
-                type="button"
-                onClick={() => setHeureOuverte(null)}
-                className="rounded-full border border-white/20 px-3.5 py-1.5 text-[12px] font-semibold text-white/80 transition hover:border-white/60 hover:text-white"
-              >
-                Refermer
-              </button>
+            }
+          >
+            {/* Le papier : on écrit dessus. */}
+            <div className="rounded-[10px] border border-dashed border-white/20 bg-[#FFFEF7] p-4 font-mono text-[11.5px] text-black sm:p-5">
+              <div className="mb-3 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-black/45">
+                <span>Le papier de la fabrique</span>
+                <span className="h-px flex-1 bg-black/10" />
+                <span>{niveaux.magazine}</span>
+              </div>
+              <ChampDuMagazine />
             </div>
 
-            {/* Les heures : ça glisse, à l'horizontale comme dans le flux. */}
-            <div className="no-scrollbar mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
-              {jour.edition.pages.map((page) => (
-                <article
-                  key={page.heure}
-                  data-heure={page.heure}
-                  data-ouverte={page.heure === heureOuverte ? 'true' : 'false'}
-                  className={`w-[280px] shrink-0 snap-start rounded-[18px] border p-4 transition ${
-                    page.heure === heureOuverte ? 'border-white/45 bg-white/10' : 'border-white/12 bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono text-[10px] tabular-nums text-white/45">
-                      {String(page.heure).padStart(2, '0')} h
-                    </span>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/45">
-                      {page.rubrique}
-                    </span>
-                  </div>
-                  <h3 className="mt-2 text-[13px] font-bold leading-snug">{page.nomDeLHeure} — {page.lumiere}</h3>
-                  <p className="mt-2 text-[12px] leading-relaxed text-white/65">{page.titre}</p>
-                  <p className="mt-2 text-[11.5px] leading-relaxed text-white/50">{page.texte}</p>
-                  <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white/35">
-                    {page.source}
-                  </div>
-                </article>
-              ))}
-            </div>
-
-            {/* Le super saint du jour : l'architecte, et ses héros. */}
-            <div className="mt-8 grid gap-5 rounded-[20px] border border-white/12 bg-white/5 p-5 lg:grid-cols-2">
-              <div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">
-                  Le super saint du jour — l’architecte
+            {/* Le résultat : les pages composées, posées à côté. */}
+            <div className="mt-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-3">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">
+                  {niveaux.magazine} · {niveaux.chapitre} · {HEURES.length} pages
                 </span>
-                <h3 className="vp-title mt-2 text-[20px]">{superSaint.nom}</h3>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-white/60">
-                  Il regarde d’abord : {superSaint.regard}.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {superSaint.heros.map((h) => (
-                    <span key={h} className="rounded-full bg-white/10 px-3 py-1 text-[11.5px] font-semibold text-white/80">
-                      {h}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-3 text-[12px] leading-relaxed text-white/50">{superSaint.pourquoi}</p>
+                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/40">
+                  {visuels.imageDuChapitre.origine === 'dessin' ? 'visuel à livrer' : visuels.imageDuChapitre.slot}
+                </span>
               </div>
-              <div className="border-white/12 lg:border-l lg:pl-5">
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">
-                  Le fil rouge, et l’action parfaite
-                </span>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-white/65">{fil.fil}</p>
-                <p className="mt-3 text-[13.5px] font-bold text-white">
-                  Aujourd’hui, une seule chose : {fil.actionParfaite}.
-                </p>
+              <p className="mt-2 max-w-[720px] text-[13.5px] leading-relaxed text-white/60">
+                Une page par heure, huit rubriques qui ne changent pas d’un numéro à l’autre — c’est ce
+                qui fait un magazine. {fil.actionParfaite.charAt(0).toUpperCase() + fil.actionParfaite.slice(1)}.
+              </p>
+              <div className="mt-4">
+                <EditionSemaine edition={edition} />
               </div>
             </div>
-          </div>
+          </BlocMagazine>
         </section>
-      )}
 
-      {/* ————————————— LES QUATRE SAISONS, PUIS LES SEMAINES ————————————— */}
-      <section id="saisons" className="pb-10 pt-14">
-        <div className="vp-page">
-          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-black/10 pb-4">
-            <h2 className="vp-title text-[22px] sm:text-[26px]">Les quatre saisons</h2>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/45">
-              {JEU_DE_54.length} numéros — {JEU_DE_54.filter((c) => c.joker).length} jokers
-            </span>
-          </div>
-          <p className="mt-3 max-w-[680px] text-[13.5px] leading-relaxed text-black/55">
-            Un fond uni, une création digitale sur l’amour de la saison : quatre couvertures de base, et
-            sous chacune les treize semaines qui la composent — comme les treize cartes d’une couleur. Le
-            flux du hero suit la même table : choisir une semaine ramène le magazine à son lundi.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-start justify-center gap-6 sm:gap-8">
-            {saisons.map((editionSaison) => (
-              <CouvertureSemaine
-                key={editionSaison.saison.id}
-                edition={editionSaison}
-                facteur={editionSaison.saison.id === saison.id ? 1 : 0.4}
-                active={editionSaison.saison.id === saison.id}
-                onChoisir={() => ouvrirSemaine(editionSaison.numero)}
-              />
-            ))}
-          </div>
-
-          <div className="mt-10">
-            <div className="flex flex-wrap items-baseline gap-3">
-              <h3 className="text-[16px] font-bold tracking-tight">
-                {saison.symbole} {saison.nom} — les treize semaines
-              </h3>
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">
-                couleur {saison.couleur}
-              </span>
-            </div>
-            <div className="no-scrollbar mt-4 flex gap-3 overflow-x-auto pb-3">
-              {semaines.map((c) => (
-                <CouvertureSemaine
-                  key={c.numero}
-                  edition={composerEdition({ numero: c.numero, roleId, temps })}
-                  taille="petite"
-                  facteur={c.numero === carte.numero ? 1 : 0.3}
-                  active={c.numero === carte.numero}
-                  onChoisir={() => ouvrirSemaine(c.numero)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Les quatre portes de l'année : les saisons du ciel, pas du jeu. */}
-          <div className="mt-10 flex flex-wrap gap-3">
-            {lesQuatrePortes().map((p) => (
-              <span
-                key={p.nom}
-                className="rounded-full border border-black/10 px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-black/55"
-              >
-                {p.nom} · {p.date}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ———————————————— LE JOUR OUVERT ———————————————— */}
-      <section id="numero" className="bg-[#F7F6F3] py-14">
-        <div className="vp-page">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
-                Le jour du magazine
-              </span>
-              <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">
-                {jour.nom || 'Un joker'} — {dateCourte(jour.date)}
-              </h2>
-              <p className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-black/50">
-                {niveaux.magazine} · {niveaux.semaine} · {niveaux.chapitre} · {niveaux.titreDuMagazine}
-              </p>
-              <p className="mt-2 text-[13px] text-black/55">
-                {jour.meteo.resume} · lune {jour.cles.lune.nom} · chiffre {jour.cles.chiffre.nombre}
-                {jour.cles.porte ? ` · ${jour.cles.porte}` : ''}
-                {jour.cles.interstice ? ' · l’interstice' : ''}
-                {jour.cles.signeCache ? ` · ${jour.cles.signeCache.nom}` : ''}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {([
-                ['passe', 'L’an dernier'],
-                ['present', 'Cette semaine'],
-                ['futur', 'L’an prochain'],
-              ] as const).map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setTemps(id)}
-                  aria-pressed={temps === id}
-                  className={`rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
-                    temps === id
-                      ? 'border-black bg-black text-white'
-                      : 'border-black/12 text-black/60 hover:border-black/40 hover:text-black'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {jours.map((j, i) => (
+        {/* ═══════════════ BLOC 3 — L'ATELIER DU TEMPS : LA TIMELINE ═══════════════ */}
+        <div id="atelier">
+          <BlocMagazine
+            surtitre="L’atelier du temps"
+            titre="L’année, sur la bande"
+            resume={
+              <>
+                La timeline du site — celle de l’atelier : une règle graduée, des blocs, un inspecteur, une
+                tête de lecture. Ici, chaque bloc est <strong className="font-semibold text-black/70">un magazine</strong>,
+                ses sept chapitres sont dessous, et la tête est posée sur la semaine où vous êtes. Cliquer un
+                bloc ouvre le magazine.
+              </>
+            }
+            aDroite={
               <button
-                key={j.date.toISOString()}
                 type="button"
-                onClick={() => setIndex(i)}
-                aria-pressed={i === index}
-                className={`rounded-full border px-3 py-1.5 text-[11.5px] transition ${
-                  i === index ? 'border-black bg-black text-white' : 'border-black/12 text-black/60 hover:border-black/40'
-                }`}
+                onClick={() => basculerTimeline(true)}
+                className="rounded-full border border-black/12 px-3.5 py-1.5 text-[12px] font-semibold text-black/70 transition hover:border-black/40 hover:text-black"
               >
-                {j.nom} · {dateCourte(j.date)}
+                Ouvrir en grand
               </button>
-            ))}
-          </div>
-
-          <p className="mt-4 text-[12.5px] text-black/50">
-            {niveaux.magazine} — {niveaux.titreDuMagazine}, {carte.joker ? 'un joker (hors calendrier)' : `semaine ${carte.semaine}`} ·
-            chapitre {String(niveaux.numeroDeChapitre).padStart(2, '0')} sur 7 ·
-            {visuels.imageDuChapitre.origine === 'dessin'
-              ? ' l’image de ce chapitre reste à livrer'
-              : ` servie par ${visuels.imageDuChapitre.slot}`} ·
-            les flèches du dock passent au jour suivant
-          </p>
-
-          <div className="mt-7">
-            <EditionSemaine edition={edition} />
-          </div>
-
-          {role && (
-            <div className="mt-5">
-              <Link
-                to="/magazine"
-                className="inline-flex items-center gap-1.5 rounded-full border border-black/12 px-3 py-1.5 text-[12.5px] font-semibold text-black/70 no-underline transition hover:border-black/40 hover:text-black"
-              >
-                Tout le magazine <ArrowRight size={12} />
-              </Link>
-            </div>
-          )}
+            }
+          >
+            <TimelineTheaterStudio
+              items={blocs}
+              graduations={graduations}
+              titreDeLAxe="L’année en 54 magazines — un bloc par semaine, sept chapitres dedans"
+              zoomInitial={2}
+              teteInitiale={tete}
+              onSelectMoment={ouvrirMagazine}
+            />
+          </BlocMagazine>
         </div>
-      </section>
 
-      {/* ———————————————— LES ÉDITIONS DE THÈME ———————————————— */}
-      <section id="editions" className="py-14">
-        <div className="vp-page">
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
-            Les autres éditions
-          </span>
-          <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">
-            {role ? `Choisi pour ${role.nom}` : 'Les éditions de thème'}
-          </h2>
-          <p className="mt-3 max-w-[680px] text-[13.5px] leading-relaxed text-black/55">
-            {role
-              ? 'Les articles qui parlent de ce métier, et rien d’autre.'
-              : 'Un thème par couverture, et les articles dedans — un article peut appartenir à plusieurs, quand le sujet le mérite.'}
-          </p>
+        {/* ═══════════════ BLOC 4 — LA COLLECTION : LES 54 COUVERTURES ═══════════════ */}
+        <GalerieCouvertures annee={annee} />
 
-          {!role && (
-            <div className="mt-8 flex flex-wrap items-start justify-center gap-5 sm:gap-6">
-              {COUVERTURES.map((c) => (
-                <CouvertureMagazine
-                  key={c.id}
-                  couverture={c}
-                  facteur={c.id === themeId ? 1 : 0.35}
-                  active={c.id === themeId}
-                  onChoisir={() => setThemeId((id) => (id === c.id ? null : c.id))}
-                />
-              ))}
-            </div>
-          )}
-
-          <div id="articles" className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {(role ? siens! : theme?.articles ?? []).map((article) => (
-              <motion.div key={article.slug} {...fadeUp} transition={{ duration: 0.5 }}>
+        {/* ═══════════════ BLOC 5 — LES ARTICLES : CE QUI SE LIT DANS LE MAGAZINE ═══════════════ */}
+        <div id="articles">
+          <BlocMagazine
+            surtitre={role ? 'Les articles de votre métier' : 'La rédaction'}
+            titre={role ? `Choisi pour ${role.nom}` : 'Les articles'}
+            resume={
+              role
+                ? `Les articles qui parlent de ce métier, et rien d’autre : ${articles.length} sur ${ALL_ARTICLES.length}.`
+                : 'Les sujets du magazine — les univers, les guides, l’insolite. Chacun s’ouvre comme un article, avec sa couverture et son temps de lecture.'
+            }
+            aDroite={
+              role ? (
+                <Link to="/magazine" className="inline-flex items-center gap-1.5 rounded-full border border-black/12 px-3.5 py-1.5 text-[12px] font-semibold text-black/70 no-underline transition hover:border-black/40 hover:text-black">
+                  Tout le magazine <ArrowRight size={12} />
+                </Link>
+              ) : (
+                <span className="rounded-full border border-black/10 px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-black/50">
+                  {articles.length} articles
+                </span>
+              )
+            }
+          >
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {articles.map((article) => (
                 <Link
+                  key={article.slug}
                   to={`/magazine/${article.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-black/8 bg-white transition hover:-translate-y-1 hover:shadow-xl"
+                  className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-black/8 bg-white no-underline transition hover:-translate-y-1 hover:shadow-[0_22px_44px_-30px_rgba(0,0,0,0.5)]"
                 >
-                  <div className="relative aspect-[16/10] overflow-hidden">
-                    <img
-                      src={article.cover}
-                      alt={article.title}
-                      className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
-                    />
+                  <div className="relative aspect-[16/10] overflow-hidden bg-[#F2F0EC]">
+                    <img src={article.cover} alt="" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" />
                     <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
                       {article.kicker}
                     </span>
                   </div>
                   <div className="flex flex-1 flex-col p-4">
-                    <h3 className="text-[15.5px] font-bold leading-snug text-[#0B0C12]">{article.title}</h3>
-                    <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-black/55">{article.intro}</p>
-                    <span className="mt-auto flex items-center gap-2 pt-4 text-[12px] font-semibold text-black/60">
+                    <h3 className="text-[15px] font-bold leading-snug">{article.title}</h3>
+                    <p className="mt-2 line-clamp-3 text-[12.5px] leading-relaxed text-black/55">{article.intro}</p>
+                    <span className="mt-auto flex items-center gap-2 pt-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-black/45">
                       <Clock size={12} /> {article.readingMinutes} min
                       <span className="flex items-center gap-1 transition group-hover:translate-x-0.5">
                         Lire <ArrowRight size={12} />
@@ -522,56 +428,28 @@ export default function Magazine() {
                     </span>
                   </div>
                 </Link>
-              </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </BlocMagazine>
         </div>
-      </section>
 
-      {/* ———————————————— LES 365 COUVERTURES : LE KIOSQUE DE L'ANNÉE ———————————————— */}
-      <GalerieCouvertures />
-
-      {/* ———————————————— LE PROFIL DU JOUR : LA PERSONNE QUI OUVRE LA PORTE ———————————————— */}
-      <ProfilEditorial />
-
-      {/* ———————————————— LE JOUR EN SIX TEMPS : LE MÊME JOUR, SIX LUMIÈRES ———————————————— */}
-      <MomentsDuJour />
-
-      {/* ———————————————— LE CHIFFRE : UN NOMBRE, SES MOTS, SA RÈGLE ———————————————— */}
-      <section className="border-t border-black/8 bg-white pt-10">
-        <LeChiffre />
-      </section>
-
-      {/* ———————————————— LA MISE EN LUMIÈRE ———————————————— */}
-      <section id="lumiere" className="border-t border-black/8 py-14">
-        <div className="vp-page">
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
-            La mise en lumière
-          </span>
-          <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">Se montrer, et élever les autres</h2>
-          <p className="mt-3 max-w-[720px] text-[13.5px] leading-relaxed text-black/55">
-            Le magazine ne demande rien : il rend ce qu’on lui donne. Plus le profil est complet, plus on
-            est vu — et le jour de votre fête, la couverture peut être la vôtre, avec les personnes
-            alignées autour de vous selon vos informations. Le même jour, ailleurs, d’autres fêtent le
-            même prénom : l’alignement continue à l’autre bout du monde.
-          </p>
-          <div className="mt-8">
-            <MiseEnLumiere />
-          </div>
+        {/* ═══════════════ BLOC 6 — LA MISE EN LUMIÈRE : SE MONTRER, ET ÉLEVER LES AUTRES ═══════════════ */}
+        <div id="lumiere">
+        <BlocMagazine
+          surtitre="La mise en lumière"
+          titre="Se montrer, et élever les autres"
+          resume="Le magazine ne demande rien : il rend ce qu’on lui donne. Plus le profil est complet, plus on est vu — et le jour de votre fête, la couverture peut être la vôtre, avec les personnes alignées autour de vous. Le même jour, ailleurs, d’autres fêtent le même prénom."
+        >
+          <MiseEnLumiere />
+        </BlocMagazine>
         </div>
-      </section>
 
-      <footer className="border-t border-black/5 py-10">
+      </div>
+
+      <footer className="border-t border-black/5 py-8">
         <div className="vp-page flex flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
-          <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">
-            {MARQUE_MAGAZINE}
-          </span>
-          <span>
-            {COUVERTURES.length} éditions de thème · {JEU_DE_54.length} magazines · 7 chapitres par magazine · 365 jours pour les parcourir
-          </span>
-          <Link to="/" className="underline transition hover:text-black">
-            Revenir au site
-          </Link>
+          <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">{MARQUE_MAGAZINE}</span>
+          <span>54 magazines · 7 chapitres par magazine · 365 jours pour les parcourir</span>
         </div>
       </footer>
     </div>

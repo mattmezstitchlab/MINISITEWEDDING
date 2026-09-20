@@ -1,13 +1,15 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import CadranDuMagazine from './CadranDuMagazine';
 import {
-  CalendarRange, ChevronLeft, ChevronRight, Sun, SunDim, SunMedium, Sunrise, Sunset, Wand2,
+  ChevronLeft, ChevronRight, Sun, SunDim, SunMedium, Sunrise, Sunset, Wand2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useControlesBande } from '../lib/personaCourant';
 import {
   basculerTimeline, choisirMoment, MOMENTS_DE_LA_CAPSULE, useMomentDeLaCapsule,
-  useTimelineOuverte,
+  useReperesDeLaCapsule, useTimelineOuverte, useTempsDeLaCapsule,
 } from '../lib/capsuleCommande';
+import { chapitreDeLaDate, magazineDeLaDate } from '../lib/semaines';
 
 /**
  * LA CAPSULE DE COMMANDE — LE DOCK DU BAS
@@ -22,6 +24,12 @@ import {
  *   la couverture du hero s'éclaire au moment choisi ;
  * - **la timeline** — la languette sort en bas, et l'année se déplie en
  *   couvertures, des saisons aux jours.
+ *
+ * **Et elle porte le cadran du magazine.** Au centre du dock, une miniature du
+ * même cadran que la couverture : ses aiguilles montrent **l'heure qu'on
+ * regarde** et **le chapitre où l'on est**. Un clic sur un moment pose
+ * l'aiguille ; un clic sur le cadran ouvre **l'atelier du temps** (la timeline).
+ * Le dock et la couverture ne disent donc jamais deux choses différentes.
  *
  * La capsule de droite, elle, reste la nav verticale de la page — rien ne
  * change.
@@ -49,6 +57,12 @@ export default function BottomCapsuleNav() {
   const controles = useControlesBande();
   const moment = useMomentDeLaCapsule();
   const timeline = useTimelineOuverte();
+  /** Le temps que la capsule commande, et les repères de la page ouverte. */
+  const temps = useTempsDeLaCapsule();
+  const reperes = useReperesDeLaCapsule();
+  const ici = magazineDeLaDate(new Date());
+  const chapitreCourant = reperes?.numeroDeChapitre ?? chapitreDeLaDate(new Date()).numero;
+  const legendeDock = reperes ? `${reperes.magazine} · ch. ${String(chapitreCourant).padStart(2, '0')}` : ici.etiquette;
 
   /** Un moment : la couverture s'y éclaire ; hors du magazine, on y va. */
   const prendreMoment = (id: string) => {
@@ -105,19 +119,37 @@ export default function BottomCapsuleNav() {
         })}
         <span className="mx-1 h-6 w-px shrink-0 bg-white/15" aria-hidden="true" />
 
-        {/* La timeline : la languette sort, l'année se déplie. */}
+        {/* LE CADRAN DE LA CAPSULE : le même que la couverture, en miniature.
+            Ses aiguilles suivent le moment choisi et le chapitre ouvert ; un clic
+            ouvre l'atelier du temps (la timeline). */}
         <button
           type="button"
           onClick={() => basculerTimeline()}
-          aria-label="La timeline — déplier l'année"
+          aria-label="L’atelier du temps — la timeline"
           aria-pressed={timeline}
-          title="La timeline"
+          title={`${legendeDock} · ${temps.etiquette} — ouvrir l’atelier du temps`}
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition sm:h-10 sm:w-10 ${
-            timeline ? 'bg-white text-[#0B0C12]' : 'text-white/65 hover:bg-white/12 hover:text-white'
+            timeline ? 'bg-white text-[#0B0C12]' : 'text-white/70 hover:bg-white/12 hover:text-white'
           }`}
         >
-          <CalendarRange size={16} />
+          <CadranDuMagazine
+            heure={temps.heure}
+            chapitre={chapitreCourant}
+            fond="#0B0C12"
+            encre="#F3F1ED"
+            accent={timeline ? '#0B0C12' : '#00FF88'}
+            vignette
+            className="h-7 w-7 sm:h-8 sm:w-8"
+          />
         </button>
+
+        {/* Ce que la capsule commande, écrit : le magazine, le chapitre, l'heure. */}
+        <span
+          data-capsule-lecture="true"
+          className="hidden shrink-0 items-center gap-1.5 pl-1 pr-2 font-mono text-[10px] uppercase tracking-[0.14em] text-white/55 lg:flex"
+        >
+          {legendeDock} · {temps.etiquette}
+        </span>
       </div>
 
       {/* La flèche de droite. */}
