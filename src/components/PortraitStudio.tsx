@@ -1,4 +1,5 @@
 import type { StudioDuJour } from '../lib/jourDuMagazine';
+import { assombrir, TAUX_TEMPS_CLOS } from '../lib/couleurs';
 
 /**
  * LE PORTRAIT DE STUDIO — LE VISAGE DU JOUR
@@ -47,8 +48,9 @@ export default function PortraitStudio({
   taille?: 'hero' | 'carte';
 }) {
   const noir = studio.fond === 'noir';
-  const fond = noir ? '#0B0B0F' : '#F3F1ED';
-  const encre = noir ? '#F7F5F2' : '#14141A';
+  const dense = studio.fond === 'dense';
+  const fond = noir ? '#0B0B0F' : dense ? assombrir(saison.fond, TAUX_TEMPS_CLOS) : '#F3F1ED';
+  const encre = noir || dense ? '#F7F5F2' : '#14141A';
   const t = tirages(studio.graine);
   const hero = taille === 'hero';
   const dateTexte = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -127,7 +129,7 @@ export default function PortraitStudio({
         className="absolute left-3 top-3 rounded-full px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em]"
         style={{ background: noir ? '#F7F5F2' : '#14141A', color: noir ? '#14141A' : '#F7F5F2' }}
       >
-        Studio {studio.fond}
+        Studio {noir ? 'noir' : dense ? 'assombri' : 'blanc'}
       </span>
     </figure>
   );

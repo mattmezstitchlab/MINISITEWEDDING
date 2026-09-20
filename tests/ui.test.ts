@@ -102,6 +102,11 @@ import {
   PARTS, REGLE_EDITORIALE, bornesDeLaPart, heuresDeLaPart, partActuelle, partDeLHeure, partParId,
 } from '../src/lib/moments';
 import { couvertureDeLaPart, couverturesDesParts } from '../src/lib/couvertureDuJour';
+import { TAUX_TEMPS_CLOS, assombrir, canaux, enHex } from '../src/lib/couleurs';
+import {
+  CADRAGE, DIRECTION_ARTISTIQUE, INTERDITS_VISUELS, MOMENTS_VISUELS, PAS_DIMAGE_LA_NUIT, SCENES_PAR_PERSONNAGE,
+  entreesDeLAnnee, entreesDuMois, etatDeLaSerie, momentVisuel, promptMaitre, scenesDuPersonnage,
+} from '../src/lib/promptsVisuels';
 import {
   FOND_NOIR, HEURES_DE_LUMIERE, MOIS, couverturesDeLAnnee, couverturesDuMois, couvertureDuJour, graine,
 } from '../src/lib/couvertureDuJour';
@@ -2678,9 +2683,40 @@ check(
 check('les longueurs tiennent dans l’intervalle', couvertures.every((c) => c.branches.every((b) => b.longueur > 0 && b.longueur <= 1)), true);
 
 check('les quatre saisons du jeu sont là', [...new Set(couvertures.map((c) => c.saison.id))].sort().join(','), 'automne,ete,hiver,printemps');
-check('et chaque saison donne son fond', new Set(couvertures.filter((c) => !c.pasCommeLesAutres).map((c) => c.fond)).size, 4);
+check(
+  'et chaque saison donne son fond',
+  new Set(couvertures.filter((c) => !c.pasCommeLesAutres && !c.dense).map((c) => c.fond)).size,
+  4,
+);
+check(
+  'et chaque saison a sa version assombrie',
+  new Set(couvertures.filter((c) => c.dense).map((c) => c.fond)).size,
+  3,
+);
 check('les jours qui ne sont pas comme les autres passent au noir', couvertures.some((c) => c.pasCommeLesAutres && c.fond === FOND_NOIR), true);
 check('et ils disent pourquoi', couvertures.filter((c) => c.pasCommeLesAutres).every((c) => c.raison.length > 12), true);
+
+/* LE NOIR EST RARE : dimanche, porte de l'année, joker. Et rien d'autre. */
+const noirs = couvertures.filter((c) => c.pasCommeLesAutres);
+check('le noir ne tombe que sur trois raisons', new Set(noirs.map((c) => c.raison.split(' :')[0])).size, 3);
+check('dont les dimanches', noirs.filter((c) => c.raison.includes('dimanche')).length, 52);
+check('les portes de l’année', noirs.filter((c) => c.raison.includes('porte')).length, 10);
+check('et le joker', noirs.filter((c) => c.raison.includes('joker')).length, 1);
+check('soit soixante-trois jours sur trois cent soixante-cinq', noirs.length, 63);
+check('et le noir ne dépasse jamais un mois sur trois', Math.max(...MOIS.map((m) => noirs.filter((c) => c.mois === m.numero).length)) <= 8, true);
+
+/* UN TEMPS CLOS N'EST PAS NOIR : la couleur de sa saison, assombrie. */
+const denses = couvertures.filter((c) => c.dense);
+check('les temps clos ne sont pas noirs', denses.some((c) => c.fond === FOND_NOIR), false);
+check('ils sont assombris', denses.every((c) => c.fond !== c.saison.fond), true);
+check('et ils disent pourquoi', denses.every((c) => c.raison.startsWith('un temps clos')), true);
+check('le carême en compte vingt-sept', denses.filter((c) => c.raison.includes('carême') && !c.raison.includes('avant')).length, 27);
+check('l’avent vingt-huit', denses.filter((c) => c.raison.includes('avent')).length, 28);
+check('et l’avant-carême dix-huit', denses.filter((c) => c.raison.includes('avant le carême')).length, 18);
+check('un temps clos garde l’encre claire', denses.every((c) => c.encre === '#F3F1ED'), true);
+check('le studio dit lequel des trois fonds', studioDuJour(new Date(2026, 1, 5)).fond, 'dense');
+check('un dimanche passe bien au noir', studioDuJour(new Date(2026, 8, 20)).fond, 'noir');
+check('et un jour ordinaire reste blanc', studioDuJour(new Date(2026, 5, 10)).fond, 'blanc');
 check(
   'le dimanche est l’un d’eux — un rythme visible au kiosque',
   couvertureDuJour(new Date(2026, 8, 20)).pasCommeLesAutres,
@@ -2847,6 +2883,16 @@ check('comme l’avertissement', renduProfil.includes(AVERTISSEMENT_PROFILS), tr
 check('ces personnes ne sont pas des inscrits', AVERTISSEMENT_PROFILS.includes('ne sont pas des inscrits'), true);
 check('aucun astérisque ne s’affiche', renduProfil.includes('**'), false);
 check('il n’y a pas de portrait inventé : la couverture fait le dessin', renduProfil.includes('<img'), false);
+check('le sens du prénom est dit', renduProfil.includes('Ce que le prénom veut dire'), true);
+check('avec sa source', renduProfil.includes('les dictionnaires de prénoms courants'), true);
+check('et les cinq lumières du personnage', renduProfil.includes('Ses cinq lumières'), true);
+check(
+  'le même nom, cinq fois',
+  ['L’aube', 'Le matin', 'Le midi', 'L’après-midi', 'Le soir'].every(
+    (m) => renduProfil.includes(`Matthieu — ${m}`),
+  ),
+  true,
+);
 
 const renduSansFiche = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine'] },
@@ -2967,6 +3013,100 @@ check(
   true,
 );
 check('la chaîne se dit en une phrase', CHAINE_PROMESSE.includes('sa carte'), true);
+
+/* ————————— LES COULEURS : ASSOMBRIR UNE SAISON SANS LA PERDRE ————————— */
+
+check('une couleur se lit en trois canaux', canaux('#7FB77E')!.join(','), '127,183,126');
+check('et une écriture inconnue ne rend rien', canaux('vert'), null);
+check('les canaux se réécrivent en hexadécimal', enHex(127, 183, 126), '#7fb77e');
+check('un taux nul laisse la couleur', assombrir('#7FB77E', 0), '#7fb77e');
+check('une couleur noircit sans changer de teinte', assombrir('#7FB77E', TAUX_TEMPS_CLOS), '#4c6e4c');
+check('le taux est borné : jamais au-delà de trois quarts', assombrir('#FFFFFF', 4), '#404040');
+check('et une écriture illisible ressort telle quelle', assombrir('rouge', 0.4), 'rouge');
+
+/* ————————— LES PROMPTS VISUELS : LA MÊME COLLECTION POUR LES 365 ————————— */
+
+check('la direction artistique est écrite une fois', DIRECTION_ARTISTIQUE.length, 11);
+check('elle veut de la photographie éditoriale', DIRECTION_ARTISTIQUE[0]!.includes('éditoriale de mode'), true);
+check('un vrai casting', DIRECTION_ARTISTIQUE[1]!.includes('casting'), true);
+check('et refuse le kitsch religieux', DIRECTION_ARTISTIQUE.some((l) => l.includes('kitsch religieux')), true);
+check('elle refuse l’illustration et le cartoon', DIRECTION_ARTISTIQUE.some((l) => l.includes('cartoon')), true);
+check('et le cliché touristique', DIRECTION_ARTISTIQUE.some((l) => l.includes('cliché touristique')), true);
+check('les interdits sont écrits', INTERDITS_VISUELS.length >= 5, true);
+check('dont le texte dans l’image', INTERDITS_VISUELS.some((l) => l.includes('texte dans l’image')), true);
+check('le cadre est portrait', CADRAGE.format.includes('5:7'), true);
+
+check('une journée a cinq images', MOMENTS_VISUELS.length, 5);
+check(
+  'et ce sont celles des cinq moments du jour',
+  MOMENTS_VISUELS.map((m) => m.id).join(','),
+  'aube,matin,midi,apres-midi,soir',
+);
+check(
+  'la nuit n’en a pas, et elle dit pourquoi',
+  PAS_DIMAGE_LA_NUIT.includes('queue de la veille'),
+  true,
+);
+check('chaque moment a sa lumière, sa posture, son décor', MOMENTS_VISUELS.every(
+  (m) => m.lumiere.length > 20 && m.posture.length > 15 && m.decor.length > 20,
+), true);
+check('et sa narration', MOMENTS_VISUELS.every((m) => m.narration.length > 20), true);
+check('un moment se retrouve par son identifiant', momentVisuel('soir')!.nom, 'Le soir');
+check('et un inconnu ne rend rien', momentVisuel('crepuscule'), null);
+check('les cinq moments sont ceux de la journée', MOMENTS_VISUELS.every((m) => PARTS.some((p) => p.id === m.id)), true);
+check('soit 1 825 scènes pour l’année', 365 * SCENES_PAR_PERSONNAGE, 1825);
+
+/* Le prompt maître d'un personnage connu. */
+const profilMatthieu = PROFILS['09-21']!;
+const promptMatthieu = promptMaitre(profilMatthieu, new Date(2026, 8, 21));
+check('le prompt maître porte les quatre blocs', ['IDENTITÉ', 'INTERPRÉTATION', 'DIRECTION ARTISTIQUE', 'IDENTITÉ DU JOUR'].every(
+  (b) => promptMatthieu.prompt.includes(b),
+), true);
+check('l’identité dit l’origine', promptMatthieu.identite.some((l) => l.includes('Capharnaüm')), true);
+check('et la source', promptMatthieu.identite.some((l) => l.startsWith('Source :')), true);
+check('la signification du prénom y est', promptMatthieu.identite.some((l) => l.includes('don de Dieu')), true);
+check('l’interprétation dit le casting', promptMatthieu.interpretation[0]!.includes('40 ans'), true);
+check('chaque pont porte son niveau, en clair', promptMatthieu.interpretation.filter((l) => l.startsWith('Pont vers le mariage')).length, 4);
+check('aucun astérisque de mise en forme', promptMatthieu.prompt.includes('**'), false);
+check('la direction artistique est la même pour tous', promptMatthieu.directionArtistique.length > DIRECTION_ARTISTIQUE.length, true);
+check('l’identité du jour dit la saison', promptMatthieu.identiteDuJour.some((l) => l.includes('Automne')), true);
+check('et le moment, quand il n’y en a pas', promptMatthieu.identiteDuJour.some((l) => l.includes('prompt maître')), true);
+check('la direction de casting tient les cinq scènes', promptMatthieu.casting.length, 5);
+check('et elle dit que rien ne change', promptMatthieu.casting.some((l) => l.includes('ne changent pas')), true);
+check('une fiche complète ne manque de rien', promptMatthieu.manquant.length, 0);
+check('la version courte parle à l’outil d’image', promptMatthieu.promptTechnique.includes('editorial fashion photograph'), true);
+check('et refuse l’iconographie religieuse', promptMatthieu.promptTechnique.includes('no religious iconography'), true);
+
+/* Les cinq scènes : le même, cinq fois. */
+const scenes = scenesDuPersonnage(profilMatthieu, new Date(2026, 8, 21));
+check('il y a cinq scènes', scenes.length, 5);
+check('et elles gardent le prompt maître', scenes.every((s) => s.texte.includes('COUVERTURE AIME MAGAZINE — MATTHIEU')), true);
+check('et le casting', scenes.every((s) => s.texte.includes('DIRECTION DE CASTING')), true);
+check('chaque scène porte son moment', scenes.every((s) => s.texte.includes(`MOMENT — ${s.moment.nom.toUpperCase()}`)), true);
+check('ce qui change, c’est la lumière', new Set(scenes.map((s) => s.moment.lumiere)).size, 5);
+check('c’est le même personnage, cinq fois', new Set(scenes.map((s) => s.moment.narration)).size, 5);
+
+/* Le tableau de production. */
+const etatSerie = etatDeLaSerie(2026);
+check('l’année compte ses jours', etatSerie.jours, 365);
+check('les fiches prêtes sont celles des profils', etatSerie.pretes, profilsDocumentes());
+check('le reste est à documenter', etatSerie.aDocumenter, 365 - profilsDocumentes());
+check('et les scènes ne se comptent que là où le prompt existe', etatSerie.scenes, profilsDocumentes() * 5);
+check('les douze mois sont au tableau', etatSerie.parMois.length, 12);
+check('février a ses vingt-huit jours', etatSerie.parMois[1]!.jours, 28);
+check('décembre a quatre fiches prêtes', etatSerie.parMois[11]!.pretes, 4);
+check('janvier n’en a aucune', etatSerie.parMois[0]!.pretes, 0);
+
+const jourNeufFevrier = entreesDuMois(2026, 2)[8]!;
+check('un jour sans fiche n’a pas de prompt', jourNeufFevrier.prompt, null);
+check('et il dit ce qui lui manque', jourNeufFevrier.manquant.length, 3);
+check('un jour documenté en a un', entreesDuMois(2026, 2)[13]!.etat, 'complete');
+check('l’année entière fait 365 entrées', entreesDeLAnnee(2026).length, 365);
+check(
+  'et ce sont bien les mêmes jours, dans l’ordre',
+  entreesDeLAnnee(2026)[0]!.jour + ' → ' + entreesDeLAnnee(2026)[364]!.jour,
+  '01-01 → 12-31',
+);
 
 /* ------------------------------------------------------------------- bilan */
 

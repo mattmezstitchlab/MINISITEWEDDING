@@ -92,6 +92,22 @@ export interface Pont {
   vers?: string;
 }
 
+/** La direction de casting : ce qui ne change pas d'une image à l'autre. */
+export interface Casting {
+  silhouette: string;
+  age: string;
+  gardeRobe: string;
+  /** Les signes tenus sur les cinq scènes : c'est ce qui fait qu'on reconnaît. */
+  signes: string[];
+}
+
+/** Ce qu'une fiche ajoute quand elle est complète : le sens, les idées, le casting. */
+export interface Addenda {
+  signification: string;
+  inspirations: string[];
+  casting: Casting;
+}
+
 export interface Profil {
   /** `MM-JJ`. */
   jour: string;
@@ -106,7 +122,16 @@ export interface Profil {
   mots: string[];
   /** D'où vient ce qui est écrit ici. */
   source: string;
+  /** Ce que le prénom veut dire. Une étymologie se transmet ; elle se cite. */
+  signification?: string;
+  /** Les idées de mise en scène — des créations, assumées comme telles. */
+  inspirations?: string[];
+  /** La direction de casting : le même visage sur les cinq scènes. */
+  casting?: Casting;
 }
+
+/** D'où viennent les étymologies : elles se transmettent, elles ne se prouvent pas toujours. */
+export const SIGNIFICATION_SOURCE = 'les dictionnaires de prénoms courants — une étymologie se transmet, elle ne se prouve pas toujours';
 
 /** L'avertissement : ces personnes ne sont pas des inscrits. */
 export const AVERTISSEMENT_PROFILS =
@@ -461,11 +486,111 @@ const BASE: Array<[string, string, string | null, Genre, Fiche, Pont[], string[]
   ],
 ];
 
+/* ————————————————— LE SENS, LES IDÉES, LE CASTING ————————————————— */
+
+/**
+ * Ce que chaque fiche gagne quand on la prépare pour la production : **ce que le
+ * prénom veut dire** (cité), **les idées de mise en scène** (des créations,
+ * assumées comme telles) et **la direction de casting** — le visage, l'âge, la
+ * garde-robe et les signes tenus sur les cinq scènes.
+ *
+ * Rien ici n'est présenté comme un fait : la signification vient des
+ * dictionnaires de prénoms, et tout le reste est de la fabrication — c'est
+ * écrit.
+ */
+export const ADDENDA: Record<string, Addenda> = {
+  '02-14': {
+    signification: 'du latin valens : « vigoureux, en bonne santé ».',
+    inspirations: ['des lettres cachetées à la cire, une par convive, à ouvrir au dessert', 'une tablée éclairée par des bougies posées dans des verres'],
+    casting: { silhouette: 'grand, mince, épaules larges', age: '35 ans', gardeRobe: 'costume de laine rouge sombre, chemise de lin ouverte', signes: ['un anneau d’or au doigt', 'des mains d’écriture'] },
+  },
+  '03-17': {
+    signification: 'du latin patricius : « patricien », de la classe noble.',
+    inspirations: ['une falaise irlandaise, le vent qui tient les vêtements', 'une cornemuse qui ouvre la marche jusqu’à la table'],
+    casting: { silhouette: 'large, épais, l’allure de celui qui marche vite', age: '50 ans', gardeRobe: 'grosse laine verte, caban, bottes crottées', signes: ['un trèfle frais à la main', 'un bâton de marche'] },
+  },
+  '05-16': {
+    signification: 'du latin honoratus : « honoré ».',
+    inspirations: ['une pièce montée servie sur une table en escalier', 'une boulangerie de nuit, la porte du four ouverte'],
+    casting: { silhouette: 'court, solide, les avant-bras larges', age: '55 ans', gardeRobe: 'tablier de toile écrue sur chemise blanche', signes: ['la farine sur l’avant-bras', 'un torchon sur l’épaule'] },
+  },
+  '06-24': {
+    signification: 'de l’hébreu : « Dieu fait grâce » ; Baptiste, « celui qui baptise ».',
+    inspirations: ['des feux de la Saint-Jean allumés sur trois collines', 'des torches qui s’allument l’une après l’autre, sans un mot'],
+    casting: { silhouette: 'grand, sec, la peau tannée', age: '30 ans', gardeRobe: 'lin brut, ceinture de cuir, pieds nus', signes: ['de l’eau ruisselante sur les épaules', 'un bâton droit planté'] },
+  },
+  '07-12': {
+    signification: 'du latin vera icon : « la vraie image » — le nom vient de la légende, pas l’inverse.',
+    inspirations: ['un portrait tiré à la chambre, encore mouillé', 'le premier portrait de la journée, fait dans l’ombre'],
+    casting: { silhouette: 'moyenne, le port très droit', age: '45 ans', gardeRobe: 'voile de lin blanc, appareil argentique en bandoulière', signes: ['un appareil moyen format', 'un linge plié dans la poche'] },
+  },
+  '07-29': {
+    signification: 'de l’araméen : « dame, maîtresse de maison ».',
+    inspirations: ['une maison d’hôtes où chaque nom est connu', 'un service fait à la main, plat par plat'],
+    casting: { silhouette: 'solide, les mains vives', age: '45 ans', gardeRobe: 'tablier de cuisine sur une robe simple', signes: ['un trousseau de clés', 'des mains rougies par l’eau chaude'] },
+  },
+  '08-30': {
+    signification: 'de l’irlandais Fiachra — le nom de l’ermite, avant de devenir le nom commun du fiacre.',
+    inspirations: ['un dîner servi entre deux rangs de potager', 'des fleurs coupées le matin même, jamais piquées'],
+    casting: { silhouette: 'voûté, les mains larges', age: '60 ans', gardeRobe: 'gilet de toile, chapeau de paille usé', signes: ['un panier de légumes', 'de la terre sous les ongles'] },
+  },
+  '09-21': {
+    signification: 'de l’hébreu mattityahu : « don de Dieu » — le même sens que Théodore ou Dieudonné.',
+    inspirations: ['un grand livre ouvert à la place du livre d’or, où chacun écrit debout', 'des pièces de monnaie qui deviennent des anneaux en tombant'],
+    casting: { silhouette: 'longue, les épaules basses', age: '40 ans', gardeRobe: 'tailleur ivoire déstructuré, chemise ouverte', signes: ['un carnet et un stylo à encre', 'des lunettes fines', 'une bague à la main droite'] },
+  },
+  '09-26': {
+    signification: 'Côme, du grec kosmos : « ordre, beauté » ; Damien, du grec : « celui qui dompte ».',
+    inspirations: ['une infirmerie de campagne installée sous une tente', 'des pieds nus sur l’herbe, le soir, après la danse'],
+    casting: { silhouette: 'deux frères, même taille, même carrure', age: '35 ans', gardeRobe: 'blouses de lin, manches roulées', signes: ['une trousse de soins en cuir', 'deux paires de mains identiques'] },
+  },
+  '10-18': {
+    signification: 'du latin lux, ou du grec loukas : « lumière ».',
+    inspirations: ['un portrait peint pendant le repas, en une seule pose', 'un chevalet planté au milieu des tables'],
+    casting: { silhouette: 'large, assis, une jambe tendue', age: '50 ans', gardeRobe: 'gilet de travail taché de peinture, manches retroussées', signes: ['un pinceau derrière l’oreille', 'des doigts tachés'] },
+  },
+  '11-06': {
+    signification: 'du germanique adal, « noble », et wolf, « loup ».',
+    inspirations: ['le pavillon du sax rempli de fleurs, posé sur l’estrade', 'un mur de briques fendu par un saxophone qui pousse'],
+    casting: { silhouette: 'trapue, le torse large', age: '40 ans', gardeRobe: 'gilet de velours bronze, chemise blanche, nœud défait', signes: ['un saxophone ténor tenu comme un objet familier', 'une moustache', 'des mains de fabricant'] },
+  },
+  '11-22': {
+    signification: 'du latin caecus, « aveugle » — et le nom de la famille romaine des Caecilii.',
+    inspirations: ['des cordes de harpe qui deviennent des rubans', 'des tuyaux d’orgue qui s’allument comme des bougies'],
+    casting: { silhouette: 'fine, le cou long', age: '30 ans', gardeRobe: 'robe ivoire fluide, pieds nus, un ruban au poignet', signes: ['un ruban de soie', 'les yeux fermés sur une phrase chantée'] },
+  },
+  '12-01': {
+    signification: 'du latin Eligius : « l’élu ».',
+    inspirations: ['deux alliances coulées dans le même lingot, séparées ensuite', 'un établi en feu, l’or qui coule dans la lingotière'],
+    casting: { silhouette: 'fort, les épaules hautes', age: '45 ans', gardeRobe: 'tablier de cuir d’orfèvre sur chemise sombre', signes: ['des alliances posées sur l’établi', 'un marteau fin', 'des lunettes de joaillier'] },
+  },
+  '12-04': {
+    signification: 'du grec barbaros : « étrangère » — celle qui n’est pas d’ici.',
+    inspirations: ['un bouquet final unique et très long, tiré depuis une barque', 'une tour de pierre éclairée de l’intérieur'],
+    casting: { silhouette: 'droite, les cheveux très courts', age: '30 ans', gardeRobe: 'combinaison ignifugée bleu nuit, gants de cuir', signes: ['une lampe frontale', 'une mèche lente à la main'] },
+  },
+  '12-06': {
+    signification: 'du grec nikê, « victoire », et laos, « peuple ».',
+    inspirations: ['des cadeaux déposés sans un mot, dans le dos des invités', 'un port la nuit, les mâts qui sonnent'],
+    casting: { silhouette: 'épaisse, la barbe longue', age: '60 ans', gardeRobe: 'manteau de laine rouge sombre, étole ancienne', signes: ['trois bourses de cuir', 'un bâton posé, jamais tenu'] },
+  },
+  '12-25': {
+    signification: 'du latin natalis : « jour de naissance ».',
+    inspirations: ['des bougies par centaines, et rien d’autre', 'une table qui déborde, dressée par quatre générations'],
+    casting: { silhouette: 'une tablée plutôt qu’un corps : le personnage du 25 décembre est la maison', age: 'tous les âges, ensemble', gardeRobe: 'les pulls de tout le monde, mal assortis, assumés', signes: ['des bougies par centaines', 'une nappe de lin rouge'] },
+  },
+};
+
 /** L'index du calendrier : `MM-JJ` → profil. */
 export const PROFILS: Record<string, Profil> = Object.fromEntries(
   BASE.map(([jour, personnage, fete, genre, fiche, ponts, mots, source]) => [
     jour,
-    { jour, personnage, fete: fete ?? undefined, genre, fiche, ponts, mots, source } satisfies Profil,
+    {
+      jour, personnage, fete: fete ?? undefined, genre, fiche, ponts, mots, source,
+      signification: ADDENDA[jour]?.signification,
+      inspirations: ADDENDA[jour]?.inspirations,
+      casting: ADDENDA[jour]?.casting,
+    } satisfies Profil,
   ]),
 );
 

@@ -204,9 +204,12 @@ export function clesDuJour(date: Date): Cles {
 /* ————————————————————————— LE STUDIO ————————————————————————— */
 
 export interface StudioDuJour {
-  fond: 'blanc' | 'noir';
+  /** `blanc` un jour ordinaire, `dense` un temps clos, `noir` les trois cas rares. */
+  fond: 'blanc' | 'dense' | 'noir';
   /** Pourquoi ce fond-là. */
   raison: string;
+  /** Vrai quand le temps est clos : la couleur de la saison, assombrie. */
+  dense: boolean;
   /** La pose, l'attribut et la lumière : trois tirages stables. */
   pose: string;
   attribut: string;
@@ -253,26 +256,38 @@ export function studioDuJour(date: Date): StudioDuJour {
   const tempsClos = /carême|avent/i.test(pas.nom);
   const porte = clesDuJour(date).porte !== null;
 
-  const noir = joker || dimanche || tempsClos || porte;
+  /* LE NOIR EST RARE, ET IL VEUT DIRE QUELQUE CHOSE. Trois cas seulement : le
+     joker (un jour qui n'appartient à aucune semaine), le dimanche (on célèbre,
+     la lumière tombe de côté) et les portes de l'année (la lumière change). */
+  const noir = joker || dimanche || porte;
+  /* UN TEMPS CLOS N'EST PAS NOIR : il assombrit la couleur de sa saison. Le
+     carême, l'avent et l'avant-carême gardent donc leur couleur — plus dense,
+     plus sourde — au lieu de disparaître dans le noir. */
+  const dense = tempsClos && !noir;
   const raison = joker
     ? 'un joker : le jour n’appartient à aucune semaine'
     : dimanche
       ? 'un dimanche : on célèbre, la lumière tombe de côté'
-      : tempsClos
-        ? `un temps clos : ${pas.nom.toLowerCase()}`
-        : porte
-          ? 'une porte de l’année : la lumière change'
+      : porte
+        ? 'une porte de l’année : la lumière change'
+        : tempsClos
+          ? `un temps clos : ${pas.nom.toLowerCase()}`
           : 'un jour ordinaire : fond blanc, lumière douce';
 
   void mois;
   void jour;
 
   return {
-    fond: noir ? 'noir' : 'blanc',
+    fond: noir ? 'noir' : dense ? 'dense' : 'blanc',
     raison,
+    dense,
     pose: POSES[graine % POSES.length]!,
     attribut: ATTRIBUTS[(graine >> 4) % ATTRIBUTS.length]!,
-    lumiere: noir ? 'une lumière dure, un seul côté' : 'une lumière douce, deux sources',
+    lumiere: noir
+      ? 'une lumière dure, un seul côté'
+      : dense
+        ? 'une lumière serrée, un fond de saison assombri'
+        : 'une lumière douce, deux sources',
     graine,
   };
 }

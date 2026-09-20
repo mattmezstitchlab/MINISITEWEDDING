@@ -29,8 +29,15 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
 
   const anneeEntiere: Couverture[] = couverturesDeLAnnee(annee);
   const duMois = couverturesDuMois(annee, mois);
-  const affichees = saison ? duMois.filter((c) => c.saison.id === saison) : duMois;
+  const affichees = !saison
+    ? duMois
+    : saison === 'noir'
+      ? duMois.filter((c) => c.pasCommeLesAutres)
+      : saison === 'dense'
+        ? duMois.filter((c) => c.dense)
+        : duMois.filter((c) => c.saison.id === saison);
   const noirsDuMois = duMois.filter((c) => c.pasCommeLesAutres).length;
+  const densesDuMois = duMois.filter((c) => c.dense).length;
 
   return (
     <section id="couvertures" className="border-t border-black/8 py-14">
@@ -43,8 +50,8 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
         </h2>
         <p className="mt-3 max-w-[760px] text-[13.5px] leading-relaxed text-black/55">
           Une par jour, et <strong className="font-bold text-black/75">le même dessin pour toutes</strong> :
-          le fond uni de la saison (et le noir pour les jours qui ne sont pas comme les autres — joker,
-          dimanche, temps clos, porte de l’année), la marque en haut,{' '}
+          le fond uni de la saison — plus dense quand le temps est clos, et noir pour les seuls jours qui
+          ne sont pas comme les autres : le joker, le dimanche, les portes de l’année — la marque en haut,{' '}
           <strong className="font-bold text-black/75">la création au centre</strong> — un cadran de
           vingt-quatre heures, une branche par heure de l’édition —, le nom du jour, et la date en bas.
           Chaque couverture porte ce que le jour apporte : {affichees.length > 0 ? 'le ciel, la lune, le chiffre' : 'ses clés'}.
@@ -101,9 +108,20 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
               <span aria-hidden="true" className="h-3 w-3 rounded-full bg-[#0B0B0F]" />
               Les jours noirs
             </button>
+            <button
+              type="button"
+              onClick={() => setSaison('dense')}
+              aria-pressed={saison === 'dense'}
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] transition ${
+                saison === 'dense' ? 'border-black/60 text-black' : 'border-black/12 text-black/55 hover:border-black/40'
+              }`}
+            >
+              <span aria-hidden="true" className="h-3 w-3 rounded-full bg-[#3E3E46]" />
+              Les temps clos
+            </button>
           </div>
           <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-black/40">
-            {affichees.length} couvertures affichées · {noirsDuMois} à fond noir ce mois-ci
+            {affichees.length} couvertures affichées · {noirsDuMois} à fond noir · {densesDuMois} en saison assombrie
           </span>
         </div>
 
@@ -134,7 +152,8 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
         <div className="mt-8 flex flex-wrap items-center gap-3 rounded-[18px] border border-black/8 bg-white px-5 py-4">
           <p className="min-w-[280px] flex-1 text-[13px] leading-relaxed text-black/60">
             Le décor est posé : {anneeEntiere.length} jours, {anneeEntiere.filter((c) => c.pasCommeLesAutres).length} à fond
-            noir, quatre saisons du jeu, un cadran par jour. Ce qu’on décide maintenant, c’est{' '}
+            noir — les dimanches, les portes de l’année et le joker —, {anneeEntiere.filter((c) => c.dense).length} en
+            saison assombrie les temps clos, quatre saisons du jeu, un cadran par jour. Ce qu’on décide maintenant, c’est{' '}
             <strong className="font-bold text-black/75">ce qui va dans les vingt-quatre pages</strong> — et
             c’est ce qui nourrira les mini-sites et les cartes, sans reposer la même question à personne.
           </p>

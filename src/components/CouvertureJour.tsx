@@ -179,6 +179,20 @@ export default function CouvertureJour({
           {couverture.cles.slice(0, 3).map((c) => `${c.label.toUpperCase()} ${c.valeur}`.toUpperCase()).join(' · ')}
         </text>
       )}
+      {couverture.dense && !vignette && (
+        <text
+          x="50"
+          y="132"
+          textAnchor="middle"
+          fill={encre}
+          opacity="0.45"
+          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+          fontSize="2.2"
+          letterSpacing="0.5"
+        >
+          SAISON ASSOMBRIE — {couverture.raison.toUpperCase()}
+        </text>
+      )}
       {couverture.pasCommeLesAutres && !vignette && (
         <text
           x="50"

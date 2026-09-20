@@ -2145,3 +2145,63 @@ temps (vingt-quatre branches, seules celles du temps allumées, fond, titre et d
 inchangés, longueurs inchangées), les six lumières différentes, le bloc rendu
 (ses temps, ses bornes, le personnage, le bouton), et **la chaîne du monde**, avec
 ses nombres vérifiés contre les briques qui les portent.
+
+## §50 — Le noir redevient rare, et les 365 prompts maîtres sont engendrés
+
+**Décision — le noir.** Il ne tombe plus que sur **trois cas**, et il veut dire
+quelque chose : **le joker** (le jour n'appartient à aucune semaine), **le
+dimanche** (on célèbre, la lumière tombe de côté) et **les portes de l'année**
+(la lumière change). En 2026 : **63 jours sur 365**, dont 52 dimanches, 10 portes
+et le joker. Le mois le plus noir n'en compte plus que huit.
+
+**Les temps clos ne sont pas noirs : ils assombrissent leur saison.** Le carême,
+l'avent et l'avant-carême — **73 jours** — gardent la couleur de leur saison,
+plus dense, plus sourde, avec l'encre claire. `src/lib/couleurs.ts` en fait une
+seule fonction — `assombrir(hex, taux)`, **bornée à 0,75** (au-delà, la saison ne
+se reconnaît plus, et c'est exactement ce qu'on ne veut pas) ; `studioDuJour`
+rend désormais `blanc`, `dense` ou `noir` ; `PortraitStudio` et la couverture
+suivent, et le kiosque a **son filtre** (« Les temps clos »), à côté de « Les
+jours noirs ».
+
+**Le système de prompts — `src/lib/promptsVisuels.ts`.** La direction artistique
+est **écrite une fois** (onze points : photographie éditoriale de mode, véritable
+direction de casting, stylisme contemporain, mise en scène cinématographique,
+aucun kitsch religieux, aucune représentation générique, pas de cartoon, pas de
+cliché touristique…), avec **ses interdits** et **son cadre** (portrait 5:7,
+85 mm, mi-corps). Chaque fiche produit un **prompt maître** en quatre blocs —
+**IDENTITÉ** (ce qui est documenté, et sa source), **INTERPRÉTATION** (le
+personnage contemporain, sa garde-robe, ses ponts, chacun avec son niveau),
+**DIRECTION ARTISTIQUE** (la collection), **IDENTITÉ DU JOUR** (la date, la fête,
+la saison et sa couleur, le moment) —, plus une **version courte** pour l'outil
+d'image, et une **direction de casting** qui tient les cinq scènes : silhouette,
+âge, garde-robe, **signes tenus**.
+
+**Cinq images, une seule personne.** `MOMENTS_VISUELS` définit les cinq moments —
+aube, matin, midi, après-midi, soir — chacun par sa lumière, sa posture, son
+décor, son énergie, son stylisme et sa **narration**. La nuit n'a pas de scène :
+c'est la queue de la veille, et la couverture y garde son dessin. `scenesDuPersonnage`
+engendre les cinq prompts : le maître **plus** le moment — donc **le même
+personnage cinq fois**, jamais cinq personnes.
+
+**Le document de production.** `docs/prompts-maitres.md` est **engendré** par
+`npm run prompts` : il ne s'écrit pas à la main, donc il ne diverge pas du site.
+Il porte le tableau de production, la direction artistique, les cinq moments,
+**les seize fiches prêtes** (fiche structurée, prompt maître, cinq scènes, version
+courte) et **les 349 fiches à documenter**, avec ce qui manque à chacune.
+
+**Une seule règle tient le tout** : *on n'illustre pas ce qu'on n'a pas
+documenté*. Un jour sans fiche n'a **pas** de prompt — il a la liste de ce qui lui
+manque. C'est ce qui empêche la série de se remplir d'associations inventées.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 1115**, `npm run
+prompts` reproductible. Les vérifications de la passe : les trois raisons du noir
+et leur compte exact (52 / 10 / 1, et 63 en tout), les 73 jours assombris par
+famille (27 / 28 / 18), l'encre claire des temps clos, `studioDuJour` sur les
+trois fonds, les canaux et l'assombrissement d'une couleur (dont le taux borné et
+l'écriture illisible), la direction artistique et ses interdits, le cadre, les
+cinq moments (leurs champs, leur ordre, l'absence de la nuit), le prompt maître
+d'un personnage (ses quatre blocs, la source, la signification, les ponts
+nivelés, la direction de casting), les cinq scènes (le maître conservé, cinq
+lumières, cinq narrations), le tableau de production (365 entrées, 16 prêtes,
+80 scènes), les jours sans fiche, et **le profil qui dit désormais le sens du
+prénom et ses cinq lumières**.

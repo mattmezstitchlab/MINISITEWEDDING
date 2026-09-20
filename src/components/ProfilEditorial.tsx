@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import {
-  AVERTISSEMENT_PROFILS, NIVEAUX, REGLE_DES_PROFILS, genreDuJour, pontsParNiveau, profilDuJour,
-  type Niveau, type Pont,
+  AVERTISSEMENT_PROFILS, NIVEAUX, REGLE_DES_PROFILS, SIGNIFICATION_SOURCE, genreDuJour, pontsParNiveau,
+  profilDuJour, type Niveau, type Pont,
 } from '../lib/profilsEditoriaux';
+import { MOMENTS_VISUELS, PAS_DIMAGE_LA_NUIT } from '../lib/promptsVisuels';
 
 /**
  * LE PROFIL DU JOUR — LA PORTE D'ENTRÉE
@@ -99,6 +100,13 @@ export default function ProfilEditorial({ date = new Date() }: { date?: Date }) 
               ))}
             </div>
 
+            {jour.profil.signification && (
+              <p className="mt-5 max-w-[820px] text-[13.5px] leading-relaxed text-black/60">
+                <strong className="font-bold text-black/80">Ce que le prénom veut dire</strong> —{' '}
+                {jour.profil.signification} <span className="text-black/35">({SIGNIFICATION_SOURCE})</span>
+              </p>
+            )}
+
             {groupe.map(({ niveau, ponts }) => (
               <div key={niveau.id} className="mt-8">
                 <div className="flex flex-wrap items-baseline gap-3">
@@ -108,6 +116,26 @@ export default function ProfilEditorial({ date = new Date() }: { date?: Date }) 
                 <Ponts ponts={ponts} />
               </div>
             ))}
+
+            {/* — LES CINQ SCÈNES : LE MÊME PERSONNAGE, CINQ LUMIÈRES — */}
+            <div className="mt-8 rounded-[18px] border border-black/8 bg-white px-5 py-4">
+              <h3 className="text-[15px] font-bold tracking-tight">Ses cinq lumières</h3>
+              <p className="mt-1 text-[13px] leading-relaxed text-black/55">
+                Le même personnage, cinq fois : même visage, même silhouette, même garde-robe. Ce qui change, c’est la
+                lumière, la posture, le décor et la narration. {PAS_DIMAGE_LA_NUIT}
+              </p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {MOMENTS_VISUELS.map((moment) => (
+                  <li
+                    key={moment.id}
+                    className="rounded-full border border-black/12 px-3 py-1.5 font-mono text-[9.5px] uppercase tracking-[0.14em] text-black/60"
+                    title={moment.narration}
+                  >
+                    {jour.personnage} — {moment.nom}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.16em] text-black/40">
               Source : {jour.profil.source}.

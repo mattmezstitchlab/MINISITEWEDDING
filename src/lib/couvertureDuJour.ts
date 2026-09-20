@@ -2,6 +2,7 @@ import { jourNomme, jokerDuJour } from './saintsDuJour';
 import { cleDuJour, plat, PROFILS } from './profilsEditoriaux';
 import { MOIS, MOIS_LONGS } from './calendrier';
 import { heuresDeLaPart, partActuelle, partDeLHeure, partParId, PARTS, type PartDuJour } from './moments';
+import { assombrir, TAUX_TEMPS_CLOS } from './couleurs';
 import { carteDuNumero, semaineDeLAnnee, type Saison } from './jeuDeCartes';
 import { clesDuJour, jourDeLAnnee, meteoDuJour, studioDuJour } from './jourDuMagazine';
 
@@ -81,12 +82,14 @@ export interface CouvertureJour {
   fond: string;
   /** L'encre, calculée pour rester lisible sur ce fond. */
   encre: string;
-  /** Vrai les jours qui ne sont pas comme les autres (joker, dimanche, temps clos, porte). */
+  /** Vrai les trois jours rares : le joker, le dimanche, les portes de l'année. */
   pasCommeLesAutres: boolean;
+  /** Vrai les temps clos : la couleur de la saison, assombrie. Ce n'est pas du noir. */
+  dense: boolean;
   /** Pourquoi — dit en clair, comme partout ailleurs. */
   raison: string;
-  /** Ce que le studio donnerait : fond blanc, ou fond noir. */
-  studio: 'blanc' | 'noir';
+  /** Ce que le studio donnerait : fond blanc, assombri, ou noir. */
+  studio: 'blanc' | 'dense' | 'noir';
   /** Le temps du jour qu'on regarde, quand la couverture s'éclaire à son heure. */
   part?: { id: string; nom: string; heures: number[] };
   /** Les clés du jour, en une ligne chacune. */
@@ -163,9 +166,12 @@ export function couvertureDuJour(date: Date): CouvertureJour {
     saison: carte.saison,
     figure: carte.nom,
     semaine,
-    fond: studio.fond === 'noir' ? FOND_NOIR : carte.saison.fond,
-    encre: studio.fond === 'noir' ? '#F3F1ED' : carte.saison.encre,
+    /* Le fond : la couleur de la saison — assombrie quand le temps est clos, et
+       noire seulement les trois jours rares (joker, dimanche, porte). */
+    fond: studio.fond === 'noir' ? FOND_NOIR : studio.dense ? assombrir(carte.saison.fond, TAUX_TEMPS_CLOS) : carte.saison.fond,
+    encre: studio.fond === 'noir' || studio.dense ? '#F3F1ED' : carte.saison.encre,
     pasCommeLesAutres: studio.fond === 'noir',
+    dense: studio.dense,
     raison: studio.raison,
     studio: studio.fond,
     cles: lignes,
