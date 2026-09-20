@@ -1,4 +1,6 @@
 import { canaux } from './couleurs';
+import { MAGAZINES } from './semaines';
+import { manquesDeLaCollection } from './visuelsDuMagazine';
 import { couvertureDuJour } from './couvertureDuJour';
 import { ficheDuJour } from './fichesAnnee';
 import { MOMENTS_VISUELS, SCENES_PAR_PERSONNAGE, type MomentVisuel } from './promptsVisuels';
@@ -109,7 +111,19 @@ export function fichiersDuPlan(jour: string, slot: string): string[] {
   return Array.from({ length: RANGS_PAR_PLAN }, (_, i) => adresseDuFichier(jour, slot, i + 1));
 }
 
-/* ————————————————— L'ANNÉE : 365 FONDS, ET 1 825 SCÈNES ————————————————— */
+/* ———————————— L'ANCIEN PLAN, PAR JOUR — REPLI DE TRANSITION ————————————
+ *
+ * Ce qui suit appartient au **modèle précédent** : 365 fonds de couverture et
+ * 1 825 scènes, cinq moments par jour, sur le personnage du jour. Le nouveau
+ * modèle ne produit plus par jour mais **par semaine** (`semaine-38/cover.jpg`
+ * et ses sept chapitres) : le plan de la collection est plus bas.
+ *
+ * Ces fonctions restent utiles, et à leur place : les dossiers `MM-JJ/` déjà
+ * livrés servent de **repli de transition** au troisième rang de la cascade
+ * (`visuelsDuMagazine.ts`), et le casting garde ses cinq critères pour choisir
+ * entre plusieurs candidates. Rien n'est détruit : ce n'est simplement plus le
+ * plan principal.
+ */
 
 /**
  * **Les 365 fonds de couverture.** Une par jour, disponibles tout de suite : la
@@ -617,3 +631,121 @@ export function eliminerEntreJours(
 
   return { joursRassembles, rassembles, tours, retenus: gardes, decision };
 }
+
+/* ————————————— LE PLAN DE LA COLLECTION — 54 COUVERTURES, 378 CHAPITRES —————————————
+ *
+ * **Le seul plan de production à jour.** Une image attendue porte son magazine,
+ * son chapitre, sa palette, son sujet et son titre : tout vient de `semaines.ts`
+ * et de `directionsDuMagazine.ts`, jamais d'une liste écrite à la main.
+ */
+
+export interface AttenduDeLaCollection extends AttenduVisuel {
+  /** Le numéro du magazine : 1 à 54. */
+  semaine: number;
+  /** Le chapitre : 1 à 7 — `null` pour la couverture. */
+  chapitre: number | null;
+  /** Le nom du chapitre, ou « La couverture du magazine ». */
+  universDuChapitre: string;
+  /** Le titre du magazine : « Septembre doré ». */
+  titreDuMagazine: string;
+  /** La saison du magazine. */
+  saison: string;
+  /** La famille visuelle du magazine. */
+  styleDuMagazine: string;
+  /** Le motif qui tient les sept chapitres ensemble. */
+  motif: string;
+}
+
+/** Le dossier d'un magazine, tel que la bibliothèque le nomme : `semaine-38`. */
+export function dossierDeLaSemaine(numero: number): string {
+  return `semaine-${String(numero).padStart(2, '0')}`;
+}
+
+/**
+ * Les fichiers possibles d'un plan de la collection : le premier est celui
+ * qu'on veut, `-2` et `-3` sont des candidates — le casting choisit avec ses
+ * cinq critères, exactement comme avant.
+ */
+export function fichiersDuPlanDeLaCollection(numero: number, slot: string): string[] {
+  const base = `/images/magazine/${dossierDeLaSemaine(numero)}/${slot}`;
+  return Array.from({ length: RANGS_PAR_PLAN }, (_, i) => (i === 0 ? base : base.replace(/\.jpg$/, `-${i + 1}.jpg`)));
+}
+
+/** **Les 54 couvertures attendues** — les portes d'entrée de la collection. */
+export function couverturesDeLaCollection(): AttenduDeLaCollection[] {
+  return MAGAZINES.map((magazine) => ({
+    jour: dossierDeLaSemaine(magazine.numero),
+    slot: 'cover',
+    chemin: `/images/magazine/${dossierDeLaSemaine(magazine.numero)}/cover`,
+    fichiers: fichiersDuPlanDeLaCollection(magazine.numero, 'cover.jpg'),
+    moment: null,
+    palette: magazine.palette.fond,
+    titre: `${magazine.etiquette} — ${magazine.titre}`,
+    sujet: `La couverture du magazine ${magazine.numero} : ${magazine.coverSujet}.`,
+    format: '5 / 7',
+    semaine: magazine.numero,
+    chapitre: null,
+    universDuChapitre: 'La couverture du magazine',
+    titreDuMagazine: magazine.titre,
+    saison: magazine.saison.nom,
+    styleDuMagazine: magazine.style,
+    motif: magazine.motif,
+  }));
+}
+
+/** **Les 378 chapitres attendus** — sept par magazine, dans l'ordre. */
+export function chapitresDeLaCollection(): AttenduDeLaCollection[] {
+  return MAGAZINES.flatMap((magazine) =>
+    magazine.chapitres.map((chapitre) => ({
+      jour: dossierDeLaSemaine(magazine.numero),
+      slot: chapitre.chapitre.fichier.replace('.jpg', ''),
+      chemin: `/images/magazine/${dossierDeLaSemaine(magazine.numero)}/${chapitre.chapitre.id}`,
+      fichiers: fichiersDuPlanDeLaCollection(magazine.numero, chapitre.chapitre.fichier),
+      moment: null,
+      palette: magazine.palette.accent,
+      titre: `${chapitre.titreComplet} — ${magazine.titre}`,
+      sujet: `${chapitre.chapitre.brief} — ${chapitre.sujet}.`,
+      format: '5 / 7',
+      semaine: magazine.numero,
+      chapitre: chapitre.numero,
+      universDuChapitre: chapitre.chapitre.titre,
+      titreDuMagazine: magazine.titre,
+      saison: magazine.saison.nom,
+      styleDuMagazine: magazine.style,
+      motif: magazine.motif,
+    })),
+  );
+}
+
+/** **Les 432 images de la collection**, dans l'ordre de production : les couvertures d'abord. */
+export function imagesDeLaCollection(): AttenduDeLaCollection[] {
+  return [...couverturesDeLaCollection(), ...chapitresDeLaCollection()];
+}
+
+/** Les comptes de la collection, écrits une fois. */
+export const COUVERTURES_ATTENDUES = 54;
+export const CHAPITRES_ATTENDUS = 378;
+export const IMAGES_ATTENDUES_DE_LA_COLLECTION = 432;
+
+/** Où en est la collection : ce qui est livré, ce qui manque, et où. */
+export function etatDeLaCollection(): {
+  attendues: number;
+  livrees: number;
+  couverturesLivrees: number;
+  chapitresLivres: number;
+  prochaines: Array<{ semaine: number; slot: string; fichier: string }>;
+} {
+  const manques = manquesDeLaCollection();
+  return {
+    attendues: IMAGES_ATTENDUES_DE_LA_COLLECTION,
+    livrees: IMAGES_ATTENDUES_DE_LA_COLLECTION - manques.length,
+    couverturesLivrees: COUVERTURES_ATTENDUES - manques.filter((m) => m.slot === 'cover.jpg').length,
+    chapitresLivres: CHAPITRES_ATTENDUS - manques.filter((m) => m.slot !== 'cover.jpg').length,
+    prochaines: manques.slice(0, 8).map((m) => ({
+      semaine: m.magazine,
+      slot: m.slot,
+      fichier: `/images/magazine/${dossierDeLaSemaine(m.magazine)}/${m.slot}`,
+    })),
+  };
+}
+
