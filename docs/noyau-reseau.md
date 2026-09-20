@@ -3007,3 +3007,32 @@ Un document qui arrive — un PDF, une capture d'écran, un SMS, une page — es
 **extrait (OCR), reconnu, puis classé**. Le fichier repart, l'information
 reste, rangée à sa place dans le portefeuille. C'est la condition pour que le
 Ripple reste léger, propre, et sans doublons.
+
+---
+
+## §63 — Un seul objet qui réunit tout, et un seul SUPER SHOP
+
+**L'accueil, repris.** Le cadran générique part : c'est du cadran **du logo**
+dont on parlait, pas d'une roue à rôles. À la place, le visuel le plus
+représentatif du concept — le soleil-cadran au centre, les couvertures qui
+tournent autour aux couleurs des quatre saisons (`/images/concept-super-
+mariage.jpg`) — et devant lui **un seul bloc**, dans le style de la page
+Ripple : **l'objet unique**. Il prend la forme qu'on lui donne — ticket de
+caisse, carte postale, timbre, tampon, ticket spectacle, billet d'avion,
+sticker — et il porte le point zéro en direct : un nom, un jour, et tout le
+reste suit. On verra après pour le reste.
+
+**Un seul SUPER SHOP.** Tout ce qui se vend est classé dans le shop, et il n'y
+a plus qu'une page : `/supermarriage` redirige vers `/shop`, la nav du header,
+le teaser et les univers mènent tous au shop. Dedans, le système visuel du
+hero est gardé (il marche bien), et trois choses arrivent :
+
+- **le grand filtre** : la recherche en toutes lettres rejoint les catégories
+  et les modes — tout ce qui se vend se trie ;
+- **les cartes se cochent** : chaque pièce a son rond à cocher ;
+- **le ticket du shop** : un reçu, à côté de la grille, qui se remplit des
+  pièces cochées — mode, prix, total en pièces. Comme sur la page Ripple :
+  rien n'est réservé tant qu'on ne l'a pas voulu.
+
+Ça libère le SUPER SHOP de demain : le shop devient le magasin unique, et le
+ticket la façon d'y choisir.

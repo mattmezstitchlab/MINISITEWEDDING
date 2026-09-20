@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Gift, Handshake, ShoppingBag, Tag, Truck } from 'lucide-react';
+import { ArrowRight, Check, Gift, Handshake, Search, ShoppingBag, Tag, Truck } from 'lucide-react';
 import {
   SHOP_CATEGORIES,
   SHOP_HERO,
@@ -44,6 +44,14 @@ export default function Shop() {
   const [categorie, setCategorie] = useState<string>('tout');
   const [modeActif, setModeActif] = useState<ShopMode | null>(null);
   const [visuelHero, setVisuelHero] = useState(SHOP_HERO);
+  /** Le grand filtre : ce que l'on cherche, en toutes lettres. */
+  const [requete, setRequete] = useState('');
+  /** Les pièces cochées : elles remplissent le ticket, à côté. */
+  const [coches, setCoches] = useState<string[]>([]);
+
+  /** Cocher une pièce : elle monte sur le ticket ; recocher la redescend. */
+  const basculerCoche = (slug: string) =>
+    setCoches((liste) => (liste.includes(slug) ? liste.filter((s) => s !== slug) : [...liste, slug]));
 
   /**
    * LE SHOP D'UN RÔLE
@@ -68,8 +76,12 @@ export default function Shop() {
     const parCategorie = categorie === 'tout'
       ? dansLeRole
       : dansLeRole.filter((p) => p.category === categorie);
-    return modeActif ? parCategorie.filter((p) => p.modes.includes(modeActif)) : parCategorie;
-  }, [categorie, modeActif, piecesDuRole]);
+    const parMode = modeActif ? parCategorie.filter((p) => p.modes.includes(modeActif)) : parCategorie;
+    const q = requete.trim().toLowerCase();
+    return q
+      ? parMode.filter((p) => `${p.name} ${p.tagline} ${p.category}`.toLowerCase().includes(q))
+      : parMode;
+  }, [categorie, modeActif, piecesDuRole, requete]);
 
   /** La bande du hero : les pièces mises en avant, en cartes vivantes. */
   const cartesDuShop = useMemo(() => cartesDesProduits(PRODUITS_POUR_BANDE), []);
@@ -91,7 +103,7 @@ export default function Shop() {
 
         <div className="vp-page relative w-full pb-40 sm:pb-44">
           <span className="vp-eyebrow !text-white/70">
-            {role ? `Le Shop de ${role.nom}` : 'Le Shop Super Mariage'}
+            {role ? `Le Shop de ${role.nom}` : 'SUPER SHOP — tout ce qui se vend, classé'}
           </span>
           <h1
             className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
@@ -99,7 +111,7 @@ export default function Shop() {
           >
             {role
               ? `${piecesDuRole!.length} pièces, choisies pour ce rôle.`
-              : 'Tout ce qu’il faut, sans rien acheter pour une seule journée.'}
+              : 'Tout ce qui se vend, classé, coché, sur un ticket.'}
           </h1>
           <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-white/75">
             {role
@@ -176,6 +188,16 @@ export default function Shop() {
       {/* Les filtres de catégorie */}
       <section className="sticky top-[70px] z-30 border-y border-black/5 bg-white/95 py-3 backdrop-blur">
         <div className="vp-page flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <div className="flex shrink-0 items-center gap-2 rounded-full border border-black/12 bg-white px-3 py-1.5">
+            <Search size={13} className="text-black/40" />
+            <input
+              value={requete}
+              onChange={(e) => setRequete(e.target.value)}
+              placeholder="Chercher une pièce"
+              aria-label="Chercher une pièce dans le shop"
+              className="w-[130px] bg-transparent text-[12px] text-[#0B0C12] placeholder:text-black/35 focus:outline-none sm:w-[190px]"
+            />
+          </div>
           <button
             type="button"
             onClick={() => setCategorie('tout')}
@@ -203,9 +225,10 @@ export default function Shop() {
         </div>
       </section>
 
-      {/* La grille de produits */}
+      {/* La grille de produits, et le ticket des pièces cochées */}
       <section id="pieces" className="py-12">
-        <div className="vp-page">
+        <div className="vp-page grid gap-10 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
+        <div>
           <div className="mb-6 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="vp-title text-[20px]">
               {categorie === 'tout'
@@ -227,8 +250,23 @@ export default function Shop() {
             <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
               {produits.map((produit, i) => {
                 const Icone = ICONES_MODE[produit.mode];
+                const coche = coches.includes(produit.slug);
                 return (
-                  <motion.div key={produit.slug} {...fadeUp} transition={{ duration: 0.4, delay: (i % 6) * 0.04 }}>
+                  <motion.div key={produit.slug} {...fadeUp} transition={{ duration: 0.4, delay: (i % 6) * 0.04 }} className="relative">
+                    {/* Cocher la pièce : elle monte sur le ticket. */}
+                    <button
+                      type="button"
+                      onClick={() => basculerCoche(produit.slug)}
+                      aria-label={coche ? `Retirer ${produit.name} du ticket` : `Cocher ${produit.name} sur le ticket`}
+                      aria-pressed={coche}
+                      className={`absolute right-4 bottom-4 z-10 flex h-8 w-8 items-center justify-center rounded-full border transition ${
+                        coche
+                          ? 'border-transparent bg-black text-white'
+                          : 'border-black/15 bg-white/95 text-black/50 hover:border-black/50 hover:text-black'
+                      }`}
+                    >
+                      <Check size={14} />
+                    </button>
                     <Link
                       to={`/shop/${produit.slug}`}
                       className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-black/10 bg-white p-2.5 transition-all hover:-translate-y-1 hover:border-black/20 hover:shadow-xl"
@@ -261,9 +299,7 @@ export default function Shop() {
                             <div className="text-[15px] font-bold text-[#0B0C12]">{produit.price}</div>
                             <div className="text-[10.5px] text-black/45">{produit.unit}</div>
                           </div>
-                          <span className="flex items-center gap-1 text-[11.5px] font-semibold text-[#0B0C12] transition group-hover:translate-x-0.5">
-                            Voir <ArrowRight size={12} />
-                          </span>
+                          <span aria-hidden="true" className="w-8" />
                         </div>
                       </div>
                     </Link>
@@ -272,6 +308,65 @@ export default function Shop() {
               })}
             </div>
           )}
+        </div>
+
+        {/* ——— LE TICKET DU SHOP : les pièces cochées, comme un reçu ——— */}
+        <aside aria-label="Le ticket du shop" className="lg:sticky lg:top-24">
+          <div className="rounded-t-[10px] bg-[#171717] px-4 py-2">
+            <div className="mx-auto h-1 w-24 rounded-full bg-black/60" />
+          </div>
+          <div className="bg-[#FFFEF7] p-5 font-mono text-[11.5px] leading-relaxed text-black shadow-[0_25px_60px_rgba(0,0,0,0.22)]">
+            <div className="text-center font-black tracking-[0.18em]">SUPER SHOP</div>
+            <div className="mt-1 text-center text-[9.5px] uppercase tracking-[0.14em] text-black/45">
+              les pièces cochées · {role ? role.nom : 'tout le shop'}
+            </div>
+            <div className="my-3 border-y border-dashed border-black/20 py-2 text-center text-[9.5px]">
+              {coches.length} pièce{coches.length > 1 ? 's' : ''} sur le ticket
+            </div>
+
+            {coches.length === 0 ? (
+              <p className="py-2 text-center text-black/50">
+                Cochez des pièces : le ticket se remplit tout seul.
+              </p>
+            ) : (
+              coches.map((slug) => {
+                const piece = SHOP_PRODUCTS.find((x) => x.slug === slug);
+                if (!piece) return null;
+                return (
+                  <div key={slug} className="border-b border-dotted border-black/15 py-2">
+                    <div className="flex justify-between gap-3">
+                      <span className="font-bold">{piece.name}</span>
+                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-black/45">
+                        {modeLabel(piece.mode)}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-[10.5px] text-black/55">{piece.price} · {piece.unit}</div>
+                  </div>
+                );
+              })
+            )}
+
+            <div className="mt-3 flex items-baseline justify-between border-t-2 border-black pt-2">
+              <span className="text-[12px] font-black">VOTRE TICKET</span>
+              <span className="text-[14px] font-black tabular-nums">
+                {coches.length} pièce{coches.length > 1 ? 's' : ''}
+              </span>
+            </div>
+            {coches.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setCoches([])}
+                className="mt-2 w-full rounded-full border border-black/20 py-1.5 text-[10px] uppercase tracking-widest text-black/60 transition hover:border-black/50"
+              >
+                Vider le ticket
+              </button>
+            )}
+            <div className="mt-2 text-[9px] uppercase tracking-widest text-black/40">
+              Rien n’est réservé tant que vous ne l’avez pas voulu
+            </div>
+          </div>
+          <div className="h-3 rotate-180 bg-[radial-gradient(circle_at_6px_0px,_transparent_6px,_#FFFEF7_6px)] bg-[length:12px_12px] bg-repeat-x" />
+        </aside>
         </div>
       </section>
 

@@ -454,7 +454,7 @@ export default function PageUnivers({ styleId }: { styleId: string }) {
               <Link to="/prestataire" className="font-semibold text-white/80 no-underline hover:underline">
                 Espace prestataire
               </Link>
-              <Link to="/supermarriage" className="font-semibold text-white/80 no-underline hover:underline">
+              <Link to="/shop" className="font-semibold text-white/80 no-underline hover:underline">
                 Faire ses courses
               </Link>
             </div>

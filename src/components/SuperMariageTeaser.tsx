@@ -43,7 +43,7 @@ export default function SuperMariageTeaser() {
 
           <div className="mt-7 flex flex-wrap items-center gap-2.5">
             <Link
-              to="/supermarriage"
+              to="/shop"
               className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-bold text-black no-underline transition hover:brightness-110"
               style={{ background: '#00FF88' }}
             >

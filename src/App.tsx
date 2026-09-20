@@ -21,7 +21,6 @@ import CardStudio from './pages/CardStudio';
 import WeddingPeople from './pages/WeddingPeople';
 import Invitation from './pages/Invitation';
 import VendorStudio from './pages/VendorStudio';
-import SuperMariage from './pages/SuperMariage';
 import LeMariage from './pages/LeMariage';
 import PageMetier from './pages/PageMetier';
 import PageProfil from './pages/PageProfil';
@@ -70,8 +69,8 @@ export default function App() {
             <Route path="/ripple" element={<SuperRipple />} />
             {/* SUPER RIPPLE a remplacé SUPER FOOTER : l'ancienne adresse suit. */}
             <Route path="/footer" element={<Navigate to="/ripple" replace />} />
-            {/* SuperMariage : le magasin où l'on coche son mariage, et le ticket suit. */}
-            <Route path="/supermarriage" element={<SuperMariage />} />
+            {/* Une seule page SUPER SHOP : le shop, son ticket, ses coches. */}
+            <Route path="/supermarriage" element={<Navigate to="/shop" replace />} />
             {/* Le mariage, en entier : l'article, la playlist, le récap — une page par univers. */}
             <Route path="/le-mariage" element={<LeMariage />} />
             <Route path="/le-mariage/:styleId" element={<LeMariage />} />

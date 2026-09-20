@@ -573,7 +573,7 @@ check(
 );
 
 /* L'accueil ouvre le magasin. */
-check('l’accueil ouvre le magasin', accueil.includes('/supermarriage'), true);
+check('l’accueil ouvre le magasin', accueil.includes('to="/shop"') || accueil.includes('/shop'), true);
 check('l’accueil annonce les courses', accueil.includes('Faire mes courses'), true);
 
 /* ------------------- les signatures d'univers : un geste par mini-site */
@@ -3707,14 +3707,23 @@ check('et son repère répond', repereDe('timbre'), 'timbre');
 /* Le header porte les grandes entrées du concept. */
 check('la nav du header annonce les grands cœurs', entete.includes('aria-label="Les grandes entrées"'), true);
 
-/* ——— LE CADRAN, AU CENTRE DE L'ACCUEIL : LA VOIX, LES RÔLES, LA VIDÉO ——— */
+/* ——— LE HERO DU CONCEPT : UN SEUL OBJET QUI RÉUNIT TOUT ——— */
 
-check('le cadran ouvre l’accueil', accueil.includes('Le cadran du concept'), true);
-check('on peut le faire pivoter', ['Faire pivoter le cadran vers la gauche', 'Faire pivoter le cadran vers la droite'].every((f) => accueil.includes(f)), true);
-check('sans rôle, c’est la voix du concept', accueil.includes('Le centre du cadran — lancer la voix du concept'), true);
-check('et la voix se génère à part', accueil.includes('/audio/explication-concept.mp3'), true);
-check('la vidéo de présentation passe en fond', accueil.includes('/videos/presentation.mp4'), true);
-check('les rôles sont autour du cadran', ['Les mariés', 'Les prestataires', 'Les témoins'].every((r) => accueil.includes(r)), true);
+check('le concept ouvre l’accueil sur un seul objet', accueil.includes('Un seul objet, qui réunit tout.'), true);
+check('avec le visuel du concept', accueil.includes('/images/concept-super-mariage.jpg'), true);
+check(
+  'l’objet unique prend toutes les formes',
+  ['Prendre la forme Le reçu', 'Prendre la forme La carte', 'Prendre la forme Le timbre', 'Prendre la forme Le tampon', 'Prendre la forme Le ticket', 'Prendre la forme Le sticker'].every((f) => accueil.includes(f)),
+  true,
+);
+check('et il porte le point zéro', accueil.includes('Le nom du point zéro'), true);
+
+/* ——— LE SHOP UNIQUE : le grand filtre, les coches, le ticket ——— */
+
+check('le shop s’appelle SUPER SHOP', pageShop.includes('SUPER SHOP — tout ce qui se vend, classé'), true);
+check('le grand filtre cherche une pièce', pageShop.includes('Chercher une pièce'), true);
+check('les cartes produits se cochent', pageShop.includes('sur le ticket'), true);
+check('et le ticket attend ses coches', pageShop.includes('VOTRE TICKET'), true);
 
 check('le magazine d’abord', ['SUPER MAGAZINE', 'LE MARIAGE', 'SUPER SHOP', 'SUPER RIPPLE'].every((m) => entete.includes(m)), true);
 
