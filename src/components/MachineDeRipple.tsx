@@ -311,7 +311,7 @@ export default function MachineDeRipple({
             data-touche-mot={motPasser}
             disabled={!auTicket && !proposition}
             onClick={onPasser}
-            className="flex h-12 w-12 flex-col items-center justify-center gap-0.5 rounded-full border border-white/15 text-white/55 transition hover:border-white/50 hover:text-white disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:text-white/55"
+            className="flex h-[52px] w-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-white/15 text-white/55 transition hover:border-white/50 hover:text-white disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:text-white/55"
           >
             <X size={14} />
             <span className="font-mono text-[7.5px] uppercase tracking-[0.08em]">{motPasser}</span>
@@ -322,7 +322,7 @@ export default function MachineDeRipple({
             data-touche-mot={motValider}
             disabled={!auTicket && !proposition}
             onClick={onValider}
-            className="flex h-12 w-12 flex-col items-center justify-center gap-0.5 rounded-full border border-[#00FF88]/60 bg-[#00FF88] text-black transition hover:brightness-110 disabled:border-white/15 disabled:bg-transparent disabled:text-white/25"
+            className="flex h-[52px] w-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-[#00FF88]/60 bg-[#00FF88] text-black transition hover:brightness-110 disabled:border-white/15 disabled:bg-transparent disabled:text-white/25"
           >
             <Check size={15} />
             <span className="font-mono text-[7.5px] uppercase tracking-[0.08em]">{motValider}</span>
