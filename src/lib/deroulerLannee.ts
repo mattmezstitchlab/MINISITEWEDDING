@@ -1,6 +1,7 @@
 import { MOIS } from './calendrier';
 import { couvertureDuJour, type CouvertureJour } from './couvertureDuJour';
 import { bornesDeLaSemaine, JEU_DE_54, SAISONS, type Saison } from './jeuDeCartes';
+import { chapitreDeLaDate, magazineDeLaDate } from './semaines';
 
 /**
  * DÉROULER L'ANNÉE — LA TIMELINE EN COUVERTURES
@@ -18,6 +19,14 @@ export interface JourDeLaTimeline {
   date: Date;
   nom: string;
   couverture: CouvertureJour;
+  /**
+   * **Le magazine de la semaine, et le chapitre du jour** : la molette ne
+   * descend plus seulement vers une date, elle descend vers un chapitre — et
+   * elle peut le dire.
+   */
+  magazine: number;
+  chapitre: number;
+  titreDuChapitre: string;
 }
 
 /** Les quatre saisons, dans l'ordre de l'année. */
@@ -57,11 +66,15 @@ export function joursDeLaSemaine(annee: number, semaine: number): JourDeLaTimeli
     const date = new Date(debut.getTime() + i * 24 * 3600 * 1000);
     if (date.getFullYear() !== annee) continue;
     const couverture = couvertureDuJour(date);
+    const chapitre = chapitreDeLaDate(date);
     jours.push({
       jour: `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
       date,
       nom: couverture.nom,
       couverture,
+      magazine: magazineDeLaDate(date).numero,
+      chapitre: chapitre.numero,
+      titreDuChapitre: chapitre.chapitre.titre,
     });
   }
   return jours;
@@ -78,11 +91,15 @@ export function chercherUnJour(annee: number, requete: string): JourDeLaTimeline
       const date = new Date(annee, mois, quantieme);
       const couverture = couvertureDuJour(date);
       if (couverture.nom.toLowerCase().includes(q)) {
+        const chapitre = chapitreDeLaDate(date);
         jours.push({
           jour: `${String(mois + 1).padStart(2, '0')}-${String(quantieme).padStart(2, '0')}`,
           date,
           nom: couverture.nom,
           couverture,
+          magazine: magazineDeLaDate(date).numero,
+          chapitre: chapitre.numero,
+          titreDuChapitre: chapitre.chapitre.titre,
         });
       }
       if (jours.length >= 12) return jours;

@@ -7,6 +7,8 @@ import { JEU_DE_54, bornesDeLaSemaine, semaineDeLAnnee } from '../lib/jeuDeCarte
 import { composerEdition, lesQuatreSaisons, numerosDeLaSaison } from '../lib/aimeMoteur';
 import { filRougeDuJour, jourDuMagazine, joursAutour, lesQuatrePortes } from '../lib/jourDuMagazine';
 import { couvertureDuJour, couverturesDesParts } from '../lib/couvertureDuJour';
+import { niveauxDuJour } from '../lib/semaines';
+import { visuelsDuJour } from '../lib/visuelsDuMagazine';
 import { basculerTimeline, choisirMoment, useMomentDeLaCapsule } from '../lib/capsuleCommande';
 import { HEURES, heureCourante } from '../lib/aimeMoteur';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
@@ -17,6 +19,7 @@ import ChampDuMagazine from '../components/ChampDuMagazine';
 import CouvertureJour from '../components/CouvertureJour';
 import CouvertureMagazine from '../components/CouvertureMagazine';
 import CouvertureSemaine from '../components/CouvertureSemaine';
+import ChapitresDuMagazine from '../components/ChapitresDuMagazine';
 import EditionSemaine from '../components/EditionSemaine';
 import MiseEnLumiere from '../components/MiseEnLumiere';
 import LeChiffre from '../components/LeChiffre';
@@ -83,6 +86,10 @@ export default function Magazine() {
   const semaines = useMemo(() => numerosDeLaSaison(saison.id), [saison.id]);
   const saisons = useMemo(() => lesQuatreSaisons({ roleId }), [roleId]);
 
+  /** Les trois niveaux du jour, et ses visuels — une seule source : `semaines.ts`. */
+  const niveaux = useMemo(() => niveauxDuJour(jour.date), [jour.date]);
+  const visuels = useMemo(() => visuelsDuJour(jour.date), [jour.date]);
+
   const siens = useMemo(() => (role ? articlesPourRole(role.id) : null), [role]);
   const fil = useMemo(() => filRougeDuJour(jour.date), [jour.date]);
   const superSaint = jour.superSaint;
@@ -147,6 +154,16 @@ export default function Magazine() {
     setIndex(0);
   };
 
+  /**
+   * **Ouvrir un jour précis** — c'est la seule façon de changer de date, et
+   * elle sert les deux navigations : temporelle (le jour suivant) et éditoriale
+   * (le jour qui ouvre le chapitre choisi, dans le même magazine).
+   */
+  const ouvrirJour = (d: Date) => {
+    setDepart(d);
+    setIndex(0);
+  };
+
   const dateCourte = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
 
   return (
@@ -175,15 +192,29 @@ export default function Magazine() {
               aria-label={`Ouvrir le magazine du jour — ${jour.nom}`}
               className="h-[54svh] max-h-[560px] overflow-hidden rounded-[16px] transition hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
             >
-              <CouvertureJour couverture={couvertureHero} className="h-full w-auto" />
+              <CouvertureJour
+                couverture={couvertureHero}
+                visuel={visuels.couverture}
+                niveaux={niveaux}
+                className="h-full w-auto"
+              />
             </button>
             <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-white/50">
               {jour.nom} · {dateCourte(jour.date)}{moment ? ` · ${moment.replace('-', ' ')}` : ''} ·
-              jour {index + 1} sur {jours.length} · cliquer la couverture ouvre les 24 heures
+              jour {index + 1} sur {jours.length} · {visuels.couverture.origine === 'dessin'
+                ? 'la couverture du magazine reste à livrer'
+                : `couverture servie par ${visuels.couverture.slot}`} ·
+              cliquer la couverture ouvre les 24 heures
             </p>
           </div>
         </div>
       </header>
+
+      {/* ——————— LES SEPT CHAPITRES DU MAGAZINE : LA NAVIGATION ÉDITORIALE ———————
+          La moitié éditoriale du modèle : le magazine de la semaine, ses sept
+          univers, celui où l'on est, et les deux flèches qui font le tour du
+          numéro sans jamais changer de semaine. */}
+      <ChapitresDuMagazine date={jour.date} annee={jour.date.getFullYear()} onChoisirChapitre={ouvrirJour} />
 
       {/* LE COMPOSEUR, SUR LA PAGE MAGAZINE : le titre, le champ — c'est ici que
           le magazine se compose, pas dans le hero de l'accueil. */}
@@ -359,6 +390,9 @@ export default function Magazine() {
               <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">
                 {jour.nom || 'Un joker'} — {dateCourte(jour.date)}
               </h2>
+              <p className="mt-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-black/50">
+                {niveaux.magazine} · {niveaux.semaine} · {niveaux.chapitre} · {niveaux.titreDuMagazine}
+              </p>
               <p className="mt-2 text-[13px] text-black/55">
                 {jour.meteo.resume} · lune {jour.cles.lune.nom} · chiffre {jour.cles.chiffre.nombre}
                 {jour.cles.porte ? ` · ${jour.cles.porte}` : ''}
@@ -406,7 +440,11 @@ export default function Magazine() {
           </div>
 
           <p className="mt-4 text-[12.5px] text-black/50">
-            La couverture {jour.numeroDeCouverture} sur 364 · {carte.joker ? 'un joker' : `semaine ${carte.semaine}`} ·
+            {niveaux.magazine} — {niveaux.titreDuMagazine}, {carte.joker ? 'un joker (hors calendrier)' : `semaine ${carte.semaine}`} ·
+            chapitre {String(niveaux.numeroDeChapitre).padStart(2, '0')} sur 7 ·
+            {visuels.imageDuChapitre.origine === 'dessin'
+              ? ' l’image de ce chapitre reste à livrer'
+              : ` servie par ${visuels.imageDuChapitre.slot}`} ·
             les flèches du dock passent au jour suivant
           </p>
 
@@ -529,7 +567,7 @@ export default function Magazine() {
             {MARQUE_MAGAZINE}
           </span>
           <span>
-            {COUVERTURES.length} éditions de thème · {JEU_DE_54.length} numéros · 364 couvertures nommées
+            {COUVERTURES.length} éditions de thème · {JEU_DE_54.length} magazines · 7 chapitres par magazine · 365 jours pour les parcourir
           </span>
           <Link to="/" className="underline transition hover:text-black">
             Revenir au site

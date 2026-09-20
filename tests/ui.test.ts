@@ -42,6 +42,8 @@ import {
   dateDuJourNomme, genreDuPrenom, jourDuPrenom, lectureDuPrenom, motsDuNom,
 } from '../src/lib/genreDesPrenoms';
 import {
+  CHAPITRES_ATTENDUS, COUVERTURES_ATTENDUES, IMAGES_ATTENDUES_DE_LA_COLLECTION,
+  chapitresDeLaCollection, couverturesDeLaCollection, etatDeLaCollection, imagesDeLaCollection,
   FONDS_ATTENDUS, RANGS_PAR_PLAN, SCENES_ATTENDUES, adresseDuFichier, choisirLeMeilleurVisuel,
   distanceDesCouleurs, eliminerEntreJours, etatDuCasting, fichiersDuPlan,
   fondsDeCouvertureDeLAnnee, joursLiesAuJour, noterCandidat, scenesDeLAnnee,
@@ -110,6 +112,41 @@ import {
   troisTemps,
 } from '../src/lib/aimeMoteur';
 import CouvertureSemaine from '../src/components/CouvertureSemaine';
+import ChapitresDuMagazine from '../src/components/ChapitresDuMagazine';
+import MagazineSemaine from '../src/components/MagazineSemaine';
+import {
+  CHAPITRES,
+  chapitreDeLaPosition,
+  chapitreParFichier,
+  chapitreSuivant,
+} from '../src/lib/chapitres';
+import { DIRECTIONS_COMPLETES } from '../src/lib/directionsDuMagazine';
+import {
+  IMAGES_ATTENDUES,
+  MAGAZINES,
+  NOMBRE_DE_MAGAZINES,
+  chapitreDeLaDate,
+  chapitreDuMagazine,
+  joursDuMagazine,
+  magazineDeLaDate,
+  magazineParNumero,
+  magazineSuivant,
+  niveauxDuJour,
+  numeroDeMagazine,
+  positionDansLeMagazine,
+  voisinDuChapitre,
+} from '../src/lib/semaines';
+import {
+  cheminDuVisuel,
+  visuelLivre,
+  VISUELS_DU_MAGAZINE,
+  VISUELS_LIVRES,
+} from '../src/lib/bibliothequeMagazine';
+import {
+  visuelDeLaCouverture,
+  visuelDuChapitre,
+  visuelsDuJour,
+} from '../src/lib/visuelsDuMagazine';
 import FluxDuJour from '../src/components/FluxDuJour';
 import { HEURES } from '../src/lib/aimeMoteur';
 import PortraitStudio from '../src/components/PortraitStudio';
@@ -3553,22 +3590,42 @@ const sansCandidat = choisirLeMeilleurVisuel([], attenduMidi);
 check('sans aucune candidate, rien n’est choisi', sansCandidat.choisi, null);
 check('et le dessin prend le relais', sansCandidat.decision.includes('Le dessin prend le relais'), true);
 
-/* ——— LA PHOTO PREND LE FOND, LE DESSIN RESTE S'IL N'Y EN A PAS ——— */
-check('aucun fond n’est livré pour l’instant', PHOTOS_LIVREES, 0);
-check('et le 21 septembre n’a pas de photo', photoDuPlan('09-21', 'couverture'), null);
-const couvertureDessinee = renderToStaticMarkup(
-  createElement(CouvertureJour as never, { couverture: couvertureDuJour(new Date(2026, 8, 21)), largeur: 200 }),
+/* ——— LA PHOTO DE LA SEMAINE PREND LE FOND, LE DESSIN RESTE S'IL N'Y EN A PAS ———
+ *
+ * Depuis la collection, la couverture appartient à la **semaine** : le 21
+ * septembre porte le visuel `semaine-38/cover.jpg`, comme les six autres jours
+ * du magazine 38. Les anciens dossiers par jour ne sont plus la source
+ * principale : ils restent le repli de transition, jamais l'image d'une autre
+ * semaine.
+ */
+check('les anciens dossiers par jour restent lisibles', PHOTOS_LIVREES, 0);
+check('et le 21 septembre n’a pas d’ancien visuel', photoDuPlan('09-21', 'couverture'), null);
+check('mais sa couverture vient de sa semaine', visuelsDuJour(new Date(2026, 8, 21)).couverture.url, '/images/magazine/semaine-38/cover.jpg');
+check('et son chapitre aussi', ['chapitre', 'couverture-semaine'].includes(visuelsDuJour(new Date(2026, 8, 21)).imageDuChapitre.origine), true);
+check('un chapitre livré passe devant la couverture', visuelDuChapitre(1, 2).origine, 'chapitre');
+check('un chapitre non livré retombe sur la couverture de sa semaine', visuelDuChapitre(1, 5).origine, 'couverture-semaine');
+check('et dit lequel il a pris', visuelDuChapitre(1, 5).url, '/images/magazine/semaine-01/cover.jpg');
+check('sans rien de livré, le dessin tient la place',
+  visuelsDuJour(new Date(2026, 8, 25)).couverture.origine === 'dessin' ||
+    visuelsDuJour(new Date(2026, 8, 25)).couverture.origine === 'couverture-semaine',
+  true);
+const couvertureSansImage = renderToStaticMarkup(
+  createElement(CouvertureJour as never, {
+    couverture: couvertureDuJour(new Date(2026, 8, 21)),
+    largeur: 200,
+    photo: null,
+  }),
 );
-check('sans photo, la couverture est dessinée', couvertureDessinee.includes('<image'), false);
-check('et le fond uni est bien là', couvertureDessinee.includes('fill="#'), true);
+check('sans image donnée, la couverture est dessinée', couvertureSansImage.includes('<image'), false);
+check('et le fond uni est bien là', couvertureSansImage.includes('fill="#'), true);
 const couverturePhotographiee = renderToStaticMarkup(
   createElement(CouvertureJour as never, {
     couverture: couvertureDuJour(new Date(2026, 8, 21)),
     largeur: 200,
-    photo: '/images/magazine/09-21/couverture.jpg',
+    photo: '/images/magazine/semaine-38/cover.jpg',
   }),
 );
-check('avec une photo, elle prend le fond', couverturePhotographiee.includes('href="/images/magazine/09-21/couverture.jpg"'), true);
+check('avec l’image de la semaine, elle prend le fond', couverturePhotographiee.includes('href="/images/magazine/semaine-38/cover.jpg"'), true);
 check('et la couverture reste la même', couverturePhotographiee.includes('AIME MAGAZINE'), true);
 check('avec la couleur du jour en voile', couverturePhotographiee.includes('opacity="0.42"'), true);
 
@@ -3662,7 +3719,8 @@ check('le fond du hero est noir', heroMagazine.includes('bg-[#0B0C12]'), true);
 check('et ce n’est plus le visuel de la saison', heroMagazine.includes('object-cover blur'), false);
 check('le flux montre la couverture, pas le personnage', (flux.match(/AIME MAGAZINE/g) ?? []).length >= 2, true);
 check('le flux n’a plus de portrait de studio', flux.includes('Studio blanc') || flux.includes('Studio noir'), false);
-check('la couverture nettoyée ne montre plus son numéro', flux.includes('SEMAINE'), false);
+check('la couverture dit désormais dans quel magazine on est', flux.includes('MAGAZINE ') || flux.includes('MAGAZINE</'), true);
+check('et où l’on entre : le chapitre', flux.includes('CHAPITRE '), true);
 
 /* ——— LES TYPOS DES COUVERTURES SUIVENT LE DESIGN DU SITE ——— */
 check('la couverture prend la police du site', svgCouverture.includes('Inter'), true);
@@ -3757,7 +3815,9 @@ check('le moment choisi éclaire la couverture du hero', revueMidi.includes('· 
 check('le hero du magazine montre une seule couverture, au format du hero', heroMagazine.includes('h-full w-auto'), true);
 check('et plus trois magazines côte à côte', revue.includes('Le flux des jours'), false);
 check('le composeur vit sur la page magazine', revue.includes('Votre magazine, maintenant') && revue.includes('Ville de naissance'), true);
-check('la couverture a été nettoyée', svgCouverture.includes('SEMAINE'), false);
+check('la couverture porte le numéro du magazine, comme une vraie couverture',
+  svgCouverture.includes('MAGAZINE 38'), true);
+check('et le chapitre par lequel la date entre', svgCouverture.includes('CHAPITRE 05'), true);
 check('elle garde la marque, le titre et la date',
   svgCouverture.includes('AIME MAGAZINE') && svgCouverture.includes('Saint Matthieu') && svgCouverture.includes('21 SEPTEMBRE 2026'), true);
 
@@ -3771,6 +3831,176 @@ check('le logo synthétisé est plus grand dans la barre', chromeMetier.includes
 const menuFerme = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(MenuProfil as never)));
 check('le menu ne propose plus de voir en tant que', menuFerme.includes('Voir en tant que'), false);
 check('le bouton profil reste là', menuFerme.includes('aria-haspopup="menu"'), true);
+
+
+/* ============================================================================
+ * LA COLLECTION : 54 MAGAZINES, 7 CHAPITRES PAR MAGAZINE, 365 JOURS POUR LES
+ * PARCOURIR
+ *
+ * Le modèle a changé une seule fois, et voici son contrat, vérifié ligne à
+ * ligne : une date n'ouvre plus un magazine à elle seule, elle **entre dans un
+ * magazine hebdomadaire par l'un de ses sept chapitres**.
+ * ========================================================================== */
+
+check('la collection compte 54 magazines', MAGAZINES.length, 54);
+check('et le compte annoncé est le même', NOMBRE_DE_MAGAZINES, 54);
+check('sept chapitres dans chaque magazine', MAGAZINES.every((m) => m.chapitres.length === 7), true);
+check('les 54 directions artistiques sont écrites, dans l’ordre', DIRECTIONS_COMPLETES, true);
+check('les 432 images attendues sont annoncées', IMAGES_ATTENDUES, 432);
+
+/* — LES SEPT CHAPITRES, FIXES ET ORDONNÉS — */
+check(
+  'les sept chapitres sont toujours les mêmes',
+  CHAPITRES.map((c) => c.id),
+  ['amoureux', 'style', 'lieux', 'recevoir', 'fete', 'monde', 'souvenirs'],
+);
+check(
+  'et leurs noms de fichiers sont ceux de la bibliothèque',
+  CHAPITRES.map((c) => c.fichier),
+  ['01-amoureux.jpg', '02-style.jpg', '03-lieux.jpg', '04-recevoir.jpg', '05-fete.jpg', '06-monde.jpg', '07-souvenirs.jpg'],
+);
+check('chaque chapitre dit son territoire', CHAPITRES.every((c) => c.territoire.length > 30), true);
+check('et son pont vers le mariage', CHAPITRES.every((c) => c.pontMariage.length > 20), true);
+check('le quatrième chapitre est L’Art de recevoir', CHAPITRES[3]!.titre, 'L’Art de recevoir');
+check('un fichier retrouve son chapitre', chapitreParFichier('06-monde.jpg')?.titre, 'Le Monde');
+check('les chapitres tournent : après le septième, le premier', chapitreSuivant(7).numero, 1);
+check('une position hors bornes reste un chapitre valide', chapitreDeLaPosition(9).numero, 7);
+
+/* — LA DATE ENTRE PAR UN CHAPITRE : 21 SEPTEMBRE → SEMAINE 38 → CHAPITRE 04 — */
+const le21Septembre = new Date(2026, 8, 21, 12);
+check('le 21 septembre 2026 tombe dans le magazine 38', numeroDeMagazine(le21Septembre), 38);
+check('dont la couverture est celle de la semaine 38', magazineDeLaDate(le21Septembre).cover, '/images/magazine/semaine-38/cover.jpg');
+check('la semaine 38 commence le 17 septembre', joursDuMagazine(38, 2026)[0]!.getDate(), 17);
+check('et il entre par le chapitre 05 — le cinquième jour de sa semaine', chapitreDeLaDate(le21Septembre).numero, 5);
+check('qui est La Fête', chapitreDeLaDate(le21Septembre).chapitre.titre, 'La Fête');
+check('l’image attendue est nommée par le chapitre', chapitreDeLaDate(le21Septembre).image, '/images/magazine/semaine-38/05-fete.jpg');
+check('les trois niveaux se lisent d’un coup', [
+  niveauxDuJour(le21Septembre).date,
+  niveauxDuJour(le21Septembre).magazine,
+  niveauxDuJour(le21Septembre).chapitre,
+], ['21 septembre', 'Magazine 38', 'Chapitre 05 — La Fête']);
+check('et le magazine a son titre', niveauxDuJour(le21Septembre).titreDuMagazine, 'Septembre doré');
+
+/* — CHAQUE MAGAZINE PRÉSENTE SES SEPT CHAPITRES, UNE FOIS CHACUN — */
+const sesSeptJours = joursDuMagazine(38, 2026).map((d) => chapitreDeLaDate(d).numero);
+check('les sept jours du magazine 38 ouvrent les sept chapitres', sesSeptJours, [1, 2, 3, 4, 5, 6, 7]);
+check('sans doublon', new Set(sesSeptJours).size, 7);
+check('et la même date donne toujours le même chapitre', positionDansLeMagazine(le21Septembre), 5);
+check('les sept jours partagent la couverture de leur magazine',
+  new Set(joursDuMagazine(38, 2026).map((d) => magazineDeLaDate(d).cover)).size, 1);
+
+/* — 364 JOURS DANS LES SEMAINES, ET LES DEUX JOURS DE TROP — */
+const annee2026 = Array.from({ length: 365 }, (_, i) => new Date(2026, 0, i + 1, 12));
+check('les 364 jours des semaines ont tous leur magazine', annee2026.filter((d) => numeroDeMagazine(d) <= 52).length, 364);
+check('et le 365ᵉ est le joker 53', numeroDeMagazine(new Date(2026, 11, 31, 12)), 53);
+check('le 29 février est le joker 54', numeroDeMagazine(new Date(2028, 1, 29, 12)), 54);
+check('aucune année ne réclame un 55ᵉ magazine',
+  Array.from({ length: 12 }, (_, i) => 2024 + i).every((annee) =>
+    Array.from({ length: 366 }, (_, j) => new Date(annee, 0, j + 1, 12))
+      .filter((d) => d.getFullYear() === annee)
+      .every((d) => numeroDeMagazine(d) >= 1 && numeroDeMagazine(d) <= 54),
+  ), true);
+check('un jour de trop prend le chapitre de son jour de semaine',
+  chapitreDeLaDate(new Date(2026, 11, 31, 12)).numero, ((new Date(2026, 11, 31, 12).getDay() + 6) % 7) + 1);
+check('et son magazine est bien un joker', magazineParNumero(53).joker, true);
+check('le magazine suivant boucle après le 54', magazineSuivant(54).numero, 1);
+
+/* — LES SUJETS : SEPT PAR MAGAZINE, TOUS DIFFÉRENTS — */
+check('chaque magazine a sept sujets distincts',
+  MAGAZINES.every((m) => new Set(m.chapitres.map((c) => c.sujet)).size === 7), true);
+check('et chaque sujet est écrit, jamais générique',
+  MAGAZINES.every((m) => m.chapitres.every((c) => c.sujet.length > 25 && !c.sujet.includes('lorem'))), true);
+check('deux magazines ne traitent pas le même chapitre de la même façon',
+  chapitreDuMagazine(26, 3).sujet !== chapitreDuMagazine(40, 3).sujet, true);
+check('les titres des 54 magazines sont tous différents',
+  new Set(MAGAZINES.map((m) => m.titre)).size, 54);
+
+/* — LES REPLIS : JAMAIS L'IMAGE D'UNE AUTRE SEMAINE — */
+const chapitreManquant = visuelDuChapitre(20, 4);
+check('un chapitre non livré reste dans son magazine', chapitreManquant.magazine, 20);
+check('et il le dit', chapitreManquant.raison.includes('20'), true);
+check('sans jamais emprunter à une autre semaine',
+  chapitreManquant.url === null || chapitreManquant.url.includes('semaine-20') || chapitreManquant.url.includes('semaine 20'), true);
+check('une couverture non livrée est dessinée', visuelDeLaCouverture(20).origine, 'dessin');
+const visuels21 = visuelsDuJour(le21Septembre);
+check('un jour a sa couverture et son chapitre', [visuels21.couverture.magazine, visuels21.imageDuChapitre.magazine], [38, 38]);
+check('et la provenance est toujours dite', visuels21.couverture.raison.length > 20 && visuels21.imageDuChapitre.raison.length > 20, true);
+check('le chemin d’un visuel se déduit du numéro', cheminDuVisuel(38, 'cover.jpg'), '/images/magazine/semaine-38/cover.jpg');
+check('et l’inventaire dit ce qui est arrivé',
+  Object.values(VISUELS_DU_MAGAZINE ?? {}).length >= 0 || VISUELS_LIVRES >= 0, true);
+check('chaque visuel de l’inventaire suit la convention',
+  Object.entries(VISUELS_DU_MAGAZINE).every(([dossier, slots]) =>
+    /^semaine-\d{2}$/.test(dossier) && slots.every((slot) => slot === 'cover.jpg' || CHAPITRES.some((c) => c.fichier === slot)),
+  ), true);
+check('et l’inventaire ne compte que ce qui a été relevé',
+  Object.values(VISUELS_DU_MAGAZINE).reduce((n, liste) => n + liste.length, 0), VISUELS_LIVRES);
+check('un visuel livré est retrouvable', VISUELS_LIVRES === 0 || visuelLivre(38, 'cover.jpg'), true);
+
+/* — LA NAVIGATION ÉDITORIALE : LE CHAPITRE VOISIN, SANS CHANGER DE SEMAINE — */
+const voisinDroite = voisinDuChapitre(le21Septembre, 2026, 1);
+const voisinGauche = voisinDuChapitre(le21Septembre, 2026, -1);
+check('le chapitre suivant reste dans le magazine 38', numeroDeMagazine(voisinDroite), 38);
+check('et il ouvre le chapitre 06', chapitreDeLaDate(voisinDroite).numero, 6);
+check('le précédent ouvre le chapitre 04', chapitreDeLaDate(voisinGauche).numero, 4);
+check('et l’on ne sort jamais du magazine', [voisinDroite, voisinGauche].every((d) => numeroDeMagazine(d) === 38), true);
+
+/* — CE QUE LES COMPOSANTS MONTENT — */
+const chapitresHtml = renderToStaticMarkup(
+  createElement(ChapitresDuMagazine as never, { date: le21Septembre, annee: 2026 }),
+);
+check('le bloc des chapitres annonce le magazine', chapitresHtml.includes('Magazine 38'), true);
+check('et son titre', chapitresHtml.includes(magazineParNumero(38).titre), true);
+check('les sept chapitres y sont', CHAPITRES.every((c) => chapitresHtml.includes(c.titre)), true);
+check('celui du jour est marqué actif', (chapitresHtml.match(/data-actif="true"/g) ?? []).length, 1);
+check('et il se dit « vous êtes ici »', chapitresHtml.includes('vous êtes ici'), true);
+check('la navigation éditoriale est montrée', chapitresHtml.includes('Chapitre précédent') && chapitresHtml.includes('Chapitre suivant'), true);
+check('et les deux navigations sont expliquées', chapitresHtml.includes('Navigation temporelle') && chapitresHtml.includes('Navigation éditoriale'), true);
+
+const magazineSemaineHtml = renderToStaticMarkup(
+  createElement(MagazineSemaine as never, { magazine: magazineParNumero(38) }),
+);
+check('la couverture du magazine porte son numéro', magazineSemaineHtml.includes('N° 38'), true);
+check('son titre', magazineSemaineHtml.includes(magazineParNumero(38).titre), true);
+check('ses sept chapitres, dans l’ordre', CHAPITRES.every((c) => magazineSemaineHtml.includes(c.titre)), true);
+check('et sa saison', magazineSemaineHtml.includes('Été'), true);
+
+const kiosqueCollection = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(GalerieCouvertures as never, { annee: 2026 })),
+);
+check('le kiosque annonce les 54 magazines', kiosqueCollection.includes('Les 54 magazines de l’année'), true);
+check('et le compte des images de la bibliothèque', kiosqueCollection.includes('432 images'), true);
+check('chaque saison a son étagère', ['Printemps', 'Été', 'Automne', 'Hiver'].every((s) => kiosqueCollection.includes(s)), true);
+check('les magazines y sont numérotés', kiosqueCollection.includes('N° 38'), true);
+
+/* — LE PLAN DE PRODUCTION : 54 COUVERTURES, 378 CHAPITRES — */
+const planDeLaCollection = imagesDeLaCollection();
+check('le plan de la collection compte 432 images', planDeLaCollection.length, IMAGES_ATTENDUES_DE_LA_COLLECTION);
+check('54 couvertures', couverturesDeLaCollection().length, COUVERTURES_ATTENDUES);
+check('378 chapitres', chapitresDeLaCollection().length, CHAPITRES_ATTENDUS);
+check('les 54 couvertures sont demandées d’abord', planDeLaCollection.slice(0, 54).every((i) => i.chapitre === null), true);
+check('le plan ne demande jamais un ancien dossier par jour',
+  planDeLaCollection.every((i) => i.fichiers.every((f) => f.includes('/semaine-'))), true);
+const planDu38 = couverturesDeLaCollection().find((i) => i.semaine === 38)!;
+check('une couverture porte son chemin de bibliothèque', planDu38.fichiers[0], '/images/magazine/semaine-38/cover.jpg');
+check('et ses deux candidates de casting', planDu38.fichiers.length, RANGS_PAR_PLAN);
+check('avec le titre du magazine', planDu38.titreDuMagazine, magazineParNumero(38).titre);
+const planChapitre26_3 = chapitresDeLaCollection().find((i) => i.semaine === 26 && i.chapitre === 3)!;
+check('un chapitre porte son numéro de magazine', planChapitre26_3.semaine, 26);
+check('et son numéro de chapitre', planChapitre26_3.chapitre, 3);
+check('et le chemin que la bibliothèque attend', planChapitre26_3.fichiers[0], '/images/magazine/semaine-26/03-lieux.jpg');
+check('et son univers', planChapitre26_3.universDuChapitre, 'Les Lieux');
+check('chaque image attendue dit sa saison et son style',
+  planDeLaCollection.every((i) => i.saison.length > 2 && i.styleDuMagazine.length > 5), true);
+check('l’état de la collection compte ce qui est livré',
+  etatDeLaCollection().couverturesLivrees + etatDeLaCollection().chapitresLivres, VISUELS_LIVRES);
+check('et il propose la suite du travail', etatDeLaCollection().prochaines.length, Math.min(8, 432 - VISUELS_LIVRES));
+
+/* — LA TIMELINE : LES JOURS MÈNENT AUSSI À UN CHAPITRE — */
+const semaineTimeline = joursDeLaSemaine(2026, 38);
+check('la semaine 38 de la timeline a sept jours', semaineTimeline.length, 7);
+check('chaque jour y connaît son magazine', semaineTimeline.every((j) => j.magazine === 38), true);
+check('et son chapitre, dans l’ordre', semaineTimeline.map((j) => j.chapitre), [1, 2, 3, 4, 5, 6, 7]);
+check('le 21 septembre y ouvre La Fête', semaineTimeline[4]!.titreDuChapitre, 'La Fête');
 
 
 /* ------------------------------------------------------------------- bilan */

@@ -1,0 +1,205 @@
+# AIME MAGAZINE — 54 SEMAINES, 7 CHAPITRES
+
+> **Ce qui a changé.** Le modèle « 365 jours → 365 magazines » est abandonné.
+> Le nouveau modèle est **54 magazines hebdomadaires, sept chapitres chacun**,
+> et les 365 dates du calendrier deviennent la **navigation temporelle** dans
+> cette collection. Ce document dit exactement comment le site calcule, où sont
+> les fichiers, ce qu'on attend de la bibliothèque, et ce que deviennent les
+> anciens visuels.
+
+---
+
+## 1. Le modèle, en une ligne
+
+```
+DATE → NUMÉRO DE SEMAINE → MAGAZINE → CHAPITRE → ASSET
+```
+
+- **365 jours** : les portes d'entrée. Le calendrier annuel et la navigation
+  quotidienne sont conservés tels quels.
+- **54 magazines** : 52 semaines réelles (n° 1 à 52) + deux jours de trop
+  (n° 53 et 54, voir §4). Le magazine est **hebdomadaire**.
+- **7 chapitres** : les mêmes chaque semaine, dans le même ordre.
+- **378 images de chapitres** + **54 couvertures** = **432 visuels**.
+
+## 2. Les sept chapitres — fixes
+
+| N° | Titre | Fichier | Territoire |
+| --- | --- | --- | --- |
+| 01 | Les Amoureux | `01-amoureux.jpg` | Couple, rencontre, engagement, famille, émotions, relations humaines |
+| 02 | Le Style | `02-style.jpg` | Robe, costume, beauté, coiffure, bijoux, accessoires, fleurs, mode |
+| 03 | Les Lieux | `03-lieux.jpg` | Châteaux, maisons, hôtels, villes, campagnes, plages, architecture, destinations |
+| 04 | L'Art de recevoir | `04-recevoir.jpg` | Tables, gastronomie, pâtisserie, fleurs, décoration, objets, art de la table |
+| 05 | La Fête | `05-fete.jpg` | Musique, danse, DJ, scène, lumière, cocktails, nuit, spectacle |
+| 06 | Le Monde | `06-monde.jpg` | Cultures, traditions, voyages, patrimoine, peuples, cérémonies |
+| 07 | Les Souvenirs | `07-souvenirs.jpg` | Photographie, vidéo, albums, lettres, objets, archives, transmission |
+
+Le **traitement** des sept chapitres change à chaque semaine : c'est la
+**direction artistique** du numéro (`src/lib/directionsDuMagazine.ts`) — matière,
+motif, lumière, palette, et un sujet écrit pour chacun des sept chapitres.
+
+> **Le mariage reste le territoire.** Une robe, une table, une ville, une
+> chanson, une architecture, un objet transmis parlent du mariage — sans jamais
+> montrer l'imagerie nuptiale conventionnelle. Les 54 directions explorent :
+> minimalisme nordique, documentaire d'atelier, intérieur, pop rétro, matières
+> nobles, cinéma, papeterie, montagne, noir & blanc, patrimoine, Orient
+> contemporain, baroque, botanique, rue, impression, design, brocante, cottage
+> anglais, floral, terroir, surréalisme, Inde, art contemporain, gastronomie,
+> folklore, Corse, art de recevoir, cinéma d'été, jazz, dolce vita, americana,
+> table de village, Venise, Japon, Mexique, argentique, côte volcanique,
+> arrière-saison, forêt, brutalisme, rentrée, cinéma 70, mode, Toscane, studio
+> photo, Maroc, vins, Afrique contemporaine, château d'aujourd'hui, archives,
+> fin de saison, table d'hiver, et les deux jours de trop.
+
+## 3. Le calendrier, tel qu'il est réellement
+
+Le site découpe l'année en **blocs de sept jours depuis le 1ᵉʳ janvier**
+(`semaineDeLAnnee`, `jeuDeCartes.ts` §39) :
+
+- semaine 1 = du 1ᵉʳ au 7 janvier, semaine 38 = du 17 au 23 septembre 2026 ;
+- **52 × 7 = 364 jours** couverts, et un jour qui reste : le 31 décembre.
+
+**Pourquoi pas la semaine ISO ?** Parce qu'elle compte **53 semaines** certaines
+années : il faudrait alors une 55ᵉ couverture, que la collection n'a pas. Le
+découpage maison retombe toujours sur 52 semaines pleines — et c'est celui qui
+était déjà dans le produit. Aucun deuxième calendrier n'a été introduit.
+
+### Le chapitre d'une date
+
+C'est la **position du jour dans sa semaine** : jour 1 → chapitre 01, jour 7 →
+chapitre 07. Chaque magazine présente donc **ses sept chapitres, une fois
+chacun, dans l'ordre** — et la même date donne toujours le même chapitre.
+
+Exemple réel : **21 septembre 2026** — la semaine 38 commence le **17 septembre**,
+donc le 21 en est le **5ᵉ jour** → *Magazine 38 « Septembre doré »*, **chapitre
+05 — La Fête**.
+
+## 4. Les 365 jours et les 54 semaines — les 13 jours de plus
+
+`54 × 7 = 378`, et une année compte 365 ou 366 jours : il y a **13 emplacements
+de plus que de jours**. Ce sont **des emplacements d'images, pas des jours** — on
+n'invente aucune date.
+
+| | | |
+| --- | --- | --- |
+| 52 semaines × 7 jours | **364 jours** | chacun ouvre un chapitre de sa semaine |
+| 31 décembre | **magazine 53** — le jour de trop | joker, hors calendrier |
+| 29 février (bissextiles) | **magazine 54** — le jour bissextile | joker, hors calendrier |
+
+Les deux jokers sont **des magazines comme les autres** : ils ont un titre, une
+direction artistique, une couverture et **leurs sept chapitres** (c'est la
+promesse de la collection). Aucun jour du calendrier ne les ouvre chapitre par
+chapitre — sauf par la **règle de transition** :
+
+> Les deux jours de trop prennent **le chapitre de leur jour de semaine** :
+> lundi → 01 Les Amoureux, dimanche → 07 Les Souvenirs.
+
+C'est la seule règle spéciale du système, elle est écrite dans
+`positionDansLeMagazine()` et vérifiée par les tests. Les 14 emplacements de
+chapitres des jokers (2 × 7) restent donc disponibles : ils se rempliront comme
+les autres, et ne serviront qu'aux deux jours de trop.
+
+## 5. Où le mapping vit — une seule source
+
+| Ce que ça fait | Fichier |
+| --- | --- |
+| Les 7 chapitres, leurs noms de fichiers, leurs briefs | `src/lib/chapitres.ts` |
+| Les 54 directions artistiques (titre, style, matière, motif, lumière, palette, sujet des 7 chapitres) | `src/lib/directionsDuMagazine.ts` |
+| **L'assemblage** : 54 magazines, 7 chapitres chacun, et tout le mapping date → semaine → chapitre | `src/lib/semaines.ts` |
+| **La cascade des images** : chapitre → couverture de la semaine → ancien visuel du jour → dessin | `src/lib/visuelsDuMagazine.ts` |
+| L'inventaire de ce qui est livré (engendré) | `src/lib/bibliothequeMagazine.ts` |
+| L'ancien système par jour (repli de transition) | `src/lib/photosDuMagazine.ts` |
+
+Fonctions publiques utiles :
+
+```ts
+numeroDeMagazine(date)          // 1…54 (53 le 31/12, 54 le 29/02)
+magazineDeLaDate(date)          // getMagazineForDate
+chapitreDeLaDate(date)          // getChapterForDate
+positionDansLeMagazine(date)    // 1…7 → le chapitre
+joursDuMagazine(numero, annee)  // les jours du magazine, dans l'ordre des chapitres
+voisinDuChapitre(date, annee, ±1) // la navigation éditoriale, sans changer de magazine
+niveauxDuJour(date)             // les trois niveaux, écrits : jour, magazine, chapitre
+```
+
+## 6. La bibliothèque — structure et nommage
+
+```
+public/images/magazine/
+  semaine-01/
+    cover.jpg            54 couvertures attendues
+    01-amoureux.jpg      378 chapitres attendus
+    02-style.jpg
+    03-lieux.jpg
+    04-recevoir.jpg
+    05-fete.jpg
+    06-monde.jpg
+    07-souvenirs.jpg
+  semaine-02/ … semaine-54/
+  manifeste.json         les 432 déclarations (plan complet, livré ou non)
+```
+
+- `semaine-53/` = le jour de trop · `semaine-54/` = le jour bissextile.
+- Format demandé : **5 / 7**, 1000 × 1400 recommandé, ≤ 250 Ko.
+- Après avoir déposé des images : **`npm run visuels`** relève ce qui est arrivé,
+  réécrit `src/lib/bibliothequeMagazine.ts` et `manifeste.json`, compresse les
+  fichiers trop lourds, et **dit ce qui manque**.
+- Les prompts de production sont engendrés par **`npm run prompts:aime --
+  --semaine=26`** (ou `--liste` pour l'état de la collection).
+
+Chaque déclaration du manifeste porte : `semaine`, `chapitre`, `titre`,
+`univers`, `saison`, `style`, `sujet`, `dominante_color`, `description`,
+`mots_cles`, plus `livree`.
+
+## 7. Les couvertures
+
+La couverture appartient à **la semaine**, pas au jour : les sept jours du
+magazine 38 partagent `semaine-38/cover.jpg`. C'est la porte d'entrée du numéro,
+et elle doit annoncer **un univers**, pas montrer un mariage.
+
+`CouvertureJour` (le composant) affiche une couverture par date : le visuel de
+la semaine, la marque, **le numéro du magazine**, le titre du jour, **le
+chapitre**, et la date. Le kiosque (`GalerieCouvertures`) affiche d'abord **les
+54 magazines** de la collection, puis **les 365 jours** — les deux dimensions du
+modèle, dans l'ordre.
+
+## 8. Ce que devient l'ancien système `date → image`
+
+Il est **refactorisé, pas conservé en parallèle** :
+
+| Ancien | Nouveau |
+| --- | --- |
+| `images/magazine/09-21/couverture.jpg` — 365 fonds, un par jour | `images/magazine/semaine-38/cover.jpg` — **54 couvertures, une par semaine** |
+| `images/magazine/09-21/{aube,matin,midi,apres-midi,soir}.jpg` — 1 825 scènes, cinq par jour | `images/magazine/semaine-38/0X-….jpg` — **378 chapitres**, sept par semaine |
+| `couvertureDuJour(date)` portait l'identité du jour | il porte le **dessin** du jour ; l'identité vient du magazine |
+| `photoDuPlan(jour, 'couverture')` était la source principale | il est le **repli de transition** (3ᵉ rang), jamais l'image d'une autre semaine |
+
+Les fichiers déjà livrés (dossiers `MM-JJ`, `public/images/biblio/`) **restent sur
+le disque** : rien n'est détruit. `npm run visuels` affiche, pour chaque ancien
+visuel présent, le chemin de la bibliothèque vers lequel il serait remappé
+(`09-21/couverture.jpg` → `semaine-38/cover.jpg`), et `photosDuMagazine.ts`
+continue d'être relevé par `npm run photos`.
+
+## 9. Les replis — jamais l'image d'une autre semaine
+
+```
+1. semaine-NN/0X-chapitre.jpg   l'image du chapitre        ← ce qu'on veut
+2. semaine-NN/cover.jpg          la couverture du magazine  ← l'identité de la semaine
+3. MM-JJ/couverture.jpg          l'ancien visuel de CE jour ← transition
+4. le dessin                     le cadran, le fond de la saison
+```
+
+- Une image manquante **ne casse jamais une page** : le dessin tient, avec la
+  couleur de la saison et la palette du magazine.
+- Un chapitre manquant **ne prend jamais** le visuel d'une autre semaine : au
+  pire, il prend la couverture de **sa** semaine, et le dit.
+- L'absence est **détectable** : chaque réponse porte son `origine` et sa
+  `raison`, affichées à l'écran (« à paraître », « la couverture du magazine
+  reste à livrer ») et vérifiées par les tests.
+
+## 10. L'état de la bibliothèque
+
+`npm run prompts:aime -- --liste` donne, magazine par magazine : saison, état de
+la couverture, nombre de chapitres livrés. À ce jour : **les couvertures de la
+collection sont produites en premier** (elles sont les portes d'entrée), puis les
+chapitres, semaine par semaine — 432 visuels sont attendus au total.

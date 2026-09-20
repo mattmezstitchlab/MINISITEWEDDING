@@ -4,17 +4,25 @@ import { ArrowRight } from 'lucide-react';
 import CouvertureJour from './CouvertureJour';
 import { MOIS, couverturesDeLAnnee, couverturesDuMois, type CouvertureJour as Couverture } from '../lib/couvertureDuJour';
 import { etatDeLAnnee } from '../lib/fichesAnnee';
+import { semaineDeLAnnee } from '../lib/jeuDeCartes';
+import MagazineSemaine from './MagazineSemaine';
+import { CHAPITRES } from '../lib/chapitres';
+import { MAGAZINES, NOMBRE_DE_MAGAZINES, SAISONS_DE_LA_COLLECTION } from '../lib/semaines';
+import { VISUELS_LIVRES } from '../lib/bibliothequeMagazine';
+import { IMAGES_ATTENDUES } from '../lib/semaines';
 
 /**
- * LES 365 COUVERTURES — LE KIOSQUE DE L'ANNÉE
+ * LE KIOSQUE — LES 54 MAGAZINES, PUIS LES 365 JOURS
  *
- * Une couverture par jour, **toutes faites du même dessin** : le fond de la
- * saison, la création au centre, le nom du jour, la date. On choisit un mois, et
- * on les voit — parce qu'une promesse d'un an ne se juge pas sur un exemple.
+ * Deux étagères, dans cet ordre, parce que c'est l'ordre du modèle :
  *
- * Ce que la galerie sert à décider : **ce qu'on met dans le magazine**. Le dessin
- * est posé, les jours sont là, les clés sont écrites — il ne reste qu'à regarder
- * et à dire ce qu'on garde.
+ * 1. **les 54 magazines** — les portes d'entrée. Chacun annonce son titre, son
+ *    style, sa saison, et ses sept chapitres écrits sur la couverture ;
+ * 2. **les 365 jours** — la navigation temporelle, mois par mois : le même
+ *    dessin pour tous, ce que le jour y ajoute (la saison, la lumière, les clés).
+ *
+ * Une couverture de magazine non livrée n'emprunte **jamais** le visuel d'une
+ * autre semaine : elle affiche sa vignette éditoriale, et le dit.
  */
 
 const COULEURS: Array<{ id: string; nom: string; fond: string }> = [
@@ -41,9 +49,59 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
   const noirsDuMois = duMois.filter((c) => c.pasCommeLesAutres).length;
   const densesDuMois = duMois.filter((c) => c.dense).length;
 
+  /** Le magazine ouvert : celui de la date regardée. */
+  /** Le magazine du moment : celui de la semaine où l'on est. */
+  const semaineCourante = semaineDeLAnnee(new Date());
+  const duMoment = MAGAZINES.filter((m) => m.semaine === semaineCourante);
+
   return (
     <section id="couvertures" className="border-t border-black/8 py-14">
       <div className="vp-page">
+        {/* ————————————— L'ÉTAGÈRE DES 54 MAGAZINES ————————————— */}
+        <span id="collection" className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
+          La collection
+        </span>
+        <h2 className="vp-title mt-2 text-[22px] sm:text-[28px]">
+          Les {NOMBRE_DE_MAGAZINES} magazines de l’année
+        </h2>
+        <p className="mt-3 max-w-[760px] text-[13.5px] leading-relaxed text-black/55">
+          Un magazine par semaine, et <strong className="font-bold text-black/75">sept chapitres par magazine</strong> —
+          {' '}les sept mêmes univers chaque semaine, traités chaque fois autrement. Les 365 dates ne sont plus 365
+          magazines : elles sont <strong className="font-bold text-black/75">{NOMBRE_DE_MAGAZINES} portes d’entrée</strong>,
+          et chaque jour ouvre l’un des sept chapitres de sa semaine. La bibliothèque compte{' '}
+          {IMAGES_ATTENDUES} images — {NOMBRE_DE_MAGAZINES} couvertures et {NOMBRE_DE_MAGAZINES * CHAPITRES.length}{' '}
+          chapitres ; {VISUELS_LIVRES} sont livrées à ce jour, et ce qui manque garde sa vignette éditoriale.
+        </p>
+
+        {SAISONS_DE_LA_COLLECTION.map((saison) => {
+          const siens = MAGAZINES.filter((m) => m.saison.id === saison.id);
+          return (
+            <div key={saison.id} className="mt-8">
+              <div className="flex flex-wrap items-baseline gap-3 border-b border-black/10 pb-2">
+                <h3 className="text-[15.5px] font-bold tracking-tight">
+                  {saison.symbole} {saison.nom}
+                </h3>
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">
+                  {siens.length} magazines · semaine {saison.semaines[0]} à {saison.semaines[1]}
+                </span>
+              </div>
+              <div className="no-scrollbar mt-4 flex items-start gap-4 overflow-x-auto pb-3">
+                {siens.map((m) => (
+                  <MagazineSemaine
+                    key={m.numero}
+                    magazine={m}
+                    taille="petite"
+                    facteur={duMoment.some((d) => d.numero === m.numero) ? 1 : 0.25}
+                    active={duMoment.some((d) => d.numero === m.numero)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* ————————————— L'ÉTAGÈRE DES 365 JOURS ————————————— */}
+        <div className="mt-12 border-t border-black/10 pt-8">
         <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
           Le kiosque
         </span>
@@ -128,12 +186,12 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
           </span>
         </div>
 
-        {/* — LES COUVERTURES — */}
+        {/* — LES COUVERTURES, JOUR PAR JOUR — */}
         <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
           {affichees.map((couverture) => (
             <figure key={couverture.id} className="group">
               <div className="overflow-hidden rounded-[6px] shadow-[0_16px_34px_-24px_rgba(0,0,0,0.7)] transition group-hover:shadow-[0_22px_44px_-24px_rgba(0,0,0,0.75)]">
-                <CouvertureJour couverture={couverture} largeur={220} vignette className="w-full" />
+                <CouvertureJour couverture={couverture} largeur={220} vignette fond="chapitre" className="w-full" />
               </div>
               <figcaption className="mt-2">
                 <span className="block text-[12.5px] font-semibold text-black/75">{couverture.titre}</span>
@@ -163,6 +221,7 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
           <Link to="/le-mariage" className="vp-btn vp-btn-glass vp-press">
             Les univers <ArrowRight size={14} />
           </Link>
+        </div>
         </div>
       </div>
     </section>

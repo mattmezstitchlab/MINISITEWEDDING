@@ -1,4 +1,6 @@
 import type { Edition } from '../lib/aimeMoteur';
+import { magazineParNumero } from '../lib/semaines';
+import { visuelDeLaCouverture } from '../lib/visuelsDuMagazine';
 
 /**
  * LA COUVERTURE D'UNE SEMAINE — FOND UNI, CRÉATION AU CENTRE
@@ -7,6 +9,11 @@ import type { Edition } from '../lib/aimeMoteur';
  * **création digitale sur l'amour de la saison**. Rien ne passe dessus : la
  * marque tient le haut, le nom et la carte tiennent le bas, comme sur un vrai
  * magazine — et le milieu reste à l'image.
+ *
+ * **Depuis la collection**, une semaine peut porter son propre visuel
+ * (`semaine-38/cover.jpg`) : dès qu'il est livré, il prend la place du dessin de
+ * saison, et la couverture affiche le **titre du magazine**. Sans visuel, la
+ * couverture de saison reste — elle est le repli, pas un brouillon.
  *
  * AIME en haut à gauche, le numéro en haut à droite ; en bas, la saison, la
  * carte de la semaine et sa date.
@@ -31,6 +38,10 @@ export default function CouvertureSemaine({
   const petite = taille === 'petite';
   const teinte = saison.encre;
   const date = edition.du.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+  /** Le magazine de cette semaine, et son visuel — s'il est livré. */
+  const magazine = magazineParNumero(carte.numero);
+  const visuel = visuelDeLaCouverture(magazine.numero);
+  const image = visuel.url ?? saison.visuel;
 
   return (
     <button
@@ -45,7 +56,8 @@ export default function CouvertureSemaine({
     >
       <div className="relative aspect-[3/4.2] w-full">
         {/* La création digitale, au centre du fond uni. */}
-        <img src={saison.visuel} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+        {visuel.url && <div className="absolute inset-0 bg-black/25" />}
 
         <div className="relative flex h-full flex-col justify-between p-3.5" style={{ color: teinte }}>
           <div className="flex items-baseline justify-between gap-2">
@@ -60,8 +72,13 @@ export default function CouvertureSemaine({
               className={`vp-title font-bold ${petite ? 'text-[14px]' : 'text-[19px] sm:text-[21px]'}`}
               style={{ lineHeight: 1.05 }}
             >
-              {saison.nom}
+              {visuel.url ? magazine.titre : saison.nom}
             </div>
+            {visuel.url && (
+              <div className={`mt-0.5 font-mono uppercase tracking-[0.12em] opacity-70 ${petite ? 'text-[8px]' : 'text-[9px]'}`}>
+                {magazine.style}
+              </div>
+            )}
             <div className={`mt-1 font-mono uppercase tracking-[0.14em] opacity-75 ${petite ? 'text-[8.5px]' : 'text-[9.5px]'}`}>
               {carte.nom}
             </div>

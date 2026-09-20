@@ -1,5 +1,5 @@
 import {
-  BookOpen, CalendarClock, CreditCard, Images, ListOrdered, Music2, Package,
+  BookOpen, CalendarClock, CreditCard, Images, Layers, ListOrdered, Music2, Package,
   Radar, ScrollText, ShoppingBag, Sparkles, Stamp, Store, Tag, Users, Wand2,
 } from 'lucide-react';
 import type { ActionNav } from './navVerticale';
@@ -54,6 +54,7 @@ export const NAV_METIER: ActionNav[] = [
 ];
 
 export const NAV_MAGAZINE: ActionNav[] = [
+  { id: 'chapitres', label: 'Les sept chapitres', icone: Layers, ancre: 'chapitres', aide: 'Le magazine de la semaine, ses sept univers, et le chapitre où l’on est.' },
   { id: 'saisons', label: 'Les quatre saisons', icone: CalendarClock, ancre: 'saisons', aide: 'Quatre couvertures de base : un fond uni, une création sur l’amour de la saison.' },
   { id: 'numero', label: 'Le numéro du moment', icone: BookOpen, ancre: 'numero', aide: 'L’édition de la semaine : huit rubriques, toujours les mêmes.' },
   { id: 'articles', label: 'Les articles', icone: ListOrdered, ancre: 'articles', aide: 'Les articles de l’édition ouverte, sous sa couverture.' },

@@ -1,5 +1,6 @@
 import { PAGES_EDITION, RUBRIQUES, composerEdition, type Edition } from './aimeMoteur';
 import { semaineDeLAnnee } from './jeuDeCartes';
+import { chapitreDeLaDate, magazineDeLaDate, type ChapitreDuMagazine, type Magazine } from './semaines';
 import { couvertureDuJour, type CouvertureJour } from './couvertureDuJour';
 import { ficheDuJour, type FicheDeLAnnee } from './fichesAnnee';
 import { decoderPersonnes, type PersonneComposee, type ReponseDuMagazine } from './composerPersonnes';
@@ -36,10 +37,18 @@ export interface MagazineCompose {
   roleId: string;
   /** Le numéro de la semaine, ses pages composées. */
   edition: Edition;
-  /** La couverture du jour : la même que le kiosque des 365. */
+  /** La couverture du jour : la même que le kiosque de l'année. */
   couverture: CouvertureJour;
   /** La fiche du jour : la fête, le personnage, le sens du prénom. */
   fiche: FicheDeLAnnee;
+  /**
+   * **Le magazine de la semaine** — la date n'ouvre plus un magazine à elle
+   * seule : elle entre dans un numéro hebdomadaire, par l'un de ses sept
+   * chapitres. Ces deux champs viennent de `semaines.ts`, la seule source.
+   */
+  magazine: Magazine;
+  /** **Le chapitre par lequel cette date entre** dans son magazine. */
+  chapitre: ChapitreDuMagazine;
 }
 
 export const CLE_DU_MAGAZINE = 'aime.magazine.compose';
@@ -79,6 +88,8 @@ export function composerLeMagazine(reponse: ReponseDuMagazine): MagazineCompose 
     }),
     couverture: couvertureDuJour(jour),
     fiche: ficheDuJour(jour),
+    magazine: magazineDeLaDate(jour),
+    chapitre: chapitreDeLaDate(jour),
   };
 }
 
@@ -88,6 +99,14 @@ export function phraseDuMagazine(m: MagazineCompose): string {
   if (noms && m.dateDonnee) return `${noms} · ${m.fiche.dateLongue}`;
   if (noms) return `${noms} · le magazine du jour`;
   return `Le magazine du ${m.fiche.dateLongue}`;
+}
+
+/**
+ * **LES TROIS NIVEAUX DE LA RÉPONSE** — quel jour, dans quel magazine, à quel
+ * chapitre : la même lecture que sur la couverture, et la même source.
+ */
+export function etagesDuMagazine(m: MagazineCompose): string {
+  return `${m.fiche.dateLongue} · ${m.magazine.etiquette} · ${m.chapitre.titreComplet}`;
 }
 
 /** On n'écrit que la réponse : le magazine, lui, se recompose. */

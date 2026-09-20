@@ -15,7 +15,9 @@
     "prompts": "esbuild scripts/faire-prompts.ts --bundle --platform=node --format=cjs --outfile=node_modules/.cache/prompts.cjs --log-level=error && node node_modules/.cache/prompts.cjs",
     "snapshot": "node scripts/export-sites.mjs",
     "snapshot:demo": "node scripts/export-sites.mjs --demo",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "visuels": "esbuild scripts/relever-visuels.ts --bundle --platform=node --format=cjs --outfile=node_modules/.cache/visuels.cjs --log-level=error && node node_modules/.cache/visuels.cjs && node scripts/compresser-visuels.mjs",
+    "prompts:aime": "esbuild scripts/faire-prompt-aime.ts --bundle --platform=node --format=cjs --outfile=node_modules/.cache/aime.cjs --log-level=error && node node_modules/.cache/aime.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.1",
