@@ -1998,6 +1998,7 @@ const heroMagazine = revue.slice(0, revue.indexOf('data-grille'));
 check('l’écran s’ouvre sur la mosaïque, et rien d’autre', heroMagazine.includes('data-case='), false);
 check('aucune image de fond ne traîne derrière', revue.includes('data-scene="editoriale"'), false);
 check('la mosaïque prend l’écran', revue.includes('data-grille="du-monde"'), true);
+check('et le nom d’une case se lit au survol, sans un rendu', revue.includes('group-hover:block'), true);
 
 /* ————————————— LA SCÈNE ÉDITORIALE : UNE IMAGE, TROIS LIGNES ————————————— */
 

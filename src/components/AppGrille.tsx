@@ -28,9 +28,6 @@ import {
   LIAISONS_POSSIBLES,
   PALETTES_DU_SYSTÈME,
   RÉGLAGES_DU_SYSTÈME,
-  faceTechnique,
-  liaisonsDuneCase,
-  modulesAttendus,
   type Emplacement,
 } from '../lib/versoDuSite';
 import { publierImmersif } from '../lib/modeImmersif';
@@ -160,7 +157,6 @@ export default function AppGrille({
   /** Les places posées à la main : au verso, une case se déplace et se lie. */
   const [places, setPlaces] = useState<Record<string, Emplacement>>({});
   const [feuille, setFeuille] = useState<FeuilleOuverte>(() => feuilleDeLAdresse(params.get('feuille')));
-  const [apercu, setApercu] = useState<CaseDuMonde | null>(null);
   const [entree, setEntree] = useState<{ kase: CaseDuMonde; rect: DOMRect | null } | null>(null);
   const [sortie, setSortie] = useState(false);
   /** La composition : les cases que l'adresse apporte, ou celles qu'on choisit. */
@@ -227,7 +223,6 @@ export default function AppGrille({
     window.setTimeout(() => {
       setChemin((c) => [...c, { id: ouvre, titre: kase.titre }]);
       setMondeId(ouvre);
-      setApercu(null);
       setEntree(null);
     }, 430);
   };
@@ -240,7 +235,6 @@ export default function AppGrille({
       setChemin((c) => c.slice(0, -1));
       setMondeId(precedent);
       setSortie(false);
-      setApercu(null);
     }, 320);
   };
 
@@ -346,20 +340,6 @@ export default function AppGrille({
             {PALETTES_DU_SYSTÈME.length} palettes · {monde.cases.length} cases
           </p>
 
-          {/* La case sous la main : sa face technique, et ce qu'elle attend. */}
-          {apercu && (
-            <p data-face="technique" className="mt-2 border-t border-white/10 pt-2">
-              <span className="block uppercase text-white/75">{apercu.titre}</span>
-              <span className="block text-white/35">
-                {faceTechnique(apercu, liaisonsDuneCase(apercu, monde)).source} ·{' '}
-                {apercu.module} · {liaisonsDuneCase(apercu, monde)} liaisons
-              </span>
-              <span className="block text-white/30">
-                attend : {modulesAttendus(apercu.module).slice(0, 6).join(' · ') || 'rien'}
-              </span>
-            </p>
-          )}
-
           <p className="mt-2 border-t border-white/10 pt-2 uppercase text-white/35">le système</p>
           {RÉGLAGES_DU_SYSTÈME.map((reglage) => (
             <p key={reglage.id} data-reglage={reglage.id} className="flex items-baseline justify-between gap-2">
@@ -396,7 +376,6 @@ export default function AppGrille({
           echelle={echelle}
           onEchelle={(e) => setEchelle(e)}
           onOuvrir={entrer}
-          onApercu={setApercu}
           selection={selection}
           onSelection={setSelection}
           onComposer={composer}
@@ -443,17 +422,6 @@ export default function AppGrille({
           {role ? `choisi pour ${role.nom.toLowerCase()}` : `${MARQUE_MAGAZINE} · 54 · 7 · 365`}
         </span>
       </div>
-
-      {/* ————————— LA CASE SOUS LE DOIGT : UNE LIGNE, SANS PLUS ————————— */}
-      {apercu && (
-        <span
-          data-apercu="case"
-          className="pointer-events-none absolute bottom-8 left-3 z-20 font-mono text-[10px] uppercase tracking-[0.18em] text-white/60 sm:left-5"
-          style={{ textShadow: '0 1px 3px rgba(0,0,0,0.7)' }}
-        >
-          {apercu.surTitre ? `${apercu.surTitre} · ` : ''}{apercu.titre}
-        </span>
-      )}
 
       {/* ————————— LE CHEMIN : OÙ L'ON EST, ET D'OÙ L'ON VIENT ————————— */}
       <div data-chemin="monde" className="absolute bottom-3 left-3 z-20 flex flex-wrap items-center gap-1.5 pr-24 sm:left-5">
@@ -594,21 +562,34 @@ function ZoomDEntree({ kase, rect }: { kase: CaseDuMonde; rect: DOMRect | null }
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const depart = rect ?? { left: window.innerWidth / 2 - 60, top: window.innerHeight / 2 - 60, width: 120, height: 120 };
+  const fenetre =
+    typeof window === 'undefined' ? { l: 1280, h: 820 } : { l: window.innerWidth, h: window.innerHeight };
+  const depart = rect ?? {
+    left: fenetre.l / 2 - 60,
+    top: fenetre.h / 2 - 60,
+    width: 120,
+    height: 120,
+  };
+  /**
+   * **Le zoom ne mesure rien.** La case s'agrandit par un `transform` seul —
+   * jamais par sa taille, jamais par sa position : le navigateur ne recalcule
+   * donc aucune mise en page pendant l'animation, et rien ne saute.
+   */
+  const echelle = grand ? 1 : Math.max(depart.width / fenetre.l, depart.height / fenetre.h);
 
   return (
     <span
       aria-hidden="true"
       data-zoom="case"
-      className="pointer-events-none fixed z-40 overflow-hidden"
+      className="pointer-events-none fixed left-0 top-0 z-40 overflow-hidden"
       style={{
-        left: grand ? 0 : depart.left,
-        top: grand ? 0 : depart.top,
-        width: grand ? '100vw' : depart.width,
-        height: grand ? '100vh' : depart.height,
+        width: fenetre.l,
+        height: fenetre.h,
+        transformOrigin: '0 0',
+        transform: `translate3d(${grand ? 0 : depart.left}px, ${grand ? 0 : depart.top}px, 0) scale(${echelle})`,
+        transition: 'transform 430ms cubic-bezier(.22,.9,.24,1)',
+        willChange: 'transform',
         background: kase.couleur,
-        transition:
-          'left 430ms cubic-bezier(.22,.9,.24,1), top 430ms cubic-bezier(.22,.9,.24,1), width 430ms cubic-bezier(.22,.9,.24,1), height 430ms cubic-bezier(.22,.9,.24,1)',
       }}
     >
       {kase.image && <img src={kase.image} alt="" className="h-full w-full object-cover" />}

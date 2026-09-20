@@ -48,8 +48,6 @@ export interface GrilleDuMondeProps {
   onEchelle: (echelle: number) => void;
   /** On entre dans une case : la page fait le zoom, et change de monde. */
   onOuvrir?: (c: CaseDuMonde, rect: DOMRect | null) => void;
-  /** La case survolée : la page en fait son aperçu. */
-  onApercu?: (c: CaseDuMonde | null) => void;
   /** Les cases choisies, par leur identifiant. */
   selection?: string[];
   onSelection?: (ids: string[]) => void;
@@ -90,7 +88,6 @@ export default function GrilleDuMonde({
   echelle,
   onEchelle,
   onOuvrir,
-  onApercu,
   selection = [],
   onSelection,
   onComposer,
@@ -471,7 +468,6 @@ export default function GrilleDuMonde({
       onPointerMove={surBouge}
       onPointerUp={surHaut}
       onPointerCancel={surHaut}
-      onPointerLeave={() => onApercu?.(null)}
     >
       {/* ————————————— LA GRILLE, ET SON DÉPLACEMENT ————————————— */}
       <div
@@ -479,6 +475,7 @@ export default function GrilleDuMonde({
         className="absolute left-0 top-0"
         style={{
           transform: `translate3d(${pan.x}px, ${pan.y}px, 0)`,
+          willChange: 'transform',
           width: largeur,
           height: hauteurGrille,
           opacity: sortie ? 0 : 1,
@@ -554,14 +551,12 @@ export default function GrilleDuMonde({
                 if (e.detail === 0) choisir(kase, e);
               }}
               onMouseEnter={() => {
-                onApercu?.(kase);
                 if (verso) setSurvolVerse(kase.id);
               }}
               onMouseLeave={() => {
                 if (verso) setSurvolVerse(null);
               }}
-              onFocus={() => onApercu?.(kase)}
-              className={`absolute block overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
+              className={`group absolute block overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
                 verso ? 'border border-white/12' : ''
               }`}
               style={{
@@ -722,6 +717,13 @@ export default function GrilleDuMonde({
                   )}
                 </>
               )}
+
+                  {/* De si loin, on ne lisait pas : le doigt posé dit le nom, sans un rendu. */}
+                  {densite < 3 && (
+                    <span className="absolute inset-x-0 bottom-0 hidden bg-black/60 p-1 font-mono text-[9px] uppercase tracking-[0.14em] text-white/90 group-hover:block">
+                      {kase.titre}
+                    </span>
+                  )}
 
               {/* La tête de lecture : un trait blanc, trois pixels, et rien d'autre. */}
               {actif && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] bg-white" />}
