@@ -99,7 +99,7 @@ export default function MagazineSemaine({
         <div className="font-mono text-[9px] uppercase tracking-[0.14em] text-white/70">
           {magazine.joker
             ? 'Hors calendrier — le jour de trop'
-            : `Semaine ${magazine.semaine} · ${magazine.saison.symbole} ${magazine.saison.nom}`}
+            : `Semaine ${magazine.semaine} · ${magazine.saison.nom}`}
           {!visuel.url && <span className="ml-1 text-white/45">· à paraître</span>}
         </div>
       </div>

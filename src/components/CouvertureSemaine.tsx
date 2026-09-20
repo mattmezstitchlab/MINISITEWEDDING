@@ -47,7 +47,7 @@ export default function CouvertureSemaine({
     <button
       type="button"
       onClick={onChoisir}
-      aria-label={`AIME MAGAZINE n° ${carte.numero} — ${carte.nom}, ${saison.nom}`}
+      aria-label={`AIME MAGAZINE n° ${carte.numero} — ${magazine.titre}, ${saison.nom}`}
       aria-pressed={active}
       style={{ transform: `scale(${echelle})`, background: saison.fond, color: teinte }}
       className={`group relative shrink-0 overflow-hidden rounded-[16px] text-left transition-transform duration-200 ease-out ${
@@ -80,14 +80,14 @@ export default function CouvertureSemaine({
               </div>
             )}
             <div className={`mt-1 font-mono uppercase tracking-[0.14em] opacity-75 ${petite ? 'text-[8.5px]' : 'text-[9.5px]'}`}>
-              {carte.nom}
+              {carte.joker ? 'Hors calendrier' : `Semaine ${carte.semaine}`}
             </div>
             <div
               className={`mt-2 border-t pt-2 text-[9.5px] leading-snug ${petite ? 'opacity-70' : 'opacity-80'}`}
               style={{ borderColor: `${teinte}33` }}
             >
               {carte.joker ? (
-                <span>Hors calendrier — {carte.sens.toLowerCase()}</span>
+                <span>Hors calendrier</span>
               ) : (
                 <span>
                   Semaine {carte.semaine} · {date}

@@ -297,3 +297,73 @@ jamais.
 
 Une seule barre dans toute l'application : celle du site. Elle change de
 contenu, jamais de place.
+
+## 13. Refonte : la mosaïque, et rien d'autre
+
+L'expérience a été reprise de fond en comble. **Une seule idée est conservée :
+la timeline** — son principe et son fonctionnement temporel. Tout le reste a été
+refait, et ce qui restait de l'ancienne interface a été retiré.
+
+### Ce qui a disparu
+
+Les blocs empilés, la colonne de navigation à droite, le dock permanent sous les
+yeux, le panneau du sommaire, les compteurs, les badges, les encadrés, les cartes
+arrondies et leurs ombres, les phrases qui expliquaient l'interface — et **toute
+la métaphore du jeu de cartes** : plus de roi, de dame, de valet, de carreau, de
+pique ni de trèfle à l'écran. Le vocabulaire visible est désormais **image +
+temps + mosaïque + typographie**.
+
+### L'écran
+
+```
+┌───────────────────────────────────────────────────────┐
+│ 20 SEPTEMBRE · MAGAZINE 38                 (cadran)    │
+│ Septembre doré                                         │  LA SCÈNE
+│ L'ART DE RECEVOIR                                      │
+├───────────────────────────────────────────────────────┤
+│ l'éditeur   la collection   votre profil               │  les portes
+│ ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  l'année                  │
+│ ▓▓▓▓▓▓▓▓  la semaine                                   │  LA MOSAÏQUE
+│ ▓▓▓▓▓▓▓▓▓▓▓▓  la journée                               │  (la timeline)
+│ ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  le numéro                            │
+│ ▓▓▓▓▓▓▓▓▓▓▓▓  les articles                             │
+└───────────────────────────────────────────────────────┘
+```
+
+### La mosaïque du temps
+
+`MosaiqueDuTemps.tsx` — des vignettes **carrées, bord à bord**, sans cadre ni
+ombre, chacune avec une image (ou la couleur du magazine) et **deux mots au
+plus**. Elle occupe toute la largeur, en bas, et elle est **la seule surface de
+navigation** :
+
+| rangée | ce qu'elle porte | une vignette, c'est |
+| --- | --- | --- |
+| `l'année` | les 54 magazines | une couverture, son numéro |
+| `la semaine` | les 7 jours du magazine ouvert | un chapitre, le quantième |
+| `la journée` | les 24 heures | une heure, et sa lumière |
+| `le numéro` | les 24 pages composées | une page, sa rubrique |
+| `les articles` | ce qui se lit | un article, sa durée |
+
+**Le zoom ouvre les rangées** (`echelleDeLaMosaique.ts`) : molette, pincement à
+deux doigts, `+` / `−`, ou les quatre crans à droite de la bande. De loin, le
+monde ; de près, la page ; plus près, l'article. La **tête de lecture** — le
+trait blanc, en haut de la vignette de l'instant — vient de l'atelier d'origine,
+et se ramène toute seule dans le champ.
+
+**La lumière des heures** (`lumiereDuJour.ts`) fait le reste : la même
+photographie, vingt-quatre fois, avec la clarté et le voile de chaque heure. On
+voit la nuit tomber en glissant le doigt.
+
+### Les feuilles
+
+Ce qui n'est pas l'image et la mosaïque **s'ouvre à la demande**, dans une
+feuille (`Feuille.tsx`) : **l'éditeur** (le composeur, l'édition, les trois temps
+de lecture), **la collection** (les 54 couvertures, par saison), **votre profil**
+(la mise en lumière). Elles s'ouvrent aussi par l'adresse : `?feuille=editeur`.
+
+### L'adresse
+
+`/magazine?jour=09-21&niveau=4&moment=soir&feuille=collection` — le jour, le cran
+d'échelle, le moment de la capsule, la feuille. Tout est partageable, et lu au
+premier rendu.

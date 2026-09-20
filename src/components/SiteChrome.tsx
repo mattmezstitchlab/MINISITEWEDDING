@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { useBandeDuMagazine } from '../lib/bandeDuMagazine';
+import { useModeImmersif } from '../lib/modeImmersif';
 import SiteHeader from './SiteHeader';
 import BottomCapsuleNav from './BottomCapsuleNav';
 import LanguetteTimeline from './LanguetteTimeline';
@@ -52,14 +52,15 @@ const MENTIONS: Array<[string, string]> = [
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   /**
-   * **Le mode immersif.** Quand une page publie sa bande (`bandeDuMagazine.ts`),
-   * c'est qu'elle tient l'écran : les visuels plein cadre, et la barre du bas
-   * pour naviguer. Les deux boutons flottants — les paramètres, le point d'état —
-   * s'effacent alors : ils se poseraient sur la barre, et l'application n'en a
-   * pas besoin. Ils reviennent dès qu'on quitte l'écran immersif.
+   * **Le mode immersif.** Quand une page se déclare immersive (`modeImmersif.ts`),
+   * elle tient l'écran : l'image plein cadre, et la mosaïque du temps — sa
+   * timeline — en bas. **Le site s'efface alors complètement** : plus de barre,
+   * plus de colonne de navigation, plus de dock, plus de pied. C'est la règle du
+   * nouveau magazine : rien de permanent autour de l'image, et tout ce qui n'est
+   * pas l'image et la mosaïque s'ouvre à la demande, dans une feuille.
    */
-  const immersif = useBandeDuMagazine() !== null;
-  const avecChrome = !SANS_CHROME.some((prefixe) => pathname.startsWith(prefixe));
+  const immersif = useModeImmersif();
+  const avecChrome = !immersif && !SANS_CHROME.some((prefixe) => pathname.startsWith(prefixe));
   const mention = MENTIONS.find(([prefixe]) => pathname.startsWith(prefixe))?.[1];
 
   if (!avecChrome) return <>{children}</>;
@@ -72,9 +73,9 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       {/* La nav verticale : à droite, et différente sur chaque page. */}
       <NavVerticale />
       {/* En bas à gauche : les paramètres, c'est-à-dire l'éditeur du mini-site. */}
-      {!immersif && <BoutonParametres />}
+      <BoutonParametres />
       {/* En bas à droite : le point d'état. Il s'allume, on clique, la fente sort. */}
-      {!immersif && <BoutonEtat />}
+      <BoutonEtat />
       {/* En haut, la fente : le ticket sort quand il y a quelque chose à voir. */}
       <FenteDocuments />
       {/* Le pied commun : la signature, et les portes du site. */}

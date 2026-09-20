@@ -1,413 +1,486 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { MARQUE_MAGAZINE } from '../lib/aimeMagazine';
-import { ALL_ARTICLES } from '../lib/magazine';
+import { ALL_ARTICLES, type Article } from '../lib/magazine';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
 import { usePersonaCourante } from '../lib/personaCourant';
 import { composerEdition, HEURES } from '../lib/aimeMoteur';
-import { jourDuChapitre, niveauxDuJour } from '../lib/semaines';
-import { visuelsDuJour } from '../lib/visuelsDuMagazine';
-import { bandeDuMagazineDeLaDate, publierBande, type BandeDuMagazine } from '../lib/bandeDuMagazine';
-import { filRougeDuJour, jourDuMagazine, joursAutour } from '../lib/jourDuMagazine';
-import { basculerTimeline, choisirMoment, publierReperes } from '../lib/capsuleCommande';
-import { useControlesDeBande } from '../lib/personaCourant';
-import { enregistrerNavVerticale } from '../lib/navVerticale';
-import { NAV_MAGAZINE } from '../lib/navDesPages';
-import SceneDuMagazine from '../components/SceneDuMagazine';
-import ChapitresDuMagazine from '../components/ChapitresDuMagazine';
-import GalerieCouvertures from '../components/GalerieCouvertures';
-import BlocMagazine from '../components/BlocMagazine';
-import EditionSemaine from '../components/EditionSemaine';
-import MiseEnLumiere from '../components/MiseEnLumiere';
-import ChampDuMagazine from '../components/ChampDuMagazine';
-import TimelineTheaterStudio from '../components/TimelineTheaterStudio';
-import type { TimelineTrackItem } from '../lib/timelineTheaterEngine';
+import { couvertureDuJour } from '../lib/couvertureDuJour';
+import { CHAPITRES } from '../lib/chapitres';
+import { jourDuMagazine } from '../lib/jourDuMagazine';
 import {
-  adresseDuMagazine,
-  blocsDeLaCollection,
-  graduationsDeLaCollection,
-  teteSurLaSemaineCourante,
-} from '../lib/timelineDeLaCollection';
+  MAGAZINES, jourDuChapitre, joursDuMagazine, magazineDeLaDate, niveauxDuJour, positionDansLeMagazine,
+} from '../lib/semaines';
+import { visuelDeLaCouverture, visuelDuChapitre, visuelsDuJour } from '../lib/visuelsDuMagazine';
+import {
+  choisirMoment, HEURE_DES_MOMENTS, heureDeLaCapsule, MOMENTS_DE_LA_CAPSULE,
+} from '../lib/capsuleCommande';
+import { publierImmersif } from '../lib/modeImmersif';
+import { lumiereDeLHeure, teinteDeLHeure } from '../lib/lumiereDuJour';
+import { partDeLHeure } from '../lib/moments';
+import { MOIS_LONGS } from '../lib/calendrier';
+import CadranDuMagazine from '../components/CadranDuMagazine';
+import CouvertureJour from '../components/CouvertureJour';
+import ChampDuMagazine from '../components/ChampDuMagazine';
+import EditionSemaine from '../components/EditionSemaine';
+import GalerieCouvertures from '../components/GalerieCouvertures';
+import Feuille from '../components/Feuille';
+import MiseEnLumiere from '../components/MiseEnLumiere';
+import MosaiqueDuTemps, { type RangeeDuTemps, type TuileDuTemps } from '../components/MosaiqueDuTemps';
+import SceneEditoriale from '../components/SceneEditoriale';
 
 /**
- * LE MAGAZINE — UNE COUVERTURE, UN CADRAN, ET TOUT LE RESTE DERRIÈRE
- *
- * La page tient en **une couverture et cinq blocs**, et rien d'autre. On a
- * retiré ce qui répétait la même idée sous quatre formes (les quatre saisons,
- * les treize semaines, le mur des 365 couvertures, le profil du jour, les six
- * temps, le chiffre) : tout cela vit encore ailleurs, ou plus du tout — c'est ce
- * qu'on appelle simplifier.
+ * AIME MAGAZINE — L'APPLICATION
  *
  * ```
- * LA COUVERTURE   l'image du magazine, le cadran à aiguilles dessus,
- *                 les trois niveaux — et, dessous, ses sept chapitres
- * 1. L'ÉDITEUR    la saisie, et le magazine qu'elle compose : 24 pages
- * 2. L'ATELIER    la timeline du site — l'année, ses 54 magazines, ses blocs
- * 3. LA COLLECTION les 54 couvertures, par saison
- * 4. LES ARTICLES ce qui se lit dans le magazine
- * 5. LA LUMIÈRE   se montrer, et élever les autres
+ * ┌───────────────────────────────────────────────────┐
+ * │ 20 SEPTEMBRE                     (cadran)          │
+ * │ Septembre doré                                     │  LA SCÈNE
+ * │ L'ART DE RECEVOIR                                  │
+ * ├───────────────────────────────────────────────────┤
+ * │ [54][51][52][53][54]…          l'année            │
+ * │ [17][18][19][20][21][22][23]   la semaine         │  LA MOSAÏQUE
+ * │ [00][01]…[18][19]…[23]         la journée         │  (la timeline)
+ * │ [00][01]…[23]                  le numéro          │
+ * │ [IMG][IMG][IMG]…               les articles       │
+ * └───────────────────────────────────────────────────┘
  * ```
  *
- * ## Le cadran, et la capsule
+ * **La mosaïque, c'est l'application.** Elle occupe toute la largeur, en bas, et
+ * elle porte presque tout : les 54 magazines de l'année, les sept jours du
+ * magazine ouvert, les vingt-quatre heures de la journée, les vingt-quatre pages
+ * du numéro, les articles. On zoome — molette, pincement, clavier, ou les quatre
+ * crans — et les rangées s'ouvrent : de loin le monde, de près la page.
  *
- * Le cadran de la couverture porte **deux aiguilles** : la grande montre
- * **l'heure qu'on regarde** — celle de la capsule temporelle du bas, ou l'heure
- * réelle —, et la petite montre **le chapitre** où la date entre. Un clic sur
- * « le soir » dans le dock, et l'aiguille se pose à 20 h ; les branches de
- * cette heure s'allument. La page **publie ses repères** au dock (le magazine,
- * le chapitre, le jour) : les deux parlent donc toujours du même moment.
+ * **La scène, c'est la lecture.** Une image, trois lignes. Rien d'autre.
+ *
+ * Tout le reste — l'éditeur, la collection — n'apparaît que si on le demande,
+ * dans une feuille. Il n'y a plus de panneaux, plus de colonne, plus de blocs
+ * empilés, plus de cartes à jouer : **image + temps + mosaïque + typographie**.
  */
 
-/** La bascule des trois temps : le même numéro, relu. */
-const TEMPS = [
-  ['passe', 'L’an dernier'],
-  ['present', 'Cette semaine'],
-  ['futur', 'L’an prochain'],
-] as const;
+/** Ce qu'on regarde : le magazine, un jour, une heure, une page, un article. */
+type Selection =
+  | { type: 'magazine'; numero: number }
+  | { type: 'jour'; date: Date }
+  | { type: 'heure'; date: Date; heure: number }
+  | { type: 'page'; date: Date; heure: number }
+  | { type: 'article'; article: Article };
+
+type FeuilleOuverte = null | 'editeur' | 'collection' | 'profil';
+
+/** **La feuille de l'adresse** : `?feuille=editeur` ouvre l'éditeur en arrivant. */
+function feuilleDeLAdresse(valeur: string | null): FeuilleOuverte {
+  return valeur === 'editeur' || valeur === 'collection' || valeur === 'profil' ? valeur : null;
+}
+
+/** Le mot de la vignette, pour un chapitre : « Amoureux », « Style », « Fête ». */
+function motDuChapitre(titre: string): string {
+  return titre.replace(/^(Les|Le|La|L’|L')\s+/i, '').split(/[\s,]/)[0]!;
+}
+
+/** La date, comme sur une couverture : « 20 SEPTEMBRE ». */
+function dateCapitale(date: Date): string {
+  return `${date.getDate()} ${MOIS_LONGS[date.getMonth()]!.toUpperCase()}`;
+}
+
+/** **Le jour de l'adresse** : `?jour=09-21`, ou aujourd'hui. */
+function jourDeLAdresse(valeur: string | null): Date {
+  const [m, q] = (valeur ?? '').split('-').map(Number);
+  if (m && q) return new Date(new Date().getFullYear(), m - 1, q, 12);
+  return new Date();
+}
+
+/** **Le cran de l'adresse** : `?niveau=4`, ou le cran de départ — la semaine. */
+function niveauDeLAdresse(valeur: string | null): number {
+  const n = Number(valeur);
+  return n >= 1 && n <= 4 ? n : 2;
+}
+
+/** L'encre lisible sur un fond : on regarde la luminance, on ne devine pas. */
+function encreSur(fond: string): string {
+  const hex = fond.replace('#', '').slice(0, 6).padEnd(6, '0');
+  const canal = (i: number) => parseInt(hex.slice(i, i + 2), 16);
+  const l = (0.2126 * canal(0) + 0.7152 * canal(2) + 0.0722 * canal(4)) / 255;
+  return l > 0.55 ? '#0B0C12' : '#F4F5FB';
+}
 
 export default function Magazine() {
   const [params] = useSearchParams();
-
-  /** Le jour ouvert : aujourd'hui, tant qu'on ne choisit pas autre chose. */
-  const [depart, setDepart] = useState(() => new Date());
-  const [index, setIndex] = useState(0);
-  const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
-
-  /** Le métier de qui regarde : le magazine se range à sa place. */
   const role = roleDuneAdresse(params.get('role'));
   const moi = usePersonaCourante();
   const roleId = role?.id ?? moi.id;
-  const articles = useMemo(() => (role ? articlesPourRole(role.id) : ALL_ARTICLES), [role]);
-
-  const jours = useMemo(() => joursAutour(depart, 7).map((d) => jourDuMagazine(d)), [depart]);
-  const jour = jours[Math.min(index, jours.length - 1)]!;
-  const annee = jour.date.getFullYear();
-
-  /** Les trois niveaux du jour, et ses visuels — une seule source : `semaines.ts`. */
-  const niveaux = useMemo(() => niveauxDuJour(jour.date), [jour.date]);
-  const visuels = useMemo(() => visuelsDuJour(jour.date), [jour.date]);
-  const edition = useMemo(
-    () => composerEdition({ numero: visuels.magazine.numero, temps, roleId }),
-    [visuels.magazine.numero, temps, roleId],
-  );
-  const fil = useMemo(() => filRougeDuJour(jour.date), [jour.date]);
-
-  /** L'atelier de l'année : les 54 magazines sur la bande. */
-  const blocs = useMemo(() => blocsDeLaCollection(annee), [annee]);
-  const graduations = useMemo(() => graduationsDeLaCollection(annee), [annee]);
-  const tete = useMemo(() => teteSurLaSemaineCourante(), []);
-
-  // La nav verticale de la page : la collection, l'éditeur, l'atelier.
-  useEffect(() => {
-    enregistrerNavVerticale(NAV_MAGAZINE);
-    return () => enregistrerNavVerticale(null);
-  }, []);
-
-  // **La page dit au dock ce qu'on regarde** : le magazine, le chapitre, le jour.
-  useEffect(() => {
-    publierReperes({
-      magazine: niveaux.magazine,
-      chapitre: niveaux.chapitre,
-      numeroDeChapitre: niveaux.numeroDeChapitre,
-      jour: niveaux.date,
-    });
-    return () => publierReperes(null);
-  }, [niveaux]);
-
-  /** **Ouvrir un jour** — la seule façon de changer de date. Tout y mène. */
-  const ouvrirJour = useCallback((d: Date) => {
-    setDepart(d);
-    setIndex(0);
-  }, []);
 
   /**
-   * **LA BANDE DU BAS.** La page publie ce que la barre doit montrer pour qu'on
-   * navigue sans quitter le visuel : les **54 semaines** de la règle — la
-   * timeline, toujours en bas — et les **huit visuels** de la semaine ouverte :
-   * sa couverture, puis ses sept chapitres.
-   *
-   * La barre ne devine rien : elle affiche la bande, et lui rend ses gestes.
-   * `ouvrirSemaine` change de magazine, `ouvrirVisuel` ouvre le jour qui porte
-   * le chapitre voulu — les deux passent par `ouvrirJour`, la seule porte.
+   * **Le jour, la sélection et le cran viennent de l'adresse** — on les lit au
+   * premier rendu, pas dans un effet : une adresse partagée ouvre exactement ce
+   * qu'elle annonce, sans passer par un état intermédiaire.
    */
-  const ouvrirSemaine = useCallback(
-    (numero: number) => {
-      ouvrirJour(jourDuChapitre(numero, 1, annee));
-    },
-    [ouvrirJour, annee],
-  );
-  const ouvrirVisuel = useCallback(
-    (chapitre: number) => {
-      ouvrirJour(jourDuChapitre(visuels.magazine.numero, Math.max(1, chapitre), annee));
-    },
-    [ouvrirJour, visuels.magazine.numero, annee],
-  );
-  const bande = useMemo<BandeDuMagazine>(
-    () => bandeDuMagazineDeLaDate(jour.date, { ouvrirSemaine, ouvrirVisuel }),
-    [jour.date, ouvrirSemaine, ouvrirVisuel],
-  );
-  useEffect(() => {
-    publierBande(bande);
-    return () => publierBande(null);
-  }, [bande]);
+  const [date, setDate] = useState(() => jourDeLAdresse(params.get('jour')));
+  const [selection, setSelection] = useState<Selection>(() => ({ type: 'jour', date: jourDeLAdresse(params.get('jour')) }));
+  const [niveau, setNiveau] = useState(() => niveauDeLAdresse(params.get('niveau')));
+  /** La feuille ouverte, s'il y en a une — et celle que l'adresse réclame. */
+  const [feuille, setFeuille] = useState<FeuilleOuverte>(() => feuilleDeLAdresse(params.get('feuille')));
 
-  /**
-   * **La couleur de l'application.** Le magazine est sombre : sur un téléphone,
-   * la barre du navigateur prend l'encre de la scène — l'écran est plein, sans
-   * liseré blanc. On rend la couleur d'avant en partant.
-   */
+  /** La page est immersive : le site s'efface derrière elle. */
   useEffect(() => {
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) return;
-    const avant = meta.getAttribute('content');
-    meta.setAttribute('content', '#0B0C12');
-    return () => {
-      if (avant) meta.setAttribute('content', avant);
-    };
+    publierImmersif(true);
+    return () => publierImmersif(false);
   }, []);
 
-  // L'adresse amène le jour, le moment, la timeline : une fois, à l'arrivée.
+  /** Le moment de l'adresse, lui, se pose sur la capsule : `?moment=soir`. */
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect */
-    const j = params.get('jour');
-    if (j) {
-      const [m, q] = j.split('-').map(Number);
-      if (m && q) {
-        setDepart(new Date(new Date().getFullYear(), m - 1, q, 12));
-        setIndex(0);
-      }
-    }
     const mo = params.get('moment');
     if (mo) choisirMoment(mo);
-    if (params.get('timeline') === '1') basculerTimeline(true);
-    /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Les flèches du dock feuillettent les jours ; au bord, la fenêtre glisse. */
-  const feuilleter = (pas: number) => {
-    const suivant = index + pas;
-    if (suivant >= 0 && suivant < jours.length) {
-      setIndex(suivant);
-      return;
-    }
-    const d = new Date(depart);
-    d.setDate(d.getDate() + pas);
-    setDepart(d);
-    setIndex(suivant < 0 ? Math.max(jours.length - 2, 0) : Math.min(1, jours.length - 1));
-  };
-  const surveiller = useControlesDeBande('magazine', {
-    precedent: () => feuilleter(-1),
-    suivant: () => feuilleter(1),
-  });
+  // ————————————————————————————————— TOUT VIENT DE LA DATE —————————————————————————————————
 
-  /** Cliquer un magazine dans l'atelier : on l'ouvre au lundi de sa semaine. */
-  const ouvrirMagazine = (item: TimelineTrackItem) => {
-    const numero = Number(item.id.replace('magazine-', ''));
-    if (!Number.isFinite(numero) || numero < 1) return;
-    const [m, q] = adresseDuMagazine(numero, annee).split('jour=')[1]!.split('-').map(Number);
-    ouvrirJour(new Date(annee, (m ?? 1) - 1, q ?? 1, 12));
-  };
+  /** Le magazine du jour, son chapitre, ses visuels — depuis la source unique. */
+  const magazine = useMemo(() => magazineDeLaDate(date), [date]);
+  const niveaux = useMemo(() => niveauxDuJour(date), [date]);
+  const visuels = useMemo(() => visuelsDuJour(date), [date]);
+  const chapitre = positionDansLeMagazine(date);
+  const joursDuMagazineCourant = useMemo(() => joursDuMagazine(magazine.numero, date.getFullYear()), [magazine.numero, date]);
+
+  /** Le temps de lecture : l'an dernier, cette semaine, l'an prochain. */
+  const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
+
+  /** L'édition composée : ses vingt-quatre pages, une par heure. */
+  const edition = useMemo(
+    () => composerEdition({ numero: magazine.numero, temps, roleId }),
+    [magazine.numero, temps, roleId],
+  );
+
+  /** Les articles — ceux du métier quand on vient par un métier. */
+  const articles = useMemo(() => (role ? articlesPourRole(role.id) : ALL_ARTICLES), [role]);
+
+  /**
+   * L'heure regardée : celle d'une vignette touchée, puis celle du moment de
+   * l'adresse (`?moment=midi`), puis celle de la capsule.
+   */
+  const heure =
+    selection.type === 'heure' || selection.type === 'page'
+      ? selection.heure
+      : HEURE_DES_MOMENTS[params.get('moment') ?? ''] ?? heureDeLaCapsule();
+  const lumiere = lumiereDeLHeure(heure);
+
+  const accent = magazine.palette.accent;
+  const encre = encreSur(magazine.palette.fond);
+
+  // ————————————————————————————————— CE QUE MONTRE LA SCÈNE —————————————————————————————————
+
+  const scene = useMemo(() => {
+    const jour = jourDuMagazine(date);
+    const surtitre = `${dateCapitale(date)} · ${niveaux.magazine}`;
+    switch (selection.type) {
+      case 'magazine': {
+        const m = MAGAZINES.find((x) => x.numero === selection.numero) ?? magazine;
+        const semaine = m.semaine ? `Semaine ${m.semaine}` : 'Hors calendrier';
+        return {
+          date: `${semaine} · ${m.saison.nom}`,
+          titre: m.titre,
+          moment: m.style.toUpperCase(),
+          image: visuelDeLaCouverture(m.numero).url,
+          heure,
+        };
+      }
+      case 'heure': {
+        const mot = lumiereDeLHeure(selection.heure).mot ?? HEURES[selection.heure]!.nom;
+        return {
+          date: surtitre,
+          titre: mot.charAt(0).toUpperCase() + mot.slice(1),
+          moment: `${magazine.titre.toUpperCase()} · ${CHAPITRES[chapitre - 1]!.titre.toUpperCase()}`,
+          image: visuels.imageDuChapitre.url ?? visuels.couverture.url,
+          heure: selection.heure,
+        };
+      }
+      case 'page': {
+        const page = edition.pages.find((p) => p.heure === selection.heure) ?? edition.pages[0]!;
+        return {
+          date: surtitre,
+          titre: page.titre,
+          moment: `${page.rubrique.toUpperCase()} · ${String(selection.heure).padStart(2, '0')}:00`,
+          image: visuels.imageDuChapitre.url ?? visuels.couverture.url,
+          heure: selection.heure,
+        };
+      }
+      case 'article':
+        return {
+          date: surtitre,
+          titre: selection.article.title,
+          moment: `${selection.article.kicker.toUpperCase()} · ${selection.article.readingMinutes} MIN`,
+          image: selection.article.cover,
+          heure,
+        };
+      default:
+        return {
+          date: surtitre,
+          titre: magazine.titre,
+          moment: jour.nom
+            ? `${CHAPITRES[chapitre - 1]!.titre.toUpperCase()} · ${jour.nom.toUpperCase()}`
+            : CHAPITRES[chapitre - 1]!.titre.toUpperCase(),
+          image: visuels.imageDuChapitre.url ?? visuels.couverture.url,
+          heure,
+        };
+    }
+  }, [selection, date, magazine, niveaux.magazine, chapitre, visuels, edition.pages, heure]);
+
+  // ————————————————————————————————— LES RANGÉES DE LA MOSAÏQUE —————————————————————————————————
+
+  /** Ouvrir un magazine : on entre dans sa semaine. */
+  const choisirMagazine = useCallback(
+    (numero: number) => {
+      const debut = jourDuChapitre(numero, 1, date.getFullYear());
+      setDate(debut);
+      setSelection({ type: 'magazine', numero });
+      setNiveau((n) => Math.max(n, 2));
+    },
+    [date],
+  );
+
+  /** **Le geste principal : toucher une vignette, la scène suit.** */
+  const choisirJour = useCallback((d: Date) => {
+    setDate(d);
+    setSelection({ type: 'jour', date: d });
+  }, []);
+
+  /** Une heure : la scène prend sa lumière, et la capsule s'y pose. */
+  const choisirHeure = useCallback(
+    (h: number) => {
+      setSelection({ type: 'heure', date, heure: h });
+      // L'heure choisie pose la capsule : le cadran suit, la nuit relâche tout.
+      const part = partDeLHeure(h);
+      choisirMoment(MOMENTS_DE_LA_CAPSULE.includes(part.id) ? part.id : null);
+      setNiveau((n) => Math.max(n, 3));
+    },
+    [date],
+  );
+
+  const choisirPage = useCallback(
+    (h: number) => {
+      setSelection({ type: 'page', date, heure: h });
+      setNiveau(4);
+    },
+    [date],
+  );
+
+  const choisirArticle = useCallback((article: Article) => {
+    setSelection({ type: 'article', article });
+    setNiveau(4);
+  }, []);
+
+  /** L'image qui sert de fond aux rangées d'heures : le chapitre, ou la semaine. */
+  const imageDuJour = visuels.imageDuChapitre.url ?? visuels.couverture.url;
+
+  const rangees = useMemo<RangeeDuTemps[]>(() => {
+    const annee: TuileDuTemps[] = MAGAZINES.map((m) => ({
+      id: `magazine-${m.numero}`,
+      url: visuelDeLaCouverture(m.numero).url,
+      fond: m.palette.fond,
+      encre: encreSur(m.palette.fond),
+      label: String(m.numero).padStart(2, '0'),
+      actif: m.numero === magazine.numero,
+      onChoisir: () => choisirMagazine(m.numero),
+    }));
+
+    const semaine: TuileDuTemps[] = joursDuMagazineCourant.map((d) => {
+      const numero = positionDansLeMagazine(d);
+      return {
+        id: `jour-${d.getDate()}-${d.getMonth()}`,
+        url: visuelDuChapitre(magazine.numero, numero).url,
+        fond: magazine.palette.fond,
+        encre,
+        label: String(d.getDate()).padStart(2, '0'),
+        mot: motDuChapitre(CHAPITRES[numero - 1]!.titre).toUpperCase(),
+        actif: d.getDate() === date.getDate() && d.getMonth() === date.getMonth(),
+        onChoisir: () => choisirJour(d),
+      };
+    });
+
+    const journee: TuileDuTemps[] = HEURES.map((h) => {
+      const l = lumiereDeLHeure(h.heure);
+      return {
+        id: `heure-${h.heure}`,
+        url: imageDuJour,
+        fond: teinteDeLHeure(h.heure, magazine.palette.fond, accent),
+        encre: '#F4F5FB',
+        label: String(h.heure).padStart(2, '0'),
+        mot: l.mot,
+        clarte: l.clarte,
+        voile: l.voile,
+        alpha: l.alpha,
+        actif: (selection.type === 'heure' || selection.type === 'page') && selection.heure === h.heure,
+        onChoisir: () => choisirHeure(h.heure),
+      };
+    });
+
+    const pages: TuileDuTemps[] = edition.pages.map((page) => {
+      const l = lumiereDeLHeure(page.heure);
+      return {
+        id: `page-${page.heure}`,
+        url: imageDuJour,
+        fond: teinteDeLHeure(page.heure, magazine.palette.fond, accent),
+        encre: '#F4F5FB',
+        label: String(page.heure).padStart(2, '0'),
+        mot: page.rubrique.toUpperCase(),
+        clarte: l.clarte,
+        voile: l.voile,
+        alpha: l.alpha,
+        actif: selection.type === 'page' && selection.heure === page.heure,
+        onChoisir: () => choisirPage(page.heure),
+      };
+    });
+
+    const lesArticles: TuileDuTemps[] = articles.map((a) => ({
+      id: `article-${a.slug}`,
+      url: a.cover,
+      fond: '#14151A',
+      encre: '#F4F5FB',
+      label: a.kicker.toUpperCase().slice(0, 22),
+      mot: `${a.readingMinutes} MIN`,
+      large: true,
+      actif: selection.type === 'article' && selection.article.slug === a.slug,
+      onChoisir: () => choisirArticle(a),
+    }));
+
+    /** Le zoom ouvre les rangées : l'année, puis la semaine, puis les heures, puis le contenu. */
+    const toutes: RangeeDuTemps[] = [
+      { id: 'annee', quoi: 'l’année', tuiles: annee },
+      { id: 'semaine', quoi: 'la semaine', tuiles: semaine },
+      { id: 'journee', quoi: 'la journée', tuiles: journee },
+      { id: 'numero', quoi: 'le numéro', tuiles: pages },
+      { id: 'articles', quoi: 'les articles', tuiles: lesArticles },
+    ];
+    if (niveau <= 1) return [toutes[0]!];
+    if (niveau === 2) return toutes.slice(0, 2);
+    if (niveau === 3) return toutes.slice(0, 3);
+    return toutes;
+  }, [
+    magazine, date, encre, accent, imageDuJour, edition.pages, articles, niveau, selection,
+    joursDuMagazineCourant, choisirMagazine, choisirJour, choisirHeure, choisirPage, choisirArticle,
+  ]);
+
+  // ————————————————————————————————— LE REGARD —————————————————————————————————
+
+  const composition = (
+    <CouvertureJour couverture={couvertureDuJour(date)} visuel={visuels.couverture} niveaux={niveaux} className="h-full max-h-[70svh] w-auto" />
+  );
 
   return (
-    <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      {/* ═══════════════ LA SCÈNE — LE MAGAZINE, PLEIN ÉCRAN ═══════════════ */}
-      {/* L'image du chapitre remplit la fenêtre, le cadran dit l'heure de la
-          capsule et le chapitre, et **la barre du bas** — publiée juste en
-          dessous — porte les visuels et la règle des 54 semaines. On ne quitte
-          jamais l'écran pour naviguer : on glisse, on touche, on tourne le
-          temps. */}
-      <SceneDuMagazine
-        ref={surveiller}
-        date={jour.date}
-        index={index}
-        total={jours.length}
-        onPrecedent={() => feuilleter(-1)}
-        onSuivant={() => feuilleter(1)}
-        onChapitre={ouvrirJour}
+    <div className="flex h-[100svh] w-full flex-col overflow-hidden bg-[#0B0C12] text-white">
+      <SceneEditoriale
+        className="flex-1"
+        date={scene.date}
+        titre={scene.titre}
+        moment={scene.moment}
+        image={scene.image}
+        composition={composition}
+        heure={scene.heure}
+        clarte={lumiere.clarte}
+        voile={lumiere.voile}
+        alpha={lumiere.alpha}
+        accent={accent}
+        cadran={
+          <CadranDuMagazine
+            heure={heure}
+            chapitre={chapitre}
+            fond="#0B0C12"
+            encre="#F3F1ED"
+            accent={accent}
+            vignette
+            className="h-9 w-9"
+          />
+        }
+        action={
+          selection.type === 'article' ? (
+            <Link
+              to={`/magazine/${selection.article.slug}`}
+              className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#0B0C12] no-underline transition hover:bg-white/88"
+            >
+              Lire l’article <ArrowRight size={12} />
+            </Link>
+          ) : undefined
+        }
       />
 
-      {/* LES SEPT CHAPITRES DU MAGAZINE — la navigation éditoriale. */}
-      <ChapitresDuMagazine date={jour.date} annee={annee} onChoisirChapitre={ouvrirJour} />
-
-      <div className="vp-page mt-10 space-y-10 pb-16">
-        {/* ═══════════════ BLOC 2 — L'ÉDITEUR : LES BLOCS DE SUPER RIPPLE ═══════════════ */}
-        {/* L'éditeur parle la langue de la fabrique : un fond d'encre, des blocs
-            `rounded-[18px] border border-white/10 bg-white/[0.03]`, un surtitre en
-            monospace, une phrase d'agent — et, quand il faut écrire, **du papier**
-            (`bg-[#FFFEF7]`, filet pointillé), comme dans SUPER RIPPLE. */}
-        <section id="editeur" className="vp-env-dark -mx-3 rounded-[26px] bg-[#0A0A0A] p-3 text-white sm:-mx-5 sm:p-5">
-          <BlocMagazine
-            ton="sombre"
-            surtitre="L’éditeur · les blocs de la fabrique"
-            titre="Votre magazine, maintenant"
-            resume={
-              <>
-                Trois informations sur le papier, et le magazine se compose : la couverture, ses sept
-                chapitres, ses <strong className="font-semibold text-white/80">{HEURES.length} pages</strong> — une par
-                heure. La saisie est ici, le résultat suit dessous, et rien ne se perd : c’est le même
-                moteur que SUPER RIPPLE.
-              </>
-            }
-            aDroite={
-              <div className="flex flex-wrap items-center gap-1.5">
-                {TEMPS.map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setTemps(id)}
-                    aria-pressed={temps === id}
-                    className={`rounded-full border px-3 py-1.5 text-[12px] font-semibold transition ${
-                      temps === id
-                        ? 'border-transparent bg-[#00FF88] text-black'
-                        : 'border-white/15 text-white/60 hover:border-white/40 hover:text-white'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            }
-          >
-            {/* Le papier : on écrit dessus. */}
-            <div className="rounded-[10px] border border-dashed border-white/20 bg-[#FFFEF7] p-4 font-mono text-[11.5px] text-black sm:p-5">
-              <div className="mb-3 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-black/45">
-                <span>Le papier de la fabrique</span>
-                <span className="h-px flex-1 bg-black/10" />
-                <span>{niveaux.magazine}</span>
-              </div>
-              <ChampDuMagazine />
-            </div>
-
-            {/* Le résultat : les pages composées, posées à côté. */}
-            <div className="mt-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/45">
-                  {niveaux.magazine} · {niveaux.chapitre} · {HEURES.length} pages
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/40">
-                  {visuels.imageDuChapitre.origine === 'dessin' ? 'visuel à livrer' : visuels.imageDuChapitre.slot}
-                </span>
-              </div>
-              <p className="mt-2 max-w-[720px] text-[13.5px] leading-relaxed text-white/60">
-                Une page par heure, huit rubriques qui ne changent pas d’un numéro à l’autre — c’est ce
-                qui fait un magazine. {fil.actionParfaite.charAt(0).toUpperCase() + fil.actionParfaite.slice(1)}.
-              </p>
-              <div className="mt-4">
-                <EditionSemaine edition={edition} />
-              </div>
-            </div>
-          </BlocMagazine>
-        </section>
-
-        {/* ═══════════════ BLOC 3 — L'ATELIER DU TEMPS : LA TIMELINE ═══════════════ */}
-        <div id="atelier">
-          <BlocMagazine
-            surtitre="L’atelier du temps"
-            titre="L’année, sur la bande"
-            resume={
-              <>
-                La timeline du site — celle de l’atelier : une règle graduée, des blocs, un inspecteur, une
-                tête de lecture. Ici, chaque bloc est <strong className="font-semibold text-black/70">un magazine</strong>,
-                ses sept chapitres sont dessous, et la tête est posée sur la semaine où vous êtes. Cliquer un
-                bloc ouvre le magazine.
-              </>
-            }
-            aDroite={
-              <button
-                type="button"
-                onClick={() => basculerTimeline(true)}
-                className="rounded-full border border-black/12 px-3.5 py-1.5 text-[12px] font-semibold text-black/70 transition hover:border-black/40 hover:text-black"
-              >
-                Ouvrir en grand
-              </button>
-            }
-          >
-            <TimelineTheaterStudio
-              items={blocs}
-              graduations={graduations}
-              titreDeLAxe="L’année en 54 magazines — un bloc par semaine, sept chapitres dedans"
-              zoomInitial={2}
-              teteInitiale={tete}
-              onSelectMoment={ouvrirMagazine}
-            />
-          </BlocMagazine>
-        </div>
-
-        {/* ═══════════════ BLOC 4 — LA COLLECTION : LES 54 COUVERTURES ═══════════════ */}
-        <GalerieCouvertures annee={annee} />
-
-        {/* ═══════════════ BLOC 5 — LES ARTICLES : CE QUI SE LIT DANS LE MAGAZINE ═══════════════ */}
-        <div id="articles">
-          <BlocMagazine
-            surtitre={role ? 'Les articles de votre métier' : 'La rédaction'}
-            titre={role ? `Choisi pour ${role.nom}` : 'Les articles'}
-            resume={
-              role
-                ? `Les articles qui parlent de ce métier, et rien d’autre : ${articles.length} sur ${ALL_ARTICLES.length}.`
-                : 'Les sujets du magazine — les univers, les guides, l’insolite. Chacun s’ouvre comme un article, avec sa couverture et son temps de lecture.'
-            }
-            aDroite={
-              role ? (
-                <Link to="/magazine" className="inline-flex items-center gap-1.5 rounded-full border border-black/12 px-3.5 py-1.5 text-[12px] font-semibold text-black/70 no-underline transition hover:border-black/40 hover:text-black">
-                  Tout le magazine <ArrowRight size={12} />
-                </Link>
-              ) : (
-                <span className="rounded-full border border-black/10 px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-black/50">
-                  {articles.length} articles
-                </span>
-              )
-            }
-          >
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {articles.map((article) => (
-                <Link
-                  key={article.slug}
-                  to={`/magazine/${article.slug}`}
-                  className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-black/8 bg-white no-underline transition hover:-translate-y-1 hover:shadow-[0_22px_44px_-30px_rgba(0,0,0,0.5)]"
-                >
-                  <div className="relative aspect-[16/10] overflow-hidden bg-[#F2F0EC]">
-                    <img src={article.cover} alt="" className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-                    <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
-                      {article.kicker}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-4">
-                    <h3 className="text-[15px] font-bold leading-snug">{article.title}</h3>
-                    <p className="mt-2 line-clamp-3 text-[12.5px] leading-relaxed text-black/55">{article.intro}</p>
-                    <span className="mt-auto flex items-center gap-2 pt-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-black/45">
-                      <Clock size={12} /> {article.readingMinutes} min
-                      <span className="flex items-center gap-1 transition group-hover:translate-x-0.5">
-                        Lire <ArrowRight size={12} />
-                      </span>
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </BlocMagazine>
-        </div>
-
-        {/* ═══════════════ BLOC 6 — LA MISE EN LUMIÈRE : SE MONTRER, ET ÉLEVER LES AUTRES ═══════════════ */}
-        <div id="lumiere">
-        <BlocMagazine
-          surtitre="La mise en lumière"
-          titre="Se montrer, et élever les autres"
-          resume="Le magazine ne demande rien : il rend ce qu’on lui donne. Plus le profil est complet, plus on est vu — et le jour de votre fête, la couverture peut être la vôtre, avec les personnes alignées autour de vous. Le même jour, ailleurs, d’autres fêtent le même prénom."
-        >
-          <MiseEnLumiere />
-        </BlocMagazine>
-        </div>
-
+      {/* Les deux portes contextuelles : discrètes, en haut de la mosaïque. */}
+      <div className="relative z-10 flex items-center gap-4 bg-[#0B0C12] px-4 pt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/35 sm:px-6">
+        <button type="button" onClick={() => setFeuille('editeur')} className="transition hover:text-white/80">
+          l’éditeur
+        </button>
+        <button type="button" onClick={() => setFeuille('collection')} className="transition hover:text-white/80">
+          la collection
+        </button>
+        <button type="button" onClick={() => setFeuille('profil')} className="transition hover:text-white/80">
+          votre profil
+        </button>
+        <span className="ml-auto truncate text-white/25">
+          {role ? `choisi pour ${role.nom.toLowerCase()}` : '54 magazines · 7 chapitres · 365 jours'}
+        </span>
       </div>
 
-      <footer className="border-t border-black/5 py-8">
-        <div className="vp-page flex flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
-          <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">{MARQUE_MAGAZINE}</span>
-          <span>54 magazines · 7 chapitres par magazine · 365 jours pour les parcourir</span>
+      {/* ————————————— LA MOSAÏQUE : LA TIMELINE, PLEINE LARGEUR ————————————— */}
+      <MosaiqueDuTemps rangees={rangees} niveau={niveau} onNiveau={setNiveau} />
+
+      {/* ————————————— LES FEUILLES : TOUT LE RESTE, À LA DEMANDE ————————————— */}
+      <Feuille
+        ouverte={feuille === 'editeur'}
+        surtitre={MARQUE_MAGAZINE}
+        titre="L’éditeur — votre magazine"
+        onFermer={() => setFeuille(null)}
+      >
+        <ChampDuMagazine />
+        <div className="mt-6 flex flex-wrap items-center gap-1.5">
+          {([['passe', 'L’an dernier'], ['present', 'Cette semaine'], ['futur', 'L’an prochain']] as const).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTemps(id)}
+              aria-pressed={temps === id}
+              className={`rounded-full border px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] transition ${
+                temps === id ? 'border-transparent bg-[#0B0C12] text-white' : 'border-black/15 text-black/55 hover:border-black/40 hover:text-black'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-      </footer>
+        <div className="mt-5">
+          <EditionSemaine edition={edition} />
+        </div>
+      </Feuille>
+
+      <Feuille
+        ouverte={feuille === 'profil'}
+        surtitre={MARQUE_MAGAZINE}
+        titre="Se montrer, et élever les autres"
+        onFermer={() => setFeuille(null)}
+      >
+        <MiseEnLumiere />
+      </Feuille>
+
+      <Feuille
+        ouverte={feuille === 'collection'}
+        surtitre={MARQUE_MAGAZINE}
+        titre="La collection — les 54 magazines"
+        onFermer={() => setFeuille(null)}
+      >
+        <GalerieCouvertures annee={date.getFullYear()} />
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link
+            to="/le-mariage"
+            className="inline-flex items-center gap-2 rounded-full bg-[#0B0C12] px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-white no-underline"
+          >
+            Les univers <ArrowRight size={12} />
+          </Link>
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/40">
+            {magazine.etiquette} · {magazine.titre}
+          </span>
+        </div>
+      </Feuille>
     </div>
   );
 }

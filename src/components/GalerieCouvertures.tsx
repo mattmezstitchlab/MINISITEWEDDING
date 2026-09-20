@@ -54,7 +54,7 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
               <div key={saison.id}>
                 <div className="flex flex-wrap items-baseline gap-3 border-b border-black/8 pb-2">
                   <h3 className="text-[15px] font-bold tracking-tight">
-                    {saison.symbole} {saison.nom}
+                    {saison.nom}
                   </h3>
                   <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-black/45">
                     {siens.length} magazines

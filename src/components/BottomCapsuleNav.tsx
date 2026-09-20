@@ -1,7 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import BarreDuMagazine from './BarreDuMagazine';
 import CadranDuMagazine from './CadranDuMagazine';
-import { useBandeDuMagazine } from '../lib/bandeDuMagazine';
 import {
   ChevronLeft, ChevronRight, Sun, SunDim, SunMedium, Sunrise, Sunset, Wand2,
 } from 'lucide-react';
@@ -33,13 +31,11 @@ import { chapitreDeLaDate, magazineDeLaDate } from '../lib/semaines';
  * l'aiguille ; un clic sur le cadran ouvre **l'atelier du temps** (la timeline).
  * Le dock et la couverture ne disent donc jamais deux choses différentes.
  *
- * **Et quand la page lui publie une bande** (`bandeDuMagazine.ts`), le dock
- * grandit de deux rangées : **la règle des 54 semaines** — la timeline, toujours
- * en bas — et **les visuels de la semaine ouverte** : la couverture, ses sept
- * chapitres. On ne quitte donc jamais l'image pour naviguer.
- *
- * La capsule de droite, elle, reste la nav verticale de la page — rien ne
- * change.
+ * **La navigation du magazine, elle, n'est plus ici.** Sur l'écran immersif,
+ * c'est **la mosaïque du temps** qui occupe toute la largeur, en bas, et qui
+ * porte l'année, la semaine, les heures, les pages et les articles : une seule
+ * surface, plutôt qu'un dock et une frise. Le dock, lui, reste ce qu'il est
+ * ailleurs — la télécommande du site.
  */
 
 const PICTOS_DES_MOMENTS: Record<string, LucideIcon> = {
@@ -67,8 +63,6 @@ export default function BottomCapsuleNav() {
   /** Le temps que la capsule commande, et les repères de la page ouverte. */
   const temps = useTempsDeLaCapsule();
   const reperes = useReperesDeLaCapsule();
-  /** La bande publiée par la page : les visuels, et la règle de l'année. */
-  const bande = useBandeDuMagazine();
   const ici = magazineDeLaDate(new Date());
   const chapitreCourant = reperes?.numeroDeChapitre ?? chapitreDeLaDate(new Date()).numero;
   const legendeDock = reperes ? `${reperes.magazine} · ch. ${String(chapitreCourant).padStart(2, '0')}` : ici.etiquette;
@@ -81,10 +75,6 @@ export default function BottomCapsuleNav() {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center gap-2 px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-      {/* **Les visuels, et la règle de l'année** — la page les publie, le dock les
-          affiche. Sans bande publiée, le dock reprend sa forme simple. */}
-      {bande && <BarreDuMagazine bande={bande} />}
-
       <div className="flex w-full max-w-[min(96vw,980px)] items-center justify-center gap-2">
       {/* La flèche de gauche : elle mène ce que la page montre. */}
       {controles && (

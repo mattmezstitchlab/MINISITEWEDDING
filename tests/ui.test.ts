@@ -59,12 +59,13 @@ import {
   basculerTimeline, choisirMoment, publierReperes, tempsDeLaCapsule,
 } from '../src/lib/capsuleCommande';
 import { angleDeLHeure, angleDuChapitre } from '../src/components/CadranDuMagazine';
-import SceneDuMagazine from '../src/components/SceneDuMagazine';
-import BarreDuMagazine from '../src/components/BarreDuMagazine';
+import SceneEditoriale from '../src/components/SceneEditoriale';
+import MosaiqueDuTemps from '../src/components/MosaiqueDuTemps';
+import Feuille from '../src/components/Feuille';
 import SiteChrome from '../src/components/SiteChrome';
-import {
-  bandeDuMagazineDeLaDate, bandeDuMagazine, premierJourDuMagazine, publierBande,
-} from '../src/lib/bandeDuMagazine';
+import { tailleVoulue } from '../src/lib/echelleDeLaMosaique';
+import { lumiereDeLHeure, teinteDeLHeure, melangeHex } from '../src/lib/lumiereDuJour';
+import { publierImmersif } from '../src/lib/modeImmersif';
 import { legendeDeLHeure } from '../src/components/CouvertureJour';
 import {
   PAS_DU_MAGAZINE, adresseDuMagazine, blocsDeLaCollection, graduationsDeLaCollection,
@@ -1263,7 +1264,8 @@ check(
   pageArticle.includes('lg:grid-cols-4') && pageArticle.includes('Métiers mobilisés'),
   true,
 );
-check('les pages prennent le même contenant', [pageMagazine, pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageUniversHtml, pageMetierHtml].every((h) => h.includes('vp-page')), true);
+check('les pages de lecture prennent le même contenant', [pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageUniversHtml, pageMetierHtml].every((h) => h.includes('vp-page')), true);
+check('le magazine, lui, est une application plein écran', pageMagazine.includes('h-[100svh]') && pageMagazine.includes('overflow-hidden'), true);
 check('le magazine ne recopie plus ses propres largeurs', pageMagazine.includes('mx-auto max-w-6xl'), false);
 check('le shop non plus', pageShop.includes('mx-auto max-w-6xl'), false);
 check('le contenant est posé une fois, pas deux', pageShop.split('vp-page').length <= 9, true);
@@ -1782,19 +1784,14 @@ check(
 /* La page : un titre, une couverture ouverte, ses articles — et rien de répété. */
 const pageRevue = rendrePage('/magazine', Magazine);
 const revue = pageRevue.replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, "'");
-check('le magazine s’appelle SUPER MAGAZINE', revue.includes('SUPER MAGAZINE'), true);
-check('et il ne répète plus le nom de la barre', revue.includes('Le Magazine Super Mariage'), false);
-check('ni la phrase d’avant', revue.includes('Ce qu’il faut savoir avant de choisir'), false);
-check('ni ses compteurs', revue.includes('>Articles<') || revue.includes('>Univers<'), false);
-check('ni ses boutons de filtres', revue.includes('Tout le magazine</button>'), false);
-check('la couverture porte la marque', revue.includes(MARQUE_MAGAZINE), true);
-check('et son numéro', revue.includes('N° 01'), true);
+check('la marque est sur l’écran', revue.includes(MARQUE_MAGAZINE), true);
+check('et le magazine du jour est nommé', revue.includes(niveauxDuJour(new Date()).magazine), true);
+check('la page n’explique plus son interface', revue.includes('Votre magazine, maintenant'), false);
 check(
-  'et le magazine du jour, dit en trois niveaux',
-  revue.includes(niveauxDuJour(new Date()).magazine) && revue.includes(niveauxDuJour(new Date()).chapitre),
+  'et le chapitre du jour est nommé, sur la scène',
+  revue.includes(niveauxDuJour(new Date()).chapitre.split(' — ')[1]!.toUpperCase()),
   true,
 );
-check('les articles de la rédaction sont là', revue.includes('Les articles'), true);
 check('la couverture est une carte à part', typeof CouvertureMagazine, 'function');
 check('les couvertures ont leur état', revue.includes('aria-pressed'), true);
 
@@ -1902,99 +1899,150 @@ check('chacune prise dans sa saison', lesQuatreSaisons().every((e) => e.saison.i
 
 /* ——————————— LA PAGE : LE VISUEL, LE TITRE, ET LES CARTES DESSOUS ——————————— */
 
-const heroMagazine = revue.slice(0, revue.indexOf('</header>'));
-check('le magazine a un hero', revue.indexOf('</header>') > 0, true);
-check('et le titre, au centre', heroMagazine.includes('SUPER MAGAZINE') && heroMagazine.includes('text-center'), true);
-check('l’éditeur vient après la couverture', revue.indexOf('Votre magazine, maintenant') > revue.indexOf('</header>'), true);
+const heroMagazine = revue.slice(revue.indexOf('data-scene="editoriale"'), revue.indexOf('data-mosaique'));
+check('l’écran s’ouvre sur la scène', heroMagazine.length > 0, true);
+check('et rien d’autre ne s’intercale avant la mosaïque', heroMagazine.includes('data-tuile='), false);
 
-/* ————————————— LA SCÈNE : LE MAGAZINE PLEIN ÉCRAN, ET SES GESTES ————————————— */
+/* ————————————— LA SCÈNE ÉDITORIALE : UNE IMAGE, TROIS LIGNES ————————————— */
 
-/* L'application tient sur **un seul écran** : l'image remplit la fenêtre, on
-   glisse pour tourner les pages, et la barre du bas ne bouge jamais. La scène
-   est la bande que le dock observe : tant qu'elle est à l'écran, ses flèches
-   mènent les jours. */
-check('la scène est dans la page', revue.includes('data-scene="magazine"'), true);
-check('elle prend toute la fenêtre', revue.includes('h-[100svh]'), true);
-check('elle accepte le geste', revue.includes('data-geste="glisser"'), true);
-check('et elle dit comment tourner la page', revue.includes('glisser · jour 1 sur 7'), true);
-check('les deux flèches sont là, aussi', ['aria-label="Le jour précédent"', 'aria-label="Le jour suivant"'].every((l) => revue.includes(l)), true);
-check('les sept chapitres sont dans la scène', (revue.slice(0, revue.indexOf('id="chapitres"')).match(/data-chapitre="/g) ?? []).length >= 7, true);
-
-/* Le cadran de la scène : l'heure de la capsule, et le chapitre du jour. */
+/* La scène ne dit plus rien d'autre : la date, le titre, le moment. Ni badge,
+   ni compteur, ni panneau — ce qui existe se découvre dans la mosaïque. */
 const scene = renderToStaticMarkup(
-  createElement(MemoryRouter, null, createElement(SceneDuMagazine as never, {
-    date: new Date(2026, 8, 21), index: 0, total: 7,
-    onPrecedent: () => {}, onSuivant: () => {}, onChapitre: () => {},
+  createElement(MemoryRouter, null, createElement(SceneEditoriale as never, {
+    date: '20 SEPTEMBRE · MAGAZINE 38',
+    titre: 'GOLDEN HOUR',
+    moment: 'SEPTEMBRE DORÉ · L’ART DE RECEVOIR',
+    image: '/images/magazine/semaine-38/cover.jpg',
+    heure: 18,
+    clarte: lumiereDeLHeure(18).clarte,
+    voile: lumiereDeLHeure(18).voile,
+    alpha: lumiereDeLHeure(18).alpha,
+    accent: '#D9A15B',
   })),
 );
-check('la scène porte le cadran à aiguilles', scene.includes('data-aiguille="heure"') && scene.includes('data-aiguille="chapitre"'), true);
-check('elle dit les trois niveaux', scene.includes('21 septembre') && scene.includes('Magazine 38') && scene.includes('Chapitre 05 — La Fête'), true);
-check('et elle nomme la carte de la semaine', scene.includes(magazineDeLaDate(new Date(2026, 8, 21)).carte.nom), true);
-
-/* ————————————— LA BANDE DU BAS : LES VISUELS ET LA TIMELINE ————————————— */
-
-const gestes = { ouvrirSemaine: () => {}, ouvrirVisuel: () => {} };
-const bande = bandeDuMagazineDeLaDate(new Date(2026, 8, 21), gestes);
-check('la bande porte les 54 semaines', bande.semaines.length, NOMBRE_DE_MAGAZINES);
-check('et les huit visuels de la semaine', bande.visuels.length, 8);
-check('la couverture ouvre la bande', bande.visuels[0]!.chapitre, 0);
-check('les sept chapitres suivent, dans l’ordre', bande.visuels.slice(1).map((v) => v.chapitre), [1, 2, 3, 4, 5, 6, 7]);
-check('un seul visuel est actif : le chapitre du jour', bande.visuels.filter((v) => v.actif).length, 1);
-check('et c’est bien le chapitre 05', bande.visuels.find((v) => v.actif)!.chapitre, 5);
-check('la semaine ouverte est le magazine 38', bande.semaine, 38);
-check('le titre de la semaine est celui de la source', bande.titreDuMagazine, MAGAZINES[37]!.titre);
-check('une couverture livrée a son adresse', bande.semaines[37]!.url, '/images/magazine/semaine-38/cover.jpg');
-check('une couverture manquante n’en a pas — et ne prend pas celle d’une autre', bande.semaines[20]!.url, null);
-check('les visuels portent la couleur du magazine', bande.visuels.every((v) => v.fond === MAGAZINES[37]!.palette.fond), true);
-check('une semaine s’ouvre à son premier jour', premierJourDuMagazine(38, 2026).getDate(), 17);
-
-/* Le dock, quand la page lui a publié sa bande. */
-publierBande(bande);
-const dockBande = renderToStaticMarkup(
-  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(BottomCapsuleNav as never)),
-);
-publierBande(null);
-check('le dock montre la règle de l’année', (dockBande.match(/data-semaine="/g) ?? []).length, NOMBRE_DE_MAGAZINES);
-check('la semaine ouverte y est allumée', dockBande.includes('data-semaine="38" data-actif="true"'), true);
-check('et les visuels y sont aussi', (dockBande.match(/data-visuel="/g) ?? []).length, 8);
-check('le chapitre du jour est entouré', dockBande.includes('data-visuel="5" data-actif="true"'), true);
-check('la couverture est nommée', dockBande.includes('aria-label="La couverture — '), true);
-check('chaque chapitre a son nom', dockBande.includes('aria-label="Chapitre 05 — La Fête"'), true);
-check('l’atelier s’ouvre depuis la barre', dockBande.includes('aria-label="Ouvrir l’atelier du temps"'), true);
-check('et le dock se range au-dessus de la zone sûre', dockBande.includes('env(safe-area-inset-bottom)'), true);
-
-/* **Le mode immersif** : tant que la bande est publiée, le chrome s'efface —
-   les deux boutons flottants se poseraient sur la barre. */
-publierBande(bande);
-const chromeImmersif = renderToStaticMarkup(
-  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(SiteChrome, null, createElement('div', null, 'contenu'))),
-);
-publierBande(null);
-check('en immersif, le chrome s’efface', chromeImmersif.includes('aria-label="Le Point Zéro"'), true);
+check('la scène est une scène, pas un hero de page', scene.includes('data-scene="editoriale"'), true);
+check('elle porte la date', scene.includes('20 SEPTEMBRE · MAGAZINE 38'), true);
+check('le titre', scene.includes('GOLDEN HOUR'), true);
+check('et le moment', scene.includes('SEPTEMBRE DORÉ · L’ART DE RECEVOIR'), true);
+check('elle ne compte rien', /data-(badge|compteur|panneau)/.test(scene), false);
+check('et l’heure est écrite une fois', (scene.match(/18:00/g) ?? []).length, 1);
 check(
-  'et les outils flottants partent',
-  chromeImmersif.includes('aria-label="Paramètres — l’éditeur du mini-site"') === false,
+  'sans image, elle compose',
+  renderToStaticMarkup(createElement(SceneEditoriale as never, {
+    date: '5 JANVIER', titre: 'Blanc minéral', moment: 'LES LIEUX', heure: 9, accent: '#8A8F98',
+  })).includes('bg-black'),
   true,
 );
-check('alors qu’hors immersif, ils sont là', chromeAccueil.includes('aria-label="Paramètres — l’éditeur du mini-site"'), true);
-check('sans bande publiée, la barre disparaît', bandeDuMagazine(), null);
-const barreSeule = renderToStaticMarkup(
-  createElement(MemoryRouter, null, createElement(BarreDuMagazine as never, { bande })),
+
+/* ————————————— LA MOSAÏQUE DU TEMPS : LA TIMELINE, REFaite ————————————— */
+
+/* Une seule surface de navigation : des vignettes carrées, bord à bord, et des
+   rangées qui s'ouvrent au zoom. On la teste par sa donnée et par son rendu. */
+const tuiles = (n: number, actif = -1) => Array.from({ length: n }, (_, i) => ({
+  id: `t-${i}`, fond: '#2A3C4E', encre: '#F4F5FB', label: String(i + 1).padStart(2, '0'),
+  actif: i === actif, onChoisir: () => {},
+}));
+const mosaique = renderToStaticMarkup(createElement(MosaiqueDuTemps as never, {
+  rangees: [
+    { id: 'annee', quoi: 'l’année', tuiles: tuiles(54, 37) },
+    { id: 'semaine', quoi: 'la semaine', tuiles: tuiles(7, 3) },
+  ],
+  niveau: 2,
+  onNiveau: () => {},
+}));
+check('la mosaïque est la timeline', mosaique.includes('data-mosaique="du-temps"'), true);
+check('elle dit son échelle', mosaique.includes('data-niveau="2"'), true);
+check('elle ouvre une rangée par cran', (mosaique.match(/data-rangee="/g) ?? []).length, 2);
+check('l’année est graduée une fois par magazine', (mosaique.match(/data-tuile="t-[0-9]+"/g) ?? []).length, 61);
+check('la tête de lecture marque l’instant', (mosaique.match(/data-tuile="t-[0-9]+" data-actif="true"/g) ?? []).length, 2);
+check('et elle se voit', mosaique.includes('h-[3px] bg-white'), true);
+check('les crans d’échelle sont quatre', (mosaique.match(/data-cran="/g) ?? []).length, 4);
+check('sans carte arrondie ni ombre portée', /rounded-(lg|xl|2xl)/.test(mosaique), false);
+check('et sans texte explicatif', mosaique.includes('cliquez'), false);
+check('les quatre crans ouvrent les rangées', [1, 2, 3, 4].map((n) => tailleVoulue(n)), [58, 78, 106, 136]);
+
+/* La lumière des heures : la même image, vingt-quatre fois. */
+check('la nuit est plus sombre que midi', lumiereDeLHeure(2).clarte < lumiereDeLHeure(12).clarte, true);
+check('la golden hour est nommée', lumiereDeLHeure(18).mot, 'GOLDEN HOUR');
+check('et six heures s’appelle l’aube', lumiereDeLHeure(6).mot, 'AUBE');
+check('les heures ordinaires n’ont pas de mot', lumiereDeLHeure(16).mot, undefined);
+check(
+  'chaque heure a sa couleur — dix lumières, et la nuit qui descend',
+  new Set(Array.from({ length: 24 }, (_, h) => teinteDeLHeure(h, '#E9E9E4', '#D9A15B'))).size >= 8,
+  true,
 );
-check('la barre seule est balisée', barreSeule.includes('data-bande-du-magazine="true"'), true);
-check('elle dit les 54 semaines', barreSeule.includes('54 semaines'), true);
-check('puis l’atelier du temps', revue.indexOf('L’année, sur la bande') > revue.indexOf('Votre magazine, maintenant'), true);
-check('et la collection des 54 ferme la marche', revue.indexOf('Les 54 magazines de l’année') > revue.indexOf('L’année, sur la bande'), true);
-check('chaque saison a son bloc', SAISONS_DE_LA_COLLECTION.every((s) => revue.includes(`${s.symbole} ${s.nom}`)), true);
-check('et le compte de ses magazines', SAISONS_DE_LA_COLLECTION.every((s) => revue.includes(`${MAGAZINES.filter((m) => m.saison.id === s.id).length} magazines`)), true);
-check('avec ses huit rubriques', RUBRIQUES.every((r) => revue.includes(`>${r}<`)), true);
-check('la page tient en cinq blocs, et pas plus', (revue.match(/data-bloc-magazine="/g) ?? []).length, 5);
-check('l’éditeur s’écrit sur l’encre de la fabrique', revue.includes('vp-env-dark'), true);
-check('l’éditeur est bien celui du ton sombre', revue.includes('data-bloc-magazine="L’éditeur · les blocs de la fabrique"') && revue.includes('data-ton="sombre"'), true);
-check('et l’on écrit sur le papier, comme dans SUPER RIPPLE', revue.includes("border-dashed border-white/20 bg-[#FFFEF7]"), true);
-check('on peut relire au passé et au futur', ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => revue.includes(t)), true);
-check('le flux des trois cartes a quitté le hero', heroMagazine.includes('Le flux des jours'), false);
-check('le hero porte aussi la carte du moment', heroMagazine.includes(editionDuMoment().carte.nom), true);
+check('et deux heures voisines ne se ressemblent pas', teinteDeLHeure(2, '#E9E9E4', '#D9A15B') !== teinteDeLHeure(12, '#E9E9E4', '#D9A15B'), true);
+check('et l’on sait mélanger deux couleurs', melangeHex('#000000', '#FFFFFF', 0.5), '#808080');
+
+/* ————————————— LA PAGE : TOUT TIENT DANS LA FENÊTRE ————————————— */
+
+const appMagazine = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(Magazine as never)),
+);
+/** Le quatrième cran : tout est ouvert, jusqu'aux pages et aux articles. */
+const appZoom = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?niveau=4'] }, createElement(Magazine as never)),
+);
+const appJour = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?jour=09-21'] }, createElement(Magazine as never)),
+);
+/** Les feuilles : ce qui n'est pas sur l'écran, et qui s'ouvre à la demande. */
+const appEditeur = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?feuille=editeur'] }, createElement(Magazine as never)),
+);
+const appProfil = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?feuille=profil'] }, createElement(Magazine as never)),
+);
+check('le magazine est un écran, pas une page qui défile', appMagazine.includes('h-[100svh]') && appMagazine.includes('overflow-hidden'), true);
+check('la scène est dedans', appMagazine.includes('data-scene="editoriale"'), true);
+check('la mosaïque aussi', appMagazine.includes('data-mosaique="du-temps"'), true);
+check('et la mosaïque ferme l’écran', appMagazine.indexOf('data-mosaique') > appMagazine.indexOf('data-scene'), true);
+check(
+  'au cran de départ, deux rangées : l’année, la semaine',
+  ['l’année', 'la semaine'].every((r) => appMagazine.includes(`aria-label="${r}"`)) &&
+    !appMagazine.includes('aria-label="la journée"'),
+  true,
+);
+check('au quatrième cran, les cinq rangées sont ouvertes', ['l’année', 'la semaine', 'la journée', 'le numéro', 'les articles'].every((r) => appZoom.includes(`aria-label="${r}"`)), true);
+check('et vingt-quatre heures sont posées dessus', (appZoom.match(/data-tuile="heure-/g) ?? []).length, 24);
+check('les vingt-quatre pages aussi', (appZoom.match(/data-tuile="page-/g) ?? []).length, 24);
+check('et les articles, avec leurs images', (appZoom.match(/data-tuile="article-/g) ?? []).length >= 6, true);
+check('les articles sont bien une rangée de la mosaïque', appZoom.includes('aria-label="les articles"'), true);
+check('l’adresse ouvre le jour qu’elle annonce', appJour.includes('21 SEPTEMBRE') && appJour.includes('LA FÊTE'), true);
+check('aucun panneau permanent ne subsiste', /data-bloc-magazine|NavVerticale|vp-env-dark/.test(appMagazine), false);
+check('le mot « carreau » a quitté l’écran', /carreau|trèfle|pique|Roi de|Dame de|Valet de|♠|♥|♦|♣/.test(appMagazine), false);
+check('les deux portes sont discrètes', appMagazine.includes('l’éditeur') && appMagazine.includes('la collection'), true);
+check('et le composeur n’encombre plus l’écran', appMagazine.includes('Ville de naissance'), false);
+check('mais il est là dès qu’on demande la feuille', appEditeur.includes('Ville de naissance'), true);
+check('et l’adresse peut ouvrir une feuille', appEditeur.includes('data-feuille="ouverte"'), true);
+
+/* La feuille : tout ce qui n'est pas l'image et la mosaïque. */
+const feuille = renderToStaticMarkup(
+  createElement(Feuille as never, { ouverte: true, surtitre: 'AIME MAGAZINE', titre: 'L’éditeur — votre magazine', onFermer: () => {} },
+    createElement('p', null, 'le papier')),
+);
+check('la feuille s’ouvre au-dessus de tout', feuille.includes('data-feuille="ouverte"'), true);
+check('elle se ferme, et le dit', feuille.includes('aria-label="Fermer la feuille"'), true);
+check('fermée, elle n’existe pas', renderToStaticMarkup(createElement(Feuille as never, { ouverte: false, titre: 'x', onFermer: () => {} }, createElement('p', null, 'y'))).includes('data-feuille'), false);
+
+/* En immersif, le site s'efface : plus de barre, plus de colonne, plus de dock. */
+publierImmersif(true);
+const chromeImmersif = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(SiteChrome, null, createElement('div', null, 'la scène'))),
+);
+publierImmersif(false);
+check('en immersif, le contenu est seul', chromeImmersif.includes('la scène') && !chromeImmersif.includes('aria-label="Le Magazine"'), true);
+check('et le dock a quitté l’écran', chromeImmersif.includes('aria-label="Le Point Zéro"'), false);
+check('hors immersif, le site est là', chromeAccueil.includes('aria-label="Le Point Zéro"'), true);
+check('le signe des saisons a quitté l’écran', SAISONS_DE_LA_COLLECTION.every((s) => !revue.includes(s.symbole)), true);
+check('les huit rubriques sont sur les vignettes des pages', RUBRIQUES.every((r) => appZoom.includes(r.toUpperCase())), true);
+check(
+  'on peut relire au passé et au futur',
+  ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => appEditeur.includes(t)),
+  true,
+);
+check('le flux des trois cartes a quitté la scène', heroMagazine.includes('Le flux des jours'), false);
+
 check('un joker ne dit pas de semaine', composerEdition({ numero: 53 }).carte.joker, true);
 check('et il a sa propre édition', composerEdition({ numero: 53 }).pages.length, PAGES_EDITION);
 
@@ -2083,20 +2131,15 @@ check('et l’action parfaite est une seule chose', filRougeDuJour(unJour.date).
 const pageOuverte = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(Magazine as never)),
 );
-check(
-  'le hero feuillette les jours, d’une flèche à l’autre',
-  ['Le jour précédent', 'Le jour suivant'].every((l) => pageOuverte.includes(`aria-label="${l}"`)),
-  true,
-);
-check('et il dit où l’on est, sur sept jours', pageOuverte.includes('jour 1 sur 7'), true);
+check('la semaine se feuillette dans la mosaïque', (appMagazine.match(/data-tuile="jour-/g) ?? []).length, 7);
+
 check(
   'la couverture ouvre les deux aiguilles du cadran',
   pageOuverte.includes('data-aiguille="heure"') && pageOuverte.includes('data-aiguille="chapitre"'),
   true,
 );
-check('et l’on sait que la capsule les pose', pageOuverte.includes('la capsule en bas pose les aiguilles'), true);
-check('le hero dit l’heure de la capsule', pageOuverte.includes('heure réelle') || pageOuverte.includes('heure choisie dans la capsule'), true);
-check('la mise en lumière est dans la page', revue.includes('La mise en lumière') && revue.includes('Se montrer, et élever les autres'), true);
+check('et l’heure de la capsule est sur le cadran', pageOuverte.includes('data-aiguille="heure"'), true);
+check('la mise en lumière vit dans une feuille', appProfil.includes('Se montrer, et élever les autres'), true);
 
 /* ————————— LA CHARTE, ET LA MISE EN LUMIÈRE ————————— */
 
@@ -2154,7 +2197,7 @@ const semainesRendues = renderToStaticMarkup(
   createElement(CouvertureSemaine, { edition: edition38, onChoisir: () => {} }),
 );
 check('la couverture de semaine porte la marque et le numéro', semainesRendues.includes('AIME') && semainesRendues.includes('N° 38'), true);
-check('et le nom de la carte', semainesRendues.includes('Roi de carreau'), true);
+check('et la semaine écrite, sans nom de carte', semainesRendues.includes('Semaine 38'), true);
 check('elle est cliquable et annoncée', semainesRendues.includes('aria-pressed') && semainesRendues.includes('aria-label'), true);
 
 /* ------------------- le nom se transforme, les deux portes suivent le rôle --- */
@@ -2462,8 +2505,12 @@ check('moins que le magazine entier', articlesPhoto.length < ALL_ARTICLES.length
 const pageMagazinePhoto = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?role=photographe'] }, createElement(Magazine as never)),
 );
-check('le magazine dit de qui il est', pageMagazinePhoto.includes('Choisi pour SUPER PHOTOGRAPHE'), true);
-check('et reste ouvert en entier', pageMagazinePhoto.includes('Tout le magazine'), true);
+check('le magazine dit de qui il est', pageMagazinePhoto.includes('choisi pour super photographe'), true);
+check(
+  'et les trois portes restent ouvertes',
+  ['l’éditeur', 'la collection', 'votre profil'].every((p) => pageMagazinePhoto.includes(p)),
+  true,
+);
 
 /* ------------- la nav verticale : le shop, le magazine, et la page ---------- */
 
@@ -2507,7 +2554,6 @@ const ancresAttendues: Record<string, string[]> = {
   article: ['article', 'moments'],
   shop: ['pieces', 'modes'],
   produit: ['details', 'similaires'],
-  magazine: ['chapitres', 'editeur', 'atelier', 'couvertures', 'articles', 'lumiere'],
   prestataire: ['editeur'],
 };
 const sourceDuSite = [
@@ -2943,7 +2989,7 @@ check('le jour d’Adolphe Sax porte son nom', jourSax.titre, 'Adolphe Sax');
 check('et garde la fête du calendrier dessous', jourSax.fete, 'Sainte Bertille');
 check('un jour sans fiche garde son nom du calendrier', couvertureDuJour(new Date(2026, 6, 15)).titre.startsWith('Saint'), true);
 check('et n’a pas de fête à écrire', couvertureDuJour(new Date(2026, 6, 15)).fete, undefined);
-check('avec sa carte de la semaine', jourDeFete.figure, 'Roi de carreau');
+check('avec sa légende de semaine — plus de nom de carte à jouer', jourDeFete.figure, `Été · semaine 38`);
 check('et sa date écrite', jourDeFete.dateLongue, '21 septembre 2026');
 check('et son numéro dans l’année', jourDeFete.numero, 264);
 check('les clés du jour sont là', jourDeFete.cles.slice(0, 3).map((c) => c.label), ['Le ciel', 'La lune', 'Le chiffre']);
@@ -3957,7 +4003,7 @@ check('l’aiguille du cadran connaît le 21 septembre', Math.round(angleDuJour(
 const revueMidi = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?moment=midi'] }, createElement(Magazine as never)),
 );
-check('le moment choisi éclaire la couverture du hero', revueMidi.includes('· midi'), true);
+check('le moment de l’adresse pose l’heure sur le cadran', revueMidi.includes('12:00'), true);
 
 /* ——— L'ATELIER DE L'ANNÉE : LES 54 MAGAZINES SUR LA BANDE ——— */
 
@@ -3993,13 +4039,9 @@ check(
 check('un magazine s’ouvre au premier jour de sa semaine', adresseDuMagazine(38, 2026), '/magazine?jour=09-17');
 
 /* ——— CE TOUR : UNE SEULE COUVERTURE AU HERO, LE COMPOSEUR SUR LA PAGE MAGAZINE ——— */
-check(
-  'le hero est une scène plein écran, une seule image',
-  heroMagazine.includes('data-scene="magazine"') && heroMagazine.includes('h-[100svh]'),
-  true,
-);
+
 check('et plus trois magazines côte à côte', revue.includes('Le flux des jours'), false);
-check('le composeur vit sur la page magazine', revue.includes('Votre magazine, maintenant') && revue.includes('Ville de naissance'), true);
+check('le composeur n’encombre plus l’écran', revue.includes('Ville de naissance'), false);
 check('la couverture porte le numéro du magazine, comme une vraie couverture',
   svgCouverture.includes('MAGAZINE 38'), true);
 check('et le chapitre par lequel la date entre', svgCouverture.includes('CHAPITRE 05'), true);
