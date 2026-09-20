@@ -1,16 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import {
-  CATÉGORIES_DU_TICKET,
-  GROUPES_DU_TICKET,
-  LIGNES_DU_TICKET,
-  compteParCatégorie,
-  compteParFamille,
-  euros,
-  lignesDuneCatégorie,
-  marqueDeLaFamille,
-  type LigneDuTicket,
-} from '../lib/categoriesDuTicket';
+import { useSearchParams } from 'react-router-dom';
+import { LIGNES_DU_TICKET, compteParCatégorie, compteParFamille, euros, type LigneDuTicket } from '../lib/categoriesDuTicket';
 import {
   basculerLeTicket,
   demandeDeLÉtat,
@@ -33,6 +23,17 @@ import {
   totauxDuTicket,
 } from '../lib/portefeuille';
 import { OBJETS_DE_LA_FABRIQUE, papierDeLObjet } from '../lib/ripple';
+import {
+  budgetDuRêve,
+  codeDepuis,
+  CODE_DE_DÉMONSTRATION,
+  LE_RÊVE,
+  ligneImprimée,
+  OBJETS_IMPRIMÉS,
+  stickerDe,
+  type Sticker,
+} from '../lib/codeDuMariage';
+import { CATÉGORIES_DU_TICKET, GROUPES_DU_TICKET, lignesDuneCatégorie } from '../lib/categoriesDuTicket';
 import { MAGASIN, TICKET_COUPLE } from '../lib/superMariage';
 import { heureDeLaCapsule } from '../lib/capsuleCommande';
 import { lumiereDeLHeure } from '../lib/lumiereDuJour';
@@ -42,40 +43,41 @@ import { formatDateLong } from '../lib/format';
 import CadranDuMagazine from '../components/CadranDuMagazine';
 import MachineDeRipple, { type SortieDeLaFente } from '../components/MachineDeRipple';
 import TicketCaisse from '../components/TicketCaisse';
+import AppareilDuMariage, { LaPorteDuMariage } from '../components/AppareilDuMariage';
 import {
   BarreDeLAime,
   LePied,
   LeTitre,
   LesFormules,
   LesGestes,
+  LesHeros,
   LesQuestions,
   LesTroisFamilles,
 } from '../components/LesBandesDeLAime';
+import { LE_SPÉCIALISTE } from '../lib/bandesDeLAime';
 
-/* LE SPÉCIALISTE DU TICKET — LA MACHINE EN HAUT, LE SITE DESSOUS
+/* LE SPÉCIALISTE DU TICKET DE CAISSE — LA PAGE D'ENTRÉE
  *
- * La page a deux étages, et ils ne se mélangent pas :
+ * On arrive avec **un code mariage** (`?code=A7K-241`) : c'est la porte. Derrière
+ * la porte, la page se lit par bandes, dans cet ordre :
  *
- * 1. **en haut, la machine** — seule sur un fond blanc, et elle tient dans un
- *    écran. C'est l'entrée : **tout ce qui se coche peut venir par son écran**.
- *    Elle propose toujours quelque chose — une famille, puis ses lignes, une par
- *    une — et les deux touches rondes marchent toujours : ✓ on prend, ✗ on
- *    passe. Le papier sort de la fente, et il part vers ses portefeuilles ;
- * 2. **en dessous, le site** — on descend, et l'on retrouve tout :
- *    - **le visuel du jour**, avec les infos dessus (les noms, la date, le lieu,
- *      l'heure, les convives, le total) ;
- *    - **on coche** — les 17 catégories, les 99 lignes, visibles et cochables
- *      d'un clic, sans passer par la machine ;
- *    - **le ticket entier** — le papier complet, qui se remplit au fur et à
- *      mesure, avec les marques posées par les objets ronds ;
- *    - **les portefeuilles** — là où le ticket arrive, ligne par ligne.
+ * 1. **la machine de Ripple**, seule sur un fond blanc — l'entrée du produit :
+ *    elle propose, on valide, le papier sort de la fente ;
+ * 2. **le visuel du jour** — l'image du couple, les infos dessus ;
+ * 3. **le titre** — « Tout le mariage, sur un seul ticket. », et la couverture ;
+ * 4. **les quatre catégories** — quatre héros : une image, le titre dessus, et
+ *    le chemin de ce qu'il y a dedans. C'est l'arborescence, en images ;
+ * 5. **l'appareil** — le ticket, le budget du rêve, les objets, les stickers :
+ *    « le spécialiste du ticket de caisse » écrit au début du papier ;
+ * 6. **le programme**, les trois familles, les 99 lignes, le ticket entier, les
+ *    portefeuilles, l'addition, les questions, le pied.
  *
- * Les deux étages parlent le même état : cocher dans la machine ou dans la
- * liste, c'est le même ticket. Et dans les deux cas **le papier sort de la
- * fente** — c'est le même geste, vu d'en bas.
+ * La cible est dite une fois, et tient tout : **un mariage fait d'économies pour
+ * se payer le voyage de rêve.** Le ticket dit le prix du mariage, et ce qui
+ * reste pour Joshua Tree.
  *
- * L'adresse est le reçu (`?coches=…`), et elle porte la demande
- * (`?demande=diner`) et l'écran (`?ecran=ticket`).
+ * L'adresse porte tout : `?code=` le mariage, `?coches=` le caddie,
+ * `?demande=` la demande faite à l'agent, `?ecran=ticket` l'écran de la machine.
  */
 
 /** Le caddie de l'adresse : ce qui est coché, dans l'ordre du catalogue. */
@@ -87,14 +89,12 @@ function cochesDeLAdresse(valeur: string | null): string[] {
 /** Le rang d'un portefeuille — il décide de la trajectoire du vol. */
 const PORTEFEUILLES_RANGS: Record<string, number> = { couple: 0, invites: 1, famille: 2, dj: 3, metier: 4 };
 
-/** Un vol : un papier qui part de la fente vers un portefeuille. */
 interface Vol {
   cle: string;
   portefeuille: string;
   rang: number;
 }
 
-/** Un papier qui sort de la fente, et ce qu'il emporte. */
 interface Papier {
   cle: string;
   sortie: SortieDeLaFente;
@@ -103,7 +103,9 @@ interface Papier {
 export default function LaCaisse() {
   const [params, setParams] = useSearchParams();
 
-  /** **Tout l'état de la machine** — le site du dessous lit le même. */
+  /** La porte : sans code, on ne voit rien. */
+  const code = codeDepuis(params.get('code') ?? '');
+
   const [état, setÉtat] = useState<ÉtatDeLaMachine>(() =>
     étatInitial({
       coches: cochesDeLAdresse(params.get('coches')),
@@ -117,8 +119,11 @@ export default function LaCaisse() {
   const [papier, setPapier] = useState<Papier | null>(null);
   const [vols, setVols] = useState<Vol[]>([]);
   const [avis, setAvis] = useState<string | null>(null);
+  const [cible, setCible] = useState('voyage');
+  const [stickers, setStickers] = useState<Sticker[]>([]);
   const [heure] = useState(() => Math.floor(heureDeLaCapsule()));
   const passage = useRef(0);
+  const rangSticker = useRef(0);
 
   const coches = état.coches;
   const lignesCochées = useMemo(() => LIGNES_DU_TICKET.filter((l) => coches.includes(l.id)), [coches]);
@@ -128,6 +133,7 @@ export default function LaCaisse() {
   const totaux = totauxDuTicket(lignesCochées);
   const compte = compteParCatégorie(coches);
   const prises = compteParFamille(coches);
+  const budget = budgetDuRêve(coches, LE_RÊVE);
   const comptesDesPortefeuilles = useMemo(() => compteDesPortefeuilles(coches), [coches]);
   const portefeuilles = PORTEFEUILLES.map((p) => ({
     id: p.id,
@@ -156,9 +162,7 @@ export default function LaCaisse() {
   const magazine = magazineDeLaDate(date);
   const visuels = visuelsDuJour(date);
   const couverture = visuels.couverture.url;
-  /** La bande d'image : le chapitre du jour ; la couverture tient la place. */
-  const imageDuChapitre = visuels.imageDuChapitre.url ?? couverture;
-  const visuel = imageDuChapitre;
+  const visuel = visuels.imageDuChapitre.url ?? couverture;
   const legendeDuMagazine = `MAGAZINE ${visuels.magazine.numero} · ${visuels.magazine.titre.toUpperCase()}`;
 
   /* ——————————————— LE PAPIER QUI SORT, ET LE MOT DU GESTE ——————————————— */
@@ -173,7 +177,12 @@ export default function LaCaisse() {
     window.setTimeout(() => setAvis(null), 2400);
   };
 
-  /** Le papier d'une ligne : son nom, son prix, et à qui elle part. */
+  const tirerUnSticker = (mot: string) => {
+    rangSticker.current += 1;
+    const sticker = stickerDe(mot.slice(0, 14), rangSticker.current);
+    setStickers((liste) => [...liste, sticker].slice(-10));
+  };
+
   const papierDuneLigne = (ligne: LigneDuTicket): SortieDeLaFente => ({
     label: ligne.label,
     prix: ligne.incluse ? 'inclus' : euros(ligne.prix * (ligne.quantite ?? 1)),
@@ -191,7 +200,7 @@ export default function LaCaisse() {
     window.setTimeout(() => setVols((v) => v.filter((x) => !x.cle.startsWith(cle))), 1100);
   };
 
-  /** Un objet du Ripple : il sort son papier de la fente — c'est sa preuve. */
+  /** Un objet du Ripple : il imprime sa ligne, et sort son papier de la fente. */
   const sortirLaMarque = (id: string) => {
     const objet = OBJETS_DE_LA_FABRIQUE.find((o) => o.id === id);
     if (!objet) return;
@@ -203,13 +212,15 @@ export default function LaCaisse() {
 
   /* ——————————————— UN GESTE : L'ÉTAT CHANGE, ET LE PAPIER SUIT ——————————————— */
 
-  /** Chaque geste rend un nouvel état, un mot pour l'écran, et parfois un papier. */
   const geste = (suivant: Geste) => {
     setÉtat(suivant.état);
     if (suivant.mot) unMot(suivant.mot);
     if (suivant.pris) {
       const ligne = LIGNES_DU_TICKET.find((l) => l.id === suivant.pris);
-      if (ligne) faireSortir(ligne);
+      if (ligne) {
+        faireSortir(ligne);
+        tirerUnSticker(ligne.label);
+      }
     }
   };
 
@@ -225,13 +236,13 @@ export default function LaCaisse() {
     if (posée) unMot(`${objet.nom} — retiré`);
     else {
       sortirLaMarque(id);
+      tirerUnSticker(objet.nom);
       unMot(`${objet.nom} — ${objet.sens}`);
     }
   };
 
   /* ——————————————— LE SITE DU DESSOUS : ON COCHE, AUSSI ——————————————— */
 
-  /** Cocher à la main dans la liste : le même geste, et le même papier. */
   const cocherDansLaListe = (id: string) => {
     if (coches.includes(id)) {
       setÉtat({ ...état, coches: coches.filter((c) => c !== id) });
@@ -240,11 +251,13 @@ export default function LaCaisse() {
     }
     const ligne = LIGNES_DU_TICKET.find((l) => l.id === id);
     setÉtat({ ...état, coches: [...coches, id] });
-    if (ligne) faireSortir(ligne);
+    if (ligne) {
+      faireSortir(ligne);
+      tirerUnSticker(ligne.label);
+    }
     unMot(`${ligne?.label ?? 'la ligne'} — sur le ticket`);
   };
 
-  /** Tout un rayon, d'un bouton : la même chose, en une fois. */
   const cocherLaCatégorie = (id: string) => {
     const ids = lignesDuneCatégorie(id);
     const toutes = ids.every((l) => coches.includes(l));
@@ -252,7 +265,6 @@ export default function LaCaisse() {
     unMot(toutes ? 'rayon vidé' : 'rayon pris en entier');
   };
 
-  /** Le bouton rond du reçu, quand on est en bas de page : il ramène à la machine. */
   const ouvrirLeTicketDeLaMachine = () => {
     geste(basculerLeTicket(état));
     document.getElementById('la-machine')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -262,18 +274,47 @@ export default function LaCaisse() {
     ?? portefeuillesDesCoches(coches)[0]
     ?? null;
 
+  /* ═════════════════════════ LA PORTE ═════════════════════════ */
+
+  if (!code) {
+    return (
+      <LaPorteDuMariage
+        démonstration={CODE_DE_DÉMONSTRATION}
+        surOuvrir={(saisi) => {
+          const propre = codeDepuis(saisi);
+          if (!propre) return;
+          const suite = new URLSearchParams(params);
+          suite.set('code', propre);
+          setParams(suite, { replace: true });
+        }}
+      />
+    );
+  }
+
+  /* ═════════════════════════ LA PAGE, DERRIÈRE LA PORTE ═════════════════════════ */
+
   return (
     <div
       data-page="ticket"
+      data-code={code}
       data-cochees={coches.length}
       data-total={totaux.total}
       data-écran={état.écran}
       data-demande={état.demande}
       className="min-h-svh bg-white text-[color:var(--vp-ink)]"
     >
-      <BarreDeLAime />
+      <BarreDeLAime
+        code={code}
+        lignes={coches.length}
+        total={totaux.total}
+        surCode={() => {
+          const suite = new URLSearchParams(params);
+          suite.delete('code');
+          setParams(suite, { replace: true });
+        }}
+      />
 
-      {/* ═════════════════════ EN HAUT : LA MACHINE, SEULE ═════════════════════ */}
+      {/* ═════════════════════ EN HAUT : LA MACHINE DE RIPPLE, SEULE ═════════════════════ */}
       <header
         id="la-machine"
         data-zone="machine"
@@ -300,13 +341,12 @@ export default function LaCaisse() {
             onDemande={(texte) => geste(écrireLaDemande(état, texte))}
             onRetirer={(id) => geste(retirer(état, id))}
             onEmporter={() => {
-              const adresse = `${window.location.origin}${window.location.pathname}?coches=${coches.join(',')}`;
+              const adresse = `${window.location.origin}${window.location.pathname}?code=${code}&coches=${coches.join(',')}`;
               void navigator.clipboard?.writeText(adresse);
               unAvis(`${coches.length} lignes · le reçu est dans le lien`);
             }}
           />
 
-          {/* Les vols : le papier part de la fente vers son portefeuille. */}
           {vols.map((vol) => (
             <span
               key={vol.cle}
@@ -317,7 +357,6 @@ export default function LaCaisse() {
           ))}
         </div>
 
-        {/* Le seul mot de cet étage : on descend. */}
         <a
           href="#le-visuel"
           data-action="descendre"
@@ -327,9 +366,6 @@ export default function LaCaisse() {
           ↓
         </a>
       </header>
-
-      {/* ═════════════════════ LE TITRE, LA COUVERTURE DU JOUR ═════════════════════ */}
-      <LeTitre couverture={couverture} legende={legendeDuMagazine} />
 
       {/* ═════════════════════ LE VISUEL DU JOUR, LES INFOS DESSUS ═════════════════════ */}
       <section
@@ -349,7 +385,7 @@ export default function LaCaisse() {
         <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/45 to-black" />
         <span aria-hidden="true" className="absolute inset-0 z-10 bg-black/25" />
 
-        <div className="relative flex flex-col items-center gap-1">
+        <div className="relative z-20 flex flex-col items-center gap-1 text-white">
           <span className="flex items-center gap-3">
             <CadranDuMagazine
               heure={heure}
@@ -381,9 +417,47 @@ export default function LaCaisse() {
               {coches.length} ligne{coches.length > 1 ? 's' : ''} cochée{coches.length > 1 ? 's' : ''}
             </span>
             <span data-hero-total="vrai">total {euros(totaux.total)}</span>
+            <span data-hero-code="vrai">code {code}</span>
           </span>
         </div>
       </section>
+
+      {/* ═════════════════════ LE TITRE, LA COUVERTURE DU JOUR ═════════════════════ */}
+      <LeTitre couverture={couverture} legende={legendeDuMagazine} />
+
+      {/* ═════════════════════ LES QUATRE CATÉGORIES : L'ARBORESCENCE ═════════════════════ */}
+      <LesHeros cible={cible} surCible={setCible} />
+
+      {/* ═════════════════════ L'APPAREIL : LE TICKET, LE BUDGET, LES STICKERS ═════════════════════ */}
+      <AppareilDuMariage
+        code={code}
+        avatar={{
+          noms: TICKET_COUPLE.noms,
+          date: formatDateLong(TICKET_COUPLE.date),
+          lieu: TICKET_COUPLE.venue,
+          convives: TICKET_COUPLE.convives,
+          lignes: coches.length,
+          total: totaux.total,
+        }}
+        rêve={LE_RÊVE}
+        budget={budget}
+        cible={cible}
+        surCible={setCible}
+        marques={marques}
+        surObjet={poserUnObjet}
+        sortie={papier?.sortie ?? null}
+        stickers={stickers}
+        surSticker={() => {
+          tirerUnSticker('SUPER MARIAGE');
+          unAvis('un sticker de plus');
+        }}
+        ticket={lignesCochées}
+        surCode={() => {
+          const suite = new URLSearchParams(params);
+          suite.delete('code');
+          setParams(suite, { replace: true });
+        }}
+      />
 
       {/* ═════════════════════ LE PROGRAMME, ET LES CINQ PAPIERS ═════════════════════ */}
       <LesGestes />
@@ -392,253 +466,301 @@ export default function LaCaisse() {
       <LesTroisFamilles />
 
       {/* ═════════════════════ ON COCHE : LES CATÉGORIES ═════════════════════ */}
-      <main id="on-coche" data-section="coche" className="mx-auto w-full max-w-[900px] px-4 pb-16 sm:px-6 text-white">
-        {GROUPES_DU_TICKET.map((groupe) => {
-          const catégories = CATÉGORIES_DU_TICKET.filter((c) => c.groupe === groupe.id);
-          return (
-            <section
-              key={groupe.id}
-              id={`groupe-${groupe.id}`}
-              data-section-groupe={groupe.id}
-              className="mt-14 scroll-mt-20 first:mt-10"
-            >
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-2">
-                <h2 className="text-[19px] font-bold tracking-tight">{groupe.mot}</h2>
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">{groupe.sous}</span>
-              </div>
+      <main id="on-coche" data-bande="on-coche" data-section="coche" className="vp-bande">
+        <div className="vp-page">
+          <p className="vp-bande-nom">
+            <b>AIME</b>
+            <span aria-hidden="true">·</span>
+            <span>CE QU’ON COCHE</span>
+          </p>
+          <div className="mt-8 max-w-[52ch]">
+            <h2 data-bande-titre="on-coche" className="vp-bande-titre">
+              Les 99 lignes, rangées.
+            </h2>
+            <p className="vp-bande-sous mt-5">
+              Le jour J a un prix, le site et les documents sont inclus. On coche : le ticket suit, l’écran de la
+              machine suit, et le papier sort de la fente.
+            </p>
+          </div>
 
-              {catégories.map((c) => (
-                <div key={c.id} id={`cat-${c.id}`} data-catégorie={c.id} className="mt-6 scroll-mt-6">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className="flex items-baseline gap-2 text-[14px] font-semibold">
-                      <span
-                        aria-hidden="true"
-                        className="inline-block h-2.5 w-2.5 rounded-full"
-                        style={{ background: c.couleur }}
-                      />
-                      {c.mot}
-                      {(compte[c.id] ?? 0) > 0 && (
-                        <span data-compte="vrai" className="font-mono text-[10px] text-[#00FF88]">
-                          {compte[c.id]}
-                        </span>
-                      )}
+          <div className="mt-10">
+            {GROUPES_DU_TICKET.map((groupe) => {
+              const catégories = CATÉGORIES_DU_TICKET.filter((c) => c.groupe === groupe.id);
+              return (
+                <section key={groupe.id} data-section-groupe={groupe.id} className="mt-14 first:mt-0">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[color:var(--vp-line)] pb-2">
+                    <h3 id={`groupe-${groupe.id}`} className="scroll-mt-24 text-[19px] font-bold tracking-tight">
+                      {groupe.mot}
                     </h3>
-                    <span className="flex items-baseline gap-3">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/35">{c.sous}</span>
-                      <button
-                        type="button"
-                        data-action="tout-le-rayon"
-                        data-rayon={c.id}
-                        onClick={() => cocherLaCatégorie(c.id)}
-                        className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/45 transition hover:text-white"
-                      >
-                        tout prendre
-                      </button>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--vp-muted)]">
+                      {groupe.sous}
                     </span>
                   </div>
 
-                  <ul data-lignes="vrai" className="mt-2 grid gap-0 sm:grid-cols-2 sm:gap-x-6">
-                    {c.lignes.map((ligne) => {
-                      const prise = coches.includes(ligne.id);
-                      return (
-                        <li key={ligne.id}>
+                  {catégories.map((c) => (
+                    <div key={c.id} id={`cat-${c.id}`} data-catégorie={c.id} className="mt-6 scroll-mt-24">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h4 className="flex items-baseline gap-2 text-[14px] font-semibold">
+                          <span
+                            aria-hidden="true"
+                            className="inline-block h-2.5 w-2.5 rounded-full"
+                            style={{ background: c.couleur }}
+                          />
+                          {c.mot}
+                          {(compte[c.id] ?? 0) > 0 && (
+                            <span data-compte="vrai" className="font-mono text-[10px] text-[color:var(--vp-ink)]">
+                              {compte[c.id]}
+                            </span>
+                          )}
+                        </h4>
+                        <span className="flex items-baseline gap-3">
+                          <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-muted-2)]">
+                            {c.sous}
+                          </span>
                           <button
                             type="button"
-                            data-ligne={ligne.id}
-                            data-cochee={prise ? 'true' : 'false'}
-                            data-famille={ligne.famille}
-                            data-prix={ligne.prix}
-                            data-vers={ligne.vers.join(',')}
-                            aria-pressed={prise}
-                            onClick={() => cocherDansLaListe(ligne.id)}
-                            className={`flex w-full items-baseline gap-3 border-b border-white/8 py-2.5 text-left transition ${
-                              prise ? 'text-white' : 'text-white/60 hover:text-white/90'
-                            }`}
+                            data-action="tout-le-rayon"
+                            data-rayon={c.id}
+                            onClick={() => cocherLaCatégorie(c.id)}
+                            className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-muted)] transition hover:text-[color:var(--vp-ink)]"
                           >
-                            <span
-                              aria-hidden="true"
-                              className={`mt-[3px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] leading-none ${
-                                prise ? 'border-[#00FF88] text-[#00FF88]' : 'border-white/25 text-transparent'
-                              }`}
-                            >
-                              ✓
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[13.5px] leading-tight">{ligne.label}</span>
-                              <span className="mt-0.5 block truncate font-mono text-[9.5px] uppercase tracking-[0.1em] text-white/35">
-                                {ligne.vers.map((p) => motDuPortefeuille(p)).join(' · ')}
-                                {ligne.promo ? ' · promo rayon 7' : ''}
-                                {ligne.incluse ? ' · inclus' : ''}
-                              </span>
-                            </span>
-                            <span className="shrink-0 font-mono text-[12px] tabular-nums text-white/80">
-                              {ligne.incluse ? marqueDeLaFamille(ligne.famille) : euros(ligne.prix * (ligne.quantite ?? 1))}
-                            </span>
+                            tout prendre
                           </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </section>
-          );
-        })}
+                        </span>
+                      </div>
+
+                      <ul data-lignes="vrai" className="mt-2 grid gap-0 sm:grid-cols-2 sm:gap-x-8">
+                        {c.lignes.map((ligne) => {
+                          const prise = coches.includes(ligne.id);
+                          return (
+                            <li key={ligne.id}>
+                              <button
+                                type="button"
+                                data-ligne={ligne.id}
+                                data-cochee={prise ? 'true' : 'false'}
+                                data-famille={ligne.famille}
+                                data-prix={ligne.prix}
+                                data-vers={ligne.vers.join(',')}
+                                aria-pressed={prise}
+                                onClick={() => cocherDansLaListe(ligne.id)}
+                                className={`flex w-full items-baseline gap-3 border-b border-[color:var(--vp-line)] py-2.5 text-left transition ${
+                                  prise
+                                    ? 'text-[color:var(--vp-ink)]'
+                                    : 'text-[color:var(--vp-ink-soft)] hover:text-[color:var(--vp-ink)]'
+                                }`}
+                              >
+                                <span
+                                  aria-hidden="true"
+                                  className={`mt-[3px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] leading-none ${
+                                    prise
+                                      ? 'border-[color:var(--vp-ink)] bg-[color:var(--vp-ink)] text-white'
+                                      : 'border-black/20 text-transparent'
+                                  }`}
+                                >
+                                  ✓
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate text-[13.5px] leading-tight">{ligne.label}</span>
+                                  <span className="mt-0.5 block truncate font-mono text-[9.5px] uppercase tracking-[0.1em] text-[color:var(--vp-muted)]">
+                                    {ligne.vers.map((p) => motDuPortefeuille(p)).join(' · ')}
+                                    {ligne.promo ? ' · promo rayon 7' : ''}
+                                    {ligne.incluse ? ' · inclus' : ''}
+                                  </span>
+                                </span>
+                                <span className="shrink-0 font-mono text-[12px] tabular-nums text-[color:var(--vp-ink)]">
+                                  {ligne.incluse ? 'inclus' : euros(ligne.prix * (ligne.quantite ?? 1))}
+                                </span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ))}
+                </section>
+              );
+            })}
+          </div>
+        </div>
       </main>
 
       {/* ═════════════════════ LE TICKET, ENTIER ═════════════════════ */}
-      <section id="le-ticket" data-section="ticket" className="mx-auto w-full max-w-[900px] px-4 pb-16 sm:px-6 text-white">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-2">
-          <h2 className="text-[19px] font-bold tracking-tight">Le ticket</h2>
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">
-            {totaux.articles} ligne{totaux.articles > 1 ? 's' : ''} · {totaux.incluses} incluse
-            {totaux.incluses > 1 ? 's' : ''}
-          </span>
-        </div>
+      <section id="le-ticket" data-bande="ticket" data-section="ticket" className="vp-bande vp-bande-fond">
+        <div className="vp-page">
+          <p className="vp-bande-nom">
+            <b>SUPER MARIAGE</b>
+            <span aria-hidden="true">·</span>
+            <span>LE TICKET, ENTIER</span>
+          </p>
 
-        <div className="mt-6 grid gap-8 md:grid-cols-[minmax(0,420px)_minmax(0,1fr)] md:items-start">
-          <TicketCaisse
-            variante={papierDuCouple?.papier ?? 'couple'}
-            magasin={MAGASIN}
-            couple={TICKET_COUPLE}
-            numero={papierDuCouple?.numero ?? 'SM-00-0000'}
-            dateLabel={formatDateLong(TICKET_COUPLE.date)}
-            heureLabel={`${String(heure).padStart(2, '0')}:00`}
-            paye={coches.length > 0}
-            lignes={papierDuCouple?.papierLignes ?? []}
-            total={{
-              sousTotal: totaux.sousTotal,
-              remise: totaux.remise,
-              tva: totaux.tva,
-              total: totaux.total,
-              articles: totaux.articles,
-            }}
-          />
+          <div className="mt-8 grid gap-8 md:grid-cols-[minmax(0,420px)_minmax(0,1fr)] md:items-start">
+            <TicketCaisse
+              variante={papierDuCouple?.papier ?? 'couple'}
+              magasin={MAGASIN}
+              couple={TICKET_COUPLE}
+              numero={papierDuCouple?.numero ?? 'SM-00-0000'}
+              dateLabel={formatDateLong(TICKET_COUPLE.date)}
+              heureLabel={`${String(heure).padStart(2, '0')}:00`}
+              paye={coches.length > 0}
+              lignes={papierDuCouple?.papierLignes ?? []}
+              total={{
+                sousTotal: totaux.sousTotal,
+                remise: totaux.remise,
+                tva: totaux.tva,
+                total: totaux.total,
+                articles: totaux.articles,
+              }}
+            />
 
-          <div className="flex flex-col gap-4">
-            {/* Les marques : ce que les boutons ronds ont posé sur le papier. */}
-            <div data-marques="vrai" className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35">les marques</span>
-              {marques.length === 0 && (
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/25">
-                  aucune — les boutons ronds de la machine en posent
+            <div className="flex flex-col gap-5">
+              <p className="vp-bande-sous max-w-[42ch]">
+                {totaux.articles} ligne{totaux.articles > 1 ? 's' : ''} · {totaux.incluses} incluse
+                {totaux.incluses > 1 ? 's' : ''}. {LE_SPÉCIALISTE.phrase}
+              </p>
+
+              <div data-marques="vrai" className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--vp-muted)]">
+                  les objets imprimés
                 </span>
-              )}
-              {marques.map((id) => {
-                const objet = OBJETS_DE_LA_FABRIQUE.find((o) => o.id === id);
-                return (
-                  <span
-                    key={id}
-                    data-marque={id}
-                    className="rounded-full border border-[#00FF88]/50 px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-[#00FF88]"
-                  >
-                    {objet?.nom ?? id}
+                {marques.length === 0 && (
+                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--vp-muted-2)]">
+                    aucun — les boutons ronds en impriment
                   </span>
-                );
-              })}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                data-action="emporter"
-                disabled={!coches.length}
-                onClick={() => {
-                  void navigator.clipboard?.writeText(
-                    `${window.location.origin}${window.location.pathname}?coches=${coches.join(',')}`,
+                )}
+                {marques.map((id) => {
+                  const objet = OBJETS_DE_LA_FABRIQUE.find((o) => o.id === id);
+                  const imprimé = OBJETS_IMPRIMÉS.find((o) => o.id === id);
+                  return (
+                    <span
+                      key={id}
+                      data-marque={id}
+                      className="rounded-full border border-[color:var(--vp-ink)] px-2.5 py-1 font-mono text-[9.5px] uppercase tracking-[0.12em] text-[color:var(--vp-ink)]"
+                    >
+                      {imprimé ? ligneImprimée(code, imprimé) : (objet?.nom ?? id)}
+                    </span>
                   );
-                  unAvis(`${coches.length} lignes · le reçu est dans le lien`);
-                }}
-                className="rounded-full border border-white/25 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-white/75 transition hover:border-white/60 hover:text-white disabled:opacity-30"
-              >
-                emporter le reçu
-              </button>
-              <button
-                type="button"
-                data-action="imprimer"
-                onClick={() => window.print()}
-                className="rounded-full border border-white/25 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-white/75 transition hover:border-white/60 hover:text-white"
-              >
-                imprimer
-              </button>
-              <button
-                type="button"
-                data-action="vider"
-                onClick={() => setÉtat({ ...état, coches: [] })}
-                className="rounded-full border border-white/15 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-white/40 transition hover:border-white/50 hover:text-white"
-              >
-                vider
-              </button>
-              <button
-                type="button"
-                data-action="machine"
-                onClick={ouvrirLeTicketDeLaMachine}
-                className="rounded-full border border-white/25 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-white/75 transition hover:border-white/60 hover:text-white"
-              >
-                le ticket sur l’écran
-              </button>
+                })}
+              </div>
+
+              <dl data-budget="vrai" className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {[
+                  ['le mariage', euros(totaux.total)],
+                  ['le rêve', euros(LE_RÊVE.prix)],
+                  ['mis de côté', euros(budget.misDeCôté)],
+                  ['reste à financer', euros(budget.reste)],
+                ].map(([mot, valeur]) => (
+                  <div key={mot} data-budget-mot={mot} className="border-t border-[color:var(--vp-line)] pt-2">
+                    <dt className="font-mono text-[9.5px] uppercase tracking-[0.14em] text-[color:var(--vp-muted)]">
+                      {mot}
+                    </dt>
+                    <dd className="mt-1 text-[18px] font-semibold tracking-[-0.03em] [font-variant-numeric:tabular-nums]">
+                      {valeur}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  data-action="emporter"
+                  disabled={!coches.length}
+                  onClick={() => {
+                    const adresse = `${window.location.origin}${window.location.pathname}?code=${code}&coches=${coches.join(',')}`;
+                    void navigator.clipboard?.writeText(adresse);
+                    unAvis(`${coches.length} lignes · le reçu est dans le lien`);
+                  }}
+                  className="vp-pastille !text-[11px]"
+                >
+                  emporter le reçu
+                </button>
+                <button
+                  type="button"
+                  data-action="imprimer"
+                  onClick={() => window.print()}
+                  className="vp-pastille vp-pastille-trait !text-[11px]"
+                >
+                  imprimer
+                </button>
+                <button
+                  type="button"
+                  data-action="machine"
+                  onClick={ouvrirLeTicketDeLaMachine}
+                  className="vp-pastille vp-pastille-trait !text-[11px]"
+                >
+                  le ticket sur l’écran
+                </button>
+                <button
+                  type="button"
+                  data-action="vider"
+                  onClick={() => setÉtat({ ...état, coches: [] })}
+                  className="font-mono text-[10px] uppercase tracking-[0.16em] text-[color:var(--vp-muted)] underline decoration-[color:var(--vp-line)] underline-offset-4 transition hover:text-[color:var(--vp-ink)]"
+                >
+                  vider
+                </button>
+              </div>
+
+              <p className="font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-[color:var(--vp-muted-2)]">
+                {MAGASIN.slogan} · tarifs indicatifs, aucun paiement réel
+              </p>
             </div>
-
-            <p className="font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-white/30">
-              {MAGASIN.slogan} · tarifs indicatifs, aucun paiement réel
-            </p>
-
-            <p>
-              <Link
-                to="/magazine?monde=magasin"
-                className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/35 underline decoration-white/15 underline-offset-4 transition hover:text-white"
-              >
-                le magasin, tout en cases
-              </Link>
-            </p>
           </div>
         </div>
       </section>
 
       {/* ═════════════════════ LES PORTEFEUILLES ═════════════════════ */}
-      <footer data-section="portefeuilles" className="mx-auto w-full max-w-[900px] px-4 pb-24 sm:px-6">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-white/10 pb-2">
-          <h2 className="text-[19px] font-bold tracking-tight">Les portefeuilles</h2>
-          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/40">là où le ticket arrive</span>
-        </div>
-
-        {portefeuillesDesCoches(coches).length === 0 ? (
-          <p data-portefeuilles="vides" className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-white/35">
-            les portefeuilles attendent — cochez une ligne, le ticket sort et part
+      <footer data-bande="portefeuilles" data-section="portefeuilles" className="vp-bande">
+        <div className="vp-page">
+          <p className="vp-bande-nom">
+            <b>AIME</b>
+            <span aria-hidden="true">·</span>
+            <span>LES PORTEFEUILLES</span>
           </p>
-        ) : (
-          <div data-portefeuilles="pleins" className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {portefeuillesDesCoches(coches).map((ticket) => (
-              <span
-                key={ticket.portefeuille}
-                data-portefeuille={ticket.portefeuille}
-                data-lignes={ticket.lignes.length}
-                data-total={ticket.total}
-                data-papier={ticket.papier}
-                className="flex flex-col gap-1 rounded-[16px] border border-white/10 bg-white/[0.03] p-4"
-              >
-                <span className="flex items-baseline justify-between gap-2">
-                  <span className="text-[14px] font-semibold">{motDuPortefeuille(ticket.portefeuille)}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/40">{ticket.papier}</span>
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/35">{ticket.entête}</span>
-                <span className="mt-1 font-mono text-[13px] tabular-nums text-[#00FF88]">
-                  {ticket.total > 0 ? euros(ticket.total) : 'inclus'}
-                </span>
-                <span className="mt-1 flex flex-col gap-0.5">
-                  {ticket.lignes.slice(0, 4).map((l) => (
-                    <span key={l.id} className="truncate font-mono text-[10px] text-white/45">
-                      {l.label}
+
+          {portefeuillesDesCoches(coches).length === 0 ? (
+            <p data-portefeuilles="vides" className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[color:var(--vp-muted)]">
+              les portefeuilles attendent — cochez une ligne, le ticket sort et part
+            </p>
+          ) : (
+            <div data-portefeuilles="pleins" className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {portefeuillesDesCoches(coches).map((ticket) => (
+                <span
+                  key={ticket.portefeuille}
+                  data-portefeuille={ticket.portefeuille}
+                  data-lignes={ticket.lignes.length}
+                  data-total={ticket.total}
+                  data-papier={ticket.papier}
+                  className="flex flex-col gap-1 rounded-[14px] border border-[color:var(--vp-line)] bg-[color:var(--vp-env-light-b)] p-4"
+                >
+                  <span className="flex items-baseline justify-between gap-2">
+                    <span className="text-[14px] font-semibold">{motDuPortefeuille(ticket.portefeuille)}</span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-muted)]">
+                      {ticket.papier}
                     </span>
-                  ))}
-                  {ticket.lignes.length > 4 && (
-                    <span className="font-mono text-[10px] text-white/30">+ {ticket.lignes.length - 4} autres</span>
-                  )}
+                  </span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[color:var(--vp-muted-2)]">
+                    {ticket.entête}
+                  </span>
+                  <span className="mt-1 font-mono text-[13px] font-semibold tabular-nums text-[color:var(--vp-ink)]">
+                    {ticket.total > 0 ? euros(ticket.total) : 'inclus'}
+                  </span>
+                  <span className="mt-1 flex flex-col gap-0.5">
+                    {ticket.lignes.slice(0, 4).map((l) => (
+                      <span key={l.id} className="truncate font-mono text-[10px] text-[color:var(--vp-muted)]">
+                        {l.label}
+                      </span>
+                    ))}
+                    {ticket.lignes.length > 4 && (
+                      <span className="font-mono text-[10px] text-[color:var(--vp-muted-2)]">
+                        + {ticket.lignes.length - 4} autres
+                      </span>
+                    )}
+                  </span>
                 </span>
-              </span>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </footer>
 
       {/* ═════════════════════ L'ADDITION, LES QUESTIONS, LE PIED ═════════════════════ */}

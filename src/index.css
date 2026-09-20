@@ -822,3 +822,105 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   padding-block: 2.4rem 3rem;
 }
 
+/* ------------------------------------------------------------------ *
+ *  L'appareil — le papier sort par le dessous
+ *
+ *  Correction demandée le 20 septembre 2026 : « quand le ticket sort ça
+ *  fait une animation bizarre, peut-être le sortir par le dessous de la
+ *  machine ». Le papier naît donc **derrière la fente** (il est décalé de
+ *  la hauteur de la fente) et descend : on ne le voit jamais apparaître
+ *  par le haut. Un seul `transform`, aucune mesure.
+ * ------------------------------------------------------------------ */
+
+@keyframes presse-par-le-bas {
+  from { transform: translate3d(0, -128%, 0); opacity: 0.2; }
+  70%  { transform: translate3d(0, 2%, 0); opacity: 1; }
+  to   { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+.presse-par-le-bas {
+  display: block;
+  animation: presse-par-le-bas 760ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+/* Le sticker carré : un carré coloré, un mot dedans. Rien d'autre. */
+.vp-sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.05;
+  padding: 3px;
+  box-shadow: 0 6px 16px rgba(12, 14, 24, 0.12);
+}
+
+/* La barre de budget, dans l'écran de l'appareil. */
+.vp-jauge {
+  position: relative;
+  height: 5px;
+  border-radius: var(--vp-r-pill);
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.vp-jauge > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  background: #fff;
+  border-radius: var(--vp-r-pill);
+}
+
+/* Les héros de catégorie : une image, un titre dessus, et rien d'autre. */
+.vp-heros {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--vp-env-dark-a);
+  color: #fff;
+}
+
+.vp-heros img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s var(--vp-ease);
+}
+
+.vp-heros:hover img { transform: scale(1.03); }
+
+.vp-heros-voile {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(6, 7, 12, 0.86) 4%, rgba(6, 7, 12, 0.28) 55%, rgba(6, 7, 12, 0.1) 100%);
+}
+
+.vp-hero-titre {
+  font-family: var(--font-spatial);
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  font-size: clamp(1.35rem, 2.6vw, 2.1rem);
+}
+
+/* La barre flottante : la marque, les portes, la pastille. */
+.vp-barre-flottante {
+  border: 1px solid var(--vp-line);
+  border-radius: var(--vp-r-pill);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 30px rgba(12, 14, 24, 0.06);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}

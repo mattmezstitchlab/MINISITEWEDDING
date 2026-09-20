@@ -136,10 +136,24 @@ import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LaCaisse from '../src/pages/LaCaisse';
 import { fileDeLaFamille, lAgentFaitPasser, motDeLaFamille } from '../src/lib/agentDuTicket';
-import { papierDeLObjet } from '../src/lib/ripple';
+import { OBJETS_DE_LA_FABRIQUE, papierDeLObjet } from '../src/lib/ripple';
+import {
+  CODE_DE_DÉMONSTRATION,
+  COULEURS_DES_STICKERS,
+  ÉCONOMIE_PAR_LIGNE,
+  LE_RÊVE,
+  OBJETS_IMPRIMÉS,
+  budgetDuRêve,
+  codeAccepté,
+  codeDepuis,
+  codeDuMariage,
+  ligneImprimée,
+  stickerDe,
+} from '../src/lib/codeDuMariage';
+import { LES_HÉROS, LE_SPÉCIALISTE } from '../src/lib/bandesDeLAime';
 /* La machine du ticket : ses gestes portent des noms uniques dans ce fichier —
    `valider` est déjà pris par le journal, `passer` traîne partout. */
-import { PACKAGES } from '../src/lib/superMariage';
+import { PACKAGES, TICKET_COUPLE } from '../src/lib/superMariage';
 import { PORTEFEUILLES } from '../src/lib/portefeuille';
 import {
   basculerLeTicket as ouvrirLeTicket,
@@ -2056,10 +2070,17 @@ check('le papier est celui du magasin, au même format', portefeuillesDessai[0]!
 
 /* La page : la machine, seule, sur un fond blanc — et rien d'autre. */
 
-const rendreLeTicket = (url: string) =>
+const rendreLAdresse = (url: string) =>
   renderToStaticMarkup(
     createElement(MemoryRouter, { initialEntries: [url] }, createElement(LaCaisse as never)),
   ).replace(/&amp;/g, '&');
+/* **On n'arrive pas sur le site : on entre par un code.** Les vérifications de la
+   page passent donc par la porte, comme un invité ; celles de la porte elle-même
+   se font sans code. */
+const avecLeCode = (url: string) =>
+  url.includes('code=') ? url : `${url}${url.includes('?') ? '&' : '?'}code=${CODE_DE_DÉMONSTRATION}`;
+const rendreLeTicket = (url: string) => rendreLAdresse(avecLeCode(url));
+const laPorte = rendreLAdresse('/');
 const ticketVide = rendreLeTicket('/');
 const ticketPlein = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}`);
 const ticketDuReçu = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}&ecran=ticket`);
@@ -2070,7 +2091,7 @@ check('on arrive sur le ticket', ticketVide.includes('data-page="ticket"'), true
 /* La machine occupe le premier écran ; le site commence au visuel du jour. */
 const zoneMachine = ticketVide.slice(
   ticketVide.indexOf('id="la-machine"'),
-  ticketVide.indexOf('data-bande="titre"'),
+  ticketVide.indexOf('data-section="visuel"'),
 );
 const zoneSite = ticketVide.slice(ticketVide.indexOf('data-section="visuel"'));
 
@@ -2373,11 +2394,16 @@ check('et le pied répète la marque', ticketVide.includes('data-bande="pied"'),
 check(
   'l’ordre des bandes est celui d’une page, pas d’un inventaire',
   (() => {
-    const ordre = ['barre', 'la-machine', 'titre', 'visuel', 'familles', 'on-coche', 'le-ticket'];
+    const ordre = [
+      'barre', 'la-machine', 'visuel', 'titre', 'héros', 'l-appareil',
+      'LE PROGRAMME', 'familles', 'on-coche', 'le-ticket',
+    ];
     const positions = ordre.map((cle) =>
       cle === 'la-machine'
         ? ticketVide.indexOf('id="la-machine"')
-        : cle === 'on-coche'
+        : cle === 'l-appareil'
+          ? ticketVide.indexOf('id="l-appareil"')
+          : cle === 'on-coche'
           ? ticketVide.indexOf('id="on-coche"')
           : cle === 'le-ticket'
             ? ticketVide.indexOf('id="le-ticket"')
@@ -2407,6 +2433,171 @@ check(
 check(
   'et sa marque n’est pas devenue la nôtre',
   ticketVide.includes('SUPER MARIAGE') && ticketVide.includes('AIME'),
+  true,
+);
+
+/* ——— LE TOUR : LE CODE MARIAGE, LE RÊVE, LES OBJETS, LES STICKERS, LE HEADER ———
+
+   « On arrive et on doit donner un code mariage », « les mariés décrivent leur
+   rêve », « un appareil qui contrôle le budget et imprime des stickers carrés »,
+   « le papier sort par le dessous ». Cinq promesses, cinq séries de preuves. */
+
+check(
+  'sans code, on tombe sur la porte — jamais sur la page',
+  laPorte.includes('data-porte="vrai"') && !laPorte.includes('data-page="ticket"'),
+  true,
+);
+check(
+  'la porte dit ce qu’elle attend, et à qui',
+  laPorte.includes('ENTREZ LE CODE DU MARIAGE') &&
+    laPorte.includes(LE_SPÉCIALISTE.metier) &&
+    laPorte.includes('data-porte-champ="vrai"') &&
+    laPorte.includes('data-porte-ouvrir="vrai"'),
+  true,
+);
+check('et elle offre un code à essayer, celui du couple', laPorte.includes(`data-porte-démo="${CODE_DE_DÉMONSTRATION}"`), true);
+check(
+  'un code, c’est trois signes, un tiret, trois chiffres — et il ouvre',
+  [codeAccepté('A7K-241'), codeAccepté('a7k 241'), codeAccepté('A7K-24'), codeAccepté('A7K-2411')],
+  [true, true, false, false],
+);
+check('le code s’écrit proprement, même tapé n’importe comment', codeDepuis(' a7k 241 '), 'A7K-241');
+check('et le même mariage redonne toujours le même code', codeDuMariage(TICKET_COUPLE), CODE_DE_DÉMONSTRATION);
+check('derrière la porte, la page porte son code', ticketVide.includes(`data-code="${CODE_DE_DÉMONSTRATION}"`), true);
+
+check(
+  'le budget du rêve, à zéro : rien de coché, rien de mis de côté, tout à financer',
+  (() => {
+    const vide = budgetDuRêve([]);
+    return vide.misDeCôté === 0 && vide.reste === LE_RÊVE.prix && !vide.payé;
+  })(),
+  true,
+);
+check('dix lignes cochées, c’est dix fois la mise de côté', budgetDuRêve(LIGNES_DU_TICKET.slice(0, 10).map((l) => l.id)).misDeCôté, 10 * ÉCONOMIE_PAR_LIGNE);
+check(
+  'et le reste à financer descend exactement d’autant',
+  budgetDuRêve(LIGNES_DU_TICKET.slice(0, 10).map((l) => l.id)).reste,
+  LE_RÊVE.prix - 10 * ÉCONOMIE_PAR_LIGNE,
+);
+check(
+  'cocher ne fait jamais reculer la mise de côté — et l’on ne dépasse pas le prix du rêve',
+  (() => {
+    const tout = budgetDuRêve(LIGNES_DU_TICKET.map((l) => l.id));
+    return tout.payé && tout.misDeCôté === LE_RÊVE.prix && tout.reste === 0;
+  })(),
+  true,
+);
+check(
+  'six objets s’impriment, et deux portent le rêve',
+  [OBJETS_IMPRIMÉS.length, OBJETS_IMPRIMÉS.filter((o) => o.cible).map((o) => o.id)],
+  [6, ['billet-avion', 'carte-postale']],
+);
+check(
+  'chaque objet laisse son code, son sigle et son mot sur le papier',
+  OBJETS_IMPRIMÉS.every((o) => ligneImprimée('A7K-241', o) === `A7K-241-${o.sigle} · ${o.mot}`) &&
+    new Set(OBJETS_IMPRIMÉS.map((o) => o.sigle)).size === OBJETS_IMPRIMÉS.length,
+  true,
+);
+check('les stickers ont huit couleurs, toutes prises dans la collection', new Set(COULEURS_DES_STICKERS).size, 8);
+check('même mot, même couleur — et les couleurs tournent', [stickerDe('mariage', 3).couleur, stickerDe('x', 8).couleur], [COULEURS_DES_STICKERS[3], COULEURS_DES_STICKERS[0]]);
+
+check(
+  'l’appareil est sur la page, avec sa fente en bas',
+  ticketVide.includes('data-appareil="mariage"') && ticketVide.includes('data-fente-bas="vrai"'),
+  true,
+);
+check(
+  'les sept objets du Ripple ont leur bouton rond, plus le sticker',
+  [(ticketVide.match(/data-objet-de-lappareil=/g) ?? []).length, ticketVide.includes('data-action="tirer-un-sticker"')],
+  [OBJETS_DE_LA_FABRIQUE.length, true],
+);
+check(
+  'l’écran montre le rêve, son titre dessus, et où en est le budget',
+  ['data-appareil-écran', 'data-appareil-titre', 'data-appareil-jauge-mot', 'data-budget-mot'].every((a) => ticketVide.includes(a)) &&
+    ticketVide.includes(LE_RÊVE.mot) &&
+    LE_RÊVE.comprend.every((morceau) => ticketVide.includes(morceau)),
+  true,
+);
+check(
+  'et les quatre catégories changent ce que l’écran affiche',
+  [...ticketVide.matchAll(/data-cible="([a-z]+)"/g)].map((m) => m[1]).join(','),
+  LES_HÉROS.map((h) => h.id).join(','),
+);
+check(
+  'le ticket s’imprime, et il se met à jour : le mariage, puis le voyage',
+  ticketVide.includes('data-ticket-de-lappareil="vrai"') &&
+    ticketVide.includes('data-ticket-ligne="mariage"') &&
+    ticketVide.includes('data-ticket-ligne="voyage"'),
+  true,
+);
+check(
+  'et l’on voit ce qu’il reste à financer, sur le papier',
+  [ticketVide.includes(`data-ticket-reste="${LE_RÊVE.prix}"`), Number(ticketPlein.match(/data-ticket-reste="(\d+)"/)?.[1]) < LE_RÊVE.prix],
+  [true, true],
+);
+check(
+  'le ticket commence par SUPER MARIAGE, écrit au début',
+  (() => {
+    const début = ticketVide.indexOf('data-ticket-de-lappareil="vrai"');
+    const papier = ticketVide
+      .slice(ticketVide.indexOf('>', début) + 1)
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return papier.startsWith('SUPER MARIAGE') && papier.slice(0, 90).includes(LE_SPÉCIALISTE.metier);
+  })(),
+  true,
+);
+check('quatre héros, un par catégorie, dans l’ordre du produit', [...ticketVide.matchAll(/data-héros-de-la-landing="([a-z]+)"/g)].map((m) => m[1]), LES_HÉROS.map((h) => h.id));
+check(
+  'chaque héros porte son image, son titre dessus, et le chemin de ce qu’il contient',
+  LES_HÉROS.every(
+    (h) =>
+      ticketVide.includes(`data-héros-image="${h.id}"`) &&
+      ticketVide.includes(`data-héros-titre="${h.id}"`) &&
+      ticketVide.includes(`data-héros-chemin="${h.id}"`),
+  ),
+  true,
+);
+check(
+  'et leurs images sont toutes différentes — pas de visuel de remplissage',
+  [new Set(LES_HÉROS.map((h) => h.image)).size, LES_HÉROS.every((h) => h.chemin.length >= 4)],
+  [LES_HÉROS.length, true],
+);
+check(
+  'la barre est flottante : la marque, les portes, le code du mariage',
+  ticketVide.includes('data-bande="barre"') &&
+    ticketVide.includes('vp-barre-flottante') &&
+    ticketVide.includes(`data-barre-code="${CODE_DE_DÉMONSTRATION}"`),
+  true,
+);
+check(
+  'elle se colle en haut, et elle est translucide — c’est ça, plus moderne',
+  /data-bande="barre" class="sticky top-0[^"]*"/.test(ticketVide) &&
+    /backdrop-filter: saturate\(180%\) blur\(20px\)/.test(readFileSync('src/index.css', 'utf8')),
+  true,
+);
+check(
+  'la barre dit où en est le ticket, sans qu’on descende',
+  [ticketVide.includes('data-barre-compte="0"'), ticketPlein.includes(`data-barre-compte="${cochesDessai.length}"`)],
+  [true, true],
+);
+check(
+  'et sur un téléphone, les portes glissent sous la marque — pas de menu à ouvrir',
+  ticketVide.includes('data-barre-portes="vrai"') && !/aria-label="[^"]*menu/i.test(ticketVide),
+  true,
+);
+check(
+  'le papier naît derrière la fente et descend : jamais par le haut',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return /@keyframes presse-par-le-bas/.test(css) && /translate3d\(0, -128%, 0\)/.test(css);
+  })(),
+  true,
+);
+check(
+  'et sous l’appareil, la planche de stickers attend d’être remplie',
+  ticketVide.includes('data-stickers="vrai"') && ticketVide.includes('aucun sticker'),
   true,
 );
 

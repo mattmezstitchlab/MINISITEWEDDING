@@ -32,11 +32,12 @@ Trois principes plus fins tiennent l'ensemble :
 
 | Le principe | Chez nous | Où |
 | --- | --- | --- |
-| la barre collante | marque `AIME`, quatre portes, pastille d'encre « Ouvrir le ticket » | `BarreDeLAime` |
+| la barre collante | marque `AIME`, quatre portes, **l'état du ticket** (le compte, le total), le code du mariage, pastille d'encre « Ouvrir le ticket » ; sur un téléphone les portes glissent sous la marque, sans menu à ouvrir | `BarreDeLAime` |
 | le titre unique et sa phrase | « Tout le mariage, sur un seul ticket. » | `LeTitre` |
 | la suite numérotée | **quatre gestes** 01→04 : on coche, le ticket calcule, il sort de la fente, chacun a son papier | `LesGestes` |
 | trois colonnes égales | **les trois familles** : LE JOUR J (48), VOTRE SITE (20), LES DOCUMENTS (31), chacune avec sa porte | `LesTroisFamilles` |
 | la bande d'image calme | le **visuel du jour**, pleine largeur, les infos dessus | `data-section="visuel"` |
+| des visuels qui ouvrent des rubriques | **quatre héros** — une image, un titre dessus, et le chemin de ce qu'il y a dedans : le jour J, le voyage, les objets, l'accès. C'est l'arborescence du produit, en images | `LesHeros` |
 | trois formules de même poids | **les trois menus du magasin** : Essentiel, Caddie, Légende | `LesFormules` |
 | les questions | **cinq** : celles du thème, plus « est-ce que je paie ? » et « et si je ne sais pas quoi cocher ? » | `LesQuestions` |
 | le pied qui répète la marque | marque, portes, « ouvert quand tout est fermé » | `LePied` |
@@ -80,10 +81,13 @@ Rien de la page n'est inventé pour la page :
 ## 5. L'ordre de la page, aujourd'hui
 
 ```
-barre                AIME · le ticket · le magazine · les métiers · Super Ripple
+la porte             on arrive, on donne le code du mariage (sans lui, rien ne s'ouvre)
+barre                AIME · les portes · le compte et le total · le code · « Ouvrir le ticket »
 la machine           seule, sur fond blanc — elle propose, on valide, le papier sort
-titre                « Tout le mariage, sur un seul ticket. » + la couverture du jour
 le visuel du jour    la bande d'image calme, les infos dessus
+titre                « Tout le mariage, sur un seul ticket. » + la couverture du jour
+les quatre héros     le jour J · le voyage · les objets · l'accès — une image, un titre, un chemin
+l'appareil           le rêve sur l'écran, sa jauge de budget, les objets, la fente en bas, les stickers
 le programme         quatre gestes numérotés, et les cinq papiers
 ce qu'on coche       les trois familles, chacune avec sa porte vers sa section
 on coche             17 catégories, 99 lignes — cochables d'un clic
@@ -94,14 +98,20 @@ questions            cinq réponses
 le pied              la marque, les portes
 ```
 
+**Deux règles tiennent cet ordre**, et le test « l'ordre des bandes » les
+vérifie : la barre passe avant tout, et **le site ne commence qu'après la
+machine** — le premier écran ne contient qu'elle.
+
 ## 6. Aller voir
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |
-| `/` | la page entière : la machine, puis les bandes, puis le ticket |
-| `/#la-machine` | la machine (la barre et les pastilles y mènent) |
-| `/` puis `#groupe-site` | une famille, ouverte depuis sa colonne |
-| `/caisse?face=recto` | la grande page d'avant, entière |
+| `/` | **la porte** : le code du mariage demandé avant tout |
+| `/?code=A7K-241` | la page entière : la machine, les héros, l'appareil, les bandes, le ticket |
+| `/?code=A7K-241#la-machine` | la machine (la barre et les pastilles y mènent) |
+| `/?code=A7K-241#l-appareil` | l'appareil : le rêve, le budget, les objets, la fente |
+| `/?code=A7K-241` puis `#groupe-site` | une famille, ouverte depuis sa colonne |
+| `/caisse?face=recto` | la grande page d'avant, entière (sans code) |
 
 ## 7. Ce que la référence ne donne pas, et qu'on garde à nous
 
@@ -114,4 +124,10 @@ AIME, et que la référence n'a pas :
   tiennent en main, et le seul endroit qui calcule ;
 - **les portefeuilles** : cinq papiers, cinq adresses, le lien qui est le reçu ;
 - **le magazine** : 54 semaines, 7 chapitres, et des images qui ne se répètent
-  jamais d'une semaine à l'autre.
+  jamais d'une semaine à l'autre ;
+- **la porte** : le code du mariage — trois signes, un tiret, trois chiffres :
+  c'est lui qui ouvre le site, et c'est lui qu'on met dans le lien envoyé aux
+  invités (voir `docs/le-code-du-mariage.md`) ;
+- **l'appareil** : le rêve sur l'écran, la jauge du budget, les six objets qui
+  laissent chacun leur ligne de code sur le papier, les stickers carrés — et le
+  papier qui **sort par le dessous**.
