@@ -297,6 +297,25 @@ export default function Landing() {
         />
       </div>
 
+      {/* LE COMPOSEUR, PLUS BAS : la même chose que dans le hero, à l'endroit où
+          l'on arrive quand on a tout regardé. On ne le réécrit pas : c'est le même
+          bloc, il retrouve tout seul ce qui a déjà été répondu. */}
+      <section id="votre-magazine" className="mx-auto max-w-[1180px] px-5 py-16 sm:py-24">
+        <div className="flex flex-col items-center text-center">
+          <span className="vp-eyebrow">En une fois</span>
+          <h2 className="vp-title mt-3" style={{ fontSize: 'clamp(1.8rem, 4.4vw, 2.8rem)' }}>
+            Votre magazine, maintenant
+          </h2>
+          <p className="vp-body mt-3 max-w-xl">
+            Deux prénoms, une date : le magazine se compose, on coche ce qu’on garde, et la page d’une
+            personne devient la couverture de son magazine.
+          </p>
+        </div>
+        <div className="mt-8 flex justify-center">
+          <ChampDuMagazine />
+        </div>
+      </section>
+
       {/* SECTION PARALLAX 2 : Zéro contrainte */}
       <div id="contrainte">
       <ParallaxSection image="/images/zero-contrainte-wedding.jpg" overlayOpacity={0.65} heightClass="min-h-[70vh]">

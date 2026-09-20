@@ -20,6 +20,10 @@ import {
   CADRAGE, DIRECTION_ARTISTIQUE, INTERDITS_VISUELS, MOMENTS_VISUELS, PAS_DIMAGE_LA_NUIT,
   SCENES_PAR_PERSONNAGE, entreesDeLAnnee, etatDeLaSerie, promptMaitre, scenesDuPersonnage,
 } from '../src/lib/promptsVisuels';
+import {
+  FONDS_ATTENDUS, RANGS_PAR_PLAN, SCENES_ATTENDUES, etatDuCasting, fondsDeCouvertureDeLAnnee,
+  scenesDeLAnnee,
+} from '../src/lib/castingVisuels';
 
 const ANNEE = 2026;
 
@@ -283,3 +287,125 @@ q('La règle n’a pas bougé : **on n’illustre pas ce qu’on n’a pas docum
 
 writeFileSync(join(process.cwd(), 'docs', 'fiches-de-l-annee.md'), `${L.join('\n')}\n`, 'utf8');
 console.log(`docs/fiches-de-l-annee.md — ${L.length} lignes · ${etatAnnee.pretes} documentées, ${etatAnnee.amorcees} amorcées, ${etatAnnee.aDocumenter} sans rien`);
+
+/* ——————————————————————— LE CASTING DES VISUELS ——————————————————————— */
+
+const casting = etatDuCasting(ANNEE);
+const fonds = fondsDeCouvertureDeLAnnee(ANNEE);
+const scenes = scenesDeLAnnee(ANNEE);
+
+const C: string[] = [];
+const c = (ligne = '') => C.push(ligne);
+
+c('# Le casting des visuels — les 365 fonds, et les 1 825 scènes');
+c();
+c('> **Engendré par `npm run prompts`.** Ce document ne s’écrit pas à la main : il');
+c('> donne **la liste de ce qui est attendu**, avec le nom exact des fichiers, pour');
+c('> que la production se fasse par lots et que le site prenne les images **dès');
+c('> qu’elles arrivent**.');
+c();
+c(`**${casting.fonds} fonds de couverture** (un par jour) · **${casting.scenes} scènes** (cinq moments par jour, le même personnage cinq fois) · **${casting.personnages} personnages** dans l’année.`);
+c();
+c(`Aujourd’hui : **${casting.scenesAvecBrief} scènes ont leur brief** (les fiches documentées), **${casting.scenesSansFiche} attendent leur fiche**. Un brief ne s’invente pas : *on n’illustre pas ce qu’on n’a pas documenté*.`);
+c();
+c('---');
+c();
+c('## 1. Où l’on dépose les images, et comment elles s’appellent');
+c();
+c('Un dossier par jour de l’année, en `MM-JJ`, sous `public/images/magazine/` :');
+c();
+c('```');
+c('public/images/magazine/09-21/');
+c('  couverture.jpg      ← le fond de la couverture (le premier rang)');
+c('  couverture-2.jpg    ← une seconde candidate (jusqu’à -3)');
+c('  aube.jpg            ← le personnage, au premier des cinq moments');
+c('  matin.jpg');
+c('  midi.jpg');
+c('  apres-midi.jpg');
+c('  soir.jpg');
+c('```');
+c();
+c(`**${RANGS_PAR_PLAN} rangs par plan** : le premier est celui qu’on veut, les autres sont`);
+c('**des candidates** — c’est le **casting** qui choisit (`src/lib/castingVisuels.ts`).');
+c();
+c('Après avoir déposé des images : `npm run photos` relève ce qui est arrivé. Le site');
+c('prend **la photo** là où elle est, et **le dessin** partout ailleurs : une image');
+c('manquante ne casse jamais une page.');
+c();
+c('**La nuit n’a pas d’image** : ' + PAS_DIMAGE_LA_NUIT);
+c();
+c('---');
+c();
+c('## 2. Comment on choisit, quand il y a plusieurs candidates');
+c();
+c('On ne choisit pas « la plus belle » — ça ne veut rien dire. On choisit **celle qui');
+c('répond au brief**, et **on dit pourquoi** :');
+c();
+c('| critère | poids | ce qu’on regarde |');
+c('| --- | --- | --- |');
+c('| le moment | 3 | l’image montre-t-elle bien l’aube, le midi, le soir ? |');
+c('| la lumière | 2 | la lumière décrite est-elle celle du moment ? |');
+c('| la couleur | 2 | la dominante est-elle proche de la couleur du jour ? |');
+c('| le cadrage | 1 | est-ce bien du 5 / 7 ? |');
+c('| le sujet | 1 | voit-on ce que la scène demande ? |');
+c();
+c('Ce que la personne qui produit l’image déclare par candidate — le moment, la');
+c('lumière, la couleur dominante, les dimensions, ce qu’on y voit — suffit à noter.');
+c('À égalité, **c’est le premier rang qui reste** : l’ordre des fichiers est un ordre.');
+c();
+c('---');
+c();
+c('## 3. Le format, la direction, les interdits');
+c();
+c('**Le cadre** :');
+c();
+for (const [cle, valeur] of Object.entries(CADRAGE)) c(`- **${cle}** — ${valeur}`);
+c();
+c('**La direction artistique** — elle ne se réinvente pas :');
+c();
+for (const ligne of DIRECTION_ARTISTIQUE) c(`- ${ligne}`);
+c();
+c('**Les interdits** — ils sont dans le prompt, et ils se vérifient sur l’image :');
+c();
+for (const ligne of INTERDITS_VISUELS) c(`- ${ligne}`);
+c();
+c('---');
+c();
+c('## 4. Les 365 fonds de couverture — disponibles tout de suite');
+c();
+c('Un fond ne dépend d’aucune fiche : la couverture sait déjà sa couleur, sa saison');
+c('et son titre. Ce qu’on demande, c’est **une matière du jour** — pas une');
+c('illustration : un fond qui tient sous du texte.');
+c();
+c('| jour | couverture | couleur | fichier attendu |');
+c('| --- | --- | --- | --- |');
+for (const fond of fonds) {
+  c(`| ${fond.jour} | ${fond.titre} | \`${fond.palette}\` | \`${fond.fichiers[0]}\` |`);
+}
+c();
+c('---');
+c();
+c('## 5. Les 1 825 scènes — cinq moments, un seul personnage');
+c();
+c('Cinq images par jour : **le même personnage**, cinq fois. Le premier moment sert de');
+c('référence aux quatre autres (c’est la règle de la maison : on garde le même');
+c('visage, la même silhouette, le même stylisme — seule la lumière change).');
+c();
+c('| jour | personnage | moment | état | fichier attendu |');
+c('| --- | --- | --- | --- | --- |');
+for (const scene of scenes) {
+  c(`| ${scene.jour} | ${scene.personnage} | ${scene.moment?.nom ?? ''} | ${scene.documentee ? 'prête' : 'à documenter'} | \`${scene.fichiers[0]}\` |`);
+}
+c();
+c('---');
+c();
+c(`**${FONDS_ATTENDUS} fonds · ${SCENES_ATTENDUES} scènes · ${RANGS_PAR_PLAN} rangs possibles par plan.**`);
+c();
+c('Le brief de chaque scène documentée est dans `docs/prompts-maitres.md` ; la fiche');
+c('de chaque jour, avec ce qui lui manque, est dans `docs/fiches-de-l-annee.md`.');
+c();
+
+writeFileSync(join(process.cwd(), 'docs', 'casting-des-couvertures.md'), `${C.join('\n')}\n`, 'utf8');
+console.log(
+  `docs/casting-des-couvertures.md — ${C.length} lignes · ${casting.fonds} fonds · ${casting.scenes} scènes (${casting.scenesAvecBrief} avec brief)`,
+);

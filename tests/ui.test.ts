@@ -41,6 +41,14 @@ import { RUBRIQUES } from '../src/lib/aimeMoteur';
 import {
   dateDuJourNomme, genreDuPrenom, jourDuPrenom, lectureDuPrenom, motsDuNom,
 } from '../src/lib/genreDesPrenoms';
+import {
+  FONDS_ATTENDUS, RANGS_PAR_PLAN, SCENES_ATTENDUES, adresseDuFichier, choisirLeMeilleurVisuel,
+  distanceDesCouleurs, etatDuCasting, fichiersDuPlan, fondsDeCouvertureDeLAnnee, noterCandidat,
+  scenesDeLAnnee, type AttenduVisuel, type CandidatVisuel,
+} from '../src/lib/castingVisuels';
+import { PHOTOS_LIVREES, photoDuPlan } from '../src/lib/photosDuMagazine';
+import CouvertureJour from '../src/components/CouvertureJour';
+import { couvertureDuJour } from '../src/lib/couvertureDuJour';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LeMariage from '../src/pages/LeMariage';
@@ -3445,6 +3453,129 @@ check('il nomme les pages par leur heure', superComposition.includes('l’aube')
 check('il dit où il en est', superComposition.includes('01 / 24'), true);
 check('il nomme la rubrique en cours', superComposition.includes('Le temps'), true);
 check('la couverture n’arrive qu’à la fin', superComposition.includes('Votre magazine est composé'), false);
+
+/* ---------------------------------------------------------------------------
+ * LE CASTING DES VISUELS — 365 fonds, 1 825 scènes, et le choix expliqué
+ *
+ * Le magazine a besoin de deux familles d'images : les fonds de couverture (un
+ * par jour, disponibles tout de suite) et les scènes (cinq moments par jour, le
+ * même personnage cinq fois). Et quand plusieurs candidates arrivent pour le même
+ * plan, on choisit **celle qui répond au brief** — en disant pourquoi.
+ */
+
+check('l’année attend 365 fonds de couverture', fondsDeCouvertureDeLAnnee(2026).length, FONDS_ATTENDUS);
+check('et 1 825 scènes', scenesDeLAnnee(2026).length, SCENES_ATTENDUES);
+check('soit cinq moments par jour', SCENES_ATTENDUES, 365 * 5);
+
+const castingAnnee = etatDuCasting(2026);
+check('le casting compte ses fonds', castingAnnee.fonds, 365);
+check('ses scènes', castingAnnee.scenes, 1825);
+check('et les scènes qui ont déjà leur brief', castingAnnee.scenesAvecBrief, 80);
+check('celles qui attendent leur fiche', castingAnnee.scenesSansFiche, 1745);
+// 363, pas 365 : deux jours de l'année portent le même nom de personnage.
+check('l’année porte 363 personnages distincts', castingAnnee.personnages, 363);
+
+/* Le nom des fichiers ne se discute pas : un dossier par jour, six plans. */
+check('le fond de couverture a son adresse', adresseDuFichier('09-21', 'couverture'), '/images/magazine/09-21/couverture.jpg');
+check('et le midi la sienne', adresseDuFichier('09-21', 'midi'), '/images/magazine/09-21/midi.jpg');
+check('une seconde candidate prend le rang 2', adresseDuFichier('09-21', 'midi', 2), '/images/magazine/09-21/midi-2.jpg');
+check('on accepte trois rangs par plan', fichiersDuPlan('09-21', 'midi').length, RANGS_PAR_PLAN);
+check('le premier rang est celui qu’on veut', fichiersDuPlan('09-21', 'midi')[0], '/images/magazine/09-21/midi.jpg');
+
+/* Ce qu'on demande se lit dans le brief — et l'absence de fiche se dit. */
+const fondDu21Septembre = fondsDeCouvertureDeLAnnee(2026).find((f) => f.jour === '09-21')!;
+const scenesDu21Septembre = scenesDeLAnnee(2026).filter((s) => s.jour === '09-21');
+check('un fond de couverture ne demande aucun moment', fondDu21Septembre.moment, null);
+check('et il a la couleur du jour', fondDu21Septembre.palette.length > 0, true);
+check('le 21 septembre a bien ses cinq scènes', scenesDu21Septembre.length, 5);
+check('toutes pour le même personnage', new Set(scenesDu21Septembre.map((s) => s.personnage)).size, 1);
+check('et ce personnage est celui du jour', scenesDu21Septembre[0]?.personnage, 'Matthieu');
+check('une scène documentée a son brief', scenesDu21Septembre[0]?.documentee, true);
+const sceneSansFiche = scenesDeLAnnee(2026).find((s) => !s.documentee)!;
+check('une scène sans fiche dit ce qui manque', sceneSansFiche.sujet.includes('attend sa fiche'), true);
+
+/* ——— COMMENT ON CHOISIT, QUAND IL Y A PLUSIEURS CANDIDATES ——— */
+check('deux couleurs identiques ne sont pas distantes', distanceDesCouleurs('#7FB77E', '#7FB77E'), 0);
+check('le noir et le blanc sont au plus loin', distanceDesCouleurs('#000000', '#ffffff'), 442);
+check('une couleur illisible ne se compare pas', distanceDesCouleurs('bleu', '#ffffff'), null);
+
+const attenduMidi: AttenduVisuel = {
+  jour: '09-21',
+  slot: 'midi',
+  chemin: '/images/magazine/09-21/midi',
+  fichiers: fichiersDuPlan('09-21', 'midi'),
+  moment: scenesDu21Septembre.find((s) => s.slot === 'midi')!.moment,
+  palette: '#7FB77E',
+  titre: 'Saint Matthieu',
+  sujet: 'Matthieu, le midi — le portrait.',
+  format: '5 / 7',
+};
+
+const bonne: CandidatVisuel = {
+  fichier: '/images/magazine/09-21/midi-2.jpg',
+  moment: 'midi',
+  lumiere: 'lumière de studio, dure et graphique',
+  couleur: '#86B87F',
+  largeur: 1000,
+  hauteur: 1400,
+  contient: ['portrait', 'matière'],
+};
+const mauvaise: CandidatVisuel = {
+  fichier: '/images/magazine/09-21/midi.jpg',
+  moment: 'soir',
+  lumiere: 'source chaude, des noirs profonds',
+  couleur: '#1B1B2E',
+  largeur: 1400,
+  hauteur: 1000,
+};
+const moyenne: CandidatVisuel = {
+  fichier: '/images/magazine/09-21/midi-3.jpg',
+  moment: 'midi',
+  couleur: '#9FD0E8',
+  largeur: 1000,
+  hauteur: 1400,
+};
+
+check('la bonne candidate marque les points du brief', noterCandidat(bonne, attenduMidi).total >= 7, true);
+check('la mauvaise les perd', noterCandidat(mauvaise, attenduMidi).total < 0, true);
+check('et la note dit pourquoi, en clair',
+  noterCandidat(bonne, attenduMidi).raisons.join(' | ').includes('c’est bien le midi'), true);
+
+const choix = choisirLeMeilleurVisuel([mauvaise, moyenne, bonne], attenduMidi);
+check('le casting retient celle qui répond au brief', choix.choisi?.fichier, '/images/magazine/09-21/midi-2.jpg');
+check('et classe la mauvaise dernière', choix.classement[choix.classement.length - 1]?.candidat.fichier, '/images/magazine/09-21/midi.jpg');
+check('la décision est signée, avec ses points', choix.decision.includes('point'), true);
+check('et elle nomme le fichier retenu', choix.decision.includes('midi-2.jpg'), true);
+const sansCandidat = choisirLeMeilleurVisuel([], attenduMidi);
+check('sans aucune candidate, rien n’est choisi', sansCandidat.choisi, null);
+check('et le dessin prend le relais', sansCandidat.decision.includes('Le dessin prend le relais'), true);
+
+/* ——— LA PHOTO PREND LE FOND, LE DESSIN RESTE S'IL N'Y EN A PAS ——— */
+check('aucun fond n’est livré pour l’instant', PHOTOS_LIVREES, 0);
+check('et le 21 septembre n’a pas de photo', photoDuPlan('09-21', 'couverture'), null);
+const couvertureDessinee = renderToStaticMarkup(
+  createElement(CouvertureJour as never, { couverture: couvertureDuJour(new Date(2026, 8, 21)), largeur: 200 }),
+);
+check('sans photo, la couverture est dessinée', couvertureDessinee.includes('<image'), false);
+check('et le fond uni est bien là', couvertureDessinee.includes('fill="#'), true);
+const couverturePhotographiee = renderToStaticMarkup(
+  createElement(CouvertureJour as never, {
+    couverture: couvertureDuJour(new Date(2026, 8, 21)),
+    largeur: 200,
+    photo: '/images/magazine/09-21/couverture.jpg',
+  }),
+);
+check('avec une photo, elle prend le fond', couverturePhotographiee.includes('href="/images/magazine/09-21/couverture.jpg"'), true);
+check('et la couverture reste la même', couverturePhotographiee.includes('AIME MAGAZINE'), true);
+check('avec la couleur du jour en voile', couverturePhotographiee.includes('opacity="0.42"'), true);
+
+/* ——— LA COMPOSITION SE REGARDE, ET ON PEUT PASSER ——— */
+check('l’écran de composition laisse passer', superComposition.includes('Passer la composition'), true);
+
+/* ——— LE COMPOSEUR EST AUSSI PLUS BAS DANS LA PAGE ——— */
+check('l’accueil a sa section de magazine', accueil.includes('id="votre-magazine"'), true);
+check('et elle porte son titre', accueil.includes('Votre magazine, maintenant'), true);
+check('le composeur y est aussi', (accueil.match(/Ville de naissance/g) ?? []).length, 2);
 
 /* ------------------------------------------------------------------- bilan */
 

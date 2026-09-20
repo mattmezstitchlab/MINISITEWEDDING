@@ -25,7 +25,7 @@ import { decoderPersonnes } from '../lib/composerPersonnes';
  *   avant.
  */
 
-const DUREE_PAR_PAGE = 110;
+const DUREE_PAR_PAGE = 190;
 const PAUSE_FINALE = 900;
 
 export default function Generating() {
@@ -148,6 +148,17 @@ export default function Generating() {
             );
           })}
         </div>
+
+        {/* ON PEUT TOUJOURS PASSER : la composition n'est pas une attente forcée. */}
+        {!fini && (
+          <button
+            type="button"
+            onClick={() => setComposees(pages.length)}
+            className="mt-6 rounded-full px-3 py-2 text-[12.5px] font-semibold text-[var(--vp-muted)] underline decoration-black/20 underline-offset-4 transition hover:text-[var(--vp-ink)]"
+          >
+            Passer la composition
+          </button>
+        )}
 
         {/* LA COUVERTURE, À L'ARRIVÉE */}
         {fini && (

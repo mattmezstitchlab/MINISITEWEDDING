@@ -2603,3 +2603,96 @@ l'anniversaire, 36 la veille), le jour de naissance, l'écriture courte des date
 présence d'« invité », les rôles au féminin, **les raisons de fermeture** (le
 nombre, l'âge), l'aller-retour de la liste avec le genre, la relecture d'une liste
 sans genre, le bloc à l'écran, et la mémoire qui ne garde que la réponse.
+
+---
+
+## §56 — Le casting des visuels : 365 fonds, 1 825 scènes, et le choix expliqué
+
+**Le retour.** « J'avais testé, mais le **loading est trop rapide** — et ce serait
+mieux **dans le hero**, parce que ça claque. Pourquoi pas aussi l'ajouter **dans
+une section plus bas** ? Et le plus important, c'est de **terminer les magazines,
+donc les couvertures**, pour que ça puisse **chercher le meilleur résultat et
+définir le visuel qui se rapproche le plus** — et même s'il y en a plusieurs, ce
+serait fort, parce que ensuite ça permet d'avoir **cinq visuels, les moments de la
+journée**. Je vais vraiment trouver un site et un serveur pour faire ces **plus de
+1 800 images**. »
+
+**La composition se regarde, et on peut passer.** Une page toutes les **190 ms** au
+lieu de 110 : la composition dure un peu moins de cinq secondes, on a le temps de
+lire les heures et les rubriques qui défilent. Et un lien discret, **« Passer la
+composition »**, emmène directement au magazine — une animation ne retient
+personne.
+
+**Le composeur est aux deux endroits.** Dans le hero, après l'intro (il y est
+depuis le §54), **et plus bas dans la page**, dans une section à lui —
+`#votre-magazine`, *« Votre magazine, maintenant »*. C'est **le même bloc**, pas une
+copie : il retrouve tout seul ce qui a déjà été répondu.
+
+**Deux familles d'images, et elles ne sont pas au même point** :
+
+| | combien | de quoi ça dépend | disponible |
+| --- | --- | --- | --- |
+| **les fonds de couverture** | **365** | de rien : la couverture sait déjà sa couleur, sa saison, son titre | **tout de suite** |
+| **les scènes** | **1 825** | de la fiche du jour — et **on n'illustre pas ce qu'on n'a pas documenté** | 80 ont leur brief, 1 745 attendent leur fiche |
+
+**Le nom des fichiers ne se discute pas.** Un dossier par jour, `MM-JJ`, sous
+`public/images/magazine/` : `couverture.jpg`, puis `aube.jpg`, `matin.jpg`,
+`midi.jpg`, `apres-midi.jpg`, `soir.jpg` — et **`-2`, `-3`** quand il y a plusieurs
+candidates pour le même plan. Le site prend **la photo** là où elle est, et **le
+dessin** partout ailleurs : une image manquante ne casse jamais une page.
+
+**Et quand il y a plusieurs candidates, on choisit — en le disant.**
+`choisirLeMeilleurVisuel` note chaque image sur **cinq critères** :
+
+| critère | poids | ce qu'on regarde |
+| --- | --- | --- |
+| le moment | 3 | l'image montre-t-elle bien l'aube, le midi, le soir ? |
+| la lumière | 2 | la lumière décrite est-elle celle du moment ? |
+| la couleur | 2 | la dominante est-elle proche de la couleur du jour (distance en canaux) ? |
+| le cadrage | 1 | est-ce bien du 5 / 7 ? |
+| le sujet | 1 | voit-on ce que la scène demande ? |
+
+On ne choisit **jamais « la plus belle »** — ça ne veut rien dire. On choisit **celle
+qui répond au brief**, et **la décision est signée** : *« midi-2.jpg — 8 points :
+c'est bien le midi ; la lumière y est (studio, dure) ; la couleur du jour est là (à
+7 canaux) ; le cadrage est celui demandé (5 / 7). »* À égalité, **c'est le premier
+rang qui reste** : l'ordre des fichiers est un ordre.
+
+**Ce que la production doit déclarer par candidate** : le moment, la lumière, la
+couleur dominante, les dimensions, et ce qu'on y voit. C'est tout ce qu'il faut
+pour noter — et ça tient dans le nom du fichier ou dans une ligne de tableur.
+
+**Le document de production.** `npm run prompts` engendre désormais **trois**
+documents, tous issus du site : `docs/prompts-maitres.md`, `docs/fiches-de-l-annee.md`
+et **`docs/casting-des-couvertures.md`** — **2 309 lignes**, avec **les 365 fonds
+(un par jour, avec sa couleur et son fichier attendu)** et **les 1 825 scènes**
+(jour, personnage, moment, état, fichier attendu), plus la direction artistique,
+les cinq critères et les interdits. **C'est la liste de courses de la production** —
+rien à écrire à la main, rien à retrouver.
+
+**La photo prend le fond, la grille ne bouge pas.** `CouvertureJour` accepte
+désormais la photo du jour : elle **remplace le fond uni**, la **couleur du jour
+passe dessus en voile** (42 %) pour que la palette tienne et que le texte reste
+lisible — et **la marque, la création, le titre, la date ne bougent pas d'un
+pixel**. C'est exactement la promesse des planches d'aperçu : *la photo remplace le
+fond, la mise en page ne bouge pas.*
+
+**Et la liste des images livrées est relevée sur le disque** : `npm run photos`
+regarde `public/images/magazine/`, écrit `src/lib/photosDuMagazine.ts`, et le site
+sait ce qui est arrivé — **sans jamais demander une image par erreur**. Aujourd'hui :
+**0 plan livré**, et le dessin tient les 365 couvertures.
+
+**La nuit n'a pas d'image** — la règle ne change pas : cinq moments de lumière, et
+la nuit garde son dessin. Si un jour on veut une sixième image de nuit, c'est **une
+ligne** dans `MOMENTS_VISUELS` (et 1 825 deviendrait 2 190).
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npx vite build`
+OK, `npm test` **178 / 55 / 1317**. Vérifications ajoutées : les **365 fonds** et
+les **1 825 scènes**, les scènes qui ont un brief et celles qui attendent leur fiche
+(80 / 1 745), les **363 personnages distincts** de l'année, le nom des fichiers (les
+trois rangs), la distance des couleurs (0 pour deux fois la même, 442 entre le noir
+et le blanc, `null` pour une couleur illisible), **la note d'une candidate** (et ses
+raisons écrites), **le classement** (la bonne d'abord, la mauvaise dernière), **la
+décision signée**, le cas sans candidate (« le dessin prend le relais »), **la
+couverture avec et sans photo**, le lien « Passer la composition », et **le
+composeur aux deux endroits** de l'accueil.

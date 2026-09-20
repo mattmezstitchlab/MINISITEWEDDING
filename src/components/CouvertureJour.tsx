@@ -1,4 +1,5 @@
 import type { CouvertureJour } from '../lib/couvertureDuJour';
+import { photoDuPlan } from '../lib/photosDuMagazine';
 
 /**
  * LA COUVERTURE D'UN JOUR — LE MÊME DESSIN POUR LES 365
@@ -11,6 +12,11 @@ import type { CouvertureJour } from '../lib/couvertureDuJour';
  * **la même date donne toujours la même couverture**. Ce dessin n'est pas une
  * illustration posée sur une page : c'est la couverture, et elle est la même au
  * kiosque, dans le flux, et en vignette.
+ *
+ * **Et quand la photo du jour arrive**, elle prend le fond — voilée de la couleur
+ * du jour, pour que la palette tienne et que le texte reste lisible. La grille, la
+ * marque et les mots ne bougent pas : la photo remplace le fond, c'est tout. Sans
+ * photo, le dessin reste — il est la couverture par défaut, pas un brouillon.
  */
 
 interface CouvertureJourProps {
@@ -20,6 +26,19 @@ interface CouvertureJourProps {
   /** Vrai pour une vignette : moins de texte, plus de dessin. */
   vignette?: boolean;
   className?: string;
+  /**
+   * **La photo du jour, quand elle est arrivée.** Par défaut, le composant va la
+   * chercher tout seul dans la liste relevée par `npm run photos` : dès qu'un
+   * fond est livré, il remplace le fond uni — **la grille, la marque et la charte
+   * ne bougent pas**. Sans image, le dessin reste : le SVG n'est pas un brouillon,
+   * c'est la couverture par défaut.
+   */
+  photo?: string | null;
+}
+
+/** Le dossier du jour : `09-21`. */
+function jourDeLaCouverture(couverture: CouvertureJour): string {
+  return `${String(couverture.mois).padStart(2, '0')}-${String(couverture.quantieme).padStart(2, '0')}`;
 }
 
 export default function CouvertureJour({
@@ -27,9 +46,12 @@ export default function CouvertureJour({
   largeur = 300,
   vignette = false,
   className = '',
+  photo,
 }: CouvertureJourProps) {
   const hauteur = Math.round((largeur * 7) / 5);
   const { fond, encre, branches } = couverture;
+  /** La photo du fond : celle qu'on nous donne, ou celle qui est arrivée. */
+  const image = photo === undefined ? photoDuPlan(jourDeLaCouverture(couverture), 'couverture') : photo;
   const centreX = 50;
   const centreY = 47;
   const rayonInterieur = 11;
@@ -69,8 +91,24 @@ export default function CouvertureJour({
       className={className}
       style={{ display: 'block' }}
     >
+      {/* LA PHOTO DU JOUR, QUAND ELLE EST LÀ : elle prend le fond, et la couleur du
+          jour passe dessus en voile — la palette tient, le texte reste lisible. */}
+      {image && (
+        <>
+          <image
+            href={image}
+            x="0"
+            y="0"
+            width="100"
+            height="140"
+            preserveAspectRatio="xMidYMid slice"
+          />
+          <rect x="0" y="0" width="100" height="140" fill={fond} opacity="0.42" />
+        </>
+      )}
+
       {/* LE FOND UNI : la couleur de la saison, ou le noir des jours qui ne sont pas comme les autres. */}
-      <rect x="0" y="0" width="100" height="140" fill={fond} />
+      {!image && <rect x="0" y="0" width="100" height="140" fill={fond} />}
 
       {/* LA MARQUE EN HAUT, et le numéro dans l'année. */}
       <text
