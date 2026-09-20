@@ -3,33 +3,35 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
 import { COUVERTURES, MARQUE_MAGAZINE } from '../lib/aimeMagazine';
-import { JEU_DE_54, carteDuNumero, semaineDeLAnnee } from '../lib/jeuDeCartes';
+import { JEU_DE_54, bornesDeLaSemaine, semaineDeLAnnee } from '../lib/jeuDeCartes';
 import { composerEdition, lesQuatreSaisons, numerosDeLaSaison } from '../lib/aimeMoteur';
+import { jourDuMagazine, joursAutour, lesQuatrePortes } from '../lib/jourDuMagazine';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
-import { useControlesDeBande } from '../lib/personaCourant';
-import { usePersonaCourante } from '../lib/personaCourant';
+import { useControlesDeBande, usePersonaCourante } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_MAGAZINE } from '../lib/navDesPages';
 import CouvertureMagazine from '../components/CouvertureMagazine';
 import CouvertureSemaine from '../components/CouvertureSemaine';
 import EditionSemaine from '../components/EditionSemaine';
+import FluxDuJour from '../components/FluxDuJour';
 
 /**
- * LE MAGAZINE — UN VISUEL, UN TITRE, ET LES COUVERTURES
+ * LE MAGAZINE — UN JOUR, UNE COUVERTURE, ET ON GLISSE
  *
- * Le hero porte le visuel et **SUPER MAGAZINE**, au centre. En dessous, les
- * couvertures, dans l'ordre :
+ * Le hero est **un flux** : chaque écran est un jour de l'année, avec son
+ * prénom, son portrait de studio, sa carte et sa météo. On passe au suivant
+ * comme on fait défiler — au doigt, à la molette, au clavier ou avec les flèches
+ * du dock. **Vers le bas sur un téléphone, vers la droite dès que l'écran est
+ * large** : le même flux, décidé en CSS.
  *
- * 1. **les quatre saisons** — un fond uni, une création digitale sur l'amour de
- *    la saison, et la carte de la semaine. C'est le fond du magazine ;
- * 2. **les treize semaines** de la saison ouverte, en petites couvertures ;
- * 3. **le numéro du moment** — huit rubriques, toujours les mêmes, dont le
- *    contenu suit vos choix, votre rôle et votre univers ;
- * 4. **les éditions de thème** — les neuf couvertures d'AIME MAGAZINE, qui
- *    rassemblent les articles par sujet.
+ * En dessous, l'année entière :
  *
- * Les flèches du dock passent d'un numéro au suivant : le magazine se feuillette
- * comme les rôles et les univers.
+ * 1. **les quatre saisons** — fond uni, création digitale au centre, et les
+ *    treize semaines de la saison ouverte ;
+ * 2. **le jour ouvert** — son édition, huit rubriques, toujours les mêmes, avec
+ *    la météo des moyennes du passé, la lune, les portes de l'année et le
+ *    chiffre du jour ;
+ * 3. **les éditions de thème** — les neuf couvertures d'AIME MAGAZINE.
  */
 
 const fadeUp = {
@@ -38,100 +40,114 @@ const fadeUp = {
   viewport: { once: true, margin: '-60px' },
 };
 
+/** Le lundi de la semaine d'un numéro : par où le jour commence. */
+function lundiDe(numero: number): Date {
+  const carte = JEU_DE_54.find((c) => c.numero === numero);
+  const semaine = carte?.semaine ?? semaineDeLAnnee(new Date());
+  return bornesDeLaSemaine(new Date().getFullYear(), semaine)[0];
+}
+
 export default function Magazine() {
   const [params] = useSearchParams();
   const role = roleDuneAdresse(params.get('role'));
   const moi = usePersonaCourante();
 
-  /** Le numéro ouvert : la semaine où l'on est, ou celui qu'on a choisi. */
-  const [numero, setNumero] = useState(() => semaineDeLAnnee(new Date()));
+  /** Le jour ouvert : aujourd'hui, tant qu'on ne choisit pas autre chose. */
+  const [depart, setDepart] = useState(() => new Date());
+  const [index, setIndex] = useState(0);
   /** Le temps de lecture : l'an dernier, cette semaine, l'an prochain. */
   const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
   /** L'édition de thème ouverte, sous les couvertures. */
   const [themeId, setThemeId] = useState<string | null>(null);
 
-  const carte = carteDuNumero(numero);
-  const saison = carte.saison;
-  const semaines = useMemo(() => numerosDeLaSaison(saison.id), [saison.id]);
-  const saisons = useMemo(() => lesQuatreSaisons({ roleId: role?.id, styleId: undefined }), [role?.id]);
-
-  const edition = useMemo(
-    () => composerEdition({ numero, roleId: role?.id ?? moi.id, temps }),
-    [numero, role?.id, moi.id, temps],
+  const roleId = role?.id ?? moi.id;
+  const jours = useMemo(
+    () => joursAutour(depart, 7).map((d) => jourDuMagazine(d, { roleId, temps })),
+    [depart, roleId, temps],
   );
+  const jour = jours[Math.min(index, jours.length - 1)]!;
+  const { carte, saison, edition } = jour;
+  const semaines = useMemo(() => numerosDeLaSaison(saison.id), [saison.id]);
+  const saisons = useMemo(() => lesQuatreSaisons({ roleId }), [roleId]);
 
   const siens = useMemo(() => (role ? articlesPourRole(role.id) : null), [role]);
   const theme = COUVERTURES.find((c) => c.id === themeId) ?? null;
 
-  // La nav de droite : les articles, et de quoi faire ses courses.
+  // La nav de droite : les saisons, le jour, les articles, et le shop.
   useEffect(() => {
     enregistrerNavVerticale(NAV_MAGAZINE);
     return () => enregistrerNavVerticale(null);
   }, []);
 
-  /** Les flèches du dock feuillettent les 54 numéros. */
+  /** Les flèches feuillettent les jours ; au bord, la fenêtre glisse d'un jour. */
   const feuilleter = (pas: number) => {
-    const total = JEU_DE_54.length;
-    setNumero(((numero - 1 + pas + total) % total) + 1);
+    const suivant = index + pas;
+    if (suivant >= 0 && suivant < jours.length) {
+      setIndex(suivant);
+      return;
+    }
+    const d = new Date(depart);
+    d.setDate(d.getDate() + pas);
+    setDepart(d);
+    setIndex(suivant < 0 ? Math.max(jours.length - 2, 0) : Math.min(1, jours.length - 1));
   };
   const surveiller = useControlesDeBande('magazine', {
     precedent: () => feuilleter(-1),
     suivant: () => feuilleter(1),
   });
 
+  /** Choisir une semaine ramène le flux au lundi de cette semaine. */
+  const ouvrirSemaine = (numero: number) => {
+    setDepart(lundiDe(numero));
+    setIndex(0);
+  };
+
+  const dateCourte = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      {/* ———————————————— LE HERO : LE VISUEL, ET LE TITRE AU CENTRE ———————————————— */}
+      {/* ————————— LE HERO : LE FLUX DES JOURS, ET LE TITRE AU CENTRE ————————— */}
       <header
-        className="relative flex min-h-[100svh] items-center justify-center overflow-hidden"
+        ref={surveiller}
+        className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden"
         style={{ background: saison.fond }}
       >
-        {/* La création de la saison : le fond de la couverture, adouci pour que
-            le titre passe devant sans jamais se battre avec elle. */}
+        {/* La création de la saison : le fond du hero, adouci pour rester un fond. */}
         <img
           src={saison.visuel}
           alt=""
-          className="absolute inset-0 h-full w-full scale-110 object-cover blur-[10px] brightness-[0.42] saturate-[0.9]"
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-[12px] brightness-[0.4] saturate-[0.9]"
         />
-        <div className="absolute inset-0 bg-black/25" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/15 to-black/60" />
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/70" />
 
-        <div ref={surveiller} className="vp-page relative flex flex-col items-center text-center text-white">
+        <div className="vp-page relative flex flex-col items-center pb-6 pt-20 text-center text-white">
           <span className="vp-eyebrow !text-white/70">{MARQUE_MAGAZINE}</span>
           <h1
-            className="vp-title mt-4 text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
-            style={{ fontSize: 'clamp(2.3rem, 5.6vw, 4.2rem)', lineHeight: 1.04 }}
+            className="vp-title mt-4 text-center text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+            style={{ fontSize: 'clamp(2.1rem, 5vw, 3.6rem)', lineHeight: 1.04 }}
           >
             SUPER MAGAZINE
           </h1>
+          <p className="mt-3 text-[13px] text-white/70">
+            Une couverture par jour — {JEU_DE_54.length} numéros dans l’année, et 364 prénoms du calendrier.
+            {role ? ` Choisi pour ${role.nom}.` : ''}
+          </p>
 
-          {/* La création digitale, au centre : le sceau de la saison en cours. */}
-          <div
-            className="mt-7 overflow-hidden rounded-[20px] shadow-[0_30px_70px_-24px_rgba(0,0,0,0.8)] ring-1 ring-white/25"
-            style={{ width: 'clamp(150px, 20vw, 208px)' }}
-          >
-            <img
-              src={saison.visuel}
-              alt={`${saison.nom} — la création de la saison`}
-              className="block aspect-[3/4.2] w-full object-cover"
+          <div className="mt-6 w-full">
+            <FluxDuJour
+              jours={jours}
+              index={index}
+              onIndex={setIndex}
+              titreDuJour={(j) =>
+                `${j.nom} · ${j.carte.nom} · semaine ${j.semaine}${j.joker ? ' · joker' : ''}`
+              }
             />
           </div>
-
-          <p className="mt-6 text-[13px] leading-relaxed text-white/80">
-            <span className="font-mono uppercase tracking-[0.18em]">
-              {saison.symbole} {saison.nom}
-            </span>
-            <span className="mx-2 opacity-40">·</span>
-            {edition.carte.nom}
-            <span className="mx-2 opacity-40">·</span>
-            {edition.carte.joker ? 'hors calendrier' : `semaine ${edition.carte.semaine}`} — le n°{' '}
-            {edition.carte.numero}
-          </p>
-          {role && <p className="mt-3 text-[13.5px] text-white/70">Choisi pour {role.nom}.</p>}
         </div>
       </header>
 
-      {/* ———————————————— LES QUATRE SAISONS, PUIS LES SEMAINES ———————————————— */}
+      {/* ————————————— LES QUATRE SAISONS, PUIS LES SEMAINES ————————————— */}
       <section id="saisons" className="pb-10 pt-14">
         <div className="vp-page">
           <div className="flex flex-wrap items-end justify-between gap-3 border-b border-black/10 pb-4">
@@ -140,9 +156,10 @@ export default function Magazine() {
               {JEU_DE_54.length} numéros — {JEU_DE_54.filter((c) => c.joker).length} jokers
             </span>
           </div>
-          <p className="mt-3 max-w-[640px] text-[13.5px] leading-relaxed text-black/55">
-            Un fond uni, une création digitale sur l’amour de la saison : quatre couvertures de base,
-            et sous chacune les treize semaines qui la composent — comme les treize cartes d’une couleur.
+          <p className="mt-3 max-w-[680px] text-[13.5px] leading-relaxed text-black/55">
+            Un fond uni, une création digitale sur l’amour de la saison : quatre couvertures de base, et
+            sous chacune les treize semaines qui la composent — comme les treize cartes d’une couleur. Le
+            flux du hero suit la même table : choisir une semaine ramène le magazine à son lundi.
           </p>
 
           <div className="mt-8 flex flex-wrap items-start justify-center gap-6 sm:gap-8">
@@ -152,12 +169,11 @@ export default function Magazine() {
                 edition={editionSaison}
                 facteur={editionSaison.saison.id === saison.id ? 1 : 0.4}
                 active={editionSaison.saison.id === saison.id}
-                onChoisir={() => setNumero(editionSaison.numero)}
+                onChoisir={() => ouvrirSemaine(editionSaison.numero)}
               />
             ))}
           </div>
 
-          {/* Les treize semaines de la saison ouverte. */}
           <div className="mt-10">
             <div className="flex flex-wrap items-baseline gap-3">
               <h3 className="text-[16px] font-bold tracking-tight">
@@ -171,29 +187,48 @@ export default function Magazine() {
               {semaines.map((c) => (
                 <CouvertureSemaine
                   key={c.numero}
-                  edition={composerEdition({ numero: c.numero, roleId: role?.id ?? moi.id, temps })}
+                  edition={composerEdition({ numero: c.numero, roleId, temps })}
                   taille="petite"
-                  facteur={c.numero === numero ? 1 : 0.3}
-                  active={c.numero === numero}
-                  onChoisir={() => setNumero(c.numero)}
+                  facteur={c.numero === carte.numero ? 1 : 0.3}
+                  active={c.numero === carte.numero}
+                  onChoisir={() => ouvrirSemaine(c.numero)}
                 />
               ))}
             </div>
           </div>
+
+          {/* Les quatre portes de l'année : les saisons du ciel, pas du jeu. */}
+          <div className="mt-10 flex flex-wrap gap-3">
+            {lesQuatrePortes().map((p) => (
+              <span
+                key={p.nom}
+                className="rounded-full border border-black/10 px-3 py-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-black/55"
+              >
+                {p.nom} · {p.date}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ———————————————— LE NUMÉRO DU MOMENT ———————————————— */}
+      {/* ———————————————— LE JOUR OUVERT ———————————————— */}
       <section id="numero" className="bg-[#F7F6F3] py-14">
         <div className="vp-page">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
-                Le numéro du moment
+                Le jour du magazine
               </span>
-              <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">{edition.titre}</h2>
+              <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">
+                {jour.nom || 'Un joker'} — {dateCourte(jour.date)}
+              </h2>
+              <p className="mt-2 text-[13px] text-black/55">
+                {jour.meteo.resume} · lune {jour.cles.lune.nom} · chiffre {jour.cles.chiffre.nombre}
+                {jour.cles.porte ? ` · ${jour.cles.porte}` : ''}
+                {jour.cles.interstice ? ' · l’interstice' : ''}
+                {jour.cles.signeCache ? ` · ${jour.cles.signeCache.nom}` : ''}
+              </p>
             </div>
-            {/* Les trois temps : le même numéro, relu au passé et au futur. */}
             <div className="flex flex-wrap gap-2">
               {([
                 ['passe', 'L’an dernier'],
@@ -217,24 +252,41 @@ export default function Magazine() {
             </div>
           </div>
 
+          <div className="mt-4 flex flex-wrap gap-2">
+            {jours.map((j, i) => (
+              <button
+                key={j.date.toISOString()}
+                type="button"
+                onClick={() => setIndex(i)}
+                aria-pressed={i === index}
+                className={`rounded-full border px-3 py-1.5 text-[11.5px] transition ${
+                  i === index ? 'border-black bg-black text-white' : 'border-black/12 text-black/60 hover:border-black/40'
+                }`}
+              >
+                {j.nom} · {dateCourte(j.date)}
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-4 text-[12.5px] text-black/50">
+            La couverture {jour.numeroDeCouverture} sur 364 · {carte.joker ? 'un joker' : `semaine ${carte.semaine}`} ·
+            les flèches du dock passent au jour suivant
+          </p>
+
           <div className="mt-7">
             <EditionSemaine edition={edition} />
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-[12.5px] text-black/50">
-            <span>
-              Numéro {carte.numero} sur {JEU_DE_54.length} · {carte.joker ? 'un joker' : `semaine ${carte.semaine}`} ·
-              les flèches du dock passent au suivant
-            </span>
-            {role && (
+          {role && (
+            <div className="mt-5">
               <Link
                 to="/magazine"
-                className="inline-flex items-center gap-1.5 rounded-full border border-black/12 px-3 py-1.5 font-semibold text-black/70 no-underline transition hover:border-black/40 hover:text-black"
+                className="inline-flex items-center gap-1.5 rounded-full border border-black/12 px-3 py-1.5 text-[12.5px] font-semibold text-black/70 no-underline transition hover:border-black/40 hover:text-black"
               >
                 Tout le magazine <ArrowRight size={12} />
               </Link>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -267,7 +319,6 @@ export default function Magazine() {
             </div>
           )}
 
-          {/* L'édition ouverte : ses articles. */}
           <div id="articles" className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {(role ? siens! : theme?.articles ?? []).map((article) => (
               <motion.div key={article.slug} {...fadeUp} transition={{ duration: 0.5 }}>
@@ -308,7 +359,7 @@ export default function Magazine() {
             {MARQUE_MAGAZINE}
           </span>
           <span>
-            {COUVERTURES.length} éditions de thème · {JEU_DE_54.length} numéros dans l’année
+            {COUVERTURES.length} éditions de thème · {JEU_DE_54.length} numéros · 364 couvertures nommées
           </span>
           <Link to="/" className="underline transition hover:text-black">
             Revenir au site

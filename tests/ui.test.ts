@@ -74,6 +74,13 @@ import {
   troisTemps,
 } from '../src/lib/aimeMoteur';
 import CouvertureSemaine from '../src/components/CouvertureSemaine';
+import FluxDuJour from '../src/components/FluxDuJour';
+import PortraitStudio from '../src/components/PortraitStudio';
+import {
+  JOURS_DE_LA_SEMAINE, clesDuJour, editionDuJour, jourDeLAnnee, jourDuMagazine, joursAutour,
+  lesQuatrePortes, meteoDuJour, studioDuJour,
+} from '../src/lib/jourDuMagazine';
+import { JOKERS_DU_CALENDRIER, JOURS_NOMMES, jourNomme, nomDuJour } from '../src/lib/saintsDuJour';
 import EditionSemaine from '../src/components/EditionSemaine';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -1723,16 +1730,87 @@ check('les cartes magazine sont en dessous du hero', revue.indexOf(COUVERTURES[0
 check('les quatre saisons s’affichent en premier', revue.indexOf('Les quatre saisons') < revue.indexOf(COUVERTURES[0]!.theme), true);
 check('chaque saison a sa couverture sur la page', SAISONS.every((s) => revue.includes(s.nom)), true);
 check('et son fond uni', SAISONS.every((s) => revue.includes(s.fond.toLowerCase()) || revue.includes(s.fond.toUpperCase())), true);
-check('le numéro du moment est là', revue.includes('Le numéro du moment'), true);
+check('le jour du magazine est là', revue.includes('Le jour du magazine'), true);
 check('avec ses huit rubriques', RUBRIQUES.every((r) => revue.includes(`>${r}<`)), true);
 check('et les treize semaines de la saison', revue.includes('les treize semaines'), true);
 check('on peut relire au passé et au futur', ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => revue.includes(t)), true);
 check('le hero montre la création de la saison, adoucie en fond', (/<img[^>]+src="\/images\/aime\/[^"]+"[^>]+blur/.test(heroMagazine)), true);
-check('et la même, nette, au centre', (heroMagazine.match(/\/images\/aime\//g) ?? []).length >= 2, true);
+check('et le flux des jours, dedans', heroMagazine.includes('Le flux des jours'), true);
 check('le fond du hero est celui de la saison', heroMagazine.includes(saisonDeLaSemaine(editionDuMoment().numero).fond), true);
 check('le hero porte aussi la carte du moment', heroMagazine.includes(editionDuMoment().carte.nom), true);
 check('un joker ne dit pas de semaine', composerEdition({ numero: 53 }).carte.joker, true);
 check('et il a sa propre édition', composerEdition({ numero: 53 }).pages.length, PAGES_EDITION);
+
+/* ————————— LE CALENDRIER : 364 PRÉNOMS, ET DEUX JOKERS ————————— */
+
+check('il y a 364 couvertures nommées', JOURS_NOMMES.length, 364);
+check(
+  'une par jour, du 1er janvier au 30 décembre',
+  JOURS_NOMMES[0]!.mois === 1 && JOURS_NOMMES[0]!.jour === 1 &&
+    JOURS_NOMMES[JOURS_NOMMES.length - 1]!.mois === 12 && JOURS_NOMMES[JOURS_NOMMES.length - 1]!.jour === 30,
+  true,
+);
+check('chacune a son rang', JOURS_NOMMES.every((j, i) => j.ordinal === i + 1), true);
+check('aucun jour sans prénom', JOURS_NOMMES.every((j) => j.nom.length >= 3), true);
+check('et les deux jokers du calendrier existent', JOKERS_DU_CALENDRIER.length, 2);
+check('le 31 décembre est le jour de trop', JOKERS_DU_CALENDRIER[0]!.numero, 53);
+check('le 29 février est le jour bissextile', JOKERS_DU_CALENDRIER[1]!.numero, 54);
+check('et ces deux jours n’ont pas de couverture nommée', jourNomme(new Date(2026, 11, 31)), null);
+check('mais ils portent quand même leur fête', nomDuJour(new Date(2026, 11, 31)), 'Sylvestre');
+check('le 20 septembre est nommé', nomDuJour(new Date(2026, 8, 20)).length > 2, true);
+check('et 364 jours de 2026 ont leur prénom, le dernier étant un joker', Array.from({ length: 365 }, (_, i) => jourNomme(new Date(2026, 0, i + 1)) !== null).filter(Boolean).length, 364);
+
+/* ————————— LE JOUR DU MAGAZINE : MÉTÉO, CLÉS, STUDIO ————————— */
+
+const unJour = jourDuMagazine(new Date(2026, 8, 20));
+check('un jour a son rang dans l’année', unJour.ordinal, jourDeLAnnee(new Date(2026, 8, 20)));
+check('sa carte vient de sa semaine', unJour.carte.numero, semaineDeLAnnee(new Date(2026, 8, 20)));
+check('et sa saison vient de sa carte', unJour.saison.id, unJour.carte.saison.id);
+check('le jour de la semaine dit ce qu’on y fait', JOURS_DE_LA_SEMAINE.length, 7);
+check('et il a son rôle', unJour.jourSemaine.sens.length > 10, true);
+check('son édition a toujours huit pages', unJour.edition.pages.length, PAGES_EDITION);
+check('les mêmes rubriques, dans le même ordre', unJour.edition.pages.map((p) => p.rubrique), [...RUBRIQUES]);
+check('la première page dit le temps qu’il fait', unJour.edition.pages[0]!.texte.includes(unJour.meteo.resume), true);
+check('et l’édition porte le jour', unJour.edition.titre.includes(`le jour ${unJour.ordinal}`), true);
+check('le portrait sait pourquoi il est sur fond blanc ou noir', unJour.studio.raison.length > 12, true);
+check('deux jours de suite n’ont pas le même portrait', studioDuJour(new Date(2026, 8, 20)).graine !== studioDuJour(new Date(2026, 8, 21)).graine, true);
+check('et le même jour se retrouve à l’identique', studioDuJour(new Date(2026, 8, 20)).pose, unJour.studio.pose);
+check('la météo est une moyenne, pas une prévision : elle reste plausible', Array.from({ length: 365 }, (_, i) => meteoDuJour(new Date(2026, 0, i + 1))).every((m) => m.min > -12 && m.min < 26 && m.max > m.min && m.max < 45 && m.ciel.length > 3 && m.phrase.length > 20), true);
+check('l’été est plus chaud que l’hiver', meteoDuJour(new Date(2026, 6, 15)).max > meteoDuJour(new Date(2026, 0, 15)).max, true);
+check('la lune est calculée', unJour.cles.lune.nom.length > 2, true);
+check('les portes de l’année sont quatre', lesQuatrePortes().length, 4);
+check('le 21 juin est une porte', clesDuJour(new Date(2026, 5, 21)).porte !== null, true);
+check('le 26 décembre est dans l’interstice', clesDuJour(new Date(2026, 11, 26)).interstice, true);
+check('le 15 août n’y est pas', clesDuJour(new Date(2026, 7, 15)).interstice, false);
+check('le chiffre du jour va de 1 à 9', Array.from({ length: 365 }, (_, i) => clesDuJour(new Date(2026, 0, i + 1)).chiffre.nombre).every((n) => n >= 1 && n <= 9), true);
+check('et il dit quelque chose', unJour.cles.chiffre.sens.length > 20, true);
+check('le treizième signe est là, entre novembre et décembre', clesDuJour(new Date(2026, 11, 5)).signeCache?.nom, 'Le Serpentaire');
+check('et il reste ce qu’il est : une lecture, pas une mesure', clesDuJour(new Date(2026, 11, 5)).signeCache?.sens.includes('retiré des douze'), true);
+check('on lit sept jours autour', joursAutour(new Date(2026, 8, 20), 7).length, 7);
+check('et ils se suivent', joursAutour(new Date(2026, 8, 20), 2)[1]!.getDate(), 21);
+check('le premier jour de l’année a son édition', editionDuJour(new Date(2026, 0, 1)).pages.length, PAGES_EDITION);
+
+/* ————————— LE FLUX : ON GLISSE D’UN JOUR À L’AUTRE ————————— */
+
+const flux = renderToStaticMarkup(
+  createElement(FluxDuJour, {
+    jours: [unJour, jourDuMagazine(new Date(2026, 8, 21))],
+    index: 0,
+    onIndex: () => {},
+    titreDuJour: (j: typeof unJour) => `${j.nom} · ${j.carte.nom}`,
+  }),
+);
+check('le flux des jours est balisé', flux.includes('Le flux des jours'), true);
+check('il glisse dans les deux sens', flux.includes('snap-y') && flux.includes('md:snap-x'), true);
+check('chaque écran est un jour', (flux.match(/data-jour="/g) ?? []).length, 2);
+check('le jour ouvert est marqué', flux.includes('data-ouvert="true"'), true);
+check('et il se dit au clavier aussi', flux.includes('glisser'), true);
+const portrait = renderToStaticMarkup(
+  createElement(PortraitStudio, { nom: unJour.nom, date: unJour.date, studio: unJour.studio, saison: unJour.saison }),
+);
+check('le portrait de studio porte le prénom', portrait.includes(unJour.nom), true);
+check('et son fond, écrit', portrait.includes('Studio blanc') || portrait.includes('Studio noir'), true);
+check('il dit la pose, sans mentir sur la source', portrait.includes(unJour.studio.pose), true);
 
 check('la couverture de semaine est un composant', typeof CouvertureSemaine, 'function');
 check('et l’édition aussi', typeof EditionSemaine, 'function');

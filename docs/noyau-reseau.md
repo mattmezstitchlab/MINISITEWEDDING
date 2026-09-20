@@ -1462,3 +1462,98 @@ tout, aucun numéro vide de 1 à 54 ; trois temps, même carte, contenus différ
 le hero avec son visuel, son titre au centre et la création au milieu ; les
 cartes en dessous du hero, les quatre saisons avant les éditions de thème),
 `npm run build` OK.
+
+---
+
+## §40 — Un jour, une couverture : le calendrier, le studio, la météo, et le flux
+
+**Le déplacement.** Le magazine n'avait pas une semaine : il a maintenant un
+**jour**. Chaque jour de l'année a **sa couverture**, **son prénom**, **son
+portrait de studio**, **sa carte** et **sa météo** — et le hero du magazine
+n'est plus une image, c'est **un flux qu'on fait glisser**, comme on fait
+défiler.
+
+**364 couvertures nommées, et deux jokers.** Le calendrier français donne un
+prénom par jour : `src/lib/saintsDuJour.ts` en tient **364** — du 1er janvier au
+30 décembre — et laisse **deux jokers**, exactement comme le jeu de 54 : le
+**31 décembre** (couverture n° 53, « le jour de trop », et la fête de Sylvestre)
+et le **29 février** (couverture n° 54, « le jour bissextile », qui n'a pas de
+prénom). `jourNomme()`, `nomDuJour()`, `jokerDuJour()`, `joursDuMois()`.
+**La source, et sa limite** : le calendrier vient d'un **jeu ouvert** (« Les
+saints et les fêtes du calendrier », repris du dépôt `theofidry/ephemeris`), relu
+et corrigé — orthographes, accents, et les fêtes mobiles de la source (les
+Cendres, les solstices) remplacées par le prénom du jour. La référence française
+reste **Nominis** (Conférence des évêques de France) : deux calendriers ne donnent
+pas la même liste, et **le nôtre s'en approche sans en être la copie**.
+
+**Ces prénoms sont des personnages, pas des personnes.** Ils servent d'**exemples
+utilisateurs fictifs** : ils habitent les couvertures, les programmes, les
+articles — et ils rendent le produit réel sans rien inventer sur qui que ce soit.
+
+**Le studio.** Chaque jour a **son portrait** (`PortraitStudio.tsx`) : **fond
+blanc comme en studio**, et **fond noir** les jours qui ne sont pas des jours
+comme les autres — les **dimanches**, les **temps clos** (carême, Avent), les
+**portes de l'année** et les **deux jokers**. La pose, l'attribut et la lumière
+se déduisent de la date par une **graine stable** : deux jours ne se ressemblent
+jamais, et le même jour se retrouve à l'identique quand on le relit. Le portrait
+est **rendu** — la photographie réelle prendra sa place, planche après planche,
+sans que rien d'autre change.
+
+**La météo, sur les moyennes du passé.** `meteoDuJour()` donne le minimum, le
+maximum, le ciel et **ce que ça change pour un mariage** — les normales
+françaises 1991-2020 (référence Paris-Montsouris, Météo-France), lissées d'un
+mois à l'autre, avec un écart stable jour après jour. **Ce sont des moyennes,
+pas une prévision** : « il pleut en moyenne ce jour-là » ne dit pas qu'il
+pleuvra. Cette phrase-là est écrite dans l'édition, à la première page.
+
+**Les clés du jour** (`clesDuJour()`) : la **lune** (calculée — nouvelle lune de
+référence du 6 janvier 2000), les **quatre portes de l'année** (les solstices et
+les équinoxes), **l'interstice** — les jours entre les deux années, du 26
+décembre au 5 janvier, où rien n'est encore décidé —, le **chiffre du jour**
+(1 à 9, et son sens) et **le treizième signe** : le **Serpentaire**, du 30
+novembre au 17 décembre, « celui qu'on a retiré des douze », gardé pour ce qu'il
+dit — **guérir**. Le chiffre, l'interstice et le signe sont des **lectures
+symboliques**, écrites comme telles ; la lune et la météo sont des calculs.
+
+**L'édition du jour** (`editionDuJour()`) : les **huit rubriques, toujours**, et
+la première dit le temps qu'il fait — le prénom, la date, la météo moyenne, la
+lune, la porte, l'interstice. La page « Le passage » reçoit le **chiffre du
+jour** et le signe. Le nombre de pages ne bouge pas d'un jour à l'autre : c'est
+la règle du magazine depuis le §39.
+
+**Le flux** (`FluxDuJour.tsx`) : le hero du magazine est un **flux** — un écran
+par jour, avec le prénom, le portrait, la carte, la semaine, la météo. On passe
+au suivant **au doigt, à la molette, au clavier (← →, ↑ ↓) ou avec les flèches**.
+**Vertical sur un téléphone, horizontal dès que l'écran est large** : le même
+flux, décidé en `snap-y` / `md:snap-x`, sans JavaScript d'axe, donc sans rien
+casser quand l'appareil tourne. Les flèches du dock feuillettent **les jours** :
+au bord de la fenêtre de sept jours, la fenêtre glisse d'un jour.
+
+**Ce que dit GenK, et ce qu'on en garde.** GenK (NOERDEN, `genk.app`, iOS) est
+une application de culture générale qui reprend **la forme du fil** — « même
+swipe, même dopamine » — mais **remplit chaque écran d'une connaissance** :
+micro-sessions d'une à deux minutes, parcours débloqué étape par étape, **quiz
+juste après la leçon** puis révisions espacées, définitions cliquables sur les
+mots, « deep dive » pour approfondir, et un terme surligné qui donne sa
+définition d'un tap. Leur promesse tient en une phrase : **transformer le temps
+d'écran en savoir**. Ce qu'on en garde, pour un mariage :
+1. **un flux, pas un catalogue** — c'est le jour qui commande, pas la liste ;
+2. **la micro-dose** — un jour, une couverture, deux minutes de lecture ;
+3. **la mémoire** — l'édition du jour reste relisible (mêmes choix, même
+   édition), et l'archive dira « la même semaine, l'an dernier » ;
+4. **les définitions cliquables** — `ouEstLeMot` (§38) fait déjà ce travail sur
+   les mots du magazine ;
+5. **le « deep dive »** — c'est **l'édition à huit pages** ;
+6. **la progression** — c'est le **jeu de 54** : 364 jours, 52 cartes, 13 par
+   couleur, et deux jokers.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **705**
+(364 couvertures nommées, le dernier jour de l'année étant un joker, les deux
+jokers du calendrier, 364 jours nommés en 2026 ; le rang, la carte, la saison, le
+rôle du jour de la semaine ; les huit pages et la météo qui remonte dans la
+première ; la graine stable du studio et le même jour retrouvé ; la météo
+plausible toute l'année et l'été plus chaud que l'hiver ; la lune, les quatre
+portes, l'interstice, le chiffre de 1 à 9, le Serpentaire donné pour ce qu'il
+est ; le flux balisé, qui glisse dans les deux sens, avec son jour ouvert
+marqué et ses sept jours qui se suivent ; le portrait qui porte le prénom, son
+fond et sa pose), `npm run build` OK.
