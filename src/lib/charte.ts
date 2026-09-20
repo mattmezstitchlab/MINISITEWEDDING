@@ -78,6 +78,11 @@ export const CHARTE: Regle[] = [
     pourquoi: 'c’est ce qui permet de tout aligner — les jours, les heures, les gens, et l’autre bout du monde.',
   },
   {
+    id: 'profils-editoriaux',
+    regle: 'Un fait se cite, une interprétation se signe : les deux ne se mélangent jamais.',
+    pourquoi: 'un profil qui mélange l’histoire et l’imagination ne vaut rien ni pour l’une ni pour l’autre.',
+  },
+  {
     id: 'le-chiffre',
     regle: 'Le chiffre dit sa règle, ne juge personne, et ne se demande qu’à qui veut bien le donner.',
     pourquoi: 'un repère symbolique qui s’explique reste un repère ; un repère qui se tait devient une croyance.',

@@ -18,6 +18,7 @@ import FluxDuJour from '../components/FluxDuJour';
 import MiseEnLumiere from '../components/MiseEnLumiere';
 import LeChiffre from '../components/LeChiffre';
 import GalerieCouvertures from '../components/GalerieCouvertures';
+import ProfilEditorial from '../components/ProfilEditorial';
 
 /**
  * LE MAGAZINE — UN JOUR, UNE COUVERTURE, ET ON GLISSE
@@ -458,6 +459,9 @@ export default function Magazine() {
 
       {/* ———————————————— LES 365 COUVERTURES : LE KIOSQUE DE L'ANNÉE ———————————————— */}
       <GalerieCouvertures />
+
+      {/* ———————————————— LE PROFIL DU JOUR : LA PERSONNE QUI OUVRE LA PORTE ———————————————— */}
+      <ProfilEditorial />
 
       {/* ———————————————— LE CHIFFRE : UN NOMBRE, SES MOTS, SA RÈGLE ———————————————— */}
       <section className="border-t border-black/8 bg-white pt-10">

@@ -2010,3 +2010,68 @@ la date, le cadran, ce que l'image dit), la vignette, le kiosque (son titre, ses
 douze mois, ses saisons, son compte), **et le pied commun** (la barre qui ne se
 double pas sur l'accueil, le pied sur toutes les pages, la signature et les
 portes).
+
+## §48 — Les 365 profils éditoriaux : la personne qui ouvre le jour
+
+**L'idée, en une phrase.** La couverture ne dit plus seulement *quel jour* on est :
+elle dit **qui ouvre le jour**. Chaque date a une personne, et cette personne a
+une fiche — origine, époque, lieu, métier, savoir-faire, culture —, puis des
+**ponts vers le mariage**. Ce n'est pas une illustration posée sur une couverture :
+c'est une **porte d'entrée éditoriale**, et c'est ce qui fera qu'un mini-site, une
+carte ou une recherche n'auront plus à reposer la même question.
+
+```
+DATE → SAINT / PRÉNOM → PERSONNAGE → ORIGINE → ÉPOQUE → LIEU
+     → MÉTIER → SAVOIR-FAIRE → CULTURE → MARIAGE
+```
+
+**La règle stricte — dixième règle de la charte.** *« Un fait se cite, une
+interprétation se signe : les deux ne se mélangent jamais. »* Chaque pont porte
+donc **son niveau**, et le niveau s'écrit à côté du pont :
+
+| Niveau | Ce que ça veut dire | Exemple |
+| --- | --- | --- |
+| `directe` | documentée : la personne est liée à la chose | Éloi, orfèvre → **les alliances** |
+| `culturelle` | documentée, mais plus large | Sax → **le jazz**, Patrick → **l'Irlande** |
+| `editoriale` | une association créative, **assumée** | Matthieu, percepteur → **les comptes du budget** |
+| `inspiration` | une création : on imagine, on ne raconte pas | « un grand livre ouvert à la place du livre d'or » |
+
+**Ce que ces personnes ne sont pas.** Ce ne sont **pas des inscrits** : ce sont
+les personnages du magazine. Aucun profil ne se présente comme un utilisateur du
+site — c'est écrit dans le bloc, et vérifié.
+
+**Ce qui est construit.** `src/lib/profilsEditoriaux.ts` : seize journées ont leur
+fiche documentée (Valentin, Patrick, Honoré, Jean-Baptiste, Véronique, Marthe,
+Fiacre, Matthieu, Côme et Damien, Luc, Adolphe Sax, Cécile, Éloi, Barbe, Nicolas,
+Noël), chacune avec sa source citée et ses ponts. Un jour sans fiche **le dit** :
+il garde son nom du calendrier, sa couverture et sa lumière, et **rien d'autre
+n'est écrit**. `ProfilEditorial.tsx` pose le bloc dans `/magazine`, juste après le
+kiosque : la fiche, les ponts par niveau, la source, la règle.
+
+**Le titre de la couverture suit le personnage.** Le 21 septembre, Matthieu est
+le saint du jour : la couverture dit *« Saint Matthieu »*. Le 6 novembre, le
+personnage est Adolphe Sax : la couverture dit **« Adolphe Sax »**, et la Sainte
+Bertille, qui est la fête du calendrier, **reste écrite dessous** — *« en ce jour
+de Sainte Bertille »*. Le calendrier ne se perd pas : il passe au second plan.
+
+**`chercherProfils(mots)` — le début du moteur.** Tous les mots doivent se
+retrouver dans le profil (nom, fiche, ponts, index) : la recherche ne peut donc
+pas inventer un résultat. *« saxophone »* → Adolphe Sax ; *« alliances »* → Éloi ;
+*« musique »* → Sax, Cécile et Jean-Baptiste ; *« japon »* → **rien**, et c'est le
+but. C'est le germe de ce qui, plus tard, composera une édition sur mesure à
+partir du monde réel.
+
+**Ce qui reste ouvert.** Les 349 fiches à documenter (une par une, avec source) ;
+la page publique du personnage (`aime.fr/matthieu`, ou la date) ; l'index du
+graphe (lieux, objets, savoir-faire, traditions, logistique) ; et la piste
+artistique des couvertures — voir les trois études illustrées.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 989**, `npm run
+build` OK. Les vérifications de la passe : les quatre niveaux et leur sens, les
+seize fiches, la source de chacune, au moins trois ponts par fiche, les quatre
+niveaux réellement servis, les clés de date, les personnages du 14 février, du
+21 septembre, du 6 novembre, du 1ᵉʳ et du 25 décembre, la fiche de Matthieu et ses
+quatre ponts, les alliances d'Éloi, le brevet de Sax, le jour sans fiche, la
+recherche (dont le résultat vide), le rangement des ponts par niveau, le titre de
+couverture mené par le personnage, et le bloc rendu — règle, avertissement, source,
+et **aucun astérisque affiché**.

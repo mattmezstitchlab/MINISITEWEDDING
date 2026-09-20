@@ -124,9 +124,23 @@ export default function CouvertureJour({
       >
         {couverture.titre}
       </text>
+      {couverture.fete && (
+        <text
+          x="50"
+          y="93.4"
+          textAnchor="middle"
+          fill={encre}
+          opacity="0.72"
+          fontFamily="Georgia, 'Times New Roman', serif"
+          fontSize="3.2"
+          fontStyle="italic"
+        >
+          en ce jour de {couverture.fete}
+        </text>
+      )}
       <text
         x="50"
-        y="94"
+        y={couverture.fete ? '98.6' : '94'}
         textAnchor="middle"
         fill={encre}
         opacity="0.7"

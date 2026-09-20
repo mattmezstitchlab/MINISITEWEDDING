@@ -91,6 +91,11 @@ import LeChiffre from '../src/components/LeChiffre';
 import LeTemps from '../src/components/LeTemps';
 import CouvertureJour from '../src/components/CouvertureJour';
 import GalerieCouvertures from '../src/components/GalerieCouvertures';
+import ProfilEditorial from '../src/components/ProfilEditorial';
+import {
+  AVERTISSEMENT_PROFILS, NIVEAUX, PROFILS, REGLE_DES_PROFILS, chercherProfils, cleDuJour,
+  personnageDuJour, plat, pontsParNiveau, profilDuJour, profilsDocumentes,
+} from '../src/lib/profilsEditoriaux';
 import {
   FOND_NOIR, HEURES_DE_LUMIERE, MOIS, couverturesDeLAnnee, couverturesDuMois, couvertureDuJour, graine,
 } from '../src/lib/couvertureDuJour';
@@ -2678,6 +2683,13 @@ check(
 
 const jourDeFete = couvertureDuJour(new Date(2026, 8, 21));
 check('le jour de la fête donne son nom', jourDeFete.titre, 'Saint Matthieu');
+/* Quand le personnage du jour n'est pas le saint, c'est lui qui mène le titre —
+   et le calendrier reste écrit dessous. */
+const jourSax = couvertureDuJour(new Date(2026, 10, 6));
+check('le jour d’Adolphe Sax porte son nom', jourSax.titre, 'Adolphe Sax');
+check('et garde la fête du calendrier dessous', jourSax.fete, 'Sainte Bertille');
+check('un jour sans fiche garde son nom du calendrier', couvertureDuJour(new Date(2026, 6, 15)).titre.startsWith('Saint'), true);
+check('et n’a pas de fête à écrire', couvertureDuJour(new Date(2026, 6, 15)).fete, undefined);
 check('avec sa carte de la semaine', jourDeFete.figure, 'Roi de carreau');
 check('et sa date écrite', jourDeFete.dateLongue, '21 septembre 2026');
 check('et son numéro dans l’année', jourDeFete.numero, 264);
@@ -2725,6 +2737,124 @@ check('et les quatre saisons', ['Printemps', 'Été', 'Automne', 'Hiver'].every(
 check('il compte ce qu’il montre', kiosque.includes('couvertures affichées'), true);
 check('et il dit à quoi il sert', kiosque.includes('ce qui va'), true);
 check('le kiosque non plus ne montre pas d’astérisques', kiosque.includes('**'), false);
+
+/* ————————— LES 365 PROFILS ÉDITORIAUX : LA PORTE D'ENTRÉE DU JOUR ————————— */
+
+check('les niveaux de correspondance sont quatre', NIVEAUX.length, 4);
+check(
+  'et chacun dit ce qu’il vaut',
+  NIVEAUX.map((n) => n.id).join(','),
+  'directe,culturelle,editoriale,inspiration',
+);
+check('le plus documenté est le premier', NIVEAUX[0]!.sens.includes('documentée'), true);
+
+check('seize jours ont déjà leur fiche', profilsDocumentes(), 16);
+check('chaque fiche a son origine, son lieu, son époque', Object.values(PROFILS).every(
+  (p) => p.fiche.origine.length > 8 && p.fiche.lieu.length > 3 && p.fiche.epoque.length > 3,
+), true);
+check('chaque fiche dit sa source', Object.values(PROFILS).every((p) => p.source.length > 12), true);
+check('aucun profil n’est vide de ponts', Object.values(PROFILS).every((p) => p.ponts.length >= 3), true);
+check(
+  'chaque pont a un niveau connu, un mot et un texte',
+  Object.values(PROFILS).every((p) =>
+    p.ponts.every((pont) => NIVEAUX.some((n) => n.id === pont.niveau) && pont.mot.length > 2 && pont.texte.length > 25),
+  ),
+  true,
+);
+check(
+  'et les quatre niveaux servent vraiment',
+  new Set(Object.values(PROFILS).flatMap((p) => p.ponts.map((pont) => pont.niveau))).size,
+  4,
+);
+
+/* Les jours qu’on regarde de près. */
+const clef = (d: Date) => cleDuJour(d);
+check('la clé d’un jour est son mois et son quantième', clef(new Date(2026, 8, 21)), '09-21');
+check('le 14 février, c’est Valentin', personnageDuJour(new Date(2026, 1, 14)), 'Valentin');
+check('le 21 septembre, c’est Matthieu', personnageDuJour(new Date(2026, 8, 21)), 'Matthieu');
+check('et le 6 novembre, c’est Adolphe Sax', personnageDuJour(new Date(2026, 10, 6)), 'Adolphe Sax');
+check('le 1ᵉʳ décembre, c’est Éloi', personnageDuJour(new Date(2026, 11, 1)), 'Éloi');
+check('le 25 décembre, c’est Noël', personnageDuJour(new Date(2026, 11, 25)), 'Noël');
+
+const matthieu = profilDuJour(new Date(2026, 8, 21));
+check('le jour documenté le dit', matthieu.documente, true);
+check('avec sa fiche', matthieu.profil!.fiche.lieu.includes('Capharnaüm'), true);
+check('et ses quatre ponts', matthieu.profil!.ponts.length, 4);
+check(
+  'dont un pont d’inspiration, assumé',
+  matthieu.profil!.ponts.some((pont) => pont.niveau === 'inspiration'),
+  true,
+);
+check('l’entrée du jour se lit', matthieu.entree.includes('Profil éditorial du 21 septembre'), true);
+check('et la date est écrite en entier', matthieu.dateLongue, '21 septembre 2026');
+
+const eloi = profilDuJour(new Date(2026, 11, 1));
+check(
+  'Éloi mène aux alliances, en correspondance directe',
+  eloi.profil!.ponts.some((pont) => pont.niveau === 'directe' && pont.mot === 'Les alliances'),
+  true,
+);
+const sax = profilDuJour(new Date(2026, 10, 6));
+check('Sax dit son brevet', sax.profil!.fiche.savoirFaire.includes('1846'), true);
+check('et son instrument', sax.profil!.fiche.savoirFaire.includes('saxophones'), true);
+
+/* Un jour qui n’a pas encore sa fiche : on ne l’invente pas. */
+const sansFiche = profilDuJour(new Date(2026, 2, 3));
+check('un jour sans fiche reste sans fiche', sansFiche.documente, false);
+check('mais il garde le nom de son calendrier', sansFiche.personnage.length > 2, true);
+check('et il le dit', sansFiche.entree.includes('on ne l’invente pas'), true);
+check('il n’a aucun pont', sansFiche.profil, null);
+
+/* L’index : c’est par les mots qu’on entre. */
+check('les accents ne comptent pas', plat('Éloi VÉRONIQUE é'), 'eloi veronique e');
+check('le saxophone mène à Sax', chercherProfils(['saxophone']).map((p) => p.personnage).join(''), 'Adolphe Sax');
+check(
+  'la musique mène aux musiciens',
+  chercherProfils(['musique']).map((p) => p.personnage).sort().join(' / '),
+  'Adolphe Sax / Cécile / Jean-Baptiste',
+);
+check('les alliances mènent à l’orfèvre', chercherProfils(['alliances']).map((p) => p.personnage), ['Éloi']);
+check('on peut croiser deux mots', chercherProfils(['musique', 'jazz']).map((p) => p.personnage), ['Adolphe Sax']);
+check('ce qui n’existe pas ne sort pas', chercherProfils(['japon']).length, 0);
+check('et une recherche vide ne rend rien', chercherProfils([]).length, 0);
+check(
+  'les ponts se rangent par niveau',
+  pontsParNiveau(PROFILS['09-21']!).map((g) => g.niveau.id + ':' + g.ponts.length).join(' '),
+  'directe:1 culturelle:1 editoriale:1 inspiration:1',
+);
+
+/* Le profil, tel qu’il se rend. */
+const renduProfil = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] },
+    createElement(ProfilEditorial as never, { date: new Date(2026, 8, 21) })),
+);
+check('le bloc s’annonce', renduProfil.includes('Le profil du jour'), true);
+check('il porte le nom', renduProfil.includes('Matthieu'), true);
+check('sa fiche est là', ['Origine', 'Époque', 'Lieu', 'Métier', 'Savoir-faire', 'Culture'].every(
+  (l) => renduProfil.includes(l),
+), true);
+check('ses ponts sont là', renduProfil.includes('Les ponts') || renduProfil.includes('La papeterie'), true);
+check('avec les niveaux écrits en clair', renduProfil.includes('Correspondance directe'), true);
+check('la source est citée', renduProfil.includes('Source :'), true);
+check('et la règle est dite', renduProfil.includes(REGLE_DES_PROFILS), true);
+check('comme l’avertissement', renduProfil.includes(AVERTISSEMENT_PROFILS), true);
+check('ces personnes ne sont pas des inscrits', AVERTISSEMENT_PROFILS.includes('ne sont pas des inscrits'), true);
+check('aucun astérisque ne s’affiche', renduProfil.includes('**'), false);
+check('il n’y a pas de portrait inventé : la couverture fait le dessin', renduProfil.includes('<img'), false);
+
+const renduSansFiche = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] },
+    createElement(ProfilEditorial as never, { date: new Date(2026, 2, 3) })),
+);
+check('un jour sans fiche le dit à l’écran', renduSansFiche.includes('n’est pas encore documentée'), true);
+check('et n’affiche aucun pont', renduSansFiche.includes('Correspondance'), false);
+
+/* La dixième règle de la charte est celle-ci. */
+check(
+  'la charte porte la règle des profils',
+  CHARTE.some((r) => r.id === 'profils-editoriaux'),
+  true,
+);
 
 /* ------------------------------------------------------------------- bilan */
 

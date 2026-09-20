@@ -1,4 +1,6 @@
 import { jourNomme, jokerDuJour } from './saintsDuJour';
+import { cleDuJour, plat, PROFILS } from './profilsEditoriaux';
+import { MOIS, MOIS_LONGS } from './calendrier';
 import { carteDuNumero, semaineDeLAnnee, type Saison } from './jeuDeCartes';
 import { clesDuJour, jourDeLAnnee, meteoDuJour, studioDuJour } from './jourDuMagazine';
 
@@ -62,8 +64,10 @@ export interface CouvertureJour {
   annee: number;
   /** « 21 septembre 2026 », écrit comme on le dit. */
   dateLongue: string;
-  /** Le nom du jour : « Saint Matthieu », ou « Le jour de trop ». */
+  /** Le nom du jour : « Saint Matthieu », « Adolphe Sax », ou « Le jour de trop ». */
   titre: string;
+  /** La fête du calendrier, quand le personnage du jour est quelqu'un d'autre. */
+  fete?: string;
   /** Le prénom nu, pour les listes : « Matthieu ». */
   nom: string;
   /** La grande famille : ce qui commence, le duo, ce qui se construit… */
@@ -91,11 +95,6 @@ export interface CouvertureJour {
 /** Les heures qui portent de la lumière : le dessin les marque. */
 export const HEURES_DE_LUMIERE = [5, 6, 7, 12, 13, 18, 19, 20];
 
-const MOIS_LONGS = [
-  'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
-];
-
 /** Le noir des jours qui ne sont pas comme les autres. */
 export const FOND_NOIR = '#0B0B0F';
 
@@ -114,13 +113,23 @@ export function couvertureDuJour(date: Date): CouvertureJour {
 
   /** Le nom nu — « Matthieu », ou « Sylvestre » pour le jour de trop. */
   const nom = nomme?.nom ?? joker?.saint ?? joker?.nom ?? '';
-  const titre = nomme
+  /** Ce que le calendrier donne au jour : « Saint Matthieu », « Sainte Bertille ». */
+  const titreDuCalendrier = nomme
     ? nomme.genre === 'fete'
       ? nomme.nom
       : `${nomme.genre === 'sainte' ? 'Sainte' : 'Saint'} ${nomme.nom}`
     : joker?.saint
       ? `Le jour de trop — ${joker.saint}`
       : 'Le jour de trop';
+
+  /* Le profil éditorial du jour mène le titre : le 6 novembre, le magazine est
+     consacré à Adolphe Sax, et la Sainte Bertille reste écrite dessous — le
+     calendrier ne se perd pas, il passe au second plan. */
+  const profil = PROFILS[cleDuJour(date)];
+  const personnage = profil?.personnage ?? '';
+  const autrePersonnage = personnage.length > 0 && plat(personnage) !== plat(nom);
+  const titre = autrePersonnage ? personnage : titreDuCalendrier;
+  const fete = autrePersonnage ? titreDuCalendrier : undefined;
 
   const g = graine(`${numero}-${nom}-${mois + 1}`);
   const branches: Branche[] = Array.from({ length: 24 }, (_, heure) => ({
@@ -146,6 +155,7 @@ export function couvertureDuJour(date: Date): CouvertureJour {
     annee: date.getFullYear(),
     dateLongue: `${quantieme} ${MOIS_LONGS[mois]} ${date.getFullYear()}`,
     titre,
+    fete,
     nom: nom || titre,
     saison: carte.saison,
     figure: carte.nom,
@@ -179,4 +189,4 @@ export function couverturesDuMois(annee: number, mois: number): CouvertureJour[]
   return jours;
 }
 
-export const MOIS: Array<{ numero: number; nom: string }> = MOIS_LONGS.map((nom, i) => ({ numero: i + 1, nom }));
+export { MOIS };
