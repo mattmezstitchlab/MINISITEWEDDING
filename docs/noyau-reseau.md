@@ -1819,3 +1819,8 @@ la structure sera parfaite. Ensuite : les **appareils** (ordinateur, iPad,
 iPhone — ce que la personne possède, et sur quoi elle est connectée), la
 **proximité géographique**, les statistiques, et le branchement du profil réel
 sur la mise en lumière.
+
+**Précision (§44).** La page existe aussi **quand seuls les clics existent** :
+sans carte remplie, mais avec une sélection, la page s'ouvre tout de même — la
+carte vide tient la place, le hero tient l'enchaînement, et le mot « brouillon »
+reste là jusqu'à la publication.

@@ -72,9 +72,11 @@ export default function PageProfil() {
          */
         const locale = readCard();
         const choix = chargerSelection();
-        if (locale && (cardName(locale).trim() !== '' || choix.length > 0)) {
-          setPerson(personneDeLaCarte(id, locale));
-          setCarte(locale);
+        const carteRemplie = Boolean(locale && cardName(locale).trim() !== '');
+        if (carteRemplie || choix.length > 0) {
+          const carteDeLaPage = locale ?? savedOrEmpty();
+          setPerson(personneDeLaCarte(id, carteDeLaPage));
+          setCarte(carteDeLaPage);
           setBrouillon(true);
           setEtat('pret');
           return;
