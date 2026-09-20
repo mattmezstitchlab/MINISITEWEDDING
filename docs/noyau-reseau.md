@@ -2438,3 +2438,88 @@ prénoms, **l'absence d'invention** (sans réponse : le magazine du jour, aucun 
 `Refaire`, l'écran de composition (son titre, la phrase, l'heure des pages, le
 compteur, la rubrique en cours, la couverture qui n'arrive qu'à la fin), et le bloc
 de l'accueil **dans ses deux états** — le champ vide, puis la couverture.
+
+---
+
+## §54 — Le composeur : des personnes, puis ce qui devient possible
+
+**La demande.** « Le mieux, c'est comme dans Claude, Manus ou Gemini : **un bloc
+simple**, juste le champ pour **le nom, la date de naissance et la ville de
+naissance**. Puis au début de ce champ **un bouton +**, grisé au départ si on ne
+remplit pas ces infos ; il se déclenche, et en cliquant sur + on a **un menu pour
+ajouter une personne** — et on peut en ajouter plusieurs à la suite. **Au bout de
+deux personnes, dans le menu on verrait “Nous sommes des futurs mariés”** : ça
+c'est énorme, parce que c'est **une fois après avoir rempli les premières infos**
+que la liste se met à jour et qu'on voit **ce qui est possible** — suivant le site,
+et suivant les infos essentielles pour générer le magazine. »
+
+**Le bloc.** Un titre, **le + à gauche du champ**, et **trois informations par
+personne** : le prénom, la date de naissance, la ville de naissance. Pas de
+formulaire, pas de questionnaire à l'entrée : **on écrit des personnes**, l'une
+après l'autre. Les personnes ajoutées deviennent des **pastilles** au-dessus du
+champ — prénom, date, ville, et un retrait possible d'un clic.
+
+**Le + est éteint au départ — et il dit pourquoi.** Il ne s'allume que lorsque
+**les trois informations sont écrites** (`personneComplete`) : sans l'une des
+trois, il reste gris et inerte, et la ligne sous le champ l'explique — *« Le + s'allume
+quand le prénom, la naissance et la ville sont écrits. »* Une fois allumé, il ouvre
+**le menu**.
+
+**Le menu : ce qui est possible, maintenant.** Et surtout **il se met à jour tout
+seul** avec le nombre de personnes :
+
+| personnes | ce qui s'ouvre |
+| --- | --- |
+| **1** | La date du mariage · Le lieu · Je suis témoin · Je suis prestataire |
+| **2** | **Nous sommes des futurs mariés** · Nous sommes déjà mariés |
+| **3** | Nous venons en famille |
+
+Ce qui n'est pas encore possible **reste dans le menu, grisé, avec sa condition
+écrite** — *« Nous venons en famille — à partir de trois personnes »* (`PROPOSITIONS`,
+`motDeLaCondition`). On ne cache pas la suite : on dit quand elle s'ouvre. Et le
+menu ne montre **jamais** une proposition qu'on ne peut pas prendre.
+
+**Le rôle choisi entre vraiment dans le magazine.** « Nous sommes des futurs
+mariés » ne pose pas qu'une étiquette : le rôle part dans `composerEdition({ roleId })`
+et **les pages changent** — vérifié : la rubrique « Les gens » ne dit pas la même
+chose avec et sans le rôle (*SUPER PLANNER et SUPER OFFICIANT* d'un côté,
+*SUPER FLEURISTE et SUPER NOTAIRE* de l'autre). C'est la règle du moteur : *mêmes
+choix, même édition ; un rôle différent, et tout se recompose.*
+
+**La date de naissance n'est pas décorative.** Une date de naissance est **un jour
+de l'année**, et l'année en a trois cent soixante-cinq : chaque pastille dit donc
+**le jour de naissance de la personne** — *« le jour de Guy »* (12 juin). C'est la
+seule chose qu'on rend en retour, et elle **existe déjà** : on ne déduit rien d'un
+prénom, jamais.
+
+**Les deux informations essentielles sont dans le menu, pas à la porte.** La date
+du mariage et le lieu se demandent **quand on en a besoin**, depuis le + — le bloc
+reste simple. Sans date, le magazine se compose **au jour d'aujourd'hui**.
+
+**Ce qui se retient : la réponse, jamais le magazine.** `composerLeMagazine({ personnes,
+date, roleId })` assemble (le numéro de la semaine, la carte, la saison, la
+couverture du jour, la fiche du jour, les 24 pages) ; la mémoire du site ne garde
+que **les personnes, la date et le rôle**, et le magazine **se recompose à
+l'identique** à la lecture. La liste voyage aussi dans l'adresse
+(`?p=Paul,1990-06-12,Provins;Emma,…&jour=&role=`), donc l'écran de composition
+fonctionne même rouvert.
+
+**La boucle est fermée.** Une fois le magazine composé, **le bloc devient sa
+couverture** : la couverture du jour, les prénoms, la date, le numéro et les 24
+pages — puis **Ouvrir le magazine**, **Compléter les questions** (le site repart
+avec ce qui est répondu : prénoms, date, lieu) et **Refaire**, qui rend le
+composeur **avec la liste déjà écrite**.
+
+**Aucune page n'est modifiée** : le composeur vit dans le hero, l'écran de
+composition est celui du §53, et le reste du site n'a pas bougé.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npx vite build`
+OK, `npm test` **178 / 55 / 1242**. Vérifications ajoutées : les trois informations
+d'une personne (complète, et incomplète de chacune), la date écrite court,
+**le jour de naissance** (et l'absence d'invention sans date), l'aller-retour de la
+liste dans l'adresse, **ce qui s'ouvre et ce qui reste fermé selon le nombre de
+personnes** (4 à une, 6 à deux, 7 à trois), la condition écrite des lignes grisées,
+les deux informations essentielles, **le bloc à l'écran** (titre, trois champs, +
+éteint, bouton, la phrase qui explique le +), **le rôle qui change réellement les
+pages**, la mémoire qui ne garde que la réponse (et le magazine relu identique), le
+`Refaire`, la couverture du bloc quand le magazine existe, et l'écran de composition.

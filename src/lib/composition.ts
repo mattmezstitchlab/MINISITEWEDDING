@@ -2,33 +2,38 @@ import { PAGES_EDITION, RUBRIQUES, composerEdition, type Edition } from './aimeM
 import { semaineDeLAnnee } from './jeuDeCartes';
 import { couvertureDuJour, type CouvertureJour } from './couvertureDuJour';
 import { ficheDuJour, type FicheDeLAnnee } from './fichesAnnee';
+import { decoderPersonnes, type PersonneComposee, type ReponseDuMagazine } from './composerPersonnes';
 
 /**
- * LE MAGAZINE COMPOSÉ — CE QUI SORT DU CHAMP DE L'ACCUEIL
+ * LE MAGAZINE COMPOSÉ — CE QUI SORT DU COMPOSEUR DE L'ACCUEIL
  *
- * Deux prénoms et une date, et **le magazine se compose** : le numéro de la
- * semaine, sa carte, sa saison, sa couverture, la fiche du jour — et **ses
+ * Des personnes, une date, un rôle — et **le magazine se compose** : le numéro de
+ * la semaine, sa carte, sa saison, sa couverture, la fiche du jour, et **ses
  * vingt-quatre pages**, une par heure, les huit rubriques qui font trois fois le
- * tour de la journée (le moteur fait le travail, ici on ne fait que l'assembler).
+ * tour de la journée. Le moteur fait le travail ; ici on l'assemble.
  *
  * Trois règles, les mêmes que partout :
  *
- * 1. **Rien n'est inventé.** Sans date, c'est aujourd'hui ; sans prénoms, c'est
+ * 1. **Rien n'est inventé.** Sans date, c'est aujourd'hui ; sans personne, c'est
  *    le magazine du jour. On ne déduit jamais un prénom, ni un métier, ni une
- *    histoire d'un nom.
- * 2. **On ne garde que la réponse.** Ce qu'on écrit dans la mémoire du site,
- *    c'est ce que la personne a donné — jamais le magazine calculé : il se
+ *    histoire — et le rôle ne se choisit que dans le menu, pas dans un prénom.
+ * 2. **On ne garde que la réponse.** Ce qu'on écrit dans la mémoire du site, ce
+ *    sont les personnes, la date et le rôle — jamais le magazine calculé : il se
  *    recompose à l'identique à la lecture, et il ne peut donc pas vieillir.
  * 3. **Le nombre de pages ne bouge pas** : `PAGES_EDITION` = 24, et les rubriques
  *    ne changent ni de nom ni d'ordre.
  */
 
 export interface MagazineCompose {
-  /** Les deux prénoms donnés — vides si l'on n'a rien répondu. */
+  /** Les personnes données, dans l'ordre où elles ont été écrites. */
+  personnes: PersonneComposee[];
+  /** Les deux premiers prénoms — ce qui s'écrit sur la couverture. */
   prenoms: [string, string];
-  /** `AAAA-MM-JJ`, ou '' quand la date n'a pas été donnée. */
+  /** `AAAA-MM-JJ` de la date du mariage, ou ''. */
   date: string;
   dateDonnee: boolean;
+  /** Le rôle choisi dans le menu (une carte du hero), ou ''. */
+  roleId: string;
   /** Le numéro de la semaine, ses pages composées. */
   edition: Edition;
   /** La couverture du jour : la même que le kiosque des 365. */
@@ -55,14 +60,23 @@ export function jourDuMagazine(date: string): Date {
   return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12);
 }
 
-/** Le magazine de deux prénoms et d'une date — la composition entière. */
-export function composerLeMagazine(prenoms: [string, string], date = ''): MagazineCompose {
+/** Le magazine d'une réponse — des personnes, une date, un rôle. */
+export function composerLeMagazine(reponse: ReponseDuMagazine): MagazineCompose {
+  const personnes = reponse.personnes;
+  const date = reponse.date ?? '';
+  const roleId = reponse.roleId ?? '';
   const jour = jourDuMagazine(date);
   return {
-    prenoms,
-    date: date.trim(),
+    personnes,
+    prenoms: [personnes[0]?.prenom ?? '', personnes[1]?.prenom ?? ''],
+    date,
     dateDonnee: date.trim().length > 0,
-    edition: composerEdition({ numero: semaineDeLAnnee(jour), annee: jour.getFullYear() }),
+    roleId,
+    edition: composerEdition({
+      numero: semaineDeLAnnee(jour),
+      annee: jour.getFullYear(),
+      ...(roleId ? { roleId } : {}),
+    }),
     couverture: couvertureDuJour(jour),
     fiche: ficheDuJour(jour),
   };
@@ -81,29 +95,55 @@ export function enregistrerMagazine(m: MagazineCompose): void {
   const m2 = memoire();
   if (!m2) return;
   try {
-    m2.setItem(CLE_DU_MAGAZINE, JSON.stringify({ prenoms: m.prenoms, date: m.date }));
+    m2.setItem(
+      CLE_DU_MAGAZINE,
+      JSON.stringify({
+        personnes: m.personnes.map((p) => ({ prenom: p.prenom, naissance: p.naissance, ville: p.ville })),
+        date: m.date,
+        roleId: m.roleId,
+      }),
+    );
   } catch {
     /* mémoire pleine : le magazine reste à l'écran, il ne se retient pas */
   }
 }
 
-/** Le magazine déjà composé sur cet appareil, s'il y en a un. */
-export function magazineCompose(): MagazineCompose | null {
+/** La réponse déjà donnée sur cet appareil, s'il y en a une. */
+export function reponseEnregistree(): ReponseDuMagazine | null {
   const m2 = memoire();
   if (!m2) return null;
   try {
     const brut = m2.getItem(CLE_DU_MAGAZINE);
     if (!brut) return null;
-    const garde = JSON.parse(brut) as { prenoms?: unknown; date?: unknown };
-    const prenoms = Array.isArray(garde.prenoms) ? garde.prenoms : [];
-    const date = typeof garde.date === 'string' ? garde.date : '';
-    return composerLeMagazine(
-      [typeof prenoms[0] === 'string' ? prenoms[0] : '', typeof prenoms[1] === 'string' ? prenoms[1] : ''],
-      date,
-    );
+    const garde = JSON.parse(brut) as {
+      personnes?: unknown;
+      date?: unknown;
+      roleId?: unknown;
+    };
+    const personnes = Array.isArray(garde.personnes)
+      ? decoderPersonnes(
+          garde.personnes
+            .map((p) => {
+              const q = (p ?? {}) as { prenom?: unknown; naissance?: unknown; ville?: unknown };
+              return [q.prenom, q.naissance, q.ville].map((v) => (typeof v === 'string' ? v : '')).join(',');
+            })
+            .join(';'),
+        )
+      : [];
+    return {
+      personnes,
+      date: typeof garde.date === 'string' ? garde.date : '',
+      roleId: typeof garde.roleId === 'string' ? garde.roleId : '',
+    };
   } catch {
     return null;
   }
+}
+
+/** Le magazine déjà composé sur cet appareil, s'il y en a un. */
+export function magazineCompose(): MagazineCompose | null {
+  const reponse = reponseEnregistree();
+  return reponse ? composerLeMagazine(reponse) : null;
 }
 
 export function effacerMagazine(): void {

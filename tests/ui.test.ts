@@ -28,11 +28,14 @@ import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
 import Landing from '../src/pages/Landing';
 import ChampDuMagazine from '../src/components/ChampDuMagazine';
 import Generating from '../src/pages/Generating';
-import { prenomsDuChamp } from '../src/lib/champDuMagazine';
 import {
   CLE_DU_MAGAZINE, composerLeMagazine, effacerMagazine, enregistrerMagazine, magazineCompose,
-  phraseDuMagazine,
+  phraseDuMagazine, reponseEnregistree,
 } from '../src/lib/composition';
+import {
+  PROPOSITIONS, dateCourte, decoderPersonnes, encoderPersonnes, jourDeNaissance, motDeLaCondition,
+  personneComplete, propositionsFermees, propositionsPossibles, type PersonneComposee,
+} from '../src/lib/composerPersonnes';
 import { RUBRIQUES } from '../src/lib/aimeMoteur';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
@@ -3234,61 +3237,101 @@ check('trente-cinq journées ont déjà une porte', avecPorte.length, 35);
 check('et chacune dit par où l’on entre', avecPorte.every((f) => f.portes.length > 0 || f.ponts.length > 0), true);
 
 /* ---------------------------------------------------------------------------
- * LE CHAMP DU MAGAZINE — la première vue, et la seule question
+ * LE COMPOSEUR DE L'ACCUEIL — DES PERSONNES, PUIS CE QUI DEVIENT POSSIBLE
  *
- * L'accueil ouvre désormais sur un seul champ : les deux prénoms, la date. On ne
- * demande rien d'autre, parce que tout le reste existe déjà (les 365 journées,
- * leurs couvertures, leurs cartes, les univers, la playlist). Et celui qui ne
- * répond rien n'est pas bloqué : le magazine du jour existe toujours.
+ * Un bloc, un +, trois informations par personne — prénom, date de naissance,
+ * ville. Le + est éteint au départ et ne s'allume que lorsque les trois sont
+ * écrites ; il ouvre un menu où l'on ajoute des personnes à la suite. Et c'est
+ * après avoir rempli que la liste s'ouvre : à deux personnes apparaît « Nous
+ * sommes des futurs mariés ».
  */
 
-check('« Paul & Emma » donne deux prénoms', prenomsDuChamp('Paul & Emma').join('|'), 'Paul|Emma');
-check('« Paul et Emma » aussi', prenomsDuChamp('Paul et Emma').join('|'), 'Paul|Emma');
-check('« Paul + Emma » aussi', prenomsDuChamp('Paul + Emma').join('|'), 'Paul|Emma');
-check('« Paul, Emma » aussi', prenomsDuChamp('Paul, Emma').join('|'), 'Paul|Emma');
-check('« Paul · Emma » aussi', prenomsDuChamp('Paul · Emma').join('|'), 'Paul|Emma');
-check('un seul prénom ne fabrique pas le second', prenomsDuChamp('Paul').join('|'), 'Paul|');
-check('un champ vide ne fabrique rien', prenomsDuChamp('   ').join('|'), '|');
+const paul: PersonneComposee = { id: 'p1', prenom: 'Paul', naissance: '1990-06-12', ville: 'Provins' };
+const emma: PersonneComposee = { id: 'p2', prenom: 'Emma', naissance: '1992-03-04', ville: 'Melun' };
 
-/* Le champ vide : un titre, deux champs, un bouton — et rien d'autre. */
+check('une personne n’est complète qu’avec ses trois informations', personneComplete(paul), true);
+check('sans sa date de naissance, elle ne l’est pas', personneComplete({ ...paul, naissance: '' }), false);
+check('sans sa ville non plus', personneComplete({ ...paul, ville: '  ' }), false);
+check('sans son prénom non plus', personneComplete({ ...paul, prenom: '' }), false);
+check('la date de naissance s’écrit court', dateCourte('1990-06-12'), '12.06.1990');
+check('et une date impossible ne s’écrit pas', dateCourte('n’importe quoi'), '');
+
+/* Le jour de naissance a son magazine : 365 jours, 365 personnages. */
+check('le jour de naissance donne son personnage', jourDeNaissance(paul)?.personnage, 'Guy');
+check('et sa date, en clair', jourDeNaissance(paul)?.dateLongue, '12 juin 1990');
+check('sans date, aucun jour n’est inventé', jourDeNaissance({ ...paul, naissance: '' }), null);
+
+/* La liste passe dans l'adresse : on la relit à l'identique. */
+const liste = encoderPersonnes([paul, emma]);
+check('la liste s’écrit dans l’adresse', liste, 'Paul,1990-06-12,Provins;Emma,1992-03-04,Melun');
+const listeRelue = decoderPersonnes(liste);
+check('et se relit à l’identique', listeRelue.map((p) => `${p.prenom}/${p.naissance}/${p.ville}`).join(' · '),
+  'Paul/1990-06-12/Provins · Emma/1992-03-04/Melun');
+check('un maillon vide ne fabrique pas de personne', decoderPersonnes(';;').length, 0);
+
+/* CE QUI DEVIENT POSSIBLE : la liste se met à jour avec le nombre de personnes. */
+check('à une personne, quatre propositions s’ouvrent', propositionsPossibles(1).length, 4);
+check('et six à deux personnes', propositionsPossibles(2).length, 6);
+check('à deux personnes, « Nous sommes des futurs mariés » apparaît',
+  propositionsPossibles(2).some((p) => p.titre === 'Nous sommes des futurs mariés'), true);
+check('et « Nous sommes déjà mariés » avec elle',
+  propositionsPossibles(2).some((p) => p.titre === 'Nous sommes déjà mariés'), true);
+check('à une personne, ces deux-là ne sont pas encore là',
+  propositionsPossibles(1).some((p) => p.roleId === 'futurs_maries'), false);
+check('la famille attend la troisième personne',
+  propositionsPossibles(2).some((p) => p.roleId === 'famille'), false);
+check('et arrive à trois', propositionsPossibles(3).some((p) => p.roleId === 'famille'), true);
+check('ce qui est fermé dit à partir de quand ça s’ouvre',
+  motDeLaCondition(propositionsFermees(2)[0]!), 'à partir de trois personnes');
+check('les deux informations essentielles sont dans la liste',
+  PROPOSITIONS.filter((p) => p.essentielle).map((p) => p.titre).join(' | '),
+  'La date du mariage | Le lieu');
+
+/* LE BLOC À L'ÉCRAN : le champ, le + éteint, le bouton. */
 localStorage.removeItem(CLE_DU_MAGAZINE);
-const champVide = renderToStaticMarkup(
+const composeur = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(ChampDuMagazine as never, {})),
 );
-check('le bloc porte son titre, au-dessus du champ', champVide.includes('Votre magazine'), true);
-check('le champ demande les deux prénoms', champVide.includes('Vos deux prénoms'), true);
-check('et la date', champVide.includes('La date'), true);
-check('et il est une entrée du site, pas un formulaire', champVide.includes('Paul &amp; Emma'), true);
-check('le bouton dit ce qu’il fait', champVide.includes('Générer mon magazine'), true);
-check('et il n’y a plus de phrase à la place du bouton', champVide.includes('Aucune réponse n’est nécessaire'), false);
-check('le bloc annonce la structure du magazine', champVide.includes('24 pages · une par heure'), true);
+check('le bloc porte son titre', composeur.includes('Votre magazine'), true);
+check('il annonce la structure du magazine', composeur.includes('24 pages · une par heure'), true);
+check('il demande le prénom', composeur.includes('Prénom'), true);
+check('la date de naissance', composeur.includes('Né(e) le'), true);
+check('et la ville de naissance', composeur.includes('Ville de naissance'), true);
+check('le + est éteint au départ', composeur.includes('aria-expanded="false"') && composeur.includes('disabled=""'), true);
+check('et le bloc dit pourquoi', composeur.includes('Le + s’allume quand le prénom, la naissance et la ville sont écrits.'), true);
+check('le bouton dit ce qu’il fait', composeur.includes('Générer mon magazine'), true);
+check('aucune personne ajoutée au départ', composeur.includes('personne dans le magazine'), false);
 
-/* Le magazine existe : le bloc de l'accueil devient sa couverture. */
-localStorage.setItem(CLE_DU_MAGAZINE, JSON.stringify({ prenoms: ['Paul', 'Emma'], date: '2027-06-12' }));
+/* Sa place : dans le hero, après l'intro, avant les cartes. */
+check('le composeur vient après la question du hero', accueil.indexOf('Qui êtes-vous dans ce mariage') < accueil.indexOf('Ville de naissance'), true);
+check('et il est bien dans le hero', accueil.indexOf('id="hero"') < accueil.indexOf('Ville de naissance'), true);
+check('et le hero garde sa question à lui', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
+
+/* Le magazine existe : le bloc devient sa couverture. */
+localStorage.setItem(
+  CLE_DU_MAGAZINE,
+  JSON.stringify({ personnes: [{ prenom: 'Paul', naissance: '1990-06-12', ville: 'Provins' }], date: '2027-06-12', roleId: 'futurs_maries' }),
+);
 const champCompose = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(ChampDuMagazine as never, {})),
 );
 check('quand le magazine existe, le bloc devient sa couverture', champCompose.includes('Ouvrir le magazine'), true);
 check('et il porte la date composée', champCompose.includes('12 juin 2027'), true);
+check('et il dit à qui il est', champCompose.includes('Paul'), true);
 check('et on peut compléter les questions laissées en attente', champCompose.includes('Compléter les questions'), true);
 check('et le refaire', champCompose.includes('Refaire'), true);
 localStorage.removeItem(CLE_DU_MAGAZINE);
 
-/* Sa place : dans le hero, après l'intro, avant les cartes. */
-check('le champ vient après la question du hero', accueil.indexOf('Qui êtes-vous dans ce mariage') < accueil.indexOf('Vos deux prénoms'), true);
-check('et il est bien dans le hero', accueil.indexOf('id="hero"') < accueil.indexOf('Vos deux prénoms'), true);
-check('et le hero garde sa question à lui', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
-
 /* ---------------------------------------------------------------------------
- * LA SUPER COMPOSITION — ce qui sort du champ
+ * LA SUPER COMPOSITION — ce qui sort du composeur
  *
- * Deux prénoms et une date : le magazine se compose. Vingt-quatre pages, une par
- * heure, huit rubriques qui font trois fois le tour de la journée. Rien n'est
- * inventé — et ce qu'on retient, ce n'est que la réponse : le magazine, lui, se
- * recompose à l'identique.
+ * Des personnes, une date, un rôle : le magazine se compose. Vingt-quatre pages,
+ * une par heure, huit rubriques qui font trois fois le tour de la journée. Rien
+ * n'est inventé — et ce qu'on retient, ce n'est que la réponse : le magazine, lui,
+ * se recompose à l'identique.
  */
 
-const mag = composerLeMagazine(['Paul', 'Emma'], '2027-06-12');
+const mag = composerLeMagazine({ personnes: [paul, emma], date: '2027-06-12', roleId: '' });
 check('le magazine composé a vingt-quatre pages', mag.edition.pages.length, 24);
 check(
   'et huit rubriques, toujours les mêmes, dans le même ordre',
@@ -3301,19 +3344,30 @@ check('la couverture est celle du jour demandé', mag.couverture.dateLongue, '12
 check('la fiche est celle du même jour', mag.fiche.dateLongue, '12 juin 2027');
 check('le magazine se lit avec ses deux prénoms', phraseDuMagazine(mag), 'Paul & Emma · 12 juin 2027');
 
-const magSansRien = composerLeMagazine(['', '']);
+/* Le rôle change vraiment le magazine — il ne se contente pas de s'afficher. */
+const magFuturs = composerLeMagazine({ personnes: [paul, emma], date: '2027-06-12', roleId: 'futurs_maries' });
+check('le rôle choisi entre dans la composition',
+  JSON.stringify(mag.edition.pages) === JSON.stringify(magFuturs.edition.pages), false);
+check('et il est celui qu’on a choisi', magFuturs.roleId, 'futurs_maries');
+
+const magSansRien = composerLeMagazine({ personnes: [], date: '', roleId: '' });
 check('sans réponse, c’est le magazine du jour', phraseDuMagazine(magSansRien).startsWith('Le magazine du '), true);
 check('et il n’invente aucun prénom', magSansRien.prenoms.join('|'), '|');
-check('une seule date suffit aussi', composerLeMagazine(['', ''], '2027-06-12').fiche.dateLongue, '12 juin 2027');
+check('une seule date suffit aussi',
+  composerLeMagazine({ personnes: [], date: '2027-06-12', roleId: '' }).fiche.dateLongue, '12 juin 2027');
+check('et une seule personne donne son prénom',
+  composerLeMagazine({ personnes: [paul], date: '', roleId: '' }).prenoms.join('|'), 'Paul|');
 
-enregistrerMagazine(mag);
-const relu = magazineCompose();
-check('le magazine composé se retient', relu?.couverture.dateLongue, '12 juin 2027');
-check('et se recompose à l’identique', relu?.edition.pages.length, 24);
+enregistrerMagazine(magFuturs);
+const reponse = reponseEnregistree();
+check('la réponse se retient', reponse?.date, '2027-06-12');
+check('avec ses personnes', reponse?.personnes.map((p) => p.prenom).join('|'), 'Paul|Emma');
+check('et son rôle', reponse?.roleId, 'futurs_maries');
+check('le magazine relu se recompose à l’identique', magazineCompose()?.edition.pages.length, 24);
 check(
   'la mémoire ne garde que la réponse, jamais le magazine calculé',
   localStorage.getItem(CLE_DU_MAGAZINE),
-  '{"prenoms":["Paul","Emma"],"date":"2027-06-12"}',
+  '{"personnes":[{"prenom":"Paul","naissance":"1990-06-12","ville":"Provins"},{"prenom":"Emma","naissance":"1992-03-04","ville":"Melun"}],"date":"2027-06-12","roleId":"futurs_maries"}',
 );
 effacerMagazine();
 check('et on peut le refaire', magazineCompose(), null);
@@ -3322,7 +3376,7 @@ check('et on peut le refaire', magazineCompose(), null);
 const superComposition = renderToStaticMarkup(
   createElement(
     MemoryRouter,
-    { initialEntries: ['/generer?prenoms=Paul%20%26%20Emma&jour=2027-06-12'] },
+    { initialEntries: ['/generer?p=Paul%2C1990-06-12%2CProvins%3BEmma%2C1992-03-04%2CMelun&jour=2027-06-12&role=futurs_maries'] },
     createElement(Generating as never),
   ),
 );

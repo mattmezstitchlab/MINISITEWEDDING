@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import CouvertureJour from '../components/CouvertureJour';
-import { composerLeMagazine, enregistrerMagazine, phraseDuMagazine } from '../lib/composition';
-import { prenomsDuChamp } from '../lib/champDuMagazine';
+import { composerLeMagazine, enregistrerMagazine, phraseDuMagazine, reponseEnregistree } from '../lib/composition';
+import { decoderPersonnes } from '../lib/composerPersonnes';
 
 /**
  * SUPER COMPOSITION — LE MAGAZINE SE FAIT SOUS NOS YEUX
@@ -18,7 +18,7 @@ import { prenomsDuChamp } from '../lib/champDuMagazine';
  *
  * Deux provenances :
  *
- * - **du champ de l'accueil** (`?prenoms=&jour=`) : on compose le magazine du
+ * - **du composeur de l'accueil** (`?p=&jour=&role=`) : on compose le magazine du
  *   jour demandé (ou du jour), on le retient sur l'appareil, et on **revient à
  *   l'accueil** — c'est là que la couverture et la suite s'affichent.
  * - **de la création** (`?site=`) : on compose, puis on ouvre l'éditeur, comme
@@ -32,13 +32,19 @@ export default function Generating() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const siteId = params.get('site');
-  const prenomsParam = params.get('prenoms') ?? '';
+  const personnesParam = params.get('p') ?? '';
   const jourParam = params.get('jour') ?? '';
+  const roleParam = params.get('role') ?? '';
 
-  const magazine = useMemo(
-    () => composerLeMagazine(prenomsDuChamp(prenomsParam), jourParam),
-    [prenomsParam, jourParam],
-  );
+  // Sans réponse dans l'adresse (on a rouvert l'écran), on reprend celle qu'on a.
+  const reponse = useMemo(() => {
+    if (personnesParam.length > 0) {
+      return { personnes: decoderPersonnes(personnesParam), date: jourParam, roleId: roleParam };
+    }
+    return reponseEnregistree() ?? { personnes: [], date: jourParam, roleId: roleParam };
+  }, [personnesParam, jourParam, roleParam]);
+
+  const magazine = useMemo(() => composerLeMagazine(reponse), [reponse]);
   const pages = magazine.edition.pages;
   const [composees, setComposees] = useState(0);
   const fini = composees >= pages.length;
