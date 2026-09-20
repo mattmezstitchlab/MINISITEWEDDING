@@ -203,3 +203,52 @@ continue d'être relevé par `npm run photos`.
 la couverture, nombre de chapitres livrés. À ce jour : **les couvertures de la
 collection sont produites en premier** (elles sont les portes d'entrée), puis les
 chapitres, semaine par semaine — 432 visuels sont attendus au total.
+
+## 11. La page du magazine : une couverture, cinq blocs
+
+L'information a été **simplifiée** : la page disait la même chose sous dix
+formes (les quatre saisons, les treize semaines, le mur des 365 couvertures, les
+éditions de thème, le profil du jour, les six temps, le chiffre). Elle dit
+maintenant une chose, et une seule, en **un hero et cinq blocs** :
+
+```
+LA COUVERTURE      l'image du magazine, le CADRAN À AIGUILLES dessus,
+                   les trois niveaux (jour → magazine → chapitre)
+LES 7 CHAPITRES    la navigation éditoriale de la semaine ouverte
+1. L'ÉDITEUR       la saisie, et le magazine qu'elle compose (24 pages)
+2. L'ATELIER       la timeline du site, avec la collection dedans
+3. LA COLLECTION   les 54 couvertures, par saison
+4. LES ARTICLES    ce qui se lit — et ce qui parle d'un métier
+5. LA LUMIÈRE      « Se montrer, et élever les autres »
+```
+
+### Le cadran, et la capsule
+
+Le cadran est **le même composant partout** (`CadranDuMagazine.tsx`) :
+
+| où | ce qu'il montre |
+| --- | --- |
+| la couverture | la grande aiguille : l'heure de la capsule ; la petite : le chapitre de la date |
+| le dock du bas | la miniature, plus la lecture « Magazine 38 · ch. 05 · 20 h » |
+| (le kiosque) | la vignette, sans les nombres |
+
+Le dock **commande** le temps (`capsuleCommande.ts` : l'aube 6 h, le matin 9 h,
+le midi 12 h, l'après-midi 15 h, le soir 20 h — ou l'heure réelle), la page
+**publie ses repères** (`publierReperes` : magazine, chapitre, jour). La
+couverture et le dock ne peuvent donc pas dire deux choses différentes.
+
+### L'atelier du temps
+
+La timeline de la page est **celle de l'atelier** (`TimelineTheaterStudio`) :
+règle graduée, blocs déplaçables, inspecteur, tête de lecture. Elle reçoit sa
+source de `timelineDeLaCollection.ts` :
+
+- **un bloc par magazine** — durée `TIMELINE_TOTAL_MINUTES / 54`, sept
+  chapitres dessous, la couverture livrée en vignette, le style en sous-titre ;
+- **une graduation par magazine** — son numéro, et la date de son premier jour ;
+- **la tête de lecture sur le magazine de la date** (`magazineDeLaDate`, la
+  source unique) ;
+- cliquer un bloc **ouvre le magazine** (`?jour=MM-JJ`).
+
+Depuis le dock, la même languette propose **deux sources** : *l'année* (la
+collection) et *le jour J* (les moments du mariage, l'atelier d'origine).
