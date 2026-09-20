@@ -1,4 +1,6 @@
 import { useLocation } from 'react-router-dom';
+import { useFace } from '../lib/faceDuSite';
+import { useModeImmersif } from '../lib/modeImmersif';
 import SiteHeader from './SiteHeader';
 import BottomCapsuleNav from './BottomCapsuleNav';
 import LanguetteTimeline from './LanguetteTimeline';
@@ -18,8 +20,21 @@ import SiteFooter from './SiteFooter';
  * visiter.
  */
 
-/** Les adresses qui ne reçoivent ni header ni dock. */
+/**
+ * **Les adresses qui ne reçoivent ni header ni dock.** Depuis que tout le site
+ * est en grille, ce sont **toutes les pages de contenu** : la mosaïque est la
+ * navigation, et rien de permanent ne doit l'entourer. Le chrome ne vit plus que
+ * sur les **outils** — l'éditeur de blocs, les paramètres, l'aperçu, le site
+ * public d'un couple.
+ */
 const SANS_CHROME = [
+  '/', // la mosaïque du monde, et son année
+  '/magazine', // l'année, les jours, les mondes
+  '/shop', // la boutique, en cases
+  '/metiers', // les métiers, en cases
+  '/profil/', // une page du réseau, en cases
+  '/prestataire', // l'espace prestataire, en cases
+  '/le-mariage', // le mariage, en mondes
   '/p/', // le site des mariés, tel que leurs invités le voient
   '/apercu', // la même page, dans une fenêtre d'aperçu
   '/rejoindre/', // l'invitation d'un invité
@@ -50,7 +65,26 @@ const MENTIONS: Array<[string, string]> = [
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
-  const avecChrome = !SANS_CHROME.some((prefixe) => pathname.startsWith(prefixe));
+  /**
+   * **Le mode immersif.** Quand une page se déclare immersive (`modeImmersif.ts`),
+   * elle tient l'écran : l'image plein cadre, et la mosaïque du temps — sa
+   * timeline — en bas. **Le site s'efface alors complètement** : plus de barre,
+   * plus de colonne de navigation, plus de dock, plus de pied. C'est la règle du
+   * nouveau magazine : rien de permanent autour de l'image, et tout ce qui n'est
+   * pas l'image et la mosaïque s'ouvre à la demande, dans une feuille.
+   */
+  const immersif = useModeImmersif();
+  /**
+   * **La face change le chrome.** Sur la grille et au verso, la mosaïque est la
+   * navigation : rien autour. Au **recto**, on revoit la page d'avant — avec sa
+   * barre, son dock et son pied, exactement comme ils étaient.
+   */
+  const { face } = useFace();
+  /** « / » se compare exactement — sinon, tous les chemins commenceraient par lui. */
+  const sansChrome =
+    face !== 'recto' &&
+    SANS_CHROME.some((prefixe) => (prefixe === '/' ? pathname === '/' : pathname.startsWith(prefixe)));
+  const avecChrome = !immersif && !sansChrome;
   const mention = MENTIONS.find(([prefixe]) => pathname.startsWith(prefixe))?.[1];
 
   if (!avecChrome) return <>{children}</>;
