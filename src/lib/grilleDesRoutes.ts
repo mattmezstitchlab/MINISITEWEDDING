@@ -24,10 +24,11 @@ export interface RouteDuMonde {
 
 /** Le tableau des adresses : chacune son monde, chacune sa promesse. */
 export const ROUTES_DU_MONDE: RouteDuMonde[] = [
-  { motif: '/', monde: () => 'annee', fait: 'l’année entière, et le monde à un clic' },
   { motif: '/theater', monde: () => 'monde', fait: 'les dix grandes portes' },
   { motif: '/aime', monde: () => 'magazines', fait: 'la collection des 54 magazines' },
   { motif: '/taxonomie', monde: () => 'magazines', fait: 'la collection des 54 magazines' },
+  { motif: '/', monde: () => 'magasin', fait: 'le ticket : on coche, et ça part dans les portefeuilles' },
+  { motif: '/ticket', monde: () => 'magasin', fait: 'le ticket : on coche, et ça part dans les portefeuilles' },
   { motif: '/caisse', monde: () => 'magasin', fait: 'le mariage entier, au prix où il se fait' },
   { motif: '/shop', monde: () => 'boutique', fait: 'la boutique, en cases' },
   { motif: '/shop/:slug', monde: (s) => `produit-${s}`, fait: 'un produit, et tout ce qui va avec' },

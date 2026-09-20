@@ -10,6 +10,7 @@
  *     qu’une base est déclarée ;
  *   - le panneau de partage expose la publication par fichier.
  */
+import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -88,7 +89,6 @@ import {
   composerLeMiniSite,
   densiteDuMonde,
   mondeDeLAnnee,
-  familleDuneLigne,
   mondeDeLId,
   mondeDeLaBoutique,
   mondeDeLaMusique,
@@ -135,6 +135,15 @@ import { couvertureDuJour } from '../src/lib/couvertureDuJour';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LaCaisse from '../src/pages/LaCaisse';
+import {
+  CATÉGORIES_DU_TICKET,
+  GROUPES_DU_TICKET,
+  LIGNES_DU_TICKET,
+  catégorieDeLaLigne,
+  ligneParId,
+  lignesCochées,
+} from '../src/lib/categoriesDuTicket';
+import { numeroDuTicket, portefeuillesDesCoches, portefeuillesVisés, totauxDuTicket } from '../src/lib/portefeuille';
 import LeMariage from '../src/pages/LeMariage';
 import {
   PLAYLIST_DEPART, chargerPlaylist, chercherMorceaux, morceauParId, morceauxDeLaPlaylist,
@@ -1964,74 +1973,111 @@ check('l’édition du moment est celle de cette semaine', editionDuMoment().num
 check('et les quatre saisons sont quatre numéros différents', new Set(lesQuatreSaisons().map((e) => e.numero)).size, 4);
 check('chacune prise dans sa saison', lesQuatreSaisons().every((e) => e.saison.id === e.carte.saison.id), true);
 
-/* ————————————— LE MAGASIN : LA GRILLE, ET LE TICKET ————————————— */
+/* ————————— LE SPÉCIALISTE DU TICKET : COCHER, ET C'EST TOUT ————————— */
 
 /**
- * **Le mariage entier, au prix où il se fait.** Chaque rayon est une porte,
- * chaque article est une case qu'on prend, et le ticket s'imprime tout seul.
+ * **Tout le produit est classé par catégories, et l'on ne fait que cocher.**
+ * Trois familles : le jour J (ce qui a un prix), votre site (ce qui s'affiche),
+ * les documents (ce qu'on emporte). Chaque ligne sait qui la reçoit.
  */
-const mondeDuMagasinTest = mondeDeLId('magasin', le21SeptembreGrille);
-check('le magasin est un monde', mondeDuMagasinTest.id, 'magasin');
-check('il porte ses rayons et ses lignes', [mondeDuMagasinTest.cases.filter((c) => c.ouvre).length, mondeDuMagasinTest.cases.filter((c) => c.id.startsWith('ligne-')).length], [12, 45]);
-check('chaque ligne dit son prix', mondeDuMagasinTest.cases.filter((c) => c.id.startsWith('ligne-')).every((c) => /€/.test(c.sousTitre ?? '')), true);
-check('un rayon s’ouvre sur ses articles', mondeDeLId('rayon-rayon-chef').cases.length, 4);
-check('une ligne s’ouvre sur son prix, sa caisse et ses voisines', mondeDeLId('ligne-horaire-22:17').cases.length > 3, true);
-check('et rien n’est laissé au hasard : une ligne inconnue ouvre le magasin', mondeDeLId('ligne-inconnue').id, 'magasin');
+check('tout le produit se coche', LIGNES_DU_TICKET.length, 99);
+check('et rien n’est en vrac : tout est rangé', CATÉGORIES_DU_TICKET.length, 17);
+check(
+  'trois familles, et pas une de plus',
+  GROUPES_DU_TICKET.map((g) => g.mot),
+  ['LE JOUR J', 'VOTRE SITE', 'LES DOCUMENTS'],
+);
+check('le jour J, ce sont les rayons du magasin', CATÉGORIES_DU_TICKET.filter((c) => c.groupe === 'jour').length, 15);
+check(
+  'le site s’affiche par blocs cochés',
+  CATÉGORIES_DU_TICKET.find((c) => c.id === 'site')!.lignes.length,
+  MINI_SITE_INVITE.length + MINI_SITE_PRESTATAIRE.length,
+);
+check(
+  'et les documents du fonds sont là, entiers',
+  CATÉGORIES_DU_TICKET.find((c) => c.id === 'documents')!.lignes.length,
+  DOCUMENTS.length,
+);
+check('chaque ligne sait à quelle catégorie elle appartient', LIGNES_DU_TICKET.every((l) => catégorieDeLaLigne(l.id) !== undefined), true);
 check(
   'la famille d’une ligne décide qui la voit',
-  ['sup-caddie', 'horaire-22:17', 'metier-chef', 'menu-1'].map((id) => familleDuneLigne(id)),
+  [
+    ligneParId('sup-caddie')?.famille,
+    ligneParId('horaire-22:17')?.famille,
+    ligneParId('metier-Chef Tapas & Finger Food Étoilé')?.famille,
+    ligneParId('menu-super-essentiel')?.famille,
+  ],
   ['public', 'invites', 'prive', 'famille'],
 );
 
-const caisseVide = renderToStaticMarkup(
-  createElement(MemoryRouter, { initialEntries: ['/caisse'] }, createElement(LaCaisse as never)),
-);
-const caissePleine = renderToStaticMarkup(
-  createElement(
-    MemoryRouter,
-    {
-      initialEntries: [
-        `/caisse?caddie=${encodeURIComponent('horaire-22:00,metier-Chef Tapas & Finger Food Étoilé,sup-caddie')}&regard=prive`,
-      ],
-    },
-    createElement(LaCaisse as never),
-  ),
-);
-const caissePublique = renderToStaticMarkup(
-  createElement(
-    MemoryRouter,
-    {
-      initialEntries: [
-        `/caisse?caddie=${encodeURIComponent('horaire-22:00,metier-Chef Tapas & Finger Food Étoilé,sup-caddie')}&regard=public`,
-      ],
-    },
-    createElement(LaCaisse as never),
-  ),
-);
-check('la caisse est un écran plein', caisseVide.includes('data-page="caisse"') && caisseVide.includes('fixed inset-0'), true);
-check('le magasin est là, en cases', (caisseVide.match(/data-case=/g) ?? []).length, 58);
-check('et le ticket aussi, vide', caisseVide.includes('Ticket en cours'), true);
-check('on y coche ce qu’on prend : le caddie vient de l’adresse', (caissePleine.match(/data-choisi="true"/g) ?? []).length, 3);
-check(
-  'le ticket imprime les trois lignes',
-  caissePleine.includes('Caddie gravé à vos prénoms') && caissePleine.includes('22:00 · Ouverture') && caissePleine.includes('CHEF TAPAS'),
-  true,
-);
-check('et il porte son numéro, dérivé de ce qu’on a pris', /SM-0\d-[A-Z0-9]{4}/.test(caissePleine), true);
-check('le ticket est payé dès qu’il y a une ligne', caissePleine.includes('Payé · merci'), true);
-check('les quatre papiers du même rouleau sont proposés', ['le couple', 'un invité', 'le DJ', 'un métier'].every((m) => caissePleine.includes(m)), true);
-check('les trois menus du magasin aussi', ['data-menu="menu-1"', 'data-menu="menu-2"'].every((m) => caissePleine.includes(m) || true), true);
+/* Le ticket : ce qu'on coche, ce que ça coûte, et où ça part. */
+const cochesDessai = ['horaire-22:17', 'metier-Chef Tapas & Finger Food Étoilé', 'sup-caddie', 'site-rsvp', 'doc-attestation-hebergement'];
+const totauxDessai = totauxDuTicket(lignesCochées(cochesDessai));
+check('la remise de fidélité est de dix pour cent', totauxDessai.remise, Math.round(totauxDessai.sousTotal * 0.1));
+check('et la TVA est incluse dans le total', totauxDessai.tva > 0 && totauxDessai.total, totauxDessai.sousTotal - totauxDessai.remise);
+check('les lignes incluses figurent au papier sans charger la note', [totauxDessai.articles, totauxDessai.incluses], [3, 2]);
+check('le numéro ne dépend que de ce qu’on a coché', numeroDuTicket([...cochesDessai].reverse()), numeroDuTicket(cochesDessai));
+check('et deux caddies différents ne portent jamais le même', numeroDuTicket(['horaire-22:17']) !== numeroDuTicket(['horaire-22:30']), true);
 
-/* Le regard : la grille est l'interface des droits, et le papier suit. */
+/* La distribution : chaque ligne part dans ses portefeuilles. */
+check('un horaire va aux invités et au couple', portefeuillesVisés(['horaire-22:17']), ['couple', 'invites']);
+check('un métier va au métier et au couple', portefeuillesVisés(['metier-Chef Tapas & Finger Food Étoilé']), ['couple', 'metier']);
+check('un petit prix va aux invités', portefeuillesVisés(['sup-caddie']), ['invites']);
+const portefeuillesDessai = portefeuillesDesCoches(cochesDessai);
+check('pas de portefeuille vide : un ticket pour rien n’existe pas', portefeuillesDessai.every((t) => t.lignes.length > 0), true);
+check('chaque portefeuille imprime son papier', portefeuillesDessai.map((t) => t.papier), ['couple', 'invite', 'metier']);
 check(
-  'sous le regard public, les lignes privées quittent la grille et le ticket',
-  (caissePublique.match(/data-case=/g) ?? []).length < 58 &&
-    caissePublique.includes('Caddie gravé à vos prénoms') &&
-    !caissePublique.includes('CHEF TAPAS'),
+  'et le papier du couple porte tout ce qui lui revient',
+  portefeuillesDessai.find((t) => t.portefeuille === 'couple')!.lignes.length,
+  lignesCochées(cochesDessai).filter((l) => l.vers.includes('couple')).length,
+);
+check(
+  'à eux tous, les portefeuilles couvrent tout ce qui est coché',
+  new Set(portefeuillesDessai.flatMap((t) => t.lignes.map((l) => l.id))).size,
+  cochesDessai.length,
+);
+check('le papier est celui du magasin, au même format', portefeuillesDessai[0]!.papierLignes[0]!.label.length > 2, true);
+
+/* La page : un héros, des catégories, un papier, des portefeuilles. */
+const rendreLeTicket = (url: string) =>
+  renderToStaticMarkup(
+    createElement(MemoryRouter, { initialEntries: [url] }, createElement(LaCaisse as never)),
+  ).replace(/&amp;/g, '&');
+const ticketVide = rendreLeTicket('/');
+const ticketPlein = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}`);
+
+check('on arrive sur le ticket', ticketVide.includes('data-page="ticket"') && ticketVide.includes('fixed inset-0'), true);
+check('le héros porte le visuel', ticketVide.includes('data-hero="ticket"') && /data-visuel="(couverture|aucun)"/.test(ticketVide), true);
+check(
+  'et les infos sont dessus',
+  ['data-hero-noms', 'data-hero-heure', 'data-hero-compte', 'data-hero-total'].every((a) => ticketVide.includes(a)) &&
+    ticketVide.includes('Nora & Adam') &&
+    ticketVide.includes('64 convives'),
   true,
 );
-check('et son ticket n’a plus le même numéro', caissePublique.match(/SM-0\d-[A-Z0-9]{4}/)?.[0] !== caissePleine.match(/SM-0\d-[A-Z0-9]{4}/)?.[0], true);
-check('le reçu voyage dans le lien', caissePleine.includes('data-action="envoyer"') && caissePleine.includes('data-action="imprimer"'), true);
+check('on ne propose que de cocher', (ticketVide.match(/data-ligne=/g) ?? []).length > 0 && ticketVide.includes('data-groupes="vrai"'), true);
+check('et l’on commence par ce qui a un prix', ticketVide.includes('data-catégorie="rayon-horaires"'), true);
+check('le papier est là, vide', ticketVide.includes('Ticket en cours'), true);
+check('rien de coché, rien dans les portefeuilles', (ticketVide.match(/data-portefeuille=/g) ?? []).length, 0);
+check('et la caisse le dit', ticketVide.includes('les portefeuilles attendent'), true);
+
+check('l’adresse porte le caddie : le lien est le reçu', ticketPlein.includes('data-cochees="5"'), true);
+check('le papier s’imprime', ticketPlein.includes('Payé · merci') && /SM-\d\d-[A-Z0-9]{4}/.test(ticketPlein), true);
+check(
+  'et chaque portefeuille reçoit le sien',
+  (ticketPlein.match(/data-portefeuille=/g) ?? []).length,
+  portefeuillesDesCoches(cochesDessai).length,
+);
+check('chaque portefeuille dit ses lignes et son total', ticketPlein.includes('data-papier="couple"') && ticketPlein.includes('data-papier="metier"'), true);
+check('on peut emporter le reçu, l’imprimer, ou vider', ['emporter', 'imprimer', 'vider'].every((a) => ticketPlein.includes(`data-action="${a}"`)), true);
+check('le ticket sort du haut de l’écran', GrilleDuMondeEtTicketSortent(), true);
+
+/** Le papier qui sort, et le vol : deux animations, deux `transform`. */
+function GrilleDuMondeEtTicketSortent(): boolean {
+  // Les tests tournent depuis la racine du dépôt : le CSS s'y lit directement.
+  const css = readFileSync('src/index.css', 'utf8');
+  return css.includes('presse-du-haut') && css.includes('vol-du-ticket') && css.includes('translate3d');
+}
 
 /* ————————— LA GÉOMÉTRIE : LA MOSAÏQUE COUVRE TOUJOURS L'ÉCRAN ————————— */
 
@@ -2396,7 +2442,8 @@ check(
 
 /* ————————— TOUT LE SITE EN GRILLE : UNE ADRESSE, UN MONDE ————————— */
 
-check('l’accueil, c’est le contenu : l’année entière', mondeDUneAdresse('/'), 'annee');
+check('on arrive sur le ticket', mondeDUneAdresse('/'), 'magasin');
+check('et son adresse courte aussi', mondeDUneAdresse('/ticket'), 'magasin');
 check('un shop est un monde', mondeDUneAdresse('/shop'), 'boutique');
 check('un produit aussi', mondeDUneAdresse('/shop/table-trestle-chene'), 'produit-table-trestle-chene');
 check('un métier aussi', mondeDUneAdresse('/metiers/photographe'), 'metier-photographe');

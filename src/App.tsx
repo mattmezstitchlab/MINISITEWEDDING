@@ -47,8 +47,13 @@ export default function App() {
         <SiteChrome>
         <Suspense fallback={<PageFallback />}>
           <Routes>
-            {/* On n'arrive plus sur une page : on arrive devant tout le contenu. */}
-            <Route path="/" element={<FaceDuSite recto={<Landing />} monde="monde" />} />
+            {/* ON ARRIVE SUR LE TICKET. Le produit est le spécialiste du ticket de
+                caisse : une liste de catégories à cocher, un visuel qui porte les
+                infos, un papier qui sort du haut de l'écran et part dans les
+                portefeuilles. `?face=verso` montre le moteur, `?face=recto` rend
+                l'ancienne page d'accueil. */}
+            <Route path="/" element={<FaceDuSite grille={<LaCaisse />} recto={<Landing />} monde="magasin" />} />
+            <Route path="/ticket" element={<FaceDuSite grille={<LaCaisse />} monde="magasin" />} />
             {/* Tout le site parle le langage de la grille : une adresse, un monde. */}
             <Route path="/theater" element={<FaceDuSite recto={<Theater />} monde="monde" />} />
             {/* La timeline est fusionnée avec le magazine : la languette du dock

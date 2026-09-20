@@ -182,3 +182,80 @@ Construite ce tour. Un écran, deux moitiés, et rien d'autre.
 qu'on emporte (le ticket).** La caisse les met côte à côte : on parcourt le
 mariage comme un magasin, on coche, et le papier s'imprime tout seul — le même
 papier que le couple, l'invité, le DJ et le métier tiennent dans la main.
+
+---
+
+## 5. La simplification : **le spécialiste du ticket**
+
+Le produit faisait trop de choses à la fois. Il n'en fait plus qu'une :
+
+> **Une liste de catégories. On coche. Le ticket sort, et il part dans les
+> portefeuilles.**
+
+`/` — l'adresse d'entrée du site — est cette page. `/ticket` et `/caisse` la
+servent aussi. `?face=verso` montre le moteur, `?face=recto` rend l'ancienne
+page d'accueil (rien n'est détruit).
+
+### Tout le produit est classé, et rien d'autre n'est à comprendre
+
+`src/lib/categoriesDuTicket.ts` — **17 catégories, 99 lignes cochables**, en
+trois familles :
+
+| La famille | Ce qu'elle contient | Ce que ça donne au ticket |
+| --- | --- | --- |
+| **LE JOUR J** | les 12 rayons du magasin (horaires, cuisine, images, musique, fleurs, cérémonie, bar, tenues, technique, métiers rares, petits prix) et les 3 menus | un prix, un total |
+| **VOTRE SITE** | les 20 blocs du mini-site (`MINI_SITE_INVITE` + `MINI_SITE_PRESTATAIRE`) | le site s'affiche tel qu'il est coché — **inclus** |
+| **LES DOCUMENTS** | les 31 documents du fonds du site (`superFooter.DOCUMENTS`) | les pièces à emporter — **incluses** |
+
+Rien n'est réinventé : les lignes viennent du magasin (`superMariage`), du
+compositeur (`grilleDuMonde`) et du fonds de documents (`superFooter`). La
+caisse est la **vue unifiée** de tout ce que le produit sait déjà vendre,
+afficher ou délivrer.
+
+### Le vol du ticket — où il part, quand il sort
+
+`src/lib/portefeuille.ts` — **cinq portefeuilles**, et chaque ligne sait qui la
+reçoit :
+
+| Le portefeuille | Ce qu'il reçoit | Le papier |
+| --- | --- | --- |
+| **le couple** | tout ce qui le concerne, et le total | `couple` |
+| **les invités** | ce qu'ils voient et ce qu'ils prennent | `invite` |
+| **la famille** | ce qui reste entre vous | `invite` |
+| **le DJ** | la playlist, dans l'ordre de la soirée | `dj` |
+| **les métiers** | leurs bons de commande | `metier` |
+
+`portefeuillesVisés([ligne])` dit la trajectoire : un horaire part vers *le
+couple* et *les invités* ; un métier vers *le couple* et *les métiers* ; un petit
+prix vers *les invités*. **Un portefeuille vide n'existe pas** : pas de ticket
+pour rien.
+
+### L'écran, en une image
+
+```
+┌──────────────────────────────────────────────┬──────────────┐
+│  LE VISUEL, ET LES INFOS DESSUS              │              │
+│  Nora & Adam · 6 février 2027 · 64 convives  │  LE TICKET   │
+│  ◷ 22:00 · LE SOIR              TOTAL 5 472 €│  (le vrai    │
+├──────────────────────────────────────────────┤  papier)     │
+│  LE JOUR J · VOTRE SITE · LES DOCUMENTS      │              │
+│  HORAIRES ▸ CUISINE ▸ IMAGES ▸ …             │              │
+│  ☑ 22:17 · Cérémonie — rayon 7       900 €   │              │
+│  ☐ 22:30 · Cocktail — surgelés     1 200 €   │              │
+├──────────────────────────────────────────────┴──────────────┤
+│  ● le couple 5 472 €   ◔ les invités 891 €   ✳ les métiers  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+Et les deux mouvements, en CSS pur (`src/index.css`), deux `transform`, aucune
+mesure :
+
+- **`presse-du-haut`** — le papier sort **par le haut de l'écran** en glissant ;
+- **`vol-du-ticket`** — il repart en rétrécissant vers le portefeuille concerné,
+  et le portefeuille se met à jour.
+
+### Ce qui a disparu de cette page
+
+La grille dans la caisse, la barre de sélection, l'aperçu au survol, le panneau
+du verso, les cinq seuils de densité à comprendre. Il reste : **un visuel, une
+liste de catégories, des cases à cocher, un papier, cinq portefeuilles.**
