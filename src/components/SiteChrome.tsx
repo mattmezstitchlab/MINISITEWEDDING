@@ -5,6 +5,7 @@ import NavVerticale from './NavVerticale';
 import BoutonParametres from './BoutonParametres';
 import FenteDocuments from './FenteDocuments';
 import BoutonEtat from './BoutonEtat';
+import SiteFooter from './SiteFooter';
 
 /**
  * LA NAVIGATION DU SITE, POSÉE UNE SEULE FOIS
@@ -66,8 +67,9 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       <BoutonEtat />
       {/* En haut, la fente : le ticket sort quand il y a quelque chose à voir. */}
       <FenteDocuments />
-      {/* Le dock est fixe : la page laisse la place au bas. */}
+      {/* Le pied commun : la signature, et les portes du site. */}
       <div className="pb-24">{children}</div>
+      <SiteFooter />
       <BottomCapsuleNav />
     </>
   );

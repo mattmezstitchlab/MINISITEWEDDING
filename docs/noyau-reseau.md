@@ -1940,3 +1940,73 @@ puis ça se taille en gardant le plus récent), **l'écriture par la sélection 
 par le chiffre**, le bloc rendu (les lignes, les familles, les douze mois, le
 lien), le bloc vide qui dit ce qui l'écrira, et **le footer qui porte le temps
 désormais**.
+
+## §47 — Les 365 couvertures : voir enfin le magazine, et trois boutons qui se ressemblent
+
+**Ce qui manquait, en une phrase** : le magazine était **écrit** — 24 pages, un
+jour une heure, un saint, une carte, une météo, une lumière — mais il ne se
+**voyait** nulle part. On pouvait en parler, pas le regarder. `src/lib/
+couvertureDuJour.ts` et `CouvertureJour.tsx` règlent ça : **une couverture par
+jour de l'année**, dessinée, **le même dessin pour tout le monde le même jour**,
+et **le même dessin à chaque fois qu'on la regarde**.
+
+**Jamais de hasard qui change.** `graine(texte)` (FNV-1a) et `tirage(graine, rang)`
+donnent des nombres **stables** : la couverture du 14 juin 2026 est la même
+aujourd'hui qu'en 2030, et deux jours différents ne se ressemblent pas. C'est ce
+qui permet de **décider sur du vrai** au lieu de discuter sur une idée.
+
+**Ce qu'une couverture porte** (`couvertureDuJour(date)`) : son `id`
+(`2026-09-21`), son `numero` (le jour dans l'année), son **`titre`** — le nom du
+saint, ou la fête, ou **« Le jour de trop — Sylvestre »** le 31 décembre, et
+**« Le jour de trop »** le 29 février, qui n'a pas de prénom —, sa `saison` (le
+fond, l'encre et le symbole du jeu de 54), sa `figure` (`carteDuNumero`), son
+`fond`, sa `raison` quand elle n'est pas comme les autres, ses `cles` (le ciel,
+la lune, le chiffre, la porte, l'interstice, le signe caché) et ses `branches`.
+
+**Vingt-quatre branches, pour vingt-quatre heures.** Une couverture n'est pas une
+photo, c'est un **cadran** : chaque branche est une heure du magazine, avec sa
+longueur et son éclat. `HEURES_DE_LUMIERE` marque les huit heures plus franches
+(cinq, six, sept, midi, treize, dix-huit, dix-neuf, vingt) : la lumière de la
+journée se lit d'un coup d'œil.
+
+**Le fond noir — `FOND_NOIR` `#0B0B0F`.** Un jour « pas comme les autres » passe
+au noir : le **studio du jour** décide (le jour de trop, le dimanche, un temps
+clos, la porte), et la couverture **dit pourquoi**. En 2026 : **136 jours sur
+365**, dont les 52 dimanches. Le rythme se voit au kiosque, sans qu'on ait rien à
+expliquer.
+
+**Rien sur la création.** La couverture dit le jour, la saison et la lumière —
+**jamais ce que la personne a fait ce jour-là**. Elle est publique sans rien
+livrer.
+
+**`CouvertureJour.tsx`** : un SVG `0 0 100 140`, sans dépendance — la marque
+`AIME MAGAZINE`, le numéro et la semaine, le cadran au centre, le titre, la date
+écrite en bas, quatre clés. L'image **dit ce qu'elle est** pour qui ne la voit
+pas (`aria-label`), et la variante `vignette` enlève les détails dans une grille.
+
+**`GalerieCouvertures.tsx` — le kiosque.** Les **douze mois**, les filtres
+(quatre saisons, jours noirs), la grille, le compte de ce qui est affiché, et
+**la porte vers l'univers** de la couverture. Il est posé dans `/magazine`,
+**juste avant `Le chiffre`** : on regarde l'année, puis on lit le jour.
+
+**Trois correctifs de la même passe.** Le bouton des paramètres (en bas à
+gauche) devient un **picto seul**, `h-11 w-11`, comme le bouton d'état : deux
+boutons qui se ressemblent parce qu'ils font la même chose. Dans la nav
+verticale, **Shop et Magazine prennent le dessin commun** — plus de rond blanc,
+qui donnait l'impression d'être **sélectionnés** alors qu'ils ne l'étaient pas.
+Et `SiteFooter.tsx` donne **un pied commun à tout le site** : la marque, la
+signature (`SIGNATURE_EDITEUR`, `ASSOCIATION`) et les portes de sortie. Les pages
+intimes — le site des mariés, l'invitation, les éditeurs, l'atelier — **n'en ont
+pas** : on y entre pour faire, pas pour visiter.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 933**, `npm run
+build` OK. Les vérifications de la passe : une couverture par jour (**365 en
+2026, 366 en 2028**), l'identifiant, les 24 branches et leurs longueurs, les
+heures de lumière marquées, les quatre saisons et leurs quatre fonds, les jours
+noirs et leur raison, le titre, la figure, la date écrite, le numéro, les clés,
+le 31 décembre et le 29 février, la stabilité de la graine et la différence entre
+deux jours, les mois entiers, la couverture rendue (la marque, le fond, le nom,
+la date, le cadran, ce que l'image dit), la vignette, le kiosque (son titre, ses
+douze mois, ses saisons, son compte), **et le pied commun** (la barre qui ne se
+double pas sur l'accueil, le pied sur toutes les pages, la signature et les
+portes).

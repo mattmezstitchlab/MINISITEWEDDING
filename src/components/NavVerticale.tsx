@@ -45,7 +45,8 @@ export default function NavVerticale() {
   return (
     <div className="pointer-events-none fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 sm:block">
       <div className="pointer-events-auto flex flex-col items-center gap-1 rounded-full border border-white/12 bg-[#0B0C12]/95 p-1.5 shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-        {/* Les deux portes du site, en blanc : le Shop, le Magazine. */}
+        {/* Les deux portes du site — **au même dessin que les autres** : un
+            rond blanc se lirait comme un état choisi, pas comme une porte. */}
         <Pastille label={survole ? `Le Shop de ${survole.nom}` : 'Le Shop'} icone={ShoppingCart} onClick={() => navigate(`/shop${suite}`)} />
         <Pastille label={survole ? `Le Magazine de ${survole.nom}` : 'Le Magazine'} icone={BookOpen} onClick={() => navigate(`/magazine${suite}`)} />
 
@@ -153,7 +154,7 @@ function Pastille({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="group relative flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0B0C12] shadow-[0_6px_16px_rgba(0,0,0,0.45)] transition hover:scale-105 sm:h-10 sm:w-10"
+      className="group relative flex h-9 w-9 items-center justify-center rounded-full text-white/65 transition hover:bg-white/12 hover:text-white sm:h-10 sm:w-10"
     >
       <Icone size={16} />
       <span className="pointer-events-none absolute right-12 whitespace-nowrap rounded-lg bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0B0C12] opacity-0 shadow-md transition-opacity group-hover:opacity-100">

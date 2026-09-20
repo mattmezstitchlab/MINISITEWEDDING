@@ -89,6 +89,11 @@ import {
 import MiseEnLumiere from '../src/components/MiseEnLumiere';
 import LeChiffre from '../src/components/LeChiffre';
 import LeTemps from '../src/components/LeTemps';
+import CouvertureJour from '../src/components/CouvertureJour';
+import GalerieCouvertures from '../src/components/GalerieCouvertures';
+import {
+  FOND_NOIR, HEURES_DE_LUMIERE, MOIS, couverturesDeLAnnee, couverturesDuMois, couvertureDuJour, graine,
+} from '../src/lib/couvertureDuJour';
 import {
   GESTES, LIGNES_MAX, anneesDuTemps, chargerTemps, dateDUneLigne, effacerTemps, enregistrerGeste,
   heureCourte, jourCourt, lignesDeLAnnee, lignesDuJour, moisDeLAnnee, regleDuGeste, resumeDuTemps,
@@ -1000,7 +1005,16 @@ const chromeAccueil = renderToStaticMarkup(
     createElement(SiteChrome, null, createElement('div', null, 'contenu')),
   ),
 );
-check('sur l’accueil, le chrome ne double pas la barre de la page', chromeAccueil.includes('SUPER MARIAGE'), false);
+check('sur l’accueil, le chrome ne double pas la barre de la page', chromeAccueil.includes('aria-label="La barre du site"'), false);
+check('la barre est bien sur les autres pages', chromeMetier.includes('aria-label="La barre du site"'), true);
+/* Le pied, lui, est partout : c'est la même signature et les mêmes portes. */
+check('le pied commun est au bas de toutes les pages', [chromeMetier, chromeAccueil].every((h) => h.includes('aria-label="Les portes du site"')), true);
+check(
+  'il porte la signature du fondateur et l’association',
+  ['LE FONDATEUR ET CRÉATEUR D’AIME®', 'Association Le Monde Aime'].every((m) => chromeAccueil.includes(m)),
+  true,
+);
+check('et les portes du site', ['Le magazine', 'Le shop', 'La timeline'].every((l) => chromeAccueil.includes(l)), true);
 check('mais le dock y est', chromeAccueil.includes('SUPER MARIÉS'), true);
 /* La nav verticale, elle, est montée une fois pour tout le site. */
 check('la nav verticale y est', chromeAccueil.includes('aria-label="Le Magazine"'), true);
@@ -2633,6 +2647,80 @@ const tempsVide = renderToStaticMarkup(
 );
 check('vide, il dit ce qui l’écrira', tempsVide.includes('Rien encore aujourd’hui'), true);
 check('et n’invente aucune année', tempsVide.includes('Aucune année pour l’instant'), true);
+
+/* ————————— LES 365 COUVERTURES : UNE PAR JOUR, LE MÊME DESSIN ————————— */
+
+const anneeCouv = 2026;
+const couvertures = couverturesDeLAnnee(anneeCouv);
+check('il y a une couverture par jour de l’année', couvertures.length, 365);
+check('et une année bissextile en a une de plus', couverturesDeLAnnee(2028).length, 366);
+check('chaque couverture a son identifiant de date', couvertures[0]!.id, '2026-01-01');
+check('chaque couverture a ses vingt-quatre branches', couvertures.every((c) => c.branches.length === 24), true);
+check(
+  'les heures de lumière sont marquées, les autres non',
+  couvertures[0]!.branches.filter((b) => b.eclatante).map((b) => b.heure),
+  HEURES_DE_LUMIERE,
+);
+check('les longueurs tiennent dans l’intervalle', couvertures.every((c) => c.branches.every((b) => b.longueur > 0 && b.longueur <= 1)), true);
+
+check('les quatre saisons du jeu sont là', [...new Set(couvertures.map((c) => c.saison.id))].sort().join(','), 'automne,ete,hiver,printemps');
+check('et chaque saison donne son fond', new Set(couvertures.filter((c) => !c.pasCommeLesAutres).map((c) => c.fond)).size, 4);
+check('les jours qui ne sont pas comme les autres passent au noir', couvertures.some((c) => c.pasCommeLesAutres && c.fond === FOND_NOIR), true);
+check('et ils disent pourquoi', couvertures.filter((c) => c.pasCommeLesAutres).every((c) => c.raison.length > 12), true);
+check(
+  'le dimanche est l’un d’eux — un rythme visible au kiosque',
+  couvertureDuJour(new Date(2026, 8, 20)).pasCommeLesAutres,
+  true,
+);
+
+const jourDeFete = couvertureDuJour(new Date(2026, 8, 21));
+check('le jour de la fête donne son nom', jourDeFete.titre, 'Saint Matthieu');
+check('avec sa carte de la semaine', jourDeFete.figure, 'Roi de carreau');
+check('et sa date écrite', jourDeFete.dateLongue, '21 septembre 2026');
+check('et son numéro dans l’année', jourDeFete.numero, 264);
+check('les clés du jour sont là', jourDeFete.cles.slice(0, 3).map((c) => c.label), ['Le ciel', 'La lune', 'Le chiffre']);
+check('le jour de trop garde son nom', couvertureDuJour(new Date(2026, 11, 31)).titre, 'Le jour de trop — Sylvestre');
+check('et celui du 29 février n’a pas de prénom', couvertureDuJour(new Date(2028, 1, 29)).titre, 'Le jour de trop');
+
+check('la graine est stable', graine('2026-09-21'), graine('2026-09-21'));
+check('et deux textes différents donnent deux graines', graine('a') === graine('b'), false);
+check(
+  'la même date donne toujours la même couverture',
+  JSON.stringify(couvertureDuJour(new Date(2026, 5, 14)).branches) ===
+    JSON.stringify(couvertureDuJour(new Date(2026, 5, 14)).branches),
+  true,
+);
+check(
+  'et deux jours différents ne se ressemblent pas',
+  JSON.stringify(couvertureDuJour(new Date(2026, 5, 14)).branches) !==
+    JSON.stringify(couvertureDuJour(new Date(2026, 5, 15)).branches),
+  true,
+);
+check('un mois se fabrique tout entier', couverturesDuMois(2026, 2).length, 28);
+check('février 2028 en a vingt-neuf', couverturesDuMois(2028, 2).length, 29);
+check('les douze mois sont nommés', MOIS.length, 12);
+
+/* La couverture, telle qu’elle se dessine. */
+const svgCouverture = renderToStaticMarkup(createElement(CouvertureJour, { couverture: jourDeFete }));
+check('la couverture porte la marque', svgCouverture.includes('AIME MAGAZINE'), true);
+check('le fond est uni, et c’est la couleur du jour', svgCouverture.includes(`fill="${jourDeFete.fond}"`), true);
+check('le nom du jour est écrit', svgCouverture.includes('Saint Matthieu'), true);
+check('la date est en bas', svgCouverture.includes('21 SEPTEMBRE 2026'), true);
+check('la création est au centre', svgCouverture.includes('<line'), true);
+check('et l’image dit ce qu’elle est, pour qui ne la voit pas', svgCouverture.includes('aria-label="Saint Matthieu — 21 septembre 2026'), true);
+
+const svgVignette = renderToStaticMarkup(createElement(CouvertureJour, { couverture: jourDeFete, vignette: true }));
+check('la vignette se passe des détails', svgVignette.includes('FOND NOIR —'), false);
+
+/* Le kiosque : les mois, les saisons, et les couvertures. */
+const kiosque = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(GalerieCouvertures as never, { annee: 2026 })),
+);
+check('le kiosque s’annonce', kiosque.includes('Les 365 couvertures de l’année'), true);
+check('il propose les douze mois', MOIS.every((m) => kiosque.includes(m.nom)), true);
+check('et les quatre saisons', ['Printemps', 'Été', 'Automne', 'Hiver'].every((s) => kiosque.includes(s)), true);
+check('il compte ce qu’il montre', kiosque.includes('couvertures affichées'), true);
+check('et il dit à quoi il sert', kiosque.includes('ce qui va'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

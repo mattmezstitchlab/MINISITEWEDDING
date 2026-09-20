@@ -34,7 +34,10 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
         aria-hidden="true"
       />
 
-      <nav className="fixed inset-x-0 top-3 z-50 flex items-center justify-between gap-3 px-4 sm:top-4 sm:px-7">
+      <nav
+        aria-label="La barre du site"
+        className="fixed inset-x-0 top-3 z-50 flex items-center justify-between gap-3 px-4 sm:top-4 sm:px-7"
+      >
         <Link to="/" className="flex items-baseline gap-2">
           <span
             data-nom={nom}
