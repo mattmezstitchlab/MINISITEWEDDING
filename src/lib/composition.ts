@@ -98,7 +98,12 @@ export function enregistrerMagazine(m: MagazineCompose): void {
     m2.setItem(
       CLE_DU_MAGAZINE,
       JSON.stringify({
-        personnes: m.personnes.map((p) => ({ prenom: p.prenom, naissance: p.naissance, ville: p.ville })),
+        personnes: m.personnes.map((p) => ({
+          prenom: p.prenom,
+          naissance: p.naissance,
+          ville: p.ville,
+          genre: p.genre,
+        })),
         date: m.date,
         roleId: m.roleId,
       }),
@@ -124,8 +129,10 @@ export function reponseEnregistree(): ReponseDuMagazine | null {
       ? decoderPersonnes(
           garde.personnes
             .map((p) => {
-              const q = (p ?? {}) as { prenom?: unknown; naissance?: unknown; ville?: unknown };
-              return [q.prenom, q.naissance, q.ville].map((v) => (typeof v === 'string' ? v : '')).join(',');
+              const q = (p ?? {}) as { prenom?: unknown; naissance?: unknown; ville?: unknown; genre?: unknown };
+              return [q.prenom, q.naissance, q.ville, q.genre]
+                .map((v) => (typeof v === 'string' ? v : ''))
+                .join(',');
             })
             .join(';'),
         )

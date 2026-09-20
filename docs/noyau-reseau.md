@@ -2523,3 +2523,83 @@ les deux informations essentielles, **le bloc à l'écran** (titre, trois champs
 éteint, bouton, la phrase qui explique le +), **le rôle qui change réellement les
 pages**, la mémoire qui ne garde que la réponse (et le magazine relu identique), le
 `Refaire`, la couverture du bloc quand le magazine existe, et l'écran de composition.
+
+---
+
+## §55 — Ce qu'un prénom dit, ce qu'un âge ouvre : le menu qui se resserre
+
+**La demande.** « Ça manque de possibilités comme **invité**, non ? Et **à plusieurs
+ça peut être un groupe**, ou autres — c'est là le but du jeu. Et **être précis :
+juste après le nom, on va pouvoir capter si femme ou homme, et aussi l'âge, et
+aussi la ville de naissance** — donc ça va logiquement générer **un menu synthétique
+par rapport au magazine, mais surtout par rapport aux 365 magazines**, parce que ça
+va resserrer tout ça pour composer l'essentiel. »
+
+**Des possibilités en plus, et une en moins.** Le menu passe de sept à onze
+propositions : **Je suis invité / invitée** (demandé), **Je suis l'un des mariés**,
+**Je viens avec mes parents**, **Nous sommes un groupe** (trois personnes et plus),
+**Nous venons en famille**. Et les essentielles restent à part — la date du mariage,
+le lieu. Ce qui change tout, c'est que **la liste se resserre avec ce qu'on sait** :
+
+| ce qu'on sait | ce qui s'ouvre |
+| --- | --- |
+| **1 personne** | 6 propositions — invité, témoin, l'un des mariés, prestataire, et les deux essentielles |
+| **1 personne, 10 ans** | 7 — « Je viens avec mes parents » s'ouvre |
+| **2 personnes** | 8 — **« Nous sommes des futurs mariés »**, « Nous sommes déjà mariés » |
+| **3 personnes** | 10 — « Nous sommes un groupe », « Nous venons en famille » |
+
+**Le prénom dit son genre — et rien d'autre.** Deux sources, dans cet ordre :
+
+1. **le calendrier des 365** — la source de la maison. « Emma » est un jour, c'est
+   une sainte : féminin. Et **on ne prend jamais un mot de complément pour un
+   prénom** : « Rose de Lima » donne Rose, « Thérèse de l'Enfant Jésus » donne
+   Thérèse, « Vincent de Paul » donne Vincent — **pas** Paul.
+2. **la liste courte des prénoms courants** — pour ce que le calendrier ne porte
+   pas : Hugo, Chloé, Jade, Nathan, Sarah, Paul, Mathieu…
+
+Et quand les deux se taisent, ou quand **le prénom se porte des deux façons** —
+Camille, Claude, Dominique, Maxime, Alix… — **on ne devine pas : on demande**. Un
+petit bouton à côté du champ montre ce qui a été lu (« Femme », « Homme », « À
+préciser »), d'où ça vient, et **se corrige d'un clic**. Au total, **542 prénoms
+sont lus** sans qu'on ait inventé une ligne.
+
+**Le prénom dit aussi son jour.** « Emma » a son jour : **le 19 avril, n° 109 des
+365** ; « Élodie », le 22 octobre, n° 295. Le bloc le dit à voix haute quand on
+écrit un prénom — et quand le prénom **n'est pas** au calendrier, il le dit aussi :
+*« n'est pas au calendrier des 365 : rien n'est décidé pour lui. »*
+
+**La date de naissance dit l'âge — au jour près.** Vérifié : né le 12 juin 1990, on
+a **37 ans le 12 juin 2027**, et **36 ans la veille**. L'âge affiché ouvre ou ferme
+des propositions (« Je viens avec mes parents — jusqu'à 17 ans »), et le menu dit
+toujours **le plus jeune de la liste**.
+
+**Le jour de naissance a son magazine.** La date de naissance est un jour de
+l'année : chaque pastille dit donc **« né(e) un 12 juin 1990 — le jour de Guy »**,
+en plus de **son jour de prénom**. Deux choses différentes, deux fois vraies : une
+personne née le 12 juin s'appelle rarement Guy, et le magazine sait dire les deux.
+
+**Et le menu devient synthétique.** Son en-tête dit ce qu'on a : *« Ce qui devient
+possible — 2 personnes · le plus jeune a 12 ans »*. Les titres **suivent la langue
+de la personne** : « Je suis invité » devient « Je suis invitée », et le rôle part
+avec — `mariee` au lieu de `marie`. Ce qui est fermé **dit pourquoi** : *« à partir
+de trois personnes »*, *« jusqu'à 17 ans »*.
+
+**Ce qui n'est jamais déduit.** Un prénom donne **un genre et un jour**, une date
+donne **un âge et un jour**, une ville donne **un lieu**. Rien de plus : **jamais un
+rôle, jamais un métier, jamais une histoire**. Le rôle se choisit dans le menu, ou
+reste vide.
+
+**Ce qui se retient, et ce qui voyage.** La mémoire du site et l'adresse gardent la
+réponse — `prenom,naissance,ville,genre` par personne, la date du mariage, le rôle —
+et **le magazine se recompose à l'identique**. Une liste enregistrée avant cette
+passe (sans genre) se relit quand même : on ne casse pas ce qui existe.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npx vite build`
+OK, `npm test` **178 / 55 / 1274**. Vérifications ajoutées : le genre lu (calendrier,
+prénoms courants, mixte, inconnu), **et le jour du prénom** (Emma 109, Élodie 295,
+« Pierre et Paul » ne donnant pas Paul), l'âge **au jour près** (37 ans le jour de
+l'anniversaire, 36 la veille), le jour de naissance, l'écriture courte des dates,
+**les comptes de propositions selon le nombre et l'âge** (6 / 7 / 8 / 10), la
+présence d'« invité », les rôles au féminin, **les raisons de fermeture** (le
+nombre, l'âge), l'aller-retour de la liste avec le genre, la relecture d'une liste
+sans genre, le bloc à l'écran, et la mémoire qui ne garde que la réponse.

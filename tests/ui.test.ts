@@ -33,10 +33,14 @@ import {
   phraseDuMagazine, reponseEnregistree,
 } from '../src/lib/composition';
 import {
-  PROPOSITIONS, dateCourte, decoderPersonnes, encoderPersonnes, jourDeNaissance, motDeLaCondition,
-  personneComplete, propositionsFermees, propositionsPossibles, type PersonneComposee,
+  PROPOSITIONS, ageDePersonne, ageEcrit, dateCourte, decoderPersonnes, encoderPersonnes, jourDeNaissance,
+  motDeLaCondition, personneComplete, propositionsPossibles, raisonDeLaFermeture, roleDeLaProposition,
+  titreDeLaProposition, type PersonneComposee,
 } from '../src/lib/composerPersonnes';
 import { RUBRIQUES } from '../src/lib/aimeMoteur';
+import {
+  dateDuJourNomme, genreDuPrenom, jourDuPrenom, lectureDuPrenom, motsDuNom,
+} from '../src/lib/genreDesPrenoms';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LeMariage from '../src/pages/LeMariage';
@@ -3241,53 +3245,97 @@ check('et chacune dit par où l’on entre', avecPorte.every((f) => f.portes.len
  *
  * Un bloc, un +, trois informations par personne — prénom, date de naissance,
  * ville. Le + est éteint au départ et ne s'allume que lorsque les trois sont
- * écrites ; il ouvre un menu où l'on ajoute des personnes à la suite. Et c'est
- * après avoir rempli que la liste s'ouvre : à deux personnes apparaît « Nous
- * sommes des futurs mariés ».
+ * écrites. Mais le prénom dit déjà le genre et le jour, la date dit l'âge et le
+ * jour de naissance — et c'est après avoir rempli que la liste des possibles
+ * s'ouvre : à deux personnes apparaît « Nous sommes des futurs mariés ».
  */
 
-const paul: PersonneComposee = { id: 'p1', prenom: 'Paul', naissance: '1990-06-12', ville: 'Provins' };
-const emma: PersonneComposee = { id: 'p2', prenom: 'Emma', naissance: '1992-03-04', ville: 'Melun' };
+const paul: PersonneComposee = { id: 'p1', prenom: 'Paul', naissance: '1990-06-12', ville: 'Provins', genre: 'masculin' };
+const emma: PersonneComposee = { id: 'p2', prenom: 'Emma', naissance: '1992-03-04', ville: 'Melun', genre: 'feminin' };
 
 check('une personne n’est complète qu’avec ses trois informations', personneComplete(paul), true);
 check('sans sa date de naissance, elle ne l’est pas', personneComplete({ ...paul, naissance: '' }), false);
 check('sans sa ville non plus', personneComplete({ ...paul, ville: '  ' }), false);
 check('sans son prénom non plus', personneComplete({ ...paul, prenom: '' }), false);
-check('la date de naissance s’écrit court', dateCourte('1990-06-12'), '12.06.1990');
-check('et une date impossible ne s’écrit pas', dateCourte('n’importe quoi'), '');
+check('la condition d’une ligne grisée se dit court',
+  motDeLaCondition(PROPOSITIONS.find((p) => p.id === 'famille')!), 'à partir de trois personnes');
+
+/* ——— CE QUE LE PRÉNOM DIT TOUT SEUL : son genre, et son jour. ——— */
+check('un prénom du calendrier donne son genre', genreDuPrenom('Emma'), 'feminin');
+check('et il vient du calendrier des 365', lectureDuPrenom('Emma').source, 'le calendrier des 365');
+check('un prénom courant que le calendrier ne porte pas donne le sien', genreDuPrenom('Hugo'), 'masculin');
+check('et il vient des prénoms courants', lectureDuPrenom('Hugo').source, 'les prénoms courants');
+check('un prénom des deux façons ne tranche pas', genreDuPrenom('Camille'), null);
+check('et on dit qu’il est mixte', lectureDuPrenom('Camille').mixte, true);
+check('un prénom inconnu ne donne aucun genre', genreDuPrenom('Zorglub'), null);
+check('et on ne l’invente pas', lectureDuPrenom('Zorglub').source, '');
+
+/* Le jour du prénom, parmi les 365 — celui que la personne peut ouvrir. */
+check('Emma a son jour dans l’année', jourDuPrenom('Emma')?.ordinal, 109);
+check('et ce jour est écrit en clair', dateDuJourNomme(jourDuPrenom('Emma')!), '19 avril');
+check('Élodie aussi', jourDuPrenom('Élodie')?.ordinal, 295);
+check('Paul n’est pas au calendrier du site', jourDuPrenom('Paul'), null);
+check('un complément de nom n’est jamais pris pour un prénom', motsDuNom('Pierre et Paul').join('|'), 'PIERRE|PAUL');
+check('et « Rose de Lima » donne Rose', jourDuPrenom('Rose')?.nom, 'Rose de Lima');
+
+/* ——— CE QUE LA DATE DE NAISSANCE DIT : l'âge, exact. ——— */
+check('l’âge se compte au jour près', ageDePersonne(paul, new Date(2027, 5, 12)), 37);
+check('et la veille, ce n’est pas encore l’anniversaire', ageDePersonne(paul, new Date(2027, 5, 11)), 36);
+check('sans date de naissance, pas d’âge', ageDePersonne({ naissance: '' }), null);
+check('et l’âge s’écrit', ageEcrit(paul, new Date(2027, 5, 12)), '37 ans');
 
 /* Le jour de naissance a son magazine : 365 jours, 365 personnages. */
 check('le jour de naissance donne son personnage', jourDeNaissance(paul)?.personnage, 'Guy');
 check('et sa date, en clair', jourDeNaissance(paul)?.dateLongue, '12 juin 1990');
 check('sans date, aucun jour n’est inventé', jourDeNaissance({ ...paul, naissance: '' }), null);
+check('la date de naissance s’écrit court', dateCourte('1990-06-12'), '12.06.1990');
+check('et une date impossible ne s’écrit pas', dateCourte('n’importe quoi'), '');
 
-/* La liste passe dans l'adresse : on la relit à l'identique. */
-const liste = encoderPersonnes([paul, emma]);
-check('la liste s’écrit dans l’adresse', liste, 'Paul,1990-06-12,Provins;Emma,1992-03-04,Melun');
-const listeRelue = decoderPersonnes(liste);
-check('et se relit à l’identique', listeRelue.map((p) => `${p.prenom}/${p.naissance}/${p.ville}`).join(' · '),
-  'Paul/1990-06-12/Provins · Emma/1992-03-04/Melun');
-check('un maillon vide ne fabrique pas de personne', decoderPersonnes(';;').length, 0);
-
-/* CE QUI DEVIENT POSSIBLE : la liste se met à jour avec le nombre de personnes. */
-check('à une personne, quatre propositions s’ouvrent', propositionsPossibles(1).length, 4);
-check('et six à deux personnes', propositionsPossibles(2).length, 6);
+/* ——— CE QUI DEVIENT POSSIBLE : la liste se resserre avec ce qu'on sait. ——— */
+check('sans âge connu, six propositions s’ouvrent à une personne', propositionsPossibles(1).length, 6);
+check('avec un enfant de dix ans, sept', propositionsPossibles(1, 10).length, 7);
+check('à deux personnes, huit', propositionsPossibles(2, 34).length, 8);
+check('à trois personnes, dix', propositionsPossibles(3, 34).length, 10);
+check('« Je suis invité » est du nombre',
+  propositionsPossibles(1).some((p) => p.titre === 'Je suis invité'), true);
 check('à deux personnes, « Nous sommes des futurs mariés » apparaît',
-  propositionsPossibles(2).some((p) => p.titre === 'Nous sommes des futurs mariés'), true);
+  propositionsPossibles(2, 34).some((p) => p.titre === 'Nous sommes des futurs mariés'), true);
 check('et « Nous sommes déjà mariés » avec elle',
-  propositionsPossibles(2).some((p) => p.titre === 'Nous sommes déjà mariés'), true);
+  propositionsPossibles(2, 34).some((p) => p.titre === 'Nous sommes déjà mariés'), true);
 check('à une personne, ces deux-là ne sont pas encore là',
   propositionsPossibles(1).some((p) => p.roleId === 'futurs_maries'), false);
-check('la famille attend la troisième personne',
-  propositionsPossibles(2).some((p) => p.roleId === 'famille'), false);
-check('et arrive à trois', propositionsPossibles(3).some((p) => p.roleId === 'famille'), true);
-check('ce qui est fermé dit à partir de quand ça s’ouvre',
-  motDeLaCondition(propositionsFermees(2)[0]!), 'à partir de trois personnes');
+check('un groupe demande trois personnes',
+  propositionsPossibles(2, 34).some((p) => p.roleId === 'invites' && p.des === 3), false);
+check('et arrive à trois', propositionsPossibles(3, 34).some((p) => p.id === 'groupe'), true);
+check('« je viens avec mes parents » est fermé aux adultes',
+  propositionsPossibles(1, 34).some((p) => p.id === 'enfant'), false);
+check('et ouvert à dix ans', propositionsPossibles(1, 10).some((p) => p.id === 'enfant'), true);
+check('ce qui est fermé par le nombre dit à partir de quand ça s’ouvre',
+  raisonDeLaFermeture(PROPOSITIONS.find((p) => p.id === 'futurs-maries')!, 1), 'à partir de deux personnes');
+check('et ce qui est fermé par l’âge dit jusqu’à quand',
+  raisonDeLaFermeture(PROPOSITIONS.find((p) => p.id === 'enfant')!, 1), 'jusqu’à 17 ans');
 check('les deux informations essentielles sont dans la liste',
   PROPOSITIONS.filter((p) => p.essentielle).map((p) => p.titre).join(' | '),
   'La date du mariage | Le lieu');
 
-/* LE BLOC À L'ÉCRAN : le champ, le + éteint, le bouton. */
+/* Le menu parle la langue de la personne, et donne le rôle qui va avec. */
+const propositionInvite = PROPOSITIONS.find((p) => p.id === 'invite')!;
+const mariePropo = PROPOSITIONS.find((p) => p.id === 'marie')!;
+check('« Je suis invité » devient « Je suis invitée »', titreDeLaProposition(propositionInvite, 'feminin'), 'Je suis invitée');
+check('et le rôle suit', roleDeLaProposition(mariePropo, 'feminin'), 'mariee');
+check('au masculin, rien ne bouge', roleDeLaProposition(mariePropo, 'masculin'), 'marie');
+
+/* ——— LA LISTE PASSE DANS L'ADRESSE, ET SE RELIT. ——— */
+const liste = encoderPersonnes([paul, emma]);
+check('la liste s’écrit dans l’adresse', liste, 'Paul,1990-06-12,Provins,masculin;Emma,1992-03-04,Melun,feminin');
+const listeRelue = decoderPersonnes(liste);
+check('et se relit à l’identique', listeRelue.map((p) => `${p.prenom}/${p.naissance}/${p.ville}/${p.genre}`).join(' · '),
+  'Paul/1990-06-12/Provins/masculin · Emma/1992-03-04/Melun/feminin');
+check('une liste sans genre se relit quand même',
+  decoderPersonnes('Paul,1990-06-12,Provins')[0]?.genre, '');
+check('un maillon vide ne fabrique pas de personne', decoderPersonnes(';;').length, 0);
+
+/* ——— LE BLOC À L'ÉCRAN : le champ, le + éteint, le bouton. ——— */
 localStorage.removeItem(CLE_DU_MAGAZINE);
 const composeur = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(ChampDuMagazine as never, {})),
@@ -3299,6 +3347,8 @@ check('la date de naissance', composeur.includes('Né(e) le'), true);
 check('et la ville de naissance', composeur.includes('Ville de naissance'), true);
 check('le + est éteint au départ', composeur.includes('aria-expanded="false"') && composeur.includes('disabled=""'), true);
 check('et le bloc dit pourquoi', composeur.includes('Le + s’allume quand le prénom, la naissance et la ville sont écrits.'), true);
+check('le genre se demande quand on ne sait pas', composeur.includes('À préciser'), true);
+check('l’âge a sa place, vide au départ', composeur.includes('>âge<'), true);
 check('le bouton dit ce qu’il fait', composeur.includes('Générer mon magazine'), true);
 check('aucune personne ajoutée au départ', composeur.includes('personne dans le magazine'), false);
 
@@ -3310,7 +3360,11 @@ check('et le hero garde sa question à lui', accueil.includes('Qui êtes-vous da
 /* Le magazine existe : le bloc devient sa couverture. */
 localStorage.setItem(
   CLE_DU_MAGAZINE,
-  JSON.stringify({ personnes: [{ prenom: 'Paul', naissance: '1990-06-12', ville: 'Provins' }], date: '2027-06-12', roleId: 'futurs_maries' }),
+  JSON.stringify({
+    personnes: [{ prenom: 'Paul', naissance: '1990-06-12', ville: 'Provins', genre: 'masculin' }],
+    date: '2027-06-12',
+    roleId: 'futurs_maries',
+  }),
 );
 const champCompose = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(ChampDuMagazine as never, {})),
@@ -3362,12 +3416,13 @@ enregistrerMagazine(magFuturs);
 const reponse = reponseEnregistree();
 check('la réponse se retient', reponse?.date, '2027-06-12');
 check('avec ses personnes', reponse?.personnes.map((p) => p.prenom).join('|'), 'Paul|Emma');
+check('et leur genre', reponse?.personnes.map((p) => p.genre).join('|'), 'masculin|feminin');
 check('et son rôle', reponse?.roleId, 'futurs_maries');
 check('le magazine relu se recompose à l’identique', magazineCompose()?.edition.pages.length, 24);
 check(
   'la mémoire ne garde que la réponse, jamais le magazine calculé',
   localStorage.getItem(CLE_DU_MAGAZINE),
-  '{"personnes":[{"prenom":"Paul","naissance":"1990-06-12","ville":"Provins"},{"prenom":"Emma","naissance":"1992-03-04","ville":"Melun"}],"date":"2027-06-12","roleId":"futurs_maries"}',
+  '{"personnes":[{"prenom":"Paul","naissance":"1990-06-12","ville":"Provins","genre":"masculin"},{"prenom":"Emma","naissance":"1992-03-04","ville":"Melun","genre":"feminin"}],"date":"2027-06-12","roleId":"futurs_maries"}',
 );
 effacerMagazine();
 check('et on peut le refaire', magazineCompose(), null);
@@ -3376,7 +3431,11 @@ check('et on peut le refaire', magazineCompose(), null);
 const superComposition = renderToStaticMarkup(
   createElement(
     MemoryRouter,
-    { initialEntries: ['/generer?p=Paul%2C1990-06-12%2CProvins%3BEmma%2C1992-03-04%2CMelun&jour=2027-06-12&role=futurs_maries'] },
+    {
+      initialEntries: [
+        '/generer?p=Paul%2C1990-06-12%2CProvins%2Cmasculin%3BEmma%2C1992-03-04%2CMelun%2Cfeminin&jour=2027-06-12&role=futurs_maries',
+      ],
+    },
     createElement(Generating as never),
   ),
 );
