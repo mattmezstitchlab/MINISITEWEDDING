@@ -43,9 +43,11 @@ import {
 } from '../src/lib/genreDesPrenoms';
 import {
   FONDS_ATTENDUS, RANGS_PAR_PLAN, SCENES_ATTENDUES, adresseDuFichier, choisirLeMeilleurVisuel,
-  distanceDesCouleurs, etatDuCasting, fichiersDuPlan, fondsDeCouvertureDeLAnnee, noterCandidat,
-  scenesDeLAnnee, type AttenduVisuel, type CandidatVisuel,
+  distanceDesCouleurs, eliminerEntreJours, etatDuCasting, fichiersDuPlan,
+  fondsDeCouvertureDeLAnnee, joursLiesAuJour, noterCandidat, scenesDeLAnnee,
+  type AttenduVisuel, type CandidatVisuel,
 } from '../src/lib/castingVisuels';
+import { MOMENTS_VISUELS } from '../src/lib/promptsVisuels';
 import { PHOTOS_LIVREES, photoDuPlan } from '../src/lib/photosDuMagazine';
 import CouvertureJour from '../src/components/CouvertureJour';
 import { couvertureDuJour } from '../src/lib/couvertureDuJour';
@@ -3568,6 +3570,71 @@ const couverturePhotographiee = renderToStaticMarkup(
 check('avec une photo, elle prend le fond', couverturePhotographiee.includes('href="/images/magazine/09-21/couverture.jpg"'), true);
 check('et la couverture reste la même', couverturePhotographiee.includes('AIME MAGAZINE'), true);
 check('avec la couleur du jour en voile', couverturePhotographiee.includes('opacity="0.42"'), true);
+
+/* ---------------------------------------------------------------------------
+ * RASSEMBLER PLUSIEURS JOURS, PUIS ÉLIMINER
+ *
+ * Un jour en tient d'autres : le même personnage ailleurs dans l'année, la même
+ * porte, le même métier, la même famille visuelle. Le casting ne regarde donc
+ * jamais un seul magazine — il rassemble, il filtre, il refiltre, et il procède
+ * par élimination, un tour après l'autre, en disant qui sort et pourquoi.
+ */
+
+const liesAuMatthieu = joursLiesAuJour(2026, '09-21');
+check('un jour tient d’autres jours', liesAuMatthieu.length > 0, true);
+check('aucun lien ne pointe vers le jour lui-même', liesAuMatthieu.every((l) => l.jour !== '09-21'), true);
+check('et chaque lien a sa raison écrite', liesAuMatthieu.every((l) => l.raison.length > 0), true);
+check('au moins un lien est une famille visuelle',
+  liesAuMatthieu.some((l) => l.raison.includes('la même famille visuelle')), true);
+check('le 21 septembre tient 15 jours en 2026', liesAuMatthieu.length, 15);
+
+const midiReel = MOMENTS_VISUELS.find((m) => m.id === 'midi')!;
+const aubeReelle = MOMENTS_VISUELS.find((m) => m.id === 'aube')!;
+const attenduMatthieu: AttenduVisuel = {
+  jour: '09-21', slot: 'midi', chemin: '/images/magazine/09-21/midi',
+  fichiers: fichiersDuPlan('09-21', 'midi'), moment: midiReel, palette: '#7FB77E',
+  titre: 'Saint Matthieu', sujet: 'Matthieu, le midi — le portrait.', format: '5 / 7',
+};
+const attenduPrintemps: AttenduVisuel = {
+  jour: '05-20', slot: 'aube', chemin: '/images/magazine/05-20/aube',
+  fichiers: fichiersDuPlan('05-20', 'aube'), moment: aubeReelle, palette: '#9FD0E8',
+  titre: 'Bernadette', sujet: 'Bernadette, l’aube — le réveil.', format: '5 / 7',
+};
+const sixCandidats: CandidatVisuel[] = [
+  { fichier: '/images/magazine/09-21/midi-2.jpg', moment: 'midi', lumiere: 'dure, studio, graphique', couleur: '#86B87F', largeur: 1000, hauteur: 1400, contient: ['matthieu', 'portrait'] },
+  { fichier: '/images/magazine/05-20/aube.jpg', moment: 'aube', lumiere: 'froide et rasante', couleur: '#9ACBE2', largeur: 1000, hauteur: 1400, contient: ['chaises', 'brume'] },
+  { fichier: '/images/magazine/05-20/soir.jpg', moment: 'soir', lumiere: 'chaude', couleur: '#9ACBE2', largeur: 1000, hauteur: 1400, contient: ['chaises'] },
+  { fichier: '/images/magazine/09-21/midi.jpg', moment: 'midi', lumiere: 'dure', couleur: '#86B87F', largeur: 1400, hauteur: 1000, contient: ['portrait'] },
+  { fichier: '/images/magazine/05-20/aube-2.jpg', moment: 'aube', lumiere: 'froide', couleur: '#C22222', largeur: 1000, hauteur: 1400, contient: ['chaises'] },
+  { fichier: '/images/magazine/05-20/aube-3.jpg', moment: 'aube', lumiere: 'rasante', couleur: '#9ACBE2', largeur: 1000, hauteur: 1400, contient: ['voiture', 'néon'] },
+];
+
+const elimination = eliminerEntreJours(sixCandidats, [attenduMatthieu, attenduPrintemps]);
+check('le casting rassemble six candidats', elimination.rassembles, 6);
+check('pour deux jours', elimination.joursRassembles.length, 2);
+check('et les cinq tours passent dans l’ordre',
+  elimination.tours.map((t) => t.nom).join(' > '),
+  'le moment > le cadrage > la couleur > la lumière > le sujet');
+check('le tour du moment sort la scène du soir',
+  elimination.tours[0].elimines.map((e) => e.fichier).join(','), '/images/magazine/05-20/soir.jpg');
+check('le tour du cadrage sort le paysage',
+  elimination.tours[1].elimines.map((e) => e.fichier).join(','), '/images/magazine/09-21/midi.jpg');
+check('le tour de la couleur sort le rouge',
+  elimination.tours[2].elimines.map((e) => e.fichier).join(','), '/images/magazine/05-20/aube-2.jpg');
+check('le tour du sujet sort ce qui ne répond à rien',
+  elimination.tours[4].elimines.map((e) => e.fichier).join(','), '/images/magazine/05-20/aube-3.jpg');
+check('chaque élimination a sa raison', elimination.tours.every((t) => t.elimines.every((e) => e.raison.length > 0)), true);
+check('il reste deux images — même s’il y en a plusieurs', elimination.retenus.length, 2);
+check('toutes les deux à la même note', new Set(elimination.retenus.map((r) => r.note.total)).size, 1);
+check('et chacune répond à son jour',
+  elimination.retenus.map((r) => r.jourRepondu).sort().join(','), '05-20,09-21');
+check('la décision raconte les tours et les retenus', elimination.decision.includes('retenus : '), true);
+check('et elle dit combien de jours ont été rassemblés', elimination.decision.includes('2 jours'), true);
+
+const eliminationAVide = eliminerEntreJours([], [attenduMatthieu]);
+check('à vide, rien n’est retenu', eliminationAVide.retenus.length, 0);
+check('et le dessin garde sa place', eliminationAVide.decision.includes('le dessin garde sa place'), true);
+
 
 /* ——— LA COMPOSITION SE REGARDE, ET ON PEUT PASSER ——— */
 check('l’écran de composition laisse passer', superComposition.includes('Passer la composition'), true);

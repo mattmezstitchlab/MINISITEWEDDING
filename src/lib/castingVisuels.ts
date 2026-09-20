@@ -364,3 +364,256 @@ export function choisirLeMeilleurVisuel(
 
 /** Le rappel du format demandé, pour ne pas l'oublier en produisant. */
 export const CADRAGE_DU_CASTING = CADRAGE;
+
+/* ———————————— RASSEMBLER PLUSIEURS JOURS, PUIS ÉLIMINER ———————————— */
+
+/**
+ * **Un jour en tient d'autres.** Le personnage du jour peut être fêté ailleurs dans
+ * l'année ; la même porte peut s'ouvrir à une autre date ; le même métier peut se
+ * patronner un autre jour ; et des jours différents partagent la même famille
+ * visuelle. Le casting ne regarde donc jamais **un seul magazine** : il rassemble
+ * les jours liés, puis **il filtre, il refiltre, et il procède par élimination**.
+ */
+export interface JourLie {
+  /** `MM-JJ`. */
+  jour: string;
+  /** Pourquoi ce jour tient avec l'autre — en clair. */
+  raison: string;
+}
+
+/** La date qui va avec `MM-JJ`, à midi pour éviter tout bord de fuseau. */
+function dateDuJourMMJJ(annee: number, jour: string): Date {
+  const [mois, quantieme] = jour.split('-').map(Number);
+  return new Date(annee, mois - 1, quantieme, 12);
+}
+
+function sansAccentsNiCasse(texte: string): string {
+  return texte.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+/** Les mots qui comptent, pour comparer des sujets entre eux. */
+function motsQuiComptent(texte: string): string[] {
+  return sansAccentsNiCasse(texte)
+    .split(/[^a-z]+/)
+    .filter((m) => m.length >= 4);
+}
+
+/**
+ * **Les jours liés à un jour** : le même personnage ailleurs dans l'année, la même
+ * porte ouverte, le même métier patronné, la même famille visuelle. Chaque lien a
+ * **sa raison écrite** — on ne rassemble jamais des jours sans savoir pourquoi.
+ */
+export function joursLiesAuJour(annee: number, jour: string): JourLie[] {
+  const date = dateDuJourMMJJ(annee, jour);
+  const fiche = ficheDuJour(date);
+  const couverture = couvertureDuJour(date);
+  const lies: JourLie[] = [];
+
+  const fichesParJour = new Map<string, { portes: string[]; metiers: string[] }>();
+  for (let mois = 0; mois < 12; mois += 1) {
+    const joursDuMois = new Date(annee, mois + 1, 0).getDate();
+    for (let quantieme = 1; quantieme <= joursDuMois; quantieme += 1) {
+      const autreJour = `${String(mois + 1).padStart(2, '0')}-${String(quantieme).padStart(2, '0')}`;
+      if (autreJour === jour) continue;
+      const autre = ficheDuJour(new Date(annee, mois, quantieme, 12));
+      fichesParJour.set(autreJour, { portes: autre.portes, metiers: autre.metiers });
+    }
+  }
+
+  for (let mois = 0; mois < 12; mois += 1) {
+    const joursDuMois = new Date(annee, mois + 1, 0).getDate();
+    for (let quantieme = 1; quantieme <= joursDuMois; quantieme += 1) {
+      const autreJour = `${String(mois + 1).padStart(2, '0')}-${String(quantieme).padStart(2, '0')}`;
+      if (autreJour === jour) continue;
+      const autreCouverture = couvertureDuJour(new Date(annee, mois, quantieme, 12));
+      const autreFiche = fichesParJour.get(autreJour)!;
+      const raisons: string[] = [];
+      if (autreCouverture.titre.toLowerCase() === couverture.titre.toLowerCase()) {
+        raisons.push(`le même personnage, ${couverture.titre}, y est fêté`);
+      }
+      const portesCommunes = fiche.portes.filter((p) => autreFiche.portes.includes(p));
+      if (portesCommunes.length > 0) {
+        raisons.push(`la même porte s'y ouvre (${portesCommunes.join(', ')})`);
+      }
+      const metiersCommuns = fiche.metiers.filter((m) => autreFiche.metiers.includes(m));
+      if (metiersCommuns.length > 0) {
+        raisons.push(`le même métier s'y patronne (${metiersCommuns.join(', ')})`);
+      }
+      if (
+        autreCouverture.saison.id === couverture.saison.id &&
+        autreCouverture.dense === couverture.dense &&
+        autreCouverture.pasCommeLesAutres === couverture.pasCommeLesAutres
+      ) {
+        raisons.push(`la même famille visuelle (${couverture.saison.nom}${couverture.pasCommeLesAutres ? ', un jour à part' : ''})`);
+      }
+      if (raisons.length > 0) lies.push({ jour: autreJour, raison: raisons.join(' ; ') });
+    }
+  }
+  return lies;
+}
+
+export interface TourDElimination {
+  /** Le nom du filtre : « le moment », « la couleur », « le sujet »… */
+  nom: string;
+  /** Ceux que ce tour a sortis, et pourquoi. */
+  elimines: Array<{ fichier: string; raison: string }>;
+  /** Combien il en reste après ce tour. */
+  restants: number;
+}
+
+export interface EliminationEntreJours {
+  /** Les jours dont les briefs ont été rassemblés. */
+  joursRassembles: string[];
+  /** Le nombre de candidats au départ. */
+  rassembles: number;
+  /** Chaque tour, dans l'ordre, avec ses éliminés et leurs raisons. */
+  tours: TourDElimination[];
+  /** Ce qui reste : les retenus, avec leur note et le jour auquel ils répondent. */
+  retenus: Array<{ candidat: CandidatVisuel; note: NoteDeCandidat; jourRepondu: string }>;
+  /** Le récit complet du casting, en clair — c'est ce qui se signe. */
+  decision: string;
+}
+
+/** La couleur est éliminée au-delà de cette distance aux jours rassemblés. */
+export const SEUIL_ELIMINATION_COULEUR = 160;
+
+/**
+ * **LE CASTING ENTRE PLUSIEURS JOURS.** On rassemble les candidats et les briefs de
+ * plusieurs jours (le jour du mariage **et** les jours qui le tiennent), puis on
+ * procède **par élimination**, un tour après l'autre :
+ *
+ * 1. **le moment** — le moment déclaré doit être demandé par l'un des jours ;
+ * 2. **le cadrage** — les dimensions doivent répondre au 5 / 7 ;
+ * 3. **la couleur** — la dominante doit approcher l'un des jours rassemblés ;
+ * 4. **la lumière** — une scène sans lumière déclarée sort ;
+ * 5. **le sujet** — ce qu'on voit doit répondre à l'un des jours rassemblés.
+ *
+ * Ce qui reste est noté contre le brief auquel il répond le mieux, et **l'on garde
+ * tous les premiers** — même s'il y en a plusieurs. Chaque tour écrit qui il sort,
+ * et pourquoi.
+ */
+export function eliminerEntreJours(
+  candidats: CandidatVisuel[],
+  attendus: AttenduVisuel[],
+): EliminationEntreJours {
+  const joursRassembles = [...new Set(attendus.map((a) => a.jour))].sort();
+  const rassembles = candidats.length;
+  let pool = [...candidats];
+  const tours: TourDElimination[] = [];
+
+  const appliquerTour = (nom: string, passe: (c: CandidatVisuel) => boolean, raisonElimination: (c: CandidatVisuel) => string) => {
+    const elimines: TourDElimination['elimines'] = [];
+    const restants: CandidatVisuel[] = [];
+    for (const candidat of pool) {
+      if (passe(candidat)) restants.push(candidat);
+      else elimines.push({ fichier: candidat.fichier, raison: raisonElimination(candidat) });
+    }
+    pool = restants;
+    tours.push({ nom, elimines, restants: pool.length });
+  };
+
+  /* Tour 1 — le moment. */
+  const momentsAttendus = new Set(
+    attendus.filter((a) => a.moment).flatMap((a) => [a.moment!.id, sansAccentsNiCasse(a.moment!.nom)]),
+  );
+  const unFondEstAttendu = attendus.some((a) => !a.moment);
+  if (momentsAttendus.size > 0) {
+    appliquerTour(
+      'le moment',
+      (c) =>
+        c.moment === undefined ||
+        momentsAttendus.has(c.moment) ||
+        momentsAttendus.has(sansAccentsNiCasse(c.moment)) ||
+        (unFondEstAttendu && c.moment === 'couverture'),
+      (c) => `le moment déclaré (${c.moment}) n'est demandé par aucun des jours rassemblés`,
+    );
+  }
+
+  /* Tour 2 — le cadrage. */
+  appliquerTour(
+    'le cadrage',
+    (c) => {
+      if (!c.largeur || !c.hauteur) return true;
+      return Math.abs(c.largeur / c.hauteur - 5 / 7) <= 0.1;
+    },
+    (c) => `le cadrage déclaré (${c.largeur} × ${c.hauteur}) s'éloigne du 5 / 7`,
+  );
+
+  /* Tour 3 — la couleur, contre n'importe lequel des jours rassemblés. */
+  appliquerTour(
+    'la couleur',
+    (c) => {
+      if (!c.couleur) return true;
+      let plusProche: number | null = null;
+      for (const attendu of attendus) {
+        const distance = distanceDesCouleurs(c.couleur, attendu.palette);
+        if (distance !== null && (plusProche === null || distance < plusProche)) plusProche = distance;
+      }
+      return plusProche === null || plusProche <= SEUIL_ELIMINATION_COULEUR;
+    },
+    (c) => `la couleur déclarée (${c.couleur}) est trop loin de tous les jours rassemblés`,
+  );
+
+  /* Tour 4 — la lumière : une scène qui ne la déclare pas sort. */
+  if (attendus.some((a) => a.moment)) {
+    appliquerTour(
+      'la lumière',
+      (c) => (c.moment === 'couverture' ? true : Boolean(c.lumiere)),
+      () => 'la lumière n’est pas déclarée : impossible de juger le moment',
+    );
+  }
+
+  /* Tour 5 — le sujet, contre n'importe lequel des jours rassemblés. */
+  const motsAttendus = new Set(
+    attendus.flatMap((a) =>
+      motsQuiComptent(`${a.sujet} ${a.titre} ${a.moment?.decor ?? ''} ${a.moment?.stylisme ?? ''}`),
+    ),
+  );
+  appliquerTour(
+    'le sujet',
+    (c) => {
+      if (!c.contient || c.contient.length === 0) return true;
+      return c.contient.some((mot) => {
+        const normalise = sansAccentsNiCasse(mot);
+        return [...motsAttendus].some((attendu) => normalise.includes(attendu) || attendu.includes(normalise));
+      });
+    },
+    (c) => `ce qu'on y voit (${c.contient!.join(', ')}) ne répond à aucun des jours rassemblés`,
+  );
+
+  /* Ce qui reste : chacun répond au brief qui lui va le mieux. */
+  const retenus = pool
+    .map((candidat) => {
+      const candidatsAttendus = attendus.filter(
+        (a) =>
+          (!a.moment && (candidat.moment === 'couverture' || candidat.moment === undefined)) ||
+          (a.moment && a.moment.id === candidat.moment),
+      );
+      const contre = candidatsAttendus.length > 0 ? candidatsAttendus : attendus;
+      let meilleure: { note: NoteDeCandidat; attendu: AttenduVisuel } | null = null;
+      for (const attendu of contre) {
+        const note = noterCandidat(candidat, attendu);
+        if (!meilleure || note.total > meilleure.note.total) meilleure = { note, attendu };
+      }
+      return { candidat, note: meilleure!.note, jourRepondu: meilleure!.attendu.jour };
+    })
+    .sort((a, b) => b.note.total - a.note.total);
+
+  const meilleurScore = retenus[0]?.note.total ?? null;
+  const gardes = retenus.filter((r) => r.note.total === meilleurScore);
+
+  const recitDesTours = tours
+    .map((tour) =>
+      tour.elimines.length === 0
+        ? `tour « ${tour.nom} » : personne ne sort`
+        : `tour « ${tour.nom} » : ${tour.elimines.length} sorti${tour.elimines.length > 1 ? 's' : ''} (${tour.elimines.map((e) => e.fichier).join(', ')})`,
+    )
+    .join(' ; ');
+
+  const decision =
+    gardes.length > 0
+      ? `${rassembles} candidats rassemblés pour ${joursRassembles.length} jour${joursRassembles.length > 1 ? 's' : ''} (${joursRassembles.join(', ')}) ; ${recitDesTours} ; retenus : ${gardes.map((g) => g.candidat.fichier).join(', ')} à ${meilleurScore} point${meilleurScore! > 1 ? 's' : ''}.`
+      : `${rassembles} candidats rassemblés pour ${joursRassembles.length} jour${joursRassembles.length > 1 ? 's' : ''} (${joursRassembles.join(', ')}) ; ${recitDesTours} ; rien ne passe les filtres — le dessin garde sa place.`;
+
+  return { joursRassembles, rassembles, tours, retenus: gardes, decision };
+}

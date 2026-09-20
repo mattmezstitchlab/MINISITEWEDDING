@@ -2696,3 +2696,76 @@ raisons écrites), **le classement** (la bonne d'abord, la mauvaise dernière), 
 décision signée**, le cas sans candidate (« le dessin prend le relais »), **la
 couverture avec et sans photo**, le lien « Passer la composition », et **le
 composeur aux deux endroits** de l'accueil.
+
+---
+
+## §57 — Rassembler plusieurs jours, puis éliminer — et les deux prompts de production
+
+**Le retour.** « Oui, mais le casting doit prendre en compte les autres infos du
+magazine — des éléments, des sujets, des détails — qui se trouvent **dans un autre
+jour, ou dans plusieurs autres jours**. En gros, **ça rassemble plusieurs
+magazines en les filtrant, puis on refiltre, et ainsi de suite : on procède par
+élimination.** » Et pour la production : **un prompt pour ChatGPT** qui construise
+les journées du reste de l'année, avec **la structure déjà écrite** ; et **un
+prompt pour Gemini, Leonardo, Arena Studio ou une autre conversation Arena** :
+**une bibliothèque d'images, à part sur GitHub, qui servira de serveur et de
+liens.**
+
+**Un jour en tient d'autres — et maintenant, c'est écrit.**
+`joursLiesAuJour(annee, jour)` rend les jours qui tiennent avec un jour, chacun
+avec **sa raison** : **le même personnage** fêté ailleurs dans l'année, **la même
+porte** qui s'ouvre, **le même métier** qui se patronne, **la même famille
+visuelle** (même saison, même densité, même part d'exception). Le 21 septembre
+2026 tient **15 jours** — tous par la famille visuelle des jours à part de l'été ;
+un jour ordinaire de mai en tient **69**. On ne rassemble jamais des jours sans
+savoir pourquoi.
+
+**Le casting devient un entonnoir.** `eliminerEntreJours(candidats, attendus)`
+prend **les candidats de plusieurs jours et les briefs de ces jours**, puis procède
+**par élimination**, un tour après l'autre :
+
+1. **le moment** — le moment déclaré doit être demandé par l'un des jours ;
+2. **le cadrage** — les dimensions doivent répondre au 5 / 7 ;
+3. **la couleur** — la dominante doit approcher l'un des jours rassemblés (160 canaux) ;
+4. **la lumière** — une scène qui ne la déclare pas sort ;
+5. **le sujet** — ce qu'on voit doit répondre à l'un des jours rassemblés.
+
+Chaque tour **écrit qui il sort, et pourquoi**. Ce qui reste est noté contre le
+brief auquel il répond le mieux, et **l'on garde tous les premiers** — *même s'il
+y en a plusieurs*. Sur six candidats rassemblés pour deux jours, l'entonnoir sort
+la scène du soir, le paysage, le rouge et la voiture, et **retient deux images à
+9 points, chacune répondant à son jour**. C'est exactement ce que demandait le
+message : plusieurs magazines rassemblés, filtrés, refiltrés, jusqu'aux plus
+proches.
+
+**Les deux prompts de production sont écrits, prêts à coller** :
+
+- **`docs/prompt-journees-pour-chatgpt.md`** — pour ChatGPT : la mission, la
+  chaîne DATE → … → MARIAGE, la règle (*un fait se cite, une interprétation se
+  signe*), ce qui est déjà fait (16 journées, 346 étymologies, 54 métiers),
+  **la structure exacte attendue par jour** (le bloc JOUR / PERSONNAGE / ORIGINE /
+  … / ARTICLE / SOURCE), les contraintes d'écriture des quatre niveaux, et
+  **l'exemple complet et validé du 21 septembre**. On travaille par lots de dix
+  jours, en lui passant les blocs de `docs/fiches-de-l-annee.md`.
+- **`docs/prompt-bibliotheque-images.md`** — pour Gemini, Leonardo, Arena Studio
+  ou une autre conversation Arena : **la bibliothèque d'images comme un dépôt
+  GitHub à part, qui servira de serveur et de liens**. Les noms de fichiers exacts
+  (le dossier `MM-JJ`, les six plans, les trois rangs), les deux familles
+  d'images, **le format du `manifeste.json`** (la déclaration de chaque image :
+  moment, lumière, couleur, dimensions, contenu), les cinq critères du casting, la
+  direction artistique, les interdits, l'ordre de production (les 365 fonds
+  d'abord, puis les scènes par journées documentées) — et la règle de service :
+  **les liens bruts du dépôt sont les URLs du site, aucun serveur intermédiaire**.
+
+**Le site, lui, est déjà prêt à consommer la bibliothèque** : `npm run photos`
+relève ce qui est arrivé, `photoDuPlan` prend la photo là où elle est, et
+`CouvertureJour` la pose sous la grille. Quand le dépôt existera, il suffira d'y
+pointer — la mécanique d'élimination fera le reste.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm test`
+**178 / 55 / 1337**. Vérifications ajoutées : les jours liés (leur nombre, leurs
+raisons, la famille visuelle, jamais le jour lui-même), les cinq tours de
+l'entonnoir **dans l'ordre**, chaque tour sortant exactement le candidat qu'il doit
+(le soir, le paysage, le rouge, la voiture), chaque élimination avec sa raison,
+**les deux images retenues à égalité, chacune répondant à son jour**, la décision
+qui raconte les tours, et le cas à vide (*le dessin garde sa place*).
