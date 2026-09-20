@@ -106,18 +106,38 @@ le pied              la marque, les portes
 vérifie : la barre passe avant tout, et **le site ne commence qu'après la
 machine** — le premier écran ne contient qu'elle.
 
-## 6. Aller voir
+## 6. Une seule page
+
+Depuis le 21 septembre 2026, le site **n'a plus qu'une adresse : la page
+d'accueil**. Le magazine, le shop, les métiers, le mariage, le ripple, l'atelier,
+les éditeurs ne sont plus montés — leurs adresses ramènent toutes ici
+(`<Route path="*" element={<Navigate to="/" replace />} />`).
+
+Ce qui a changé sur la page pour que ça tienne debout :
+
+- la **barre** ne mène plus ailleurs : ses quatre portes descendent sur les
+  bandes (`LES CATÉGORIES`, `L'APPAREIL`, `LES 99 LIGNES`, `LE TICKET`) ;
+- le **pied** non plus : cinq liens, tous des ancres de la page ;
+- les **héros** ouvraient déjà des bandes, rien à changer ;
+- les **fichiers** des anciennes pages sont restés dans `src/pages/` : rien n'a
+  été détruit, et une ligne de route suffit à en remonter une.
+
+Trois vérifications tiennent ça : aucun lien ne quitte la page, chaque ancre
+descend sur une bande qui existe, et la table des routes ne contient plus que
+`/`, `/ticket`, `/caisse` et le renvoi de tout le reste.
+
+## 7. Aller voir
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |
 | `/` | la page entière : la machine, les héros, l'appareil, les bandes, le ticket |
 | `/#la-machine` | la machine (la barre et les pastilles y mènent) |
 | `/#l-appareil` | l'appareil : le rêve, le budget, les objets, la fente |
-| `/` puis `#groupe-site` | une famille, ouverte depuis sa colonne |
+| `/#on-coche` | les 17 catégories et leurs 99 lignes |
+| `/?face=recto` | la page d'avant, telle quelle — le seul endroit où elle vit encore |
 | `/?code=A7K-241` | la même page, avec le code d'un autre mariage sur le ticket |
-| `/caisse?face=recto` | la grande page d'avant, entière (sans code) |
 
-## 7. Ce que la référence ne donne pas, et qu'on garde à nous
+## 8. Ce que la référence ne donne pas, et qu'on garde à nous
 
 La composition est une **charpente**, pas un produit. Ce qui reste proprement
 AIME, et que la référence n'a pas :

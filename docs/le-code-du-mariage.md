@@ -134,14 +134,15 @@ le haut.
 | la porte, l'écran, la jauge, la fente, les stickers, le ticket | `src/components/AppareilDuMariage.tsx` |
 | le métier, la marque, les héros | `src/lib/bandesDeLAime.ts` |
 | l'ordre de la page | `src/pages/LaCaisse.tsx` |
+| la page unique (les routes) | `src/App.tsx` — `/`, `/ticket`, `/caisse`, et tout le reste renvoie à `/` |
 | les preuves | `tests/ui.test.ts` — « le tour : le code mariage, le rêve, les objets, les stickers, le header » |
 
 ## 9. Aller voir
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |
-| `/` | le site, tout de suite (code de démonstration) |
+| `/` | le site, tout de suite — une seule page (code de démonstration) |
 | `/?code=A7K-241` | le même site, avec le code d'un autre mariage sur le ticket |
 | `/?coches=…` | le site avec un ticket déjà rempli |
 | `/?reve=…` | le site avec le rêve, dans les mots des mariés |
-| `/caisse?face=recto` | la grande page d'avant |
+| `/?face=recto` | la page d'avant de l'accueil |

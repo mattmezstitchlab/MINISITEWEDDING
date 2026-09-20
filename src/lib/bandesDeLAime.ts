@@ -19,11 +19,13 @@ import { THEME_CONFIGS } from './themeConfigs';
 export const LA_BARRE = {
   marque: 'AIME',
   filet: 'SUPER MARIAGE',
+  /* **Quatre portes, et toutes restent sur la page.** Le site n'a plus qu'une
+     adresse : la barre ne mène donc nulle part ailleurs — elle descend. */
   liens: [
-    { mot: 'LE TICKET', vers: '#la-machine' },
-    { mot: 'LE MAGAZINE', vers: '/magazine' },
-    { mot: 'LES MÉTIERS', vers: '/metiers' },
-    { mot: 'SUPER RIPPLE', vers: '/ripple' },
+    { mot: 'LES CATÉGORIES', vers: '#les-catégories' },
+    { mot: 'L’APPAREIL', vers: '#l-appareil' },
+    { mot: 'LES 99 LIGNES', vers: '#on-coche' },
+    { mot: 'LE TICKET', vers: '#le-ticket' },
   ],
   pastille: { mot: 'Ouvrir le ticket', vers: '#la-machine' },
 };
@@ -125,11 +127,11 @@ export const LE_PIED = {
   marque: 'AIME',
   filet: 'SUPER MARIAGE',
   liens: [
-    { mot: 'Le ticket', vers: '#la-machine' },
-    { mot: 'Le magasin, tout en cases', vers: '/magazine?monde=magasin' },
-    { mot: 'Les métiers', vers: '/metiers' },
-    { mot: 'AIME', vers: '/aime' },
-    { mot: 'Super Ripple', vers: '/ripple' },
+    { mot: 'La machine', vers: '#la-machine' },
+    { mot: 'L’appareil', vers: '#l-appareil' },
+    { mot: 'Les quatre catégories', vers: '#les-catégories' },
+    { mot: 'Les 99 lignes', vers: '#on-coche' },
+    { mot: 'Le ticket entier', vers: '#le-ticket' },
   ],
 };
 

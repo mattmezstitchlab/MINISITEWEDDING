@@ -151,7 +151,7 @@ import {
   ligneImprimée,
   stickerDe,
 } from '../src/lib/codeDuMariage';
-import { LES_HÉROS, LE_SPÉCIALISTE } from '../src/lib/bandesDeLAime';
+import { LA_BARRE, LE_PIED, LES_HÉROS, LE_SPÉCIALISTE } from '../src/lib/bandesDeLAime';
 /* La machine du ticket : ses gestes portent des noms uniques dans ce fichier —
    `valider` est déjà pris par le journal, `passer` traîne partout. */
 import { PACKAGES, TICKET_COUPLE } from '../src/lib/superMariage';
@@ -2568,6 +2568,44 @@ check(
   'et leurs images sont toutes différentes — pas de visuel de remplissage',
   [new Set(LES_HÉROS.map((h) => h.image)).size, LES_HÉROS.every((h) => h.chemin.length >= 4)],
   [LES_HÉROS.length, true],
+);
+/* « Supprime toutes les pages sauf la page d'accueil. » Une seule adresse — et
+   donc **aucun lien ne quitte la page** : la barre, le pied et les héros
+   descendent tous vers une bande de la page, et les autres adresses ramènent
+   ici. Les fichiers des anciennes pages restent dans `src/pages/`. */
+check(
+  'aucun lien ne quitte la page d’accueil',
+  [...ticketVide.matchAll(/href="([^"]*)"/g)]
+    .map((m) => m[1]!)
+    .filter((h) => !h.startsWith('#') && !h.startsWith('/images/')),
+  [],
+);
+check(
+  'et le site n’a plus qu’une page : les autres adresses ramènent ici',
+  (() => {
+    const app = readFileSync('src/App.tsx', 'utf8');
+    const routes = [...app.matchAll(/<Route path="([^"]+)"/g)].map((m) => m[1]!);
+    const pages = [...app.matchAll(/from '\.\/pages\/([A-Za-z]+)'/g)].map((m) => m[1]!);
+    return [
+      routes.join(','),
+      pages.sort().join(','),
+      // Les anciennes pages restent dans le dépôt : rien n'a été détruit.
+      readFileSync('src/pages/Magazine.tsx', 'utf8').includes('export default'),
+    ];
+  })(),
+  ['/,/ticket,/caisse,/supermarriage,*', 'LaCaisse,Landing', true],
+);
+check(
+  'et chaque ancre descend sur une bande qui existe vraiment',
+  [...new Set([...ticketVide.matchAll(/href="#([^"]+)"/g)].map((m) => m[1]!))].filter(
+    (id) => !ticketVide.includes(`id="${id}"`),
+  ),
+  [],
+);
+check(
+  'la barre et le pied ne mènent qu’à des bandes de la page',
+  [...LA_BARRE.liens, ...LE_PIED.liens].every((l) => l.vers.startsWith('#')),
+  true,
 );
 check(
   'la barre est flottante : la marque, les portes, la cible',
