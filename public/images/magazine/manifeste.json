@@ -44,7 +44,7 @@
       "aucune image d’une autre semaine"
     ]
   },
-  "livrees": 10,
+  "livrees": 20,
   "attendues": 432,
   "images": [
     {
@@ -1348,7 +1348,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-08/01-amoureux.jpg",
@@ -1531,7 +1531,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-09/01-amoureux.jpg",
@@ -1714,7 +1714,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-10/01-amoureux.jpg",
@@ -1897,7 +1897,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-11/01-amoureux.jpg",
@@ -2080,7 +2080,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-12/01-amoureux.jpg",
@@ -2263,7 +2263,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-13/01-amoureux.jpg",
@@ -2446,7 +2446,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-14/01-amoureux.jpg",
@@ -2629,7 +2629,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-15/01-amoureux.jpg",
@@ -2812,7 +2812,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-16/01-amoureux.jpg",
@@ -2995,7 +2995,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-17/01-amoureux.jpg",
@@ -6833,7 +6833,7 @@
         "lumière d’arrière-saison, éditorial",
         "été",
         "un champ moissonné, une allée, un village fin septembre",
-        "chaume, lin é cru, verre soufflé, cuivre",
+        "chaume, lin écru, verre soufflé, cuivre",
         "la lumière basse qui traverse tout, jusqu’au verre",
         "mariage"
       ],
@@ -6855,7 +6855,7 @@
         "lumière d’arrière-saison, éditorial",
         "été",
         "un champ moissonné, une allée, un village fin septembre",
-        "chaume, lin é cru, verre soufflé, cuivre",
+        "chaume, lin écru, verre soufflé, cuivre",
         "la lumière basse qui traverse tout, jusqu’au verre",
         "mariage",
         "amoureux"
@@ -6878,7 +6878,7 @@
         "lumière d’arrière-saison, éditorial",
         "été",
         "un champ moissonné, une allée, un village fin septembre",
-        "chaume, lin é cru, verre soufflé, cuivre",
+        "chaume, lin écru, verre soufflé, cuivre",
         "la lumière basse qui traverse tout, jusqu’au verre",
         "mariage",
         "style"
@@ -6901,7 +6901,7 @@
         "lumière d’arrière-saison, éditorial",
         "été",
         "un champ moissonné, une allée, un village fin septembre",
-        "chaume, lin é cru, verre soufflé, cuivre",
+        "chaume, lin écru, verre soufflé, cuivre",
         "la lumière basse qui traverse tout, jusqu’au verre",
         "mariage",
         "lieux"
@@ -6924,7 +6924,7 @@
         "lumière d’arrière-saison, éditorial",
         "été",
         "un champ moissonné, une allée, un village fin septembre",
-        "chaume, lin é cru, verre soufflé, cuivre",
+        "chaume, lin écru, verre soufflé, cuivre",
         "la lumière basse qui traverse tout, jusqu’au verre",
         "mariage",
         "recevoir"
@@ -6947,7 +6947,7 @@
         "lumière d’arrière-saison, éditorial",
         "été",
         "un champ moissonné, une allée, un village fin septembre",
-        "chaume, lin é cru, verre soufflé, cuivre",
+        "chaume, lin écru, verre soufflé, cuivre",
         "la lumière basse qui traverse tout, jusqu’au verre",
         "mariage",
         "fete"
@@ -6970,7 +6970,7 @@
         "lumière d’arrière-saison, éditorial",
         "été",
         "un champ moissonné, une allée, un village fin septembre",
-        "chaume, lin é cru, verre soufflé, cuivre",
+        "chaume, lin écru, verre soufflé, cuivre",
         "la lumière basse qui traverse tout, jusqu’au verre",
         "mariage",
         "monde"
@@ -6993,7 +6993,7 @@
         "lumière d’arrière-saison, éditorial",
         "été",
         "un champ moissonné, une allée, un village fin septembre",
-        "chaume, lin é cru, verre soufflé, cuivre",
+        "chaume, lin écru, verre soufflé, cuivre",
         "la lumière basse qui traverse tout, jusqu’au verre",
         "mariage",
         "souvenirs"
