@@ -70,7 +70,7 @@ export default function ThemeMixerStudio() {
         <div className="mx-auto max-w-2xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1 text-[11px] font-semibold tracking-wider uppercase text-white/80 backdrop-blur-md">
             <Sliders size={13} className="text-[#FF4D00]" />
-            Le Combinateur VOWS · Mix &amp; Match
+            Le Combinateur Super Mariage · Mix &amp; Match
           </div>
 
           <h2

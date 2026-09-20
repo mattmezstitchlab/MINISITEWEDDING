@@ -42,7 +42,7 @@ export default function StylePicker({ value, onChange }: Props) {
                 alt={s.name}
                 fallbackLabel={s.name}
                 aura={s.aura}
-                className="aspect-[4/5] w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+                className="aspect-[3/4] w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.04]"
               />
               {/* Accent dot + dark badge */}
               <span className="absolute left-3 top-3 flex items-center gap-2">

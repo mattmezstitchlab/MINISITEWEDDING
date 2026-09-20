@@ -1,335 +1,328 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, MailCheck, Gift, Images, MapPin, CalendarDays, QrCode, Heart } from 'lucide-react';
-import { WEDDING_STYLES, PHASES, getDirectionArtistiqueImage, type WeddingStyle } from '../lib/weddingStyles';
-import { TiltCard } from '../components/vision/VisionImage';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
+import {
+  DOMAINES_PRESTATAIRES, PERSONNAGES, TITRES, VISUELS_DU_HERO, domainePrestataire,
+  personnageParId, porteurDuDomaine,
+} from '../lib/personas';
 import HeroCycle from '../components/HeroCycle';
-import UnifiedUniverseMenu from '../components/UnifiedUniverseMenu';
-import UnifiedEventOsMenu from '../components/UnifiedEventOsMenu';
+import PictoPersonnage from '../components/PictoPersonnage';
+import OuvertureSite from '../components/OuvertureSite';
+import BandeDuHero from '../components/BandeDuHero';
+import ChampDuMagazine from '../components/ChampDuMagazine';
+import { cartesDesDomaines, cartesDesPersonas, type CarteVivante } from '../lib/cartesVivantes';
+import { choisirCarte } from '../lib/selection';
+import {
+  definirPersonaCourant, definirPersonaSurvolee, useControlesDeBande,
+} from '../lib/personaCourant';
+import { enregistrerNavVerticale } from '../lib/navVerticale';
+import { NAV_ACCUEIL } from '../lib/navDesPages';
+import SiteHeader from '../components/SiteHeader';
+import Manifeste from '../components/Manifeste';
+import HeroUnivers from '../components/HeroUnivers';
+import Appareils from '../components/Appareils';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
-import ThemeManifestoWhite from '../components/ThemeManifestoWhite';
+import { PISTES_DE_LANNEE, playlistDeLAnnee } from '../lib/playlistDeLAnnee';
+import SuperMariageTeaser from '../components/SuperMariageTeaser';
 import ComplementaryThemes from '../components/ComplementaryThemes';
-import HeroAiPrompt from '../components/HeroAiPrompt';
-import HomeTriplePhoneShowcase from '../components/HomeTriplePhoneShowcase';
-import ThemePhoneShowcase from '../components/ThemePhoneShowcase';
-import CompactZeroScrollStudio from '../components/CompactZeroScrollStudio';
-import ImmersiveThemes from '../components/ImmersiveThemes';
-import CommunityFeedHub from '../components/CommunityFeedHub';
-import UniversalMiniSiteToolbar from '../components/UniversalMiniSiteToolbar';
-import ErrorBoundary from '../components/ErrorBoundary';
+import WeddingOS from '../components/WeddingOS';
 
-const HERO_ROTATING_TITLES = [
-  'Votre mariage. Votre histoire.\nUn seul endroit.',
-  'Une vision. Des missionnaires.\nL’impossible devient réel.',
-  'Mariés, invités, prestataires.\nLe même instant, sans fausse note.',
-];
-
-const MODULES = [
-  { icon: MailCheck, title: 'RSVP élégant', text: 'Présences, régimes, hébergement. Des statistiques limpides, jamais de tableaux austères.' },
-  { icon: Gift, title: 'Liste & cagnotte', text: 'Voyage de noces, cagnotte, liste de cadeaux. Objectifs, progression, bouton Participer.' },
-  { icon: Images, title: 'Bibliothèque média', text: 'Des collections cohérentes, vos propres images en un glisser-déposer.' },
-  { icon: MapPin, title: 'Infos pratiques', text: 'Adresses, parking, hébergements, dress code. Des cartes de verre, toujours claires.' },
-  { icon: CalendarDays, title: 'Programme Jour J', text: 'Une timeline spatiale : cérémonie, cocktail, dîner, bal. Heure, lieu, photo.' },
-  { icon: QrCode, title: 'Partage magique', text: 'Un lien à vos prénoms, un QR code à imprimer, partage WhatsApp, Messages, Email.' },
-];
 
 const fadeUp = { initial: { opacity: 0, y: 26 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-80px' } };
 
+
 export default function Landing() {
-  // Par défaut : null = page principale générale d'atterrissage VOWS
-  const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(null);
-  const [titleIdx, setTitleIdx] = useState(0);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Par défaut : null = page principale générale d'atterrissage du site
+  // Un article du magazine peut ouvrir directement un univers : « /?univers=corse »
+  const [selectedStyle, setSelectedStyle] = useState<WeddingStyle | null>(() => {
+    const id = searchParams.get('univers');
+    return id ? WEDDING_STYLES.find((s) => s.id === id) ?? null : null;
+  });
+  /**
+   * LE HERO : UN TITRE, PUIS LES CARTES
+   *
+   * « Qui êtes-vous dans ce mariage ? » Le hero ouvre les grandes familles l'une
+   * après l'autre — **SUPER PRESTATAIRE, SUPER MARIÉ(E), SUPER FUTUR MARIÉ(E),
+   * SUPER FAMILLE, SUPER TÉMOIN** — et sous chacune, **les cartes à choisir**.
+   * On ne demande pas qui on est : on le laisse se choisir, carte après carte.
+   *
+   * **Les prestataires ont deux niveaux** : le domaine (« Image & Mémoire »),
+   * puis les métiers qui le font vivre. C'est là qu'on trouve ce qu'on n'était
+   * pas venu chercher.
+   */
+  const [titreIndex, setTitreIndex] = useState(0);
+  const [carteIndex, setCarteIndex] = useState(0);
+  /** Un domaine ouvert : le hero montre ses métiers, et prend son nom. */
+  const [domaineOuvert, setDomaineOuvert] = useState<string | null>(null);
+  /** Un média occupe le hero : le défilé attend, la carte joue. */
+  const [, setLectureEnCours] = useState(false);
 
-  const activeStyleOrFallback = selectedStyle || WEDDING_STYLES[0];
+  const titre = TITRES[titreIndex] ?? TITRES[0]!;
+  const domaine = domaineOuvert ? domainePrestataire(domaineOuvert) ?? null : null;
 
-  // Rotation douce des 3 phrases manifestes qui font comprendre le produit
+  /** Les cartes du moment, dans l'ordre : des domaines, ou des personnages. */
+  const ids = useMemo(() => {
+    if (!titre.domaines) return titre.cartes;
+    return domaine ? domaine.cartes : DOMAINES_PRESTATAIRES.map((d) => d.key);
+  }, [titre, domaine]);
+  const index = Math.min(carteIndex, Math.max(0, ids.length - 1));
+  const cleActive = ids[index] ?? '';
+
+  /** Le domaine ouvert dans la liste (premier niveau des prestataires). */
+  const domaineActif = titre.domaines && !domaine ? domainePrestataire(cleActive) ?? null : null;
+
+  /** Le nom écrit en grand : le titre, ou le domaine quand il est ouvert. */
+  const nomDuHero = domaine ? domaine.label : titre.nom;
+
+  /** Le personnage qui mène le site : la carte du milieu, ou le métier du domaine. */
+  const persona = useMemo(() => {
+    const porteur = domaineActif ? porteurDuDomaine(domaineActif.key) : personnageParId(cleActive);
+    const premier = personnageParId(titre.cartes[0] ?? '') ?? PERSONNAGES[0]!;
+    return porteur ?? premier;
+  }, [domaineActif, cleActive, titre]);
+
+  const cartes = useMemo(() => {
+    if (domaineActif) return cartesDesDomaines(DOMAINES_PRESTATAIRES, domaineActif.key);
+    return cartesDesPersonas(persona.id, ids);
+  }, [domaineActif, persona.id, ids]);
+
+  // Le site s'accorde au personnage qui défile : le dock montre ses outils.
   useEffect(() => {
-    if (selectedStyle) return;
-    const interval = setInterval(() => {
-      setTitleIdx((prev) => (prev + 1) % HERO_ROTATING_TITLES.length);
-    }, 4800);
-    return () => clearInterval(interval);
-  }, [selectedStyle]);
+    definirPersonaCourant(persona.id);
+  }, [persona.id]);
 
-  const scrollToHero = () => {
-    const el = document.getElementById('hero-ai-container');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      const input = el.querySelector('input');
-      input?.focus();
+  // La nav de droite : la carte, les univers, le mariage, la playlist.
+  useEffect(() => {
+    enregistrerNavVerticale(NAV_ACCUEIL);
+    return () => enregistrerNavVerticale(null);
+  }, []);
+
+  /** Ouvrir un domaine : on montre ses métiers, et le hero prend son nom. */
+  const ouvrirDomaine = (key: string | null) => {
+    setDomaineOuvert(key);
+    setCarteIndex(0);
+  };
+
+  /**
+   * Les deux flèches, posées de chaque côté du dock : elles mènent la bande. Une
+   * flèche fait avancer d'une carte — et quand le titre n'en a plus, elle entre
+   * dans le titre suivant, au début.
+   */
+  const suivant = () => {
+    if (index + 1 < ids.length) setCarteIndex(index + 1);
+    else {
+      setTitreIndex((i) => (i + 1) % TITRES.length);
+      setDomaineOuvert(null);
+      setCarteIndex(0);
     }
   };
+  const precedent = () => {
+    if (index > 0) setCarteIndex(index - 1);
+    else {
+      setTitreIndex((i) => (i - 1 + TITRES.length) % TITRES.length);
+      setDomaineOuvert(null);
+      setCarteIndex(999);
+    }
+  };
+  /** Les deux flèches du dock mènent **la bande à l'écran** : ici, les rôles. */
+  const surveillerLeHero = useControlesDeBande('roles', { precedent, suivant });
+
+  /** L'univers de la page : celui qui mène l'éditeur, la playlist et la bande. */
+  const activeStyleOrFallback = selectedStyle ?? WEDDING_STYLES[0]!;
+
+  /** On entre avec un personnage : c'est la carte qu'on vient créer. */
+  const entrer = (id: string) => navigate('/creer', { state: { roleId: id } });
+
+  /**
+   * **CE QU'ON RETIENT DE L'ACCUEIL** — chaque carte cliquée ici entre dans la
+   * sélection de la personne : c'est elle qui fait **son hero**, dans l'ordre.
+   * Le défilé automatique ne retient rien : seul un clic est un choix.
+   */
+  const retenir = (carte: { id: string; sorte: 'univers' | 'persona'; titre: string }) => choisirCarte(carte);
+
+  /** Le domaine d'une carte de domaine : « domaine-image » → « image ». */
+  const cleDeCarte = (carte: CarteVivante) =>
+    carte.id.startsWith('domaine-') ? carte.id.slice('domaine-'.length) : null;
+
+  /**
+   * LA BANDE DES TITRES
+   *
+   * Sous le titre, **les cartes à choisir** : un clic montre la carte au milieu,
+   * le play fait l'action — « Entrer » pour un personnage, « Ouvrir » pour un
+   * domaine, qui découvre alors ses métiers. **Dans le hero** (`premiere`) : pas
+   * de bande blanche, pas de flèches — celles du dock mènent la bande.
+   */
+  const bandeDuTitre = (
+    <BandeDuHero
+      premiere
+      styleId="personas"
+      cartes={cartes}
+      onChoisir={(carte) => {
+        const cle = cleDeCarte(carte);
+        if (cle) ouvrirDomaine(cle);
+        else {
+          setCarteIndex(Math.max(0, cartes.findIndex((c) => c.id === carte.id)));
+          retenir({ id: carte.id, sorte: 'persona', titre: carte.titre });
+        }
+      }}
+      onAction={(carte) => {
+        const cle = cleDeCarte(carte);
+        if (cle) ouvrirDomaine(cle);
+        else {
+          retenir({ id: carte.id, sorte: 'persona', titre: carte.titre });
+          entrer(carte.id);
+        }
+      }}
+      onSurvol={(carte) => {
+        const cle = carte ? cleDeCarte(carte) : null;
+        definirPersonaSurvolee(cle ? porteurDuDomaine(cle)?.id ?? null : carte?.id ?? null);
+      }}
+      libelleAction={titre.domaines && !domaine ? 'Ouvrir' : 'Entrer'}
+    />
+  );
 
   const handleSelectStyle = (style: WeddingStyle | null) => {
     setSelectedStyle(style);
+    if (searchParams.has('univers')) setSearchParams({}, { replace: true });
   };
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip text-[#0B0C12] pb-16">
-      {/* Barre de navigation unifiée : Logo à gauche, UNIVERS & MÉTIERS à droite */}
-      <nav className="fixed top-3 left-1/2 z-50 w-[calc(100%-1.25rem)] max-w-5xl -translate-x-1/2 sm:top-4">
-        <div className="flex items-center justify-between gap-3 rounded-[26px] bg-white px-4 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-black/5 sm:px-5">
-          <Link
-            to="/"
-            onClick={() => setSelectedStyle(null)}
-            className="flex items-center gap-2"
+      {/* L'OUVERTURE : le nom prend l'écran, une lumière le traverse, et il se
+          fond — le générique, puis la question : qui êtes-vous ? */}
+      <OuvertureSite />
+
+      {/* Le header du site : la même barre que partout. */}
+      <SiteHeader />
+
+      {/* WEDDING OS, AU CENTRE : le bloc qui contient tout — le studio. */}
+      <section aria-label="Wedding OS" className="vp-page relative pb-10 pt-20">
+        <div className="flex flex-col items-center text-center">
+          <span className="vp-eyebrow">Le studio du concept</span>
+          <h1
+            className="vp-title mt-4 font-black leading-[1.02] tracking-[-0.03em]"
+            style={{ fontSize: 'clamp(2.1rem, 4.6vw, 3.5rem)' }}
           >
-            <span className="vp-title text-[18px] font-bold italic tracking-wider text-[#0B0C12]">VOWS</span>
-          </Link>
-
-          {/* Accès discret aux modules techniques Event OS & menu univers */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <UnifiedEventOsMenu />
-
-            <UnifiedUniverseMenu
-              selectedStyleId={selectedStyle?.id || null}
-              onSelectStyle={handleSelectStyle}
-            />
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero plein écran : défilement cinématographique avec titres rotatifs explicatifs */}
-      <HeroCycle activeStyleId={selectedStyle?.id}>
-        <div className="mx-auto flex flex-col items-center justify-center text-center">
-          <div className="min-h-[140px] sm:min-h-[160px] flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.h1
-                key={selectedStyle ? selectedStyle.id : titleIdx}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="vp-title max-w-4xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)] whitespace-pre-line"
-                style={{ fontSize: 'clamp(2.4rem, 6vw, 4.6rem)', lineHeight: 1.08 }}
-              >
-                {selectedStyle
-                  ? `${selectedStyle.name} · ${selectedStyle.tagline}`
-                  : HERO_ROTATING_TITLES[titleIdx]}
-              </motion.h1>
-            </AnimatePresence>
-          </div>
-
-          {/* Saisie de l'Agent IA connecté à tous les thèmes */}
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.8 }}
-            className="mt-4 w-full"
-          >
-            <ErrorBoundary>
-              <HeroAiPrompt
-                onProposalGenerated={(proposal) => {
-                  setSelectedStyle(proposal.style);
-                }}
-              />
-            </ErrorBoundary>
-          </motion.div>
-        </div>
-      </HeroCycle>
-
-      {/* EXPÉRIENCE SUR SMARTPHONE HAUT DE GAMME :
-          - Sur l'accueil général : Le triptyque aéré des 3 iPhones sobres & éditoriaux
-          - Sur une page Thème précis : L'iPhone interactif permettant de faire défiler les vues (Invité, Marié, chaque missionnaire)
-      */}
-      <ErrorBoundary>
-        {!selectedStyle ? (
-          <HomeTriplePhoneShowcase onExplore={scrollToHero} />
-        ) : (
-          <ThemePhoneShowcase
-            currentStyle={selectedStyle}
-            onOpenVendorApplication={() => scrollToHero()}
-          />
-        )}
-      </ErrorBoundary>
-
-      {/* BANDE DISCRÈTE D'INTRODUCTION AUX TECHNOLOGIES EVENT OS (Fond clair, classe & épuré) */}
-      <section className="bg-white py-12 px-5 sm:px-8 border-b border-black/5">
-        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-black/40">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span>Système d'Exploitation Invisible</span>
-            </div>
-            <h3 className="vp-title text-[20px] sm:text-[22px] text-[#0B0C12]">
-              L'architecture Event OS : Orchestration, Talkie-Walkie &amp; Radio Live
-            </h3>
-            <p className="text-[13.5px] text-[#0B0C12]/60">
-              Résolution en cascade des aléas, coordination audio chiffrée et streaming continu.
-            </p>
-          </div>
-
-          <div className="flex shrink-0 flex-wrap justify-center gap-2 sm:justify-end">
-            <Link
-              to="/features"
-              className="flex items-center gap-2 rounded-full border border-black/15 bg-white px-5 py-2.5 text-[12.5px] font-semibold text-[#0B0C12] shadow-sm transition hover:bg-black hover:text-white"
-            >
-              <span>Découvrir Event OS</span>
-              <ArrowRight size={13} />
-            </Link>
-            <Link
-              to="/aime"
-              className="flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-[12.5px] font-semibold text-white shadow-sm transition hover:bg-black/80"
-            >
-              <span>Taxonomie mariage</span>
-              <ArrowRight size={13} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* TAXONOMIE MARIAGE : LA VERSION AIME EST ACCESSIBLE DIRECTEMENT DEPUIS L'ACCUEIL */}
-      <section id="taxonomie" className="bg-[#070709] px-4 py-16 text-white sm:px-8 sm:py-24">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
-            <div className="max-w-2xl">
-              <div className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-300">AIME · Taxonomie mariage</div>
-              <h2 className="mt-3 text-[clamp(2rem,5vw,4rem)] font-bold leading-[0.98] tracking-[-0.05em]">Chaque personne a son propre Jour J.</h2>
-              <p className="mt-4 text-[14px] leading-relaxed text-white/60 sm:text-[16px]">Mariés, témoins, traiteur, DJ, photographe, invités : une même timeline, des accès différents, aucun doublon d’identité.</p>
-            </div>
-            <Link to="/aime" className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-[11px] font-semibold text-white transition hover:bg-white hover:text-black sm:self-auto">
-              Ouvrir la taxonomie complète <ArrowRight size={14} />
-            </Link>
-          </div>
-          <ErrorBoundary>
-            <CompactZeroScrollStudio />
-          </ErrorBoundary>
-        </div>
-      </section>
-
-      {/* SECTION DIRECTION ARTISTIQUE & SCÉNOGRAPHIE */}
-      <ParallaxSection
-        image={
-          selectedStyle
-            ? getDirectionArtistiqueImage(selectedStyle.id)
-            : '/images/table-noir.jpg'
-        }
-        overlayOpacity={0.62}
-        heightClass="min-h-[72vh]"
-      >
-        <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl text-center">
-          <span className="vp-eyebrow !text-white/70">
-            {selectedStyle
-              ? `Direction Artistique & Scénographie · ${selectedStyle.name}`
-              : 'Direction Artistique & Haute Scénographie'}
-          </span>
-          <h2
-            className="vp-title mt-4 text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.6)]"
-            style={{ fontSize: 'clamp(2.4rem, 5.5vw, 4.5rem)', lineHeight: 1.05 }}
-          >
-            {selectedStyle ? (
-              <>
-                L’émotion d’une esthétique pure.<br />
-                {selectedStyle.tagline}
-              </>
-            ) : (
-              <>
-                Des univers créés comme des pièces de mode.<br />
-                Jamais de templates génériques.
-              </>
-            )}
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-white/80">
-            {selectedStyle?.manifesto ||
-              "Chaque mariage possède son langage visuel, sa typographie et ses métiers dédiés. De la chapelle de béton au château contemporain, explorez des atmosphères sans concession."}
+            Wedding OS.
+          </h1>
+          <p className="mt-4 max-w-[640px] text-[15px] leading-relaxed text-[#0B0C12]/70">
+            Un seul bloc pour régler tout le magazine — typos, couleurs, musiques, visuels,
+            timeline, docs, objets — et le voir répondre dans l'écran. Une seule source :
+            ce qui se règle ici se répercute partout.
           </p>
-          <div className="mt-8 flex justify-center">
-            <button
-              type="button"
-              onClick={scrollToHero}
-              className="vp-btn vp-press !bg-white !text-black hover:!bg-white/90 !px-8 !py-3.5 shadow-2xl"
-            >
-              Donner vie à votre projet <ArrowRight size={16} />
-            </button>
-          </div>
-        </motion.div>
-      </ParallaxSection>
+        </div>
+        <div className="mx-auto mt-10 max-w-[1080px]">
+          <WeddingOS />
+        </div>
+      </section>
 
-      {/* SECTION ÉQUIPE HUMAINE ORCHESTRÉE */}
-      <ThemeManifestoWhite
-        style={selectedStyle}
-        onJoinClick={scrollToHero}
+      {/* LE HERO : QUI ÊTES-VOUS DANS CE MARIAGE ? */}
+      <div id="hero" ref={surveillerLeHero}>
+        <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id}>
+          <div className="flex flex-col items-center text-center">
+            <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
+
+            {/* LE TITRE DU MOMENT : la grande famille, et son picto */}
+            <div key={nomDuHero} className="mt-4 flex flex-col items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.55)]"
+              >
+                <PictoPersonnage picto={titre.picto} size={30} />
+              </motion.div>
+              <motion.h1
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                className="vp-title mt-3 text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+                style={{ fontSize: 'clamp(2rem, 5.4vw, 4rem)', lineHeight: 1.04 }}
+              >
+                {nomDuHero}
+              </motion.h1>
+
+              {/* Un domaine ouvert : de quoi revenir à tous les domaines. */}
+              {domaine && (
+                <button
+                  type="button"
+                  onClick={() => ouvrirDomaine(null)}
+                  className="mt-3 rounded-full border border-white/25 px-3 py-1 text-[11px] font-semibold text-white/80 transition hover:border-white hover:text-white"
+                >
+                  ← Tous les domaines
+                </button>
+              )}
+            </div>
+
+            {/* LE CHAMP DU MAGAZINE A QUITTÉ LE HERO : il vit maintenant sur la
+                page magazine, où le titre, le champ et les couvertures se
+                tiennent ensemble. Ici, le hero garde sa question, son titre, et
+                ses cartes — rien d'autre. */}
+
+            {/* LES CARTES À CHOISIR : on les a sous les yeux dans le hero, sans
+                bande blanche et sans flèches — celles du dock mènent la bande. */}
+            <div className="mt-9 w-full sm:mt-11">{bandeDuTitre}</div>
+          </div>
+        </HeroCycle>
+      </div>
+
+      {/* LE MANIFESTE : le concept en trois paragraphes, avant de le montrer. */}
+      <Manifeste />
+
+      {/* LES UNIVERS : le second axe, avec **son propre hero** — le nom de
+          l'univers en grand, ses cartes juste en dessous, comme les rôles. */}
+      <HeroUnivers
+        styleId={activeStyleOrFallback.id}
+        onChoisir={(style) => handleSelectStyle(style)}
+        onLecture={setLectureEnCours}
+        onCarteChoisie={(carte) => retenir({ id: carte.id, sorte: 'univers', titre: carte.titre })}
       />
 
-      {/* STUDIO DJ & BANDE-SON CHRONOLOGIQUE */}
-      <section className="px-5 py-16 sm:px-8 bg-[#070709]">
-        <div className="mx-auto max-w-6xl">
-          <DjPlaylistStudio style={activeStyleOrFallback} />
-        </div>
-      </section>
+      {/* SUPER ÉDITEUR : la même page sur trois appareils. L'éditeur lui-même a
+          sa page — le bouton Paramètres, en bas à gauche, l'ouvre. */}
+      <Appareils styleId={activeStyleOrFallback.id} />
 
-      {/* SI PAGE D'ACCUEIL GÉNÉRALE : HUB D'ACTUALITÉ, TÉMOIGNAGES DU RÉEL & DÉFILEMENT 2 RANGÉES BORD-À-BORD */}
-      {!selectedStyle ? (
-        <CommunityFeedHub />
-      ) : (
-        /* SI UN THÈME EST SÉLECTIONNÉ : LA CHRONOLOGIE SCÉNARISÉE SPÉCIFIQUE DE CE THÈME */
-        <ImmersiveThemes
-          currentStyle={selectedStyle}
-          onOpenVendorApplication={scrollToHero}
-          onSelectStyle={handleSelectStyle}
-        />
-      )}
+      {/* LE MAGASIN : on coche ses horaires et ses métiers, le ticket suit */}
+      <div id="supermarriage">
+        <SuperMariageTeaser />
+      </div>
 
       {/* SECTION SUGGESTIONS COMPLÉMENTAIRES D'UNIVERS & MISSIONS */}
-      <ComplementaryThemes
-        currentStyle={activeStyleOrFallback}
-        onSelectStyle={handleSelectStyle}
-      />
+      <div id="univers">
+        <ComplementaryThemes
+          currentStyle={activeStyleOrFallback}
+          onClaimRole={(role) => {
+            if (role) window.sessionStorage.setItem('vows:role-revendique', role);
+            navigate('/creer', { state: { preselectedStyle: activeStyleOrFallback.id } });
+          }}
+        />
+      </div>
 
-      {/* Modules — environnement clair */}
-      <section id="modules" className="relative mx-3 overflow-hidden rounded-[40px] border border-black/6 bg-white px-5 py-20 sm:mx-6 sm:px-8 sm:py-28">
-        <div className="relative mx-auto max-w-6xl">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-2xl text-center">
-            <div className="vp-eyebrow">Tout est inclus</div>
-            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Un objet complet, en couches</h2>
-            <p className="vp-body mt-4">RSVP, cagnotte, galerie, programme, FAQ — chaque module naît déjà rempli. Vous ajustez, c’est tout.</p>
-          </motion.div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {MODULES.map((m, i) => (
-              <motion.div key={m.title} {...fadeUp} transition={{ duration: 0.6, delay: (i % 3) * 0.09 }}>
-                <TiltCard className="h-full">
-                  <div className="vp-glass vp-spec vp-lift h-full rounded-[26px] p-7">
-                    <span className="vp-glyph h-11 w-11 rounded-[15px]">
-                      <m.icon size={19} strokeWidth={1.8} />
-                    </span>
-                    <div className="vp-h2 mt-5 text-[20px]">{m.title}</div>
-                    <p className="vp-caption mt-2 leading-relaxed">{m.text}</p>
-                  </div>
-                </TiltCard>
-              </motion.div>
-            ))}
-          </div>
+      {/* LE COMPOSEUR, PLUS BAS : la même chose que dans le hero, à l'endroit où
+          l'on arrive quand on a tout regardé. On ne le réécrit pas : c'est le même
+          bloc, il retrouve tout seul ce qui a déjà été répondu. */}
+      <section id="votre-magazine" className="mx-auto max-w-[1180px] px-5 py-16 sm:py-24">
+        <div className="flex flex-col items-center text-center">
+          <span className="vp-eyebrow">En une fois</span>
+          <h2 className="vp-title mt-3" style={{ fontSize: 'clamp(1.8rem, 4.4vw, 2.8rem)' }}>
+            Votre magazine, maintenant
+          </h2>
+          <p className="vp-body mt-3 max-w-xl">
+            Deux prénoms, une date : le magazine se compose, on coche ce qu’on garde, et la page d’une
+            personne devient la couverture de son magazine.
+          </p>
         </div>
-      </section>
-
-      {/* Phases */}
-      <section className="px-5 py-20 sm:px-8 sm:py-28">
-        <div className="mx-auto max-w-5xl">
-          <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="text-center">
-            <div className="vp-eyebrow">Avant · Pendant · Après</div>
-            <h2 className="vp-h2 mt-4" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>Un site qui vit avec vous</h2>
-          </motion.div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-3">
-            {PHASES.map((p, i) => (
-              <motion.div key={p.id} {...fadeUp} transition={{ duration: 0.6, delay: i * 0.09 }} className="h-full">
-                <div className="vp-glass vp-spec vp-lift relative h-full overflow-hidden rounded-[26px] p-7">
-                  <span className="absolute inset-x-0 top-0 h-[3px] bg-[var(--vp-ink)]" style={{ opacity: 0.1 + i * 0.14 }} />
-                  <div className="vp-eyebrow">Phase {i + 1}</div>
-                  <div className="vp-h2 mt-2 text-[26px]">{p.name}</div>
-                  <p className="vp-caption mt-2">{p.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          <motion.p {...fadeUp} transition={{ duration: 0.7 }} className="vp-body mx-auto mt-8 max-w-xl text-center !text-[var(--vp-muted)] italic">
-            « Après le mariage, il devient la mémoire numérique de votre jour. »
-          </motion.p>
+        <div className="mt-8 flex justify-center">
+          <ChampDuMagazine />
         </div>
       </section>
 
       {/* SECTION PARALLAX 2 : Zéro contrainte */}
+      <div id="contrainte">
       <ParallaxSection image="/images/zero-contrainte-wedding.jpg" overlayOpacity={0.65} heightClass="min-h-[70vh]">
         <motion.div {...fadeUp} transition={{ duration: 0.8 }} className="mx-auto max-w-3xl">
           <span className="vp-eyebrow !text-white/70">Zéro contrainte</span>
@@ -346,53 +339,20 @@ export default function Landing() {
           </p>
         </motion.div>
       </ParallaxSection>
+      </div>
 
-      {/* Appel final */}
-      <section className="px-5 pb-24 sm:px-8">
-        <motion.div {...fadeUp} transition={{ duration: 0.7 }} className="vp-glass vp-spec mx-auto max-w-4xl overflow-hidden rounded-[38px] px-8 py-16 text-center sm:py-20">
-          <div className="relative">
-            <span className="vp-glyph mx-auto h-14 w-14 rounded-[20px]">
-              <Heart size={24} strokeWidth={1.8} />
-            </span>
-            <h2 className="vp-h2 mt-6" style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)' }}>
-              Et si c’était vraiment
-              <br />
-              le site de votre mariage ?
-            </h2>
-            <p className="vp-body mx-auto mt-4 max-w-md">Trente secondes pour commencer. Une émotion pour longtemps.</p>
-            <button
-              type="button"
-              onClick={scrollToHero}
-              className="vp-btn vp-press mt-8 !px-9 !py-4"
-            >
-              Générer notre projet <ArrowRight size={16} />
-            </button>
-          </div>
-        </motion.div>
+      {/* PLAYLIST COLLABORATIVE : la playlist de l'année — un morceau par jour,
+          toutes les cartes déjà là. */}
+      <section id="bande-son" className="bg-white py-16">
+        <div className="vp-page">
+          <DjPlaylistStudio
+            style={activeStyleOrFallback}
+            pistes={playlistDeLAnnee(new Date().getFullYear())}
+            sousTitre={`La playlist de l’année — un morceau par jour, ${PISTES_DE_LANNEE} cartes.`}
+          />
+        </div>
       </section>
 
-      {/* TOOLBAR TACTILE DISCRÈTE (Stories Live & Event OS) */}
-      <UniversalMiniSiteToolbar />
-
-      <footer className="px-5 pb-10">
-        <div className="vp-glass vp-spec mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
-          <div className="flex items-center gap-2">
-            <span className="vp-title text-[17px] font-bold italic tracking-wider text-[var(--vp-ink)]">VOWS</span>
-          </div>
-          <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
-          <div className="flex items-center gap-4">
-            <Link to="/features" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Event OS</Link>
-            <Link to="/aime" className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]">Taxonomie</Link>
-            <button
-              type="button"
-              onClick={scrollToHero}
-              className="font-medium text-[var(--vp-ink-soft)] transition hover:text-[var(--vp-accent)]"
-            >
-              Créer
-            </button>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

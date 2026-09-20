@@ -1,3 +1,6 @@
+import { styleById } from './weddingStyles';
+import { contentFor } from './universeContent';
+
 export interface VendorRoleCandidate {
   role: string;
   mission: string;
@@ -15,6 +18,38 @@ export interface ThemeTimelineScene {
 }
 
 export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
+  // 0. L'UNIVERS VIERGE (sections classiques, aucune personne sur les images)
+  vierge: [
+    {
+      time: '15h00',
+      title: 'La cérémonie',
+      narrativeScript: 'Vos vœux, vos alliances, la sortie au milieu des invités. L’heure et le lieu se règlent dans le programme.',
+      ambianceDetail: 'La tenue et le déroulé restent à définir avec vos prestataires.',
+      image: '/images/bouquet.jpg',
+    },
+    {
+      time: '17h30',
+      title: 'Le cocktail',
+      narrativeScript: 'Les retrouvailles, les discours courts, les photos de famille — au lieu que vous aurez choisi.',
+      ambianceDetail: 'L’apéritif et le service se règlent avec le traiteur.',
+      image: '/images/champagne.jpg',
+    },
+    {
+      time: '20h00',
+      title: 'Le dîner',
+      narrativeScript: 'Le repas, les tables, les régimes pris en compte. Chaque information pratique se règle dans les sections du site.',
+      ambianceDetail: 'Le lieu de réception se règle dans les lieux.',
+      image: '/images/table-noir.jpg',
+    },
+    {
+      time: '23h00',
+      title: 'La soirée',
+      narrativeScript: 'Le bal, la piste, la fin de nuit. La playlist collaborative se remplit depuis le site.',
+      ambianceDetail: 'La musique du mariage se règle dans la playlist.',
+      image: '/images/danse.jpg',
+    },
+  ],
+
   // 1. BLACK & WHITE (Éditorial, pur, haute couture)
   'noir-blanc': [
     {
@@ -231,6 +266,16 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
         { role: 'Chef Haute Cuisine Marine', mission: 'Menu 5 temps algues fraîches et ormeaux sauvages', status: 'open', compensationHint: 'Service d’exception 20 couverts' },
       ],
     },
+    {
+      time: '23h30',
+      title: 'La Remontée & Le Vin Chaud des Profondeurs',
+      narrativeScript: 'Retour lent vers la surface, gilets thermiques et couvertures de laine. Sur le pont, un dernier verre face au phare et quarante personnes qui parlent bas.',
+      ambianceDetail: 'Air marin, silence préservé, fin à quarante convives.',
+      image: '/images/phare-vows.jpg',
+      vendorRoles: [
+        { role: 'Veilleur de Nuit & Bar à Vins', mission: 'Vin chaud, couvertures et remontée sécurisée des convives', status: 'open', compensationHint: 'Service de nuit' },
+      ],
+    },
   ],
 
   // 9. TRAIN DE NUIT IMPÉRIAL
@@ -251,50 +296,24 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
       title: 'Dîner Étoilé au Rythme du Rail',
       narrativeScript: 'Argenterie scintillante, verres en cristal qui tintent doucement avec le dévers des virages. Toasts sous les lustres Art Déco.',
       ambianceDetail: 'Élégance suprême des grands voyages, velours et champagne millésimé.',
-      image: '/images/champagne.jpg',
+      image: '/images/table-noir.jpg',
       vendorRoles: [
         { role: 'Chef Gastronome Rame Étoilée', mission: 'Menu gastronomique en cuisine étroite embarquée', status: 'filled' },
+      ],
+    },
+    {
+      time: '19h15',
+      title: 'Cocktail en Voiture-Bar',
+      narrativeScript: 'Entre deux tunnels, le bar se remplit : coupes de cristal, olives de Ligurie et boiseries qui craquent doucement. Le piano accompagne le balancement de la rame.',
+      ambianceDetail: 'Laiton poli, velours vert, nuit qui tombe sur les Alpes.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Barman de Voiture-Bar', mission: 'Cocktails classiques servis dans un espace de quatre mètres', status: 'filled' },
       ],
     },
   ],
 
   // 11. FÊTE DE DIVORCE & DÉ-MARIAGE (La Renaissance Joyeuse)
-  'divorce-party': [
-    {
-      time: '18h30',
-      title: 'L’Entrée Triomphale & Clôture du Bail',
-      narrativeScript: 'Arrivée solo en smoking impeccable ou tailleur blanc. Pas de marche nuptiale : un quatuor joue Daft Punk en acoustique pendant que les clés de l’ancien appartement sont remises à l’avocat.',
-      ambianceDetail: 'Coupes de champagne blanc de noirs, livre d’or des vœux de liberté et sourires sans rancœur.',
-      image: '/images/couple-paris.jpg',
-      vendorRoles: [
-        { role: 'Maître de Cérémonie de Rupture', mission: 'Discours libérateur avec autodérision et rituel d’extinction des alliances', status: 'filled' },
-        { role: 'Photographe Lookbook Solo', mission: 'Portraits individuels rayonnants et photos de groupe avec les vrais amis', status: 'filled' },
-      ],
-    },
-    {
-      time: '20h30',
-      title: 'Le Banquet de Dé-Mariage & Pièce Noire',
-      narrativeScript: 'Banquets généreux sur table épurée sans fleurs niaises. Arrivée du gâteau inversé monochrome noir surmonté de la figurine victorieuse.',
-      ambianceDetail: 'Chandeliers métalliques, toasts à la renaissance personnelle et rires décomplexés.',
-      image: '/images/table-noir.jpg',
-      vendorRoles: [
-        { role: 'Pâtissier Gâteau Noir Dé-Mariage', mission: 'Sculpture pâtissière satirique monochrome chocolat noir fumé', status: 'filled' },
-        { role: 'Traiteur Banquet Convivial', mission: 'Plats généreux de partage et accords mets-vins de célébration', status: 'filled' },
-      ],
-    },
-    {
-      time: '23h00',
-      title: 'Le Feu de Joie des Alliances & Danse Renaissance',
-      narrativeScript: 'Un brasero extérieur crépite. Les alliances sont symboliquement fondues ou recyclées, ouvrant un dancefloor d’hymnes d’indépendance jusqu’à l’aube.',
-      ambianceDetail: 'Basses chaleureuses, liberté retrouvée, nuit de fête pure.',
-      image: '/images/danse.jpg',
-      vendorRoles: [
-        { role: 'DJ Set "Liberté & Renaissance"', mission: 'Mix house/funk survolté hymnes d’émancipation sans temps mort', status: 'open', compensationHint: 'Set festif 23h-04h' },
-        { role: 'Brasero & Régie Flamme', mission: 'Sécurisation du feu rituel de libération', status: 'filled' },
-      ],
-    },
-  ],
-
   // 12. MARIAGE IMPROVISÉ · 48H (Plan B héroïque)
   'last-minute': [
     {
@@ -317,9 +336,222 @@ export const THEME_TIMELINE_SCENARIOS: Record<string, ThemeTimelineScene[]> = {
         { role: 'Photographe Sniper Spontané', mission: 'Reportage live argentique instinctif sans poses', status: 'open', compensationHint: 'Mission express 4h' },
       ],
     },
+    {
+      time: '23h00',
+      title: 'Le Dîner Commandé le Matin Même',
+      narrativeScript: 'Four mobile sur le trottoir, bar à huîtres monté en une heure, bouteilles apportées par les invités. On mange debout, on danse avant le dessert.',
+      ambianceDetail: 'Cuisine de rue, ville qui s’allume, aucun plan de table.',
+      image: '/images/last-minute.jpg',
+      vendorRoles: [
+        { role: 'Chef Guérilla / Pop-Up', mission: 'Dîner debout monté en trois heures avec four mobile autonome', status: 'open', compensationHint: 'Service express' },
+      ],
+    },
   ],
+  'traditionnel': [
+    {
+      time: '15h00',
+      title: 'La Messe et le Cortège',
+      narrativeScript: 'Entrée au son de l’orgue, les familles debout dans l’allée centrale, puis la sortie sous une pluie de pétales sur le parvis.',
+      ambianceDetail: 'Cierges, grand orgue et chemise de fleurs blanches sur le parvis.',
+      image: '/images/traditionnel.jpg',
+      vendorRoles: [
+        { role: 'Wedding Planner Cérémonie & Réception', mission: 'Coordination église, cortège et transfert vers le manoir', status: 'filled' },
+        { role: 'Organiste & Chorale', mission: 'Accompagnement musical de la messe', status: 'open', compensationHint: 'Prestation 2h sur place' },
+      ],
+    },
+    {
+      time: '19h30',
+      title: 'Le Banquet Assis',
+      narrativeScript: 'Cent quatre-vingts convives, cinq services, un plan de table calligraphié et un discours entre chaque plat.',
+      ambianceDetail: 'Nappes longues, bougies hautes, service à l’assiette en cadence.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Traiteur Banquet Traditionnel', mission: 'Repas assis cinq services et pièce montée', status: 'filled' },
+        { role: 'Orchestre de Bal & Animateur', mission: 'Ouverture de bal et animation du dîner', status: 'open', compensationHint: 'Forfait soirée complète' },
+      ],
+    },
+    {
+      time: '11h00',
+      title: 'Le Brunch du Lendemain',
+      narrativeScript: 'Pain perdu, jus pressés et récits de la veille, sous les tilleuls du manoir, avant les au revoir.',
+      ambianceDetail: 'Tables dépareillées, paniers de viennoiseries et café en continu.',
+      image: '/images/chateau-tilleuls.jpg',
+      vendorRoles: [
+        { role: 'Brunch & Pâtissier du Lendemain', mission: 'Brunch servi sous les tilleuls jusqu’à 14h00', status: 'open', compensationHint: 'Service du matin' },
+      ],
+    },
+  ],
+  'corse': [
+    {
+      time: '17h30',
+      title: 'Le Oui sur la Crête',
+      narrativeScript: 'Un cercle de pierres sèches, la mer en contrebas, et les voix polyphoniques qui montent du vallon pendant les vœux.',
+      ambianceDetail: 'Maquis en fleurs, vent d’ouest et lumière rasante sur les aiguilles.',
+      image: '/images/corse.jpg',
+      vendorRoles: [
+        { role: 'Groupe Polyphonique Corse', mission: 'Chants pendant la cérémonie et au coucher du soleil', status: 'filled' },
+      ],
+    },
+    {
+      time: '20h00',
+      title: 'Le Cochon de Lait',
+      narrativeScript: 'La broche tourne depuis midi. On découpe sur la table de bois, on sert avec les pommes de terre au maquis et le vin de Patrimonio.',
+      ambianceDetail: 'Feu de bois, lanterne tempête et longues tables sur la dalle de pierre.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'Berger Hôte & Cuisinier au Feu', mission: 'Cochon de lait à la broche et fromages de brebis', status: 'filled' },
+      ],
+    },
+    {
+      time: '11h00',
+      title: 'La Baignade du Lendemain',
+      narrativeScript: 'Descente au sentier, baignade en calanque, café au feu et retour tranquille avant la chaleur.',
+      ambianceDetail: 'Eau à 19 °C, galets blancs, personne n’avait prévu de maillot.',
+      image: '/images/terrasse.jpg',
+      vendorRoles: [
+        { role: 'Guide Randonnée & Baignade', mission: 'Descente encadrée et baignade du lendemain', status: 'open', compensationHint: 'Demi-journée encadrée' },
+      ],
+    },
+  ],
+  'reunion': [
+    {
+      time: '16h00',
+      title: 'L’Accueil au Rougail',
+      narrativeScript: 'On arrive par la varangue, on goûte le rougail d’accueil et on se met à l’ombre des frangipaniers pendant que la famille s’installe.',
+      ambianceDetail: 'Ti-punch, achards et serviettes humides pour la chaleur.',
+      image: '/images/reunion.jpg',
+      vendorRoles: [
+        { role: 'Chef Créole Marmite & Carry', mission: 'Accueil, rougail et buffet créole', status: 'filled' },
+      ],
+    },
+    {
+      time: '21h00',
+      title: 'Le Maloya',
+      narrativeScript: 'Les tambours entrent après le dessert. Le roulèr donne le rythme, les invités forment le cercle et personne ne s’assoit plus.',
+      ambianceDetail: 'Roulèr, kayanm et lumières basses sur le jardin tropical.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'Groupe Séga & Maloya', mission: 'Concert live jusqu’à l’aube', status: 'filled' },
+      ],
+    },
+    {
+      time: '10h00',
+      title: 'Le Lendemain à la Mer',
+      narrativeScript: 'Petit-déjeuner sous les palmiers puis plage de l’Ermitage : la journée suit la marée, personne ne regarde l’heure.',
+      ambianceDetail: 'Boules de coco, lagon tiède et sieste sous les filaos.',
+      image: '/images/terrasse.jpg',
+      vendorRoles: [
+        { role: 'Fleuriste Tropical & Décoration', mission: 'Décor de plage et de varangue', status: 'open', compensationHint: 'Prestation deux jours' },
+      ],
+    },
+  ],
+  'new-york': [
+    {
+      time: '18h30',
+      title: 'Le Dîner sur le Toit',
+      narrativeScript: 'On monte par l’ascenseur de service, la skyline est déjà orange, les lumières s’allument entre les réservoirs d’eau au moment où l’on s’assoit.',
+      ambianceDetail: 'Golden hour sur Manhattan, bar à huîtres et verres de champagne.',
+      image: '/images/new-york.jpg',
+      vendorRoles: [
+        { role: 'Chef & Bar à Cocktails', mission: 'Dîner sur le toit et bar à cocktails', status: 'filled' },
+        { role: 'Saxophoniste & DJ Set', mission: 'Cocktail au saxophone puis set jusqu’à la fermeture', status: 'filled' },
+      ],
+    },
+    {
+      time: '23h00',
+      title: 'Le Food Truck',
+      narrativeScript: 'Quand la ville baisse d’un ton, le camion s’installe dans la rue en bas et remonte les burgers par l’ascenseur.',
+      ambianceDetail: 'Néons, papier kraft et musique qui ne s’arrête pas.',
+      image: '/images/hero-wedding.jpg',
+      vendorRoles: [
+        { role: 'Food Truck de Nuit', mission: 'Service tardif depuis la rue', status: 'open', compensationHint: 'Service 2h' },
+      ],
+    },
+    {
+      time: '11h30',
+      title: 'Le Brunch dans un Diner',
+      narrativeScript: 'Banquettes rouges, pancakes et café sans fin : les adieux américains, avec les photos de la veille passées de main en main.',
+      ambianceDetail: 'Juke-box, sirops d’érable et café en mug épais.',
+      image: '/images/terrasse.jpg',
+      vendorRoles: [
+        { role: 'Diner Partenaire', mission: 'Brunch privatif du lendemain', status: 'open', compensationHint: 'Salle privatisée 3h' },
+      ],
+    },
+  ],
+  'vegas': [
+    {
+      time: '22h00',
+      title: 'La Chapelle Néon',
+      narrativeScript: 'Vingt minutes, une arche de fleurs, Elvis qui officie et la famille qui rit du début à la fin.',
+      ambianceDetail: 'Néons roses, flashs et orgue d’un autre temps.',
+      image: '/images/vegas.jpg',
+      vendorRoles: [
+        { role: 'Elvis Officiant & Maître de Cérémonie', mission: 'Cérémonie en vingt minutes sous les néons', status: 'filled' },
+        { role: 'Photographe Néon', mission: 'Portraits de nuit et tirages sépia', status: 'filled' },
+      ],
+    },
+    {
+      time: '23h30',
+      title: 'Champagne au Strip',
+      narrativeScript: 'La limousine remonte le boulevard, on sabre une bouteille au-dessus du strip et les taxis jaunes klaxonnent au passage.',
+      ambianceDetail: 'Enseignes géantes, vitres baissées, musique à fond.',
+      image: '/images/champagne.jpg',
+      vendorRoles: [
+        { role: 'Chauffeur de Limousine', mission: 'Tour du Strip et champagne à bord', status: 'filled' },
+      ],
+    },
+    {
+      time: '01h30',
+      title: 'Le Buffet de Nuit',
+      narrativeScript: 'Retour au chapiteau, buffet nocturne, machine à sous pour tirer le gâteau et piste de danse jusqu’à trois heures.',
+      ambianceDetail: 'Sliders, glace pilée et lumières roses jusqu’au bout de la nuit.',
+      image: '/images/danse.jpg',
+      vendorRoles: [
+        { role: 'Buffet Nocturne & Bar', mission: 'Service de nuit et bar permanent', status: 'open', compensationHint: 'Service jusqu’à 03h' },
+      ],
+    },
+  ],
+
 };
 
+/**
+ * Les univers qui n'ont pas de scénario écrit reçoivent trois scènes tirées de
+ * leur propre contenu : leur cérémonie, leur dîner et leur lendemain. Rien de
+ * générique, et jamais les scènes d'un autre univers.
+ */
+function scenesDepuisLeContenu(styleId: string): ThemeTimelineScene[] {
+  const style = styleById(styleId);
+  const contenu = contentFor(style);
+  const image = () => style.image;
+
+  return [
+    {
+      time: '16h00',
+      title: `La cérémonie · ${contenu.couple.venue}`,
+      narrativeScript: contenu.hero.subtitle,
+      ambianceDetail: contenu.couple.season,
+      image: image(),
+      vendorRoles: [{ role: style.humanMissions[0]?.role ?? 'Prestataire', mission: style.humanMissions[0]?.mission ?? '', status: 'open' }],
+    },
+    {
+      time: '20h00',
+      title: contenu.menu.service,
+      narrativeScript: contenu.menu.items.join(' · '),
+      ambianceDetail: `${contenu.couple.guests} invités · ${contenu.couple.dressCode}`,
+      image: image(),
+      vendorRoles: [{ role: style.humanMissions[1]?.role ?? 'Traiteur', mission: style.humanMissions[1]?.mission ?? '', status: 'filled' }],
+    },
+    {
+      time: '11h00',
+      title: 'Le lendemain',
+      narrativeScript: contenu.infos.map((i) => `${i.label} : ${i.value}`).join(' · '),
+      ambianceDetail: contenu.cagnotte.purpose,
+      image: image(),
+      vendorRoles: [{ role: style.humanMissions[2]?.role ?? 'Prestataire', mission: style.humanMissions[2]?.mission ?? '', status: 'open' }],
+    },
+  ];
+}
+
 export function getScenesForStyle(styleId: string): ThemeTimelineScene[] {
-  return THEME_TIMELINE_SCENARIOS[styleId] || THEME_TIMELINE_SCENARIOS['noir-blanc'];
+  return THEME_TIMELINE_SCENARIOS[styleId] ?? scenesDepuisLeContenu(styleId);
 }

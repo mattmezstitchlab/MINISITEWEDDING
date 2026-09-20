@@ -8,6 +8,8 @@ import { SiteViewContext } from './sections/context';
 import type { SiteViewValue } from './sections/context';
 import { SECTION_COMPONENTS } from './sections';
 import SupermarcheTicket from './themes/SupermarcheTicket';
+import SignatureBlock from './themes/ThemeSignature';
+import { signatureFor, signatureStyle } from '../lib/themeSignatures';
 
 /**
  * Rendu d’un site de mariage — utilisé tel quel par la page publique, et en
@@ -22,13 +24,17 @@ interface Props {
   /** Copie statique : la base est injoignable, les écritures sont désactivées. */
   degraded?: boolean;
   preview?: boolean;
+  /** Masque la capsule de navigation du site — utile dans un châssis de téléphone. */
+  hideHeader?: boolean;
   selectedKey?: string | null;
   onSelectSection?: (key: string) => void;
 }
 
-export default function PublicSiteView({ data, degraded = false, preview = false, selectedKey, onSelectSection }: Props) {
+export default function PublicSiteView({ data, degraded = false, preview = false, hideHeader = false, selectedKey, onSelectSection }: Props) {
   const { site, sections } = data;
   const theme = styleById(site.style);
+  /** Le geste de cet univers — néon, hublot, ligne, affiche… — s'il en a un. */
+  const signature = signatureFor(site.style);
   const fonts = fontsFor(site.typography);
   const accent = site.accent_color || theme.accent;
   const dark = theme.dark;
@@ -67,6 +73,7 @@ export default function PublicSiteView({ data, degraded = false, preview = false
     daysLeft: daysUntil(site.wedding_date),
     preview,
     degraded,
+    hideHeader,
     scrolled,
     menuOpen,
     setMenuOpen,
@@ -74,7 +81,7 @@ export default function PublicSiteView({ data, degraded = false, preview = false
     setLightbox,
     giftThanks,
     setGiftThanks,
-  }), [data, site, theme, fonts, accent, dark, preview, degraded, scrolled, menuOpen, lightbox, giftThanks]);
+  }), [data, site, theme, fonts, accent, dark, preview, degraded, hideHeader, scrolled, menuOpen, lightbox, giftThanks]);
 
   /** En aperçu, chaque section devient cliquable et signale si elle est masquée. */
   const wrap = (key: string, content: ReactNode) => {
@@ -103,12 +110,26 @@ export default function PublicSiteView({ data, degraded = false, preview = false
         <SupermarcheTicket data={data} preview={preview} />
       ) : (
         <div
-          className={`vp-env min-h-screen ${dark ? 'vp-env-dark' : ''}`}
-          style={{ fontFamily: fonts.body, color: value.ink, ...envVars(theme, accent) } as CSSProperties}
+          className={`vp-env min-h-screen ${dark ? 'vp-env-dark' : ''} ${signature ? `vp-sg-fond vp-sg-${signature.kind}` : ''}`}
+          style={
+            {
+              fontFamily: fonts.body,
+              color: value.ink,
+              ...envVars(theme, accent),
+              ...signatureStyle(signature),
+            } as CSSProperties
+          }
         >
           {ordered.map((s) => {
             const Section = SECTION_COMPONENTS[s.section_key];
-            return <div key={s.section_key}>{wrap(s.section_key, Section ? <Section /> : null)}</div>;
+            return (
+              <div key={s.section_key}>
+                {wrap(s.section_key, Section ? <Section /> : null)}
+                {/* Le geste de l'univers, juste après le hero : c'est lui qui
+                    distingue ce mini-site de tous les autres. */}
+                {s.section_key === 'hero' && <SignatureBlock signature={signature} />}
+              </div>
+            );
           })}
           {ordered.length === 0 && (
             <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center" style={{ color: value.muted }}>

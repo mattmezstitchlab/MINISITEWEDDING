@@ -11,7 +11,7 @@ const REAL_STORY_TESTIMONIALS = [
   {
     couple: 'Léa & Maxime',
     theme: 'Desert Motel',
-    quote: 'On voulait se dire oui à 38°C au fond d’une piscine vide à Joshua Tree. Tout le monde nous prenait pour des fous jusqu’à ce que le cinéaste Super 8 et le guide d’elopement VOWS s’alignent en 24h. Le moment le plus vibrant de notre vie.',
+    quote: 'On voulait se dire oui à 38°C au fond d’une piscine vide à Joshua Tree. Tout le monde nous prenait pour des fous jusqu’à ce que le cinéaste Super 8 et le guide d’elopement Super Mariage s’alignent en 24h. Le moment le plus vibrant de notre vie.',
     image: '/images/desert-pool-vows.jpg',
     actors: ['Cinéaste Super 8', 'Guide Elopement', 'Food truck tacos'],
   },
@@ -106,7 +106,7 @@ export default function CommunityFeedHub() {
           <div className="flex items-center justify-between">
             <div>
               <span className="text-[11.5px] font-bold uppercase tracking-[0.2em] text-white/40 block mb-1">
-                Flux en direct de la communauté VOWS
+                Flux en direct de la communauté Super Mariage
               </span>
               <h3 className="vp-title text-[24px] sm:text-[32px] text-white">
                 Mariages en préparation &amp; Talents disponibles

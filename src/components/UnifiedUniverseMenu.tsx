@@ -1,20 +1,28 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronRight, ChevronLeft, X, Users, ArrowRight, Layers, Home, Grid, Radio } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronLeft, X, Users, ArrowRight, Layers, Home } from 'lucide-react';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
-import UniverseDirectoryModal from './UniverseDirectoryModal';
 
 interface UnifiedUniverseMenuProps {
   onSelectStyle: (style: WeddingStyle | null) => void;
   selectedStyleId: string | null;
+  /** Le menu est piloté par la nav, pour qu'un seul panneau soit ouvert à la fois. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export default function UnifiedUniverseMenu({
   onSelectStyle,
   selectedStyleId,
+  open,
+  onOpenChange,
 }: UnifiedUniverseMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isDirectoryOpen, setIsDirectoryOpen] = useState(false);
+  const [openInterne, setOpenInterne] = useState(false);
+  const isOpen = open ?? openInterne;
+  const setIsOpen = (valeur: boolean) => {
+    setOpenInterne(valeur);
+    onOpenChange?.(valeur);
+  };
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const selectedStyle = selectedStyleId
@@ -69,7 +77,7 @@ export default function UnifiedUniverseMenu({
           ) : (
             <>
               <Layers size={14} className="text-[#0B0C12]" />
-              <span className="tracking-wide">UNIVERS &amp; MÉTIERS</span>
+              <span className="tracking-wide">Univers</span>
             </>
           )}
           <ChevronDown
@@ -96,7 +104,7 @@ export default function UnifiedUniverseMenu({
                   <div className="flex items-center gap-3">
                     <span className="h-2 w-2 rounded-full bg-[#0B0C12]" />
                     <span className="text-[12.5px] font-bold uppercase tracking-[0.2em] text-[#0B0C12]/80">
-                      Galerie des Univers &amp; Métiers VOWS
+                      Les {WEDDING_STYLES.length} univers
                     </span>
                     {selectedStyle && (
                       <button
@@ -213,41 +221,12 @@ export default function UnifiedUniverseMenu({
                   })}
                 </div>
 
-                {/* BAS DU MENU : Bouton picto Mosaïque seul (ferme le panneau menu et ouvre la mosaïque plein écran) */}
-                <div className="mt-4 pt-3 border-t border-black/5 flex items-center justify-between px-2">
-                  <div className="text-[11.5px] text-[#0B0C12]/60 hidden sm:flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Vue globale transversale des styles et des métiers</span>
-                  </div>
-
-                  {/* Bouton picto mosaïque unique */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setIsDirectoryOpen(true);
-                    }}
-                    className="ml-auto flex h-9 w-9 items-center justify-center rounded-full bg-black text-white hover:bg-neutral-800 transition shadow-md"
-                    title="Ouvrir la Mosaïque Globale Plein Écran"
-                  >
-                    <Grid size={15} />
-                  </button>
-                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* MODALE PLEIN ÉCRAN : MOSAÏQUE & CARTE GÉOLOCALISÉE */}
-      <UniverseDirectoryModal
-        isOpen={isDirectoryOpen}
-        onClose={() => setIsDirectoryOpen(false)}
-        selectedStyleId={selectedStyleId}
-        onSelectStyle={(style) => {
-          onSelectStyle(style);
-        }}
-      />
     </>
   );
 }

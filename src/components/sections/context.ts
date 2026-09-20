@@ -31,6 +31,8 @@ export interface SiteViewValue {
   daysLeft: number;
   /** Aperçu dans l’éditeur : pas de navigation, pas de formulaire réel. */
   preview: boolean;
+  /** Le défilé montre le mini-site dans un iPhone : le header du site y gêne. */
+  hideHeader: boolean;
   /**
    * Site servi depuis une copie statique (`public/sites/<slug>.json`) parce que
    * la base est injoignable. Le rendu est complet, mais rien ne peut être

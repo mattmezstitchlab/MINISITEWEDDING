@@ -20,7 +20,7 @@ export default function Aime() {
               <ArrowLeft size={15} />
             </Link>
             <div>
-              <div className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-black/40">VOWS · AIME</div>
+              <div className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-black/40">SUPER MARIAGE · AIME</div>
               <div className="text-[14px] font-bold">Taxonomie mariage &amp; graphe relationnel</div>
             </div>
           </div>
@@ -50,7 +50,7 @@ export default function Aime() {
               <span className="text-white/45">un système vivant.</span>
             </h1>
             <p className="mt-7 max-w-2xl text-[16px] leading-relaxed text-white/65 sm:text-[18px]">
-              La dernière couche VOWS n’est pas un tableau de prestataires. C’est une taxonomie de rôles, des permissions lisibles et une timeline partagée : chacun voit ce qui lui permet d’agir, rien de plus.
+              La dernière couche Super Mariage n’est pas un tableau de prestataires. C’est une taxonomie de rôles, des permissions lisibles et une timeline partagée : chacun voit ce qui lui permet d’agir, rien de plus.
             </p>
             <div className="mt-8 flex flex-wrap gap-2 text-[10px] font-mono uppercase tracking-wider text-white/55">
               <span className="rounded-full border border-white/15 px-3 py-1.5">{FULL_ROLES_TAXONOMY.length} rôles &amp; métiers</span>
@@ -106,7 +106,7 @@ export default function Aime() {
       </section>
 
       <footer className="border-t border-black/8 bg-[#F4F4F2] px-5 py-8 text-center text-[11px] font-mono text-black/45 sm:px-8">
-        <Link to="/" className="font-bold text-black hover:underline">VOWS</Link> · Taxonomie mariage · AIME Universal Relation Graph
+        <Link to="/" className="font-bold text-black hover:underline">Super Mariage</Link> · Taxonomie mariage · AIME Universal Relation Graph
       </footer>
 
       <ArchitectureTruthModal isOpen={isTruthModalOpen} onClose={() => setIsTruthModalOpen(false)} />

@@ -207,10 +207,10 @@ export function analyzeWeddingPrompt(prompt: string): AgentProposal {
   if (p.includes('central park')) {
     // Célébration dans Central Park : alliance végétale et skyline de New York
     chosenId = 'garden-party';
-    toneResponse = `Cérémonie magique dans Central Park à New York. VOWS conçoit une esthétique botanique sous la skyline : vœux sous les frondaisons, garden cocktail décontracté et vue sur les gratte-ciels pour ${coupleTitle}.`;
+    toneResponse = `Cérémonie magique dans Central Park à New York. Super Mariage conçoit une esthétique botanique sous la skyline : vœux sous les frondaisons, garden cocktail décontracté et vue sur les gratte-ciels pour ${coupleTitle}.`;
   } else if (p.includes('madison square') || p.includes('rooftop') || p.includes('hype')) {
     chosenId = 'rooftop-paris';
-    toneResponse = `Ambiance skyline ultra-hype. VOWS orchestre pour ${coupleTitle} une expérience électrisante : sunset cocktails, vue panoramique et fête mémorable à ${venue}.`;
+    toneResponse = `Ambiance skyline ultra-hype. Super Mariage orchestre pour ${coupleTitle} une expérience électrisante : sunset cocktails, vue panoramique et fête mémorable à ${venue}.`;
   } else if (p.includes('noir') || p.includes('blanc') || p.includes('vogue') || p.includes('haute couture') || p.includes('chic')) {
     chosenId = 'noir-blanc';
     toneResponse = `L'élégance absolue. Une ligne haute couture en noir & blanc, sans le moindre bruit visuel, taillée au millimètre pour ${coupleTitle}.`;

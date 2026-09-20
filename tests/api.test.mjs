@@ -18,7 +18,7 @@ const work = mkdtempSync(join(tmpdir(), 'wedding-api-'));
 
 cpSync(join(repoRoot, 'api'), join(work, 'api'), { recursive: true });
 mkdirSync(join(work, 'server'));
-for (const f of ['auth.js', 'crud.js', 'errors.js']) {
+for (const f of ['auth.js', 'crud.js', 'errors.js', 'people.js', 'live.js']) {
   cpSync(join(repoRoot, 'server', f), join(work, 'server', f));
 }
 cpSync(new URL('./mock-db-client.js', import.meta.url), join(work, 'server/db-client.js'));
@@ -39,6 +39,9 @@ const rsvpEvents = await load('api/rsvp-events.js');
 const rsvp = await load('api/rsvp.js');
 const media = await load('api/media.js');
 const upload = await load('api/upload.js');
+const people = await load('api/people.js');
+const members = await load('api/wedding-members.js');
+const live = await load('api/wedding-live.js');
 
 let pass = 0;
 const failures = [];
@@ -58,9 +61,12 @@ function mkRes() {
   return res;
 }
 
-async function call(handler, { method = 'GET', query = {}, body = null, token = null } = {}) {
+async function call(handler, { method = 'GET', query = {}, body = null, token = null, person = null } = {}) {
   const res = mkRes();
-  const req = { method, query, body, headers: token ? { 'x-site-token': token } : {} };
+  const headers = {};
+  if (token) headers['x-site-token'] = token;
+  if (person) headers['x-person-token'] = person;
+  const req = { method, query, body, headers };
   await handler(req, res);
   return res;
 }
@@ -284,6 +290,293 @@ check('site sans clé : édition impossible → 403', (await call(weddingSites, 
     );
     check(`${f} : les sections sont ordonnées`, snap.sections.every((s, i) => i === 0 || s.position >= snap.sections[i - 1].position), true);
   }
+}
+
+
+/* ------------------------------------------------------- 10. les personnes */
+
+/**
+ * Le cœur de l'affaire : qui peut lire quoi. Trois cartes, trois niveaux de
+ * confidentialité, et un mariage où chacun tient un rôle différent — c'est la
+ * matrice que le serveur doit appliquer, et que le navigateur ne doit jamais
+ * décider seul.
+ */
+{
+  const ouvert = await call(createSite, { method: 'POST', body: sitePayload('paul-emma-tests', true) });
+  const brouillon = await call(createSite, { method: 'POST', body: sitePayload('brouillon-tests', false) });
+  const slugOuvert = ouvert.body.site.slug;
+
+  const nouvelle = (prenom, extra = {}) =>
+    call(people, {
+      method: 'POST',
+      body: { first_name: prenom, last_name: 'Test', home_city: 'Provins', trade: 'Fleuriste', ...extra },
+    });
+
+  const mariee = await nouvelle('Alice', { contact_visibility: 'participants' });
+  const invite = await nouvelle('Bruno', { contact_visibility: 'participants' });
+  const photographe = await nouvelle('Claire', {
+    contact_visibility: 'maries',
+    email: 'claire@exemple.test',
+    phone: '0600000000',
+    card: { rate: '550 €', iban: 'FR7630006000011234567890189', documents: [{ id: 'd1', label: 'Devis', done: true }] },
+  });
+
+  const cleAlice = mariee.body.person_token;
+  const cleBruno = invite.body.person_token;
+  const cleClaire = photographe.body.person_token;
+
+  check('créer une carte sans prénom → 400', (await call(people, { method: 'POST', body: { last_name: 'X' } })).statusCode, 400);
+  check('créer une carte → 201', mariee.statusCode, 201);
+  check('la clé n’est renvoyée qu’à la création', typeof cleAlice === 'string' && cleAlice.length > 20, true);
+  check('la réponse de création ne contient que des champs connus', Object.keys(mariee.body).sort(), ['person', 'person_token']);
+  check('le verso suit la carte', photographe.body.person.card.rate, '550 €');
+
+  /* — la carte de quelqu’un d’autre ne s’écrit pas */
+  check('lire sans clé ni cible → 400', (await call(people, {})).statusCode, 400);
+  check('lire sa carte avec sa clé → 200', (await call(people, { person: cleAlice })).statusCode, 200);
+  check('ma carte arrive complète', (await call(people, { person: cleClaire })).body.person.card.iban, 'FR7630006000011234567890189');
+  check('écrire sans clé → 403', (await call(people, { method: 'PUT', body: { first_name: 'Nul' } })).statusCode, 403);
+  check('écrire avec une clé inventée → 403', (await call(people, { method: 'PUT', body: { first_name: 'Nul' }, person: 'inventee' })).statusCode, 403);
+
+  const maj = await call(people, { method: 'PUT', body: { trade: 'Fleuriste floral', id: invite.body.person.id }, person: cleClaire });
+  check('écrire avec sa clé → 200', maj.statusCode, 200);
+  check('l’identifiant envoyé ne détourne pas l’écriture', maj.body.person.id, photographe.body.person.id);
+  check('le champ est bien modifié', maj.body.person.trade, 'Fleuriste floral');
+  check(
+    'un champ hors liste est ignoré',
+    (await call(people, { method: 'PUT', body: { role_id: 'maries', first_name: 'Claire' }, person: cleClaire })).body.person
+      .role_id,
+    undefined,
+  );
+
+  /* — rejoindre un mariage */
+  check('rejoindre sans clé → 403', (await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'invites' } })).statusCode, 403);
+  check(
+    'rejoindre avec un rôle mal formé → 400',
+    (await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'NOPE !' }, person: cleBruno })).statusCode,
+    400,
+  );
+  check(
+    'rejoindre un mariage inconnu → 404',
+    (await call(members, { method: 'POST', body: { slug: 'inconnu-tests', role_id: 'invites' }, person: cleBruno })).statusCode,
+    404,
+  );
+
+  check(
+    'rejoindre un mariage en brouillon → 404',
+    (await call(members, { method: 'POST', body: { slug: brouillon.body.site.slug, role_id: 'invites' }, person: cleBruno })).statusCode,
+    404,
+  );
+  check(
+    'ses mariés, eux, peuvent rejoindre leur brouillon',
+    (await call(members, {
+      method: 'POST',
+      body: { slug: brouillon.body.site.slug, role_id: 'maries' },
+      person: cleAlice,
+      token: brouillon.body.edit_token,
+    })).statusCode,
+    201,
+  );
+
+  const aliceRejoint = await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'maries' }, person: cleAlice });
+  check('rejoindre → 201', aliceRejoint.statusCode, 201);
+  check('la place porte le rôle', aliceRejoint.body.member.role_id, 'maries');
+  check('rejoindre deux fois → 200, même place', (await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'maries' }, person: cleAlice })).statusCode, 200);
+  await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'invites' }, person: cleBruno });
+  await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'photographe' }, person: cleClaire });
+
+  /* — la liste dépend de qui regarde */
+  check('les membres d’un mariage publié se lisent sans clé', (await call(members, { query: { slug: slugOuvert } })).body.count, 3);
+  check('un brouillon reste introuvable', (await call(members, { query: { slug: brouillon.body.site.slug } })).statusCode, 404);
+  check(
+    'les mariés du brouillon le voient',
+    (await call(members, { query: { slug: brouillon.body.site.slug }, token: brouillon.body.edit_token })).statusCode,
+    200,
+  );
+  check(
+    'mes mariages se lisent avec ma clé',
+    (await call(members, { person: cleBruno })).body.memberships.length,
+    1,
+  );
+  check('mes mariages sans clé → 400', (await call(members, {})).statusCode, 400);
+
+  /* — ce que chacun voit sur la carte d’un autre */
+  const lire = async (person, lecteur = null) => {
+    const res = await call(people, { query: { id: person.body.person.id, slug: slugOuvert }, person: lecteur });
+    return res.body.person;
+  };
+
+  const claireParInconnu = await lire(photographe);
+  check('un inconnu ne reçoit aucun contact réservé aux mariés', claireParInconnu.email, '');
+  check('un inconnu ne reçoit jamais l’IBAN', claireParInconnu.card.iban, undefined);
+  check('un inconnu ne reçoit aucun document', 'documents' in claireParInconnu.card, false);
+  check('le masquage est annoncé', claireParInconnu.redacted.contacts && claireParInconnu.redacted.prive, true);
+  check('la carte de Claire reste lisible : elle montre son rôle et sa ville', claireParInconnu.home_city, 'Provins');
+
+  const claireParInvite = await lire(photographe, cleBruno);
+  check('un invité ne voit pas les coordonnées réservées aux mariés', claireParInvite.email, '');
+  check('un invité ne voit pas l’IBAN', claireParInvite.card.iban, undefined);
+
+  const claireParMariee = await lire(photographe, cleAlice);
+  check('les mariés voient les coordonnées', claireParMariee.email, 'claire@exemple.test');
+  check('les mariés voient l’IBAN', claireParMariee.card.iban, 'FR7630006000011234567890189');
+  check('les mariés voient les pièces', claireParMariee.card.documents.length, 1);
+
+  /* — le niveau « participants » : fermé aux inconnus, ouvert aux membres */
+  const diane = await nouvelle('Diane', { contact_visibility: 'participants', email: 'diane@exemple.test' });
+  await call(members, { method: 'POST', body: { slug: slugOuvert, role_id: 'invites' }, person: diane.body.person_token });
+  check('un inconnu ne voit pas une carte « participants »', (await lire(diane)).email, '');
+  check('un membre voit une carte « participants »', (await lire(diane, cleBruno)).email, 'diane@exemple.test');
+  check('la personne voit la sienne, quoi qu’il arrive', (await lire(diane, diane.body.person_token)).email, 'diane@exemple.test');
+
+  await call(people, { method: 'PUT', body: { contact_visibility: 'carte', email: 'bruno@exemple.test' }, person: cleBruno });
+  check('une carte « sur ma carte » se lit par tous', (await lire(invite)).email, 'bruno@exemple.test');
+  check(
+    'l’IBAN reste réservé même quand tout le reste est ouvert',
+    (await call(people, { method: 'PUT', body: { card: { iban: 'FR0000000000000000000000000' } }, person: cleBruno })).body.person.card
+      .iban,
+    'FR0000000000000000000000000',
+  );
+
+  /* — la liste du mariage applique les mêmes règles */
+  const liste = await call(people, { query: { slug: slugOuvert } });
+  check('la liste du mariage rend une carte par membre', liste.body.people.length, 4);
+  check(
+    'la liste ne laisse fuiter aucun IBAN',
+    liste.body.people.some((p) => p.card && p.card.iban),
+    false,
+  );
+
+  /* — quitter */
+  const place = aliceRejoint.body.member.id;
+  check('quitter la place d’un autre → 403', (await call(members, { method: 'DELETE', query: { id: place }, person: cleBruno })).statusCode, 403);
+  check('quitter sans clé → 403', (await call(members, { method: 'DELETE', query: { id: place } })).statusCode, 403);
+  check('quitter sa place → 200', (await call(members, { method: 'DELETE', query: { id: place }, person: cleAlice })).statusCode, 200);
+  check('la place a bien disparu', (await call(members, { query: { slug: slugOuvert } })).body.count, 3);
+}
+
+/* --------------------------------------- 9. le comptoir partagé (wedding-live) */
+
+{
+  reset();
+
+  /* — le comptoir d'un univers, vide au départ */
+  const vide = await call(live, { query: { style_id: 'vegas' } });
+  check('le comptoir s’ouvre sans ligne en base', vide.statusCode, 200);
+  check('le comptoir vide n’a rien', vide.body.payload.prises.length, 0);
+  check('le comptoir vide n’a pas d’invité', vide.body.invites.length, 0);
+  check('sans univers → 400', (await call(live, { query: {} })).statusCode, 400);
+
+  /* — les avis du public : un cœur par sujet, jamais un nom */
+  const premier = await call(live, { method: 'POST', body: { style_id: 'vegas', geste: { type: 'aimer', cle: 'univers|vegas' } } });
+  check('un cœur s’ajoute au comptoir', premier.body.payload.avis['univers|vegas'], 1);
+  await call(live, { method: 'POST', body: { style_id: 'vegas', geste: { type: 'aimer', cle: 'univers|vegas' } } });
+  const deux = await call(live, { method: 'GET', query: { style_id: 'vegas' } });
+  check('deux personnes, deux cœurs', deux.body.payload.avis['univers|vegas'], 2);
+  const retire = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'aimer', cle: 'univers|vegas', sens: 'moins' } },
+  });
+  check('un cœur retiré redescend', retire.body.payload.avis['univers|vegas'], 1);
+  const sansCle = await call(live, { method: 'POST', body: { style_id: 'vegas', geste: { type: 'aimer' } } });
+  check('un avis sans sujet ne change rien', sansCle.body.applique, false);
+  check('le comptoir garde les avis des autres sujets', deux.body.payload.avis['moment|vegas|20h'], undefined);
+
+  /* — une prise : le premier arrivé la garde */
+  const prise = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'prendre', articleId: 'horaire-22h00', nom: 'Camille' } },
+  });
+  check('une prise est appliquée', prise.body.applique, true);
+  check('elle porte le nom de l’invité', prise.body.payload.prises[0].nom, 'Camille');
+  check('le comptoir connaît son invité', prise.body.invites, ['Camille']);
+
+  const seconde = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'prendre', articleId: 'horaire-22h00', nom: 'Bastien' } },
+  });
+  check('une ligne déjà prise ne se reprend pas', seconde.body.applique, false);
+  check('et la ligne reste à son premier preneur', seconde.body.payload.prises[0].nom, 'Camille');
+
+  const sansNom = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'prendre', articleId: 'horaire-23h00', nom: '   ' } },
+  });
+  check('un geste sans nom ne fait rien', sansNom.body.applique, false);
+
+  /* — on ne lâche que ce qu'on a pris */
+  const pasAMoi = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'lacher', articleId: 'horaire-22h00', nom: 'Bastien' } },
+  });
+  check('lâcher la ligne d’un autre ne fait rien', pasAMoi.body.payload.prises.length, 1);
+  const aMoi = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'lacher', articleId: 'horaire-22h00', nom: 'Camille' } },
+  });
+  check('lâcher sa ligne la libère', aMoi.body.payload.prises.length, 0);
+
+  /* — une demande de morceau, et le refus du doublon */
+  const musique = {
+    type: 'demander', cle: 'sug-1', titre: 'Thinkin’ Out Loud', artiste: 'Ed Sheeran',
+    phaseId: 'premiere_danse', nom: 'Camille',
+  };
+  const demande = await call(live, { method: 'POST', body: { style_id: 'vegas', geste: musique } });
+  check('une demande est appliquée', demande.body.payload.demandes.length, 1);
+  check('elle garde son moment', demande.body.payload.demandes[0].phaseId, 'premiere_danse');
+  const doublon = await call(live, { method: 'POST', body: { style_id: 'vegas', geste: musique } });
+  check('on ne demande pas deux fois la même chose', doublon.body.applique, false);
+  const autre = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { ...musique, nom: 'Bastien' } },
+  });
+  check('un autre invité peut demander le même morceau', autre.body.payload.demandes.length, 2);
+  const retrait = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { type: 'retirerDemande', cle: 'sug-1', nom: 'Camille' } },
+  });
+  check('retirer sa demande la retire', retrait.body.payload.demandes.length, 1);
+
+  /* — le reçu d'un invité, posé par son lien */
+  const journaliser = {
+    type: 'journaliser',
+    code: 'CODE-CAMILLE',
+    nom: 'Camille',
+    articles: ['horaire-22h00', 'horaire-22h17'],
+    demandes: [
+      { cle: 'sug-1', titre: 'Thinkin’ Out Loud', artiste: 'Ed Sheeran', phaseId: 'premiere_danse' },
+      { cle: 'libre:la-vie-en-rose', titre: 'La Vie en rose', artiste: 'Édith Piaf', phaseId: 'diner_toasts', libre: true },
+    ],
+  };
+  const recu = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { ...journaliser, recu: { nom: 'Camille' } } },
+  });
+  check('le reçu remonte ses deux lignes', recu.body.payload.prises.length, 2);
+  check('et entre au journal', recu.body.payload.journal.length, 1);
+  check('le journal garde les morceaux du catalogue', recu.body.payload.journal[0].morceaux, ['sug-1']);
+  check('et les titres proposés à part', recu.body.payload.journal[0].titres[0].titre, 'La Vie en rose');
+  const rejoue = await call(live, {
+    method: 'POST',
+    body: { style_id: 'vegas', geste: { ...journaliser, recu: { nom: 'Camille' } } },
+  });
+  check('rouvrir le lien ne compte pas double', rejoue.body.applique, false);
+  check('ni les lignes ni le journal ne bougent', rejoue.body.payload.prises.length, 2);
+
+  /* — un univers voisin garde son comptoir à lui */
+  const autreUnivers = await call(live, { query: { style_id: 'corse' } });
+  check('chaque univers a son comptoir', autreUnivers.body.payload.prises.length, 0);
+
+  /* — la remise à zéro, côté mariés */
+  const remis = await call(live, { method: 'PUT', body: { style_id: 'vegas', payload: { prises: [], demandes: [], journal: [] } } });
+  check('les mariés peuvent vider le comptoir', remis.body.payload.prises.length, 0);
+  check('le comptoir vidé est bien relu', (await call(live, { query: { style_id: 'vegas' } })).body.payload.journal.length, 0);
+  check('PUT sans payload → 400', (await call(live, { method: 'PUT', body: { style_id: 'vegas' } })).statusCode, 400);
+  check('POST sans geste → 200 sans écriture', (await call(live, { method: 'POST', body: { style_id: 'vegas' } })).body.applique, false);
+  check('DELETE refusé', (await call(live, { method: 'DELETE', query: { style_id: 'vegas' } })).statusCode, 405);
+
+  /* — ce qui est stocké : une ligne par univers, rien de plus */
+  check('une seule ligne en base pour Vegas', store.wedding_live.filter((r) => r.style_id === 'vegas').length, 1);
 }
 
 /* ------------------------------------------------------------------ bilan */

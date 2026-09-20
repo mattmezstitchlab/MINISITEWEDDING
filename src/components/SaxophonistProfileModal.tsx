@@ -77,7 +77,7 @@ export default function SaxophonistProfileModal({ isOpen, onClose }: Saxophonist
           {/* Adaptabilité tous univers */}
           <div className="rounded-[20px] bg-[#FAFAFC] border border-black/6 p-3.5 space-y-2">
             <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/40">
-              Adaptabilité Scénographique VOWS :
+              Adaptabilité Scénographique Super Mariage :
             </div>
             <div className="flex flex-wrap gap-1.5 text-[11px]">
               <span className="rounded-full bg-white border border-black/8 px-2.5 py-1 text-black font-medium">

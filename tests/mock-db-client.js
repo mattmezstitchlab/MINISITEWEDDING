@@ -15,6 +15,10 @@ export const store = {
   rsvp_events: [],
   rsvp_responses: [],
   media_assets: [],
+  people: [],
+  person_secrets: [],
+  wedding_members: [],
+  wedding_live: [],
 };
 
 /** `{ table, message }` : force l’échec du prochain insert sur cette table. */
@@ -32,7 +36,9 @@ export function reset() {
 }
 
 function matches(row, filters) {
-  return filters.every(([key, value]) => String(row[key]) === String(value));
+  return filters.every(([key, value]) =>
+    Array.isArray(value) ? value.map(String).includes(String(row[key])) : String(row[key]) === String(value),
+  );
 }
 
 class Query {
@@ -47,6 +53,8 @@ class Query {
 
   select() { return this; }
   eq(key, value) { this.filters.push([key, value]); return this; }
+  /** `in()` de Supabase : un filtre, plusieurs valeurs possibles. */
+  in(key, values) { this.filters.push([key, Array.isArray(values) ? values : [values]]); return this; }
   order(col, opts = {}) { this.orders.push([col, opts.ascending !== false]); return this; }
   limit(n) { this.max = n; return this; }
   insert(rows) { this.payload = rows; this.op = 'insert'; return this; }
