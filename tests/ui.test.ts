@@ -2577,6 +2577,19 @@ check(
     /backdrop-filter: saturate\(180%\) blur\(20px\)/.test(readFileSync('src/index.css', 'utf8')),
   true,
 );
+/* « Plein de texte en blanc on voit rien » : la page est blanche, donc **aucun
+   texte blanc ne flotte** dans ses bandes. S'il y en a, c'est sur une pastille
+   pleine d'encre, ou sur du noir — jamais sur le papier. */
+check(
+  'aucun texte blanc ne flotte sur la page blanche',
+  (() => {
+    const blanc = ticketVide.slice(ticketVide.indexOf('data-bande="LE PROGRAMME"'));
+    return [...blanc.matchAll(/class="([^"]*text-white[^"]*)"/g)].every((m) =>
+      /bg-black|bg-\[color:var\(--vp-ink\)\]/.test(m[1]!),
+    );
+  })(),
+  true,
+);
 check(
   'la barre dit où en est le ticket, sans qu’on descende',
   [ticketVide.includes('data-barre-compte="0"'), ticketPlein.includes(`data-barre-compte="${cochesDessai.length}"`)],
