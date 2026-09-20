@@ -1998,7 +1998,15 @@ const heroMagazine = revue.slice(0, revue.indexOf('data-grille'));
 check('l’écran s’ouvre sur la mosaïque, et rien d’autre', heroMagazine.includes('data-case='), false);
 check('aucune image de fond ne traîne derrière', revue.includes('data-scene="editoriale"'), false);
 check('la mosaïque prend l’écran', revue.includes('data-grille="du-monde"'), true);
-check('et le nom d’une case se lit au survol, sans un rendu', revue.includes('group-hover:block'), true);
+/* De si loin que le titre ne s'écrit pas, le doigt posé le dit — en CSS, sans un rendu. */
+const revueDeLoin = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?niveau=1'] }, createElement(Magazine as never)),
+);
+check(
+  'et le nom d’une case se lit au survol, sans un rendu',
+  revueDeLoin.includes('group-hover:block') && revueDeLoin.includes('data-densite="1"'),
+  true,
+);
 
 /* ————————————— LA SCÈNE ÉDITORIALE : UNE IMAGE, TROIS LIGNES ————————————— */
 
