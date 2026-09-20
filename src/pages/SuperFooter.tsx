@@ -204,7 +204,8 @@ export default function SuperFooter() {
               <Wallet size={15} className="text-[#00FF88]" /> Mon portefeuille
             </h2>
             <p className="mt-2 text-[12.5px] leading-relaxed text-white/55">
-              Ce que vous validez se range ici, **classé par famille** — et si une pièce
+              Ce que vous validez se range ici,{' '}
+              <strong className="font-bold text-white/80">classé par famille</strong> — et si une pièce
               n’entre dans aucune famille connue, la famille se crée. C’est comme ça qu’un
               portefeuille apprend, à force de demandes.
             </p>

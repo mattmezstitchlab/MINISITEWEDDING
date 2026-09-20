@@ -58,8 +58,8 @@ export default function LeTemps() {
           </h2>
           <p className="mt-2 max-w-[680px] text-[13.5px] leading-relaxed text-white/55">
             Chaque geste du site s’écrit ici, une ligne à la fois : la carte retenue, le chiffre posé, le
-            document validé, la page ouverte. Rien n’est réécrit — et c’est pour ça qu’on peut **rejouer** un
-            jour, un mois, une année.
+            document validé, la page ouverte. Rien n’est réécrit — et c’est pour ça qu’on peut{' '}
+            <strong className="font-bold text-white/80">rejouer</strong> un jour, un mois, une année.
           </p>
         </div>
         <Link to="/timeline" className="vp-btn vp-btn-glass vp-press">

@@ -2639,6 +2639,9 @@ check('avec la ligne du jour', tempsRendu.includes('Numéro du jour ouvert'), tr
 check('et sa famille', tempsRendu.includes('Le magazine'), true);
 check('les douze mois sont là', ['janvier', 'juin', 'décembre'].every((m) => tempsRendu.includes(m)), true);
 check('et l’on peut ouvrir la timeline', tempsRendu.includes('La timeline complète'), true);
+/* Le gras s’écrit en balise, jamais en astérisques : ce que `RichText` interprète
+   ailleurs ne doit pas s’afficher ici tel quel. */
+check('aucun astérisque de mise en forme ne s’affiche', tempsRendu.includes('**'), false);
 check('le temps se dit vivant, ou vide', chargerTemps().length > 0, true);
 
 effacerTemps();
@@ -2721,6 +2724,7 @@ check('il propose les douze mois', MOIS.every((m) => kiosque.includes(m.nom)), t
 check('et les quatre saisons', ['Printemps', 'Été', 'Automne', 'Hiver'].every((s) => kiosque.includes(s)), true);
 check('il compte ce qu’il montre', kiosque.includes('couvertures affichées'), true);
 check('et il dit à quoi il sert', kiosque.includes('ce qui va'), true);
+check('le kiosque non plus ne montre pas d’astérisques', kiosque.includes('**'), false);
 
 /* ------------------------------------------------------------------- bilan */
 

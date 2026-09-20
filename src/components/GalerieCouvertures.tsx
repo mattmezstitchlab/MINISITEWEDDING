@@ -42,11 +42,12 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
           Les {anneeEntiere.length} couvertures de l’année
         </h2>
         <p className="mt-3 max-w-[760px] text-[13.5px] leading-relaxed text-black/55">
-          Une par jour, et **le même dessin pour toutes** : le fond uni de la saison (et le noir pour les
-          jours qui ne sont pas comme les autres — joker, dimanche, temps clos, solstice), la marque en
-          haut, **la création au centre** — un cadran de vingt-quatre heures dont les branches suivent
-          l’ensoleillement moyen du mois —, le nom du jour, et la date en bas. Chaque couverture porte ce
-          que le jour apporte : {affichees.length > 0 ? 'le ciel, la lune, le chiffre' : 'ses clés'}.
+          Une par jour, et <strong className="font-bold text-black/75">le même dessin pour toutes</strong> :
+          le fond uni de la saison (et le noir pour les jours qui ne sont pas comme les autres — joker,
+          dimanche, temps clos, porte de l’année), la marque en haut,{' '}
+          <strong className="font-bold text-black/75">la création au centre</strong> — un cadran de
+          vingt-quatre heures, une branche par heure de l’édition —, le nom du jour, et la date en bas.
+          Chaque couverture porte ce que le jour apporte : {affichees.length > 0 ? 'le ciel, la lune, le chiffre' : 'ses clés'}.
         </p>
 
         {/* — LES MOIS — */}
@@ -133,9 +134,9 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
         <div className="mt-8 flex flex-wrap items-center gap-3 rounded-[18px] border border-black/8 bg-white px-5 py-4">
           <p className="min-w-[280px] flex-1 text-[13px] leading-relaxed text-black/60">
             Le décor est posé : {anneeEntiere.length} jours, {anneeEntiere.filter((c) => c.pasCommeLesAutres).length} à fond
-            noir, quatre saisons du jeu, un cadran par jour. Ce qu’on décide maintenant, c’est **ce qui va
-            dans les vingt-quatre pages** — et c’est ce qui nourrira les mini-sites et les cartes, sans
-            reposer la même question à personne.
+            noir, quatre saisons du jeu, un cadran par jour. Ce qu’on décide maintenant, c’est{' '}
+            <strong className="font-bold text-black/75">ce qui va dans les vingt-quatre pages</strong> — et
+            c’est ce qui nourrira les mini-sites et les cartes, sans reposer la même question à personne.
           </p>
           <Link to="/le-mariage" className="vp-btn vp-btn-glass vp-press">
             Les univers <ArrowRight size={14} />
