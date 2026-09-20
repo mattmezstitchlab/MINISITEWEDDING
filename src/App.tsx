@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import SiteChrome from './components/SiteChrome';
@@ -6,25 +6,14 @@ import SiteChrome from './components/SiteChrome';
 /**
  * Chaque page est chargée avec gestion propre des routes.
  */
-import Landing from './pages/Landing';
+import GrilleDuneRoute from './components/GrilleDuneRoute';
+import SuperRipple from './pages/SuperRipple';
 import Editor from './pages/Editor';
 import PublicSite from './pages/PublicSite';
-import Theater from './pages/Theater';
 import Magazine from './pages/Magazine';
-import MagazineArticle from './pages/MagazineArticle';
-import Shop from './pages/Shop';
-import ShopProduct from './pages/ShopProduct';
 import PreviewSite from './pages/PreviewSite';
-import WeddingPeople from './pages/WeddingPeople';
-import Invitation from './pages/Invitation';
-import VendorStudio from './pages/VendorStudio';
-import LeMariage from './pages/LeMariage';
-import PageMetier from './pages/PageMetier';
-import PageProfil from './pages/PageProfil';
 import EditeurMiniSite from './pages/EditeurMiniSite';
-import SuperRipple from './pages/SuperRipple';
 
-const Aime = lazy(() => import('./pages/Aime'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -44,24 +33,26 @@ export default function App() {
         <SiteChrome>
         <Suspense fallback={<PageFallback />}>
           <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/theater" element={<Theater />} />
+            {/* On n'arrive plus sur une page : on arrive devant tout le contenu. */}
+            <Route path="/" element={<GrilleDuneRoute monde="annee" />} />
+            {/* Tout le site parle le langage de la grille : une adresse, un monde. */}
+            <Route path="/theater" element={<GrilleDuneRoute monde="monde" />} />
             {/* La timeline est fusionnée avec le magazine : la languette du dock
                 la déploie ; l'ancienne page renvoie vers elle, ouverte. */}
             <Route path="/timeline" element={<Navigate to="/magazine?timeline=1" replace />} />
             {/* Event OS retiré du produit : ses anciennes adresses ramènent à l'accueil. */}
             <Route path="/modules" element={<Navigate to="/" replace />} />
             <Route path="/features" element={<Navigate to="/" replace />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/shop/:slug" element={<ShopProduct />} />
+            <Route path="/shop" element={<GrilleDuneRoute monde="boutique" />} />
+            <Route path="/shop/:slug" element={<GrilleDuneRoute monde={(p) => `produit-${p.slug}`} />} />
             <Route path="/magazine" element={<Magazine />} />
-            <Route path="/magazine/:slug" element={<MagazineArticle />} />
-            <Route path="/aime" element={<Aime />} />
-            <Route path="/taxonomie" element={<Aime />} />
+            <Route path="/magazine/:slug" element={<GrilleDuneRoute monde={(p) => `article-${p.slug}`} />} />
+            <Route path="/aime" element={<GrilleDuneRoute monde="magazines" />} />
+            <Route path="/taxonomie" element={<GrilleDuneRoute monde="magazines" />} />
             <Route path="/creer" element={<Navigate to="/ripple" replace />} />
             <Route path="/carte" element={<Navigate to="/ripple" replace />} />
             {/* L'espace du prestataire : le même éditeur, dans la langue du métier. */}
-            <Route path="/prestataire" element={<VendorStudio />} />
+            <Route path="/prestataire" element={<GrilleDuneRoute monde="metiers" />} />
             <Route path="/parametres" element={<EditeurMiniSite />} />
             <Route path="/ripple" element={<SuperRipple />} />
             {/* SUPER RIPPLE a remplacé SUPER FOOTER : l'ancienne adresse suit. */}
@@ -69,15 +60,16 @@ export default function App() {
             {/* Une seule page SUPER SHOP : le shop, son ticket, ses coches. */}
             <Route path="/supermarriage" element={<Navigate to="/shop" replace />} />
             {/* Le mariage, en entier : l'article, la playlist, le récap — une page par univers. */}
-            <Route path="/le-mariage" element={<LeMariage />} />
-            <Route path="/le-mariage/:styleId" element={<LeMariage />} />
+            <Route path="/le-mariage" element={<GrilleDuneRoute monde="monde" />} />
+            <Route path="/le-mariage/:styleId" element={<GrilleDuneRoute monde="monde" />} />
             {/* La page entière d'un métier : sa mission, ses moments, son ticket. */}
-            <Route path="/metiers/:slug" element={<PageMetier />} />
+            <Route path="/metiers" element={<GrilleDuneRoute monde="metiers" />} />
+            <Route path="/metiers/:slug" element={<GrilleDuneRoute monde={(p) => `metier-${p.slug}`} />} />
             {/* La page d'une personne : la carte faite avec le formulaire, en
                 entier — sa couverture, son timbre, son univers, ses mariages. */}
-            <Route path="/profil/:slug" element={<PageProfil />} />
-            <Route path="/mariage/:slug" element={<WeddingPeople />} />
-            <Route path="/rejoindre/:slug" element={<Invitation />} />
+            <Route path="/profil/:slug" element={<GrilleDuneRoute monde={(p) => `personne-${p.slug}`} />} />
+            <Route path="/mariage/:slug" element={<GrilleDuneRoute monde={(p) => `personne-${p.slug}`} />} />
+            <Route path="/rejoindre/:slug" element={<GrilleDuneRoute monde="mini-site" />} />
             <Route path="/generer" element={<Navigate to="/ripple" replace />} />
             <Route path="/generation" element={<Navigate to="/ripple" replace />} />
             <Route path="/editeur/:id" element={<Editor />} />

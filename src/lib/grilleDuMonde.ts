@@ -804,7 +804,9 @@ export function mondeDesArticles(): Monde {
 
 /** **Un article** : sa couverture, son essentiel, ses sections, ses voisins. */
 export function mondeDUnArticle(slug: string): Monde {
-  const article = ALL_ARTICLES.find((a) => a.slug === slug) ?? ALL_ARTICLES[0]!;
+  // Un article inconnu n'est pas le premier venu : on ouvre la collection.
+  const article = ALL_ARTICLES.find((a) => a.slug === slug);
+  if (!article) return mondeDesArticles();
   const cases: CaseDuMonde[] = [
     caseSimple('couverture', article.title.toUpperCase(), 'article', teinte(5).fond, {
       surTitre: article.kicker.toUpperCase(),
@@ -952,7 +954,9 @@ export function mondeDeLaBoutique(): Monde {
 
 /** **Un objet** : son image, son prix, ce qu'il comprend, ses voisins, la caisse. */
 export function mondeDUnProduit(slug: string): Monde {
-  const produit = productBySlug(slug) ?? SHOP_PRODUCTS[0]!;
+  // Un produit qu'on ne connaît pas n'est jamais celui d'un autre : on ouvre la boutique.
+  const produit = productBySlug(slug);
+  if (!produit) return mondeDeLaBoutique();
   const categorie = SHOP_CATEGORIES.find((c) => c.id === produit.category);
   const cases: CaseDuMonde[] = [
     caseSimple('objet', produit.name.toUpperCase(), 'produit', teinte(6).fond, {
@@ -1016,8 +1020,9 @@ export function mondeDesMetiers(): Monde {
 
 /** **Un métier** : qui il est, sa mission, ses modules, son prix, son contact. */
 export function mondeDUnMetier(slug: string): Monde {
-  const premier = tousLesMetiers()[0]!;
-  const metier = pageMetier(slug) ?? pageMetier(slugDeRole(premier.role))!;
+  const metier = pageMetier(slug);
+  // Un métier inconnu n'est pas celui du premier venu : on ouvre les métiers.
+  if (!metier) return mondeDesMetiers();
   const porteur = porteurDuDomaine(metier.domaine.key);
   const cases: CaseDuMonde[] = [
     caseSimple('portrait', (porteur?.nom ?? metier.role).toUpperCase(), 'personne', teinte(8).fond, {
@@ -1080,7 +1085,9 @@ export function mondeDesPersonnes(): Monde {
 
 /** **Une personne** : son portrait, ses entrées, son espace. */
 export function mondeDUnePersonne(id: string): Monde {
-  const personne = personnageParId(id) ?? PERSONNAGES[0]!;
+  // Une personne inconnue n'est personne d'autre : on ouvre les personnes.
+  const personne = personnageParId(id);
+  if (!personne) return mondeDesPersonnes();
   const cases: CaseDuMonde[] = [
     caseSimple('portrait', personne.nom, 'personne', teinte(10).fond, {
       surTitre: personne.titre.toUpperCase(),

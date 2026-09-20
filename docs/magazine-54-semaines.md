@@ -500,3 +500,62 @@ on ne décore pas une mosaïque avec des cadenas.
 Le jour, le monde, la densité, le moment de la capsule, la feuille, et les cases
 choisies. **Partager** copie cette adresse : une composition s'ouvre exactement
 telle qu'on l'a laissée.
+
+## 16. Le verso, et tout le site en grille
+
+### Le verso : l'envers du décor
+
+La grille se retourne. `?verso=1`, ou la touche `V`, et l'on voit ce qui la
+tient :
+
+- **la face technique** de chaque case — `data-module`, `data-source`,
+  `data-ouverture`, `data-famille`, `data-liaisons` — et ses **quatre ports**,
+  écrits dans la case comme sur un schéma ;
+- **le panneau du système** (`data-verso="ouvert"`) : les dix réglages du design
+  system (`data-reglages`), les cinquante-quatre palettes, et les **dix-huit
+  liaisons possibles** avec ce qu'elles produisent ;
+- **les liaisons, dessinées sous les cases** (`data-liaisons` pour le nombre,
+  `data-connexions` pour celles qui sont faites) : en clair tant qu'elles sont
+  possibles, **en vert dès que deux cases sont bord à bord**.
+
+Une case se prend (`prise`), se déplace, et se repose : `onPoser(id, {c, l})`.
+Deux modules qui se rencontrent produisent quelque chose — `date + formulaire →
+un billet`, `lieu + carte → un plan`, `produit + prix → une caisse`. Le verso ne
+décore pas : il **montre les possibles**, et laisse faire.
+
+`src/lib/versoDuSite.ts` porte tout cela : `RÉGLAGES_DU_SYSTÈME`,
+`PALETTES_DU_SYSTÈME`, `LIAISONS_POSSIBLES`, `emplacementsDuMonde`,
+`sontVoisines`, `liaisonsDuMonde`, `connexionsDuMonde`, `chaineDuMonde`,
+`faceTechnique`, `modulesAttendus`.
+
+### Une adresse, un monde : tout le site en grille
+
+Le site entier parle le langage de la grille. Chaque adresse ouvre **un monde**,
+et l'on entre dans la case : plus de page par type, jamais de `case → page`.
+
+| L'adresse | Le monde | Ce qu'on y trouve |
+| --- | --- | --- |
+| `/` | `annee` | les 365 jours, et le monde à un clic |
+| `/theater` | `monde` | les dix grandes portes |
+| `/aime`, `/taxonomie` | `magazines` | les 54 couvertures |
+| `/shop` | `boutique` | la boutique, en cases |
+| `/shop/:slug` | `produit-…` | un produit, son prix, ce qui est compris, ses associés |
+| `/magazine/:slug` | `article-…` | un article, ses voisins |
+| `/magazine/:numero` | `magazine-…` | un magazine, ses sept chapitres |
+| `/le-mariage(/:styleId)` | `monde` | le mariage, en dix mondes |
+| `/metiers/:slug`, `/prestataire` | `metier-…`, `metiers` | un métier, ses moments, son ticket |
+| `/profil/:slug`, `/mariage/:slug` | `personne-…` | une personne, son univers |
+| `/rejoindre/:slug` | `mini-site` | l'invitation, et ce qu'on y répond |
+
+`src/lib/grilleDesRoutes.ts` écrit ce tableau (`ROUTES_DU_MONDE`,
+`mondeDUneAdresse`, `promesseDUneAdresse`), et `GrilleDuneRoute` suffit à monter
+n'importe quelle adresse sur la grille.
+
+**Un identifiant inconnu n'ouvre jamais l'objet d'un autre** : un produit
+introuvable ouvre la boutique, un métier introuvable ouvre les métiers, une
+personne introuvable ouvre les personnes, un article introuvable ouvre les
+articles. Une case morte, jamais ; un objet emprunté, jamais non plus.
+
+Restent des **outils**, qui ne sont pas du contenu : `/ripple` (l'éditeur de
+blocs), `/editeur/:id`, `/parametres`, `/apercu`, `/p/:slug` (le rendu d'un
+mini-site public).

@@ -102,6 +102,8 @@ import {
   mondeDuMiniSite,
 } from '../src/lib/grilleDuMonde';
 import { lumiereDeLHeure, teinteDeLHeure, melangeHex } from '../src/lib/lumiereDuJour';
+import { ROUTES_DU_MONDE, mondeDUneAdresse, promesseDUneAdresse } from '../src/lib/grilleDesRoutes';
+import GrilleDuneRoute from '../src/components/GrilleDuneRoute';
 import {
   LIAISONS_POSSIBLES,
   PALETTES_DU_SYSTÈME,
@@ -2267,6 +2269,60 @@ check(
   modulesAttendus('date').includes('formulaire') && modulesAttendus('date').includes('lieu'),
   true,
 );
+
+/* ————————— TOUT LE SITE EN GRILLE : UNE ADRESSE, UN MONDE ————————— */
+
+check('l’accueil, c’est le contenu : l’année entière', mondeDUneAdresse('/'), 'annee');
+check('un shop est un monde', mondeDUneAdresse('/shop'), 'boutique');
+check('un produit aussi', mondeDUneAdresse('/shop/table-trestle-chene'), 'produit-table-trestle-chene');
+check('un métier aussi', mondeDUneAdresse('/metiers/photographe'), 'metier-photographe');
+check('une personne aussi', mondeDUneAdresse('/profil/marie'), 'personne-marie');
+check('un article aussi', mondeDUneAdresse('/magazine/univers-corse'), 'article-univers-corse');
+check('un magazine aussi', mondeDUneAdresse('/magazine/38'), 'magazine-38');
+check('la collection des cinquante-quatre', mondeDUneAdresse('/aime'), 'magazines');
+check('le théâtre, ce sont les dix portes', mondeDUneAdresse('/theater'), 'monde');
+check('et une adresse inconnue ouvre l’année', mondeDUneAdresse('/nimporte/ou/ailleurs'), 'annee');
+check('aucune adresse ne promet rien', ROUTES_DU_MONDE.every((r) => promesseDUneAdresse(r.motif.split('/:')[0]!) .length > 10), true);
+check(
+  'les grandes adresses du site y sont toutes',
+  ['/shop', '/shop/:slug', '/metiers/:slug', '/profil/:slug', '/magazine/:slug', '/aime', '/le-mariage', '/rejoindre/:slug'].every(
+    (motif) => ROUTES_DU_MONDE.some((r) => r.motif === motif),
+  ),
+  true,
+);
+check(
+  'et chacune ouvre un monde qui a des cases',
+  ROUTES_DU_MONDE.every((r) => mondeDeLId(r.monde('exemple')).cases.length > 0),
+  true,
+);
+
+/** Un identifiant inconnu n'ouvre jamais l'objet d'un autre : la collection. */
+check('un produit inconnu ouvre la boutique', mondeDeLId('produit-inconnu').id, 'boutique');
+check('un métier inconnu ouvre les métiers', mondeDeLId('metier-inconnu').id, 'metiers');
+check('une personne inconnue ouvre les personnes', mondeDeLId('personne-inconnue').id, 'personnes');
+check('un article inconnu ouvre les articles', mondeDeLId('article-inconnu').id, 'articles');
+
+/** La route d'un produit : la grille s'ouvre sur le monde du produit. */
+const grilleDuProduit = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/shop/table-trestle-chene'] },
+    createElement(
+      Routes,
+      null,
+      createElement(Route, {
+        path: '/shop/:slug',
+        element: createElement(GrilleDuneRoute as never, {
+          monde: (segments: Record<string, string | undefined>) => `produit-${segments.slug}`,
+        }),
+      }),
+    ),
+  ),
+);
+check('la page d’un produit s’ouvre en cases', grilleDuProduit.includes('data-grille="du-monde"'), true);
+check('et c’est bien le monde du produit', grilleDuProduit.includes('data-monde="produit-table-trestle-chene"'), true);
+check('la grille prend tout l’écran, même ici', grilleDuProduit.includes('h-svh') && grilleDuProduit.includes('overflow-hidden'), true);
+check('et aucune page classique ne subsiste autour', /data-page="(shop|metier|profil)"/.test(grilleDuProduit), false);
 
 /* La feuille : tout ce qui n'est pas l'image et la mosaïque. */
 const feuille = renderToStaticMarkup(
