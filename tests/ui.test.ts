@@ -58,7 +58,13 @@ import {
 import {
   basculerTimeline, choisirMoment, publierReperes, tempsDeLaCapsule,
 } from '../src/lib/capsuleCommande';
-import CadranDuMagazine, { angleDeLHeure, angleDuChapitre } from '../src/components/CadranDuMagazine';
+import { angleDeLHeure, angleDuChapitre } from '../src/components/CadranDuMagazine';
+import SceneDuMagazine from '../src/components/SceneDuMagazine';
+import BarreDuMagazine from '../src/components/BarreDuMagazine';
+import SiteChrome from '../src/components/SiteChrome';
+import {
+  bandeDuMagazineDeLaDate, bandeDuMagazine, premierJourDuMagazine, publierBande,
+} from '../src/lib/bandeDuMagazine';
 import { legendeDeLHeure } from '../src/components/CouvertureJour';
 import {
   PAS_DU_MAGAZINE, adresseDuMagazine, blocsDeLaCollection, graduationsDeLaCollection,
@@ -1900,6 +1906,83 @@ const heroMagazine = revue.slice(0, revue.indexOf('</header>'));
 check('le magazine a un hero', revue.indexOf('</header>') > 0, true);
 check('et le titre, au centre', heroMagazine.includes('SUPER MAGAZINE') && heroMagazine.includes('text-center'), true);
 check('l’éditeur vient après la couverture', revue.indexOf('Votre magazine, maintenant') > revue.indexOf('</header>'), true);
+
+/* ————————————— LA SCÈNE : LE MAGAZINE PLEIN ÉCRAN, ET SES GESTES ————————————— */
+
+/* L'application tient sur **un seul écran** : l'image remplit la fenêtre, on
+   glisse pour tourner les pages, et la barre du bas ne bouge jamais. La scène
+   est la bande que le dock observe : tant qu'elle est à l'écran, ses flèches
+   mènent les jours. */
+check('la scène est dans la page', revue.includes('data-scene="magazine"'), true);
+check('elle prend toute la fenêtre', revue.includes('h-[100svh]'), true);
+check('elle accepte le geste', revue.includes('data-geste="glisser"'), true);
+check('et elle dit comment tourner la page', revue.includes('glisser · jour 1 sur 7'), true);
+check('les deux flèches sont là, aussi', ['aria-label="Le jour précédent"', 'aria-label="Le jour suivant"'].every((l) => revue.includes(l)), true);
+check('les sept chapitres sont dans la scène', (revue.slice(0, revue.indexOf('id="chapitres"')).match(/data-chapitre="/g) ?? []).length >= 7, true);
+
+/* Le cadran de la scène : l'heure de la capsule, et le chapitre du jour. */
+const scene = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(SceneDuMagazine as never, {
+    date: new Date(2026, 8, 21), index: 0, total: 7,
+    onPrecedent: () => {}, onSuivant: () => {}, onChapitre: () => {},
+  })),
+);
+check('la scène porte le cadran à aiguilles', scene.includes('data-aiguille="heure"') && scene.includes('data-aiguille="chapitre"'), true);
+check('elle dit les trois niveaux', scene.includes('21 septembre') && scene.includes('Magazine 38') && scene.includes('Chapitre 05 — La Fête'), true);
+check('et elle nomme la carte de la semaine', scene.includes(magazineDeLaDate(new Date(2026, 8, 21)).carte.nom), true);
+
+/* ————————————— LA BANDE DU BAS : LES VISUELS ET LA TIMELINE ————————————— */
+
+const gestes = { ouvrirSemaine: () => {}, ouvrirVisuel: () => {} };
+const bande = bandeDuMagazineDeLaDate(new Date(2026, 8, 21), gestes);
+check('la bande porte les 54 semaines', bande.semaines.length, NOMBRE_DE_MAGAZINES);
+check('et les huit visuels de la semaine', bande.visuels.length, 8);
+check('la couverture ouvre la bande', bande.visuels[0]!.chapitre, 0);
+check('les sept chapitres suivent, dans l’ordre', bande.visuels.slice(1).map((v) => v.chapitre), [1, 2, 3, 4, 5, 6, 7]);
+check('un seul visuel est actif : le chapitre du jour', bande.visuels.filter((v) => v.actif).length, 1);
+check('et c’est bien le chapitre 05', bande.visuels.find((v) => v.actif)!.chapitre, 5);
+check('la semaine ouverte est le magazine 38', bande.semaine, 38);
+check('le titre de la semaine est celui de la source', bande.titreDuMagazine, MAGAZINES[37]!.titre);
+check('une couverture livrée a son adresse', bande.semaines[37]!.url, '/images/magazine/semaine-38/cover.jpg');
+check('une couverture manquante n’en a pas — et ne prend pas celle d’une autre', bande.semaines[20]!.url, null);
+check('les visuels portent la couleur du magazine', bande.visuels.every((v) => v.fond === MAGAZINES[37]!.palette.fond), true);
+check('une semaine s’ouvre à son premier jour', premierJourDuMagazine(38, 2026).getDate(), 17);
+
+/* Le dock, quand la page lui a publié sa bande. */
+publierBande(bande);
+const dockBande = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(BottomCapsuleNav as never)),
+);
+publierBande(null);
+check('le dock montre la règle de l’année', (dockBande.match(/data-semaine="/g) ?? []).length, NOMBRE_DE_MAGAZINES);
+check('la semaine ouverte y est allumée', dockBande.includes('data-semaine="38" data-actif="true"'), true);
+check('et les visuels y sont aussi', (dockBande.match(/data-visuel="/g) ?? []).length, 8);
+check('le chapitre du jour est entouré', dockBande.includes('data-visuel="5" data-actif="true"'), true);
+check('la couverture est nommée', dockBande.includes('aria-label="La couverture — '), true);
+check('chaque chapitre a son nom', dockBande.includes('aria-label="Chapitre 05 — La Fête"'), true);
+check('l’atelier s’ouvre depuis la barre', dockBande.includes('aria-label="Ouvrir l’atelier du temps"'), true);
+check('et le dock se range au-dessus de la zone sûre', dockBande.includes('env(safe-area-inset-bottom)'), true);
+
+/* **Le mode immersif** : tant que la bande est publiée, le chrome s'efface —
+   les deux boutons flottants se poseraient sur la barre. */
+publierBande(bande);
+const chromeImmersif = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(SiteChrome, null, createElement('div', null, 'contenu'))),
+);
+publierBande(null);
+check('en immersif, le chrome s’efface', chromeImmersif.includes('aria-label="Le Point Zéro"'), true);
+check(
+  'et les outils flottants partent',
+  chromeImmersif.includes('aria-label="Paramètres — l’éditeur du mini-site"') === false,
+  true,
+);
+check('alors qu’hors immersif, ils sont là', chromeAccueil.includes('aria-label="Paramètres — l’éditeur du mini-site"'), true);
+check('sans bande publiée, la barre disparaît', bandeDuMagazine(), null);
+const barreSeule = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(BarreDuMagazine as never, { bande })),
+);
+check('la barre seule est balisée', barreSeule.includes('data-bande-du-magazine="true"'), true);
+check('elle dit les 54 semaines', barreSeule.includes('54 semaines'), true);
 check('puis l’atelier du temps', revue.indexOf('L’année, sur la bande') > revue.indexOf('Votre magazine, maintenant'), true);
 check('et la collection des 54 ferme la marche', revue.indexOf('Les 54 magazines de l’année') > revue.indexOf('L’année, sur la bande'), true);
 check('chaque saison a son bloc', SAISONS_DE_LA_COLLECTION.every((s) => revue.includes(`${s.symbole} ${s.nom}`)), true);
@@ -3910,7 +3993,11 @@ check(
 check('un magazine s’ouvre au premier jour de sa semaine', adresseDuMagazine(38, 2026), '/magazine?jour=09-17');
 
 /* ——— CE TOUR : UNE SEULE COUVERTURE AU HERO, LE COMPOSEUR SUR LA PAGE MAGAZINE ——— */
-check('le hero du magazine montre une seule couverture, au format du hero', heroMagazine.includes('h-[52svh] max-h-[540px] w-auto'), true);
+check(
+  'le hero est une scène plein écran, une seule image',
+  heroMagazine.includes('data-scene="magazine"') && heroMagazine.includes('h-[100svh]'),
+  true,
+);
 check('et plus trois magazines côte à côte', revue.includes('Le flux des jours'), false);
 check('le composeur vit sur la page magazine', revue.includes('Votre magazine, maintenant') && revue.includes('Ville de naissance'), true);
 check('la couverture porte le numéro du magazine, comme une vraie couverture',

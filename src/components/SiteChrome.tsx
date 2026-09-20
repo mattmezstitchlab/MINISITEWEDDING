@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import { useBandeDuMagazine } from '../lib/bandeDuMagazine';
 import SiteHeader from './SiteHeader';
 import BottomCapsuleNav from './BottomCapsuleNav';
 import LanguetteTimeline from './LanguetteTimeline';
@@ -50,6 +51,14 @@ const MENTIONS: Array<[string, string]> = [
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
+  /**
+   * **Le mode immersif.** Quand une page publie sa bande (`bandeDuMagazine.ts`),
+   * c'est qu'elle tient l'écran : les visuels plein cadre, et la barre du bas
+   * pour naviguer. Les deux boutons flottants — les paramètres, le point d'état —
+   * s'effacent alors : ils se poseraient sur la barre, et l'application n'en a
+   * pas besoin. Ils reviennent dès qu'on quitte l'écran immersif.
+   */
+  const immersif = useBandeDuMagazine() !== null;
   const avecChrome = !SANS_CHROME.some((prefixe) => pathname.startsWith(prefixe));
   const mention = MENTIONS.find(([prefixe]) => pathname.startsWith(prefixe))?.[1];
 
@@ -63,9 +72,9 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       {/* La nav verticale : à droite, et différente sur chaque page. */}
       <NavVerticale />
       {/* En bas à gauche : les paramètres, c'est-à-dire l'éditeur du mini-site. */}
-      <BoutonParametres />
+      {!immersif && <BoutonParametres />}
       {/* En bas à droite : le point d'état. Il s'allume, on clique, la fente sort. */}
-      <BoutonEtat />
+      {!immersif && <BoutonEtat />}
       {/* En haut, la fente : le ticket sort quand il y a quelque chose à voir. */}
       <FenteDocuments />
       {/* Le pied commun : la signature, et les portes du site. */}

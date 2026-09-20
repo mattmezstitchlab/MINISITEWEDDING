@@ -252,3 +252,48 @@ source de `timelineDeLaCollection.ts` :
 
 Depuis le dock, la même languette propose **deux sources** : *l'année* (la
 collection) et *le jour J* (les moments du mariage, l'atelier d'origine).
+
+## 12. L'application : la scène, et la barre du bas
+
+Le magazine ne se visite pas comme une page : il se tient **comme une
+application**. Un écran, une image plein cadre, et une barre qui ne bouge
+jamais.
+
+```
+┌───────────────────────────────────────────────────────┐
+│ SUPER MAGAZINE                       N° 38  (cadran)  │
+│                                                        │
+│           L'IMAGE DU CHAPITRE, PLEIN CADRE             │
+│                                                        │
+│ 20 septembre → Magazine 38 → Chapitre 04               │
+│ Septembre doré                                         │
+│ éditorial · Davy · chapitre 04 — L'Art de recevoir     │
+│ 01 02 03 04 05 06 07   ← les sept chapitres, au doigt  │
+│ ‹  glisser · jour 1 sur 7  ›                           │
+├───────────────────────────────────────────────────────┤
+│ LES 54 SEMAINES 01 … 38 … 54            [ L'atelier ]  │  la timeline
+│ [Couverture][01][02][03][04][05][06][07]               │  les visuels
+│ (Point Zéro) (l'aube…le soir) (le cadran)              │  la capsule
+└───────────────────────────────────────────────────────┘
+```
+
+- **La scène** (`SceneDuMagazine.tsx`) prend `100svh`, sous l'encoche et la barre
+  du système (`viewport-fit=cover`). On **glisse** le visuel pour changer de
+  jour (le geste a l'élasticité d'iOS), on **touche** un chapitre, ou l'on passe
+  par les flèches. L'image vient de la cascade habituelle : le chapitre, puis la
+  couverture de la semaine, puis **la couverture dessinée** — jamais celle d'une
+  autre semaine.
+- **La barre du bas** est le dock du site, qui **grandit** quand la page lui
+  publie sa bande (`bandeDuMagazine.ts`) : **la règle des 54 semaines** (la
+  timeline, toujours là, avec l'entrée de l'atelier) et **les huit visuels** de
+  la semaine ouverte — la couverture, ses sept chapitres, celui du jour entouré.
+- **Le mode immersif** : tant que la bande est publiée, `SiteChrome` retire les
+  deux boutons flottants (ils se poseraient sur la barre) et la page impose la
+  couleur d'application (`theme-color` = l'encre). La scène est la bande observée
+  par le dock : ses flèches paraissent quand l'écran est là.
+- **L'installation** : `public/manifest.webmanifest` (`display: standalone`,
+  `start_url: /magazine`) — l'application s'ajoute à l'écran d'accueil et s'ouvre
+  sur le magazine, sans barre de navigateur.
+
+Une seule barre dans toute l'application : celle du site. Elle change de
+contenu, jamais de place.

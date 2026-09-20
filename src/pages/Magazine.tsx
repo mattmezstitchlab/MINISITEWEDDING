@@ -1,21 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowRight, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { ArrowRight, Clock } from 'lucide-react';
 import { MARQUE_MAGAZINE } from '../lib/aimeMagazine';
 import { ALL_ARTICLES } from '../lib/magazine';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
 import { usePersonaCourante } from '../lib/personaCourant';
 import { composerEdition, HEURES } from '../lib/aimeMoteur';
-import { couvertureDuJour, couverturesDesParts } from '../lib/couvertureDuJour';
-import { niveauxDuJour } from '../lib/semaines';
+import { jourDuChapitre, niveauxDuJour } from '../lib/semaines';
 import { visuelsDuJour } from '../lib/visuelsDuMagazine';
+import { bandeDuMagazineDeLaDate, publierBande, type BandeDuMagazine } from '../lib/bandeDuMagazine';
 import { filRougeDuJour, jourDuMagazine, joursAutour } from '../lib/jourDuMagazine';
-import { basculerTimeline, choisirMoment, publierReperes, useTempsDeLaCapsule, useMomentDeLaCapsule } from '../lib/capsuleCommande';
+import { basculerTimeline, choisirMoment, publierReperes } from '../lib/capsuleCommande';
 import { useControlesDeBande } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_MAGAZINE } from '../lib/navDesPages';
-import { legendeDeLHeure } from '../components/CouvertureJour';
-import CouvertureJour from '../components/CouvertureJour';
+import SceneDuMagazine from '../components/SceneDuMagazine';
 import ChapitresDuMagazine from '../components/ChapitresDuMagazine';
 import GalerieCouvertures from '../components/GalerieCouvertures';
 import BlocMagazine from '../components/BlocMagazine';
@@ -75,10 +74,6 @@ export default function Magazine() {
   const [index, setIndex] = useState(0);
   const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
 
-  /** L'heure que le dock commande, et le moment choisi. */
-  const capsule = useTempsDeLaCapsule();
-  const moment = useMomentDeLaCapsule();
-
   /** Le métier de qui regarde : le magazine se range à sa place. */
   const role = roleDuneAdresse(params.get('role'));
   const moi = usePersonaCourante();
@@ -120,6 +115,58 @@ export default function Magazine() {
     return () => publierReperes(null);
   }, [niveaux]);
 
+  /** **Ouvrir un jour** — la seule façon de changer de date. Tout y mène. */
+  const ouvrirJour = useCallback((d: Date) => {
+    setDepart(d);
+    setIndex(0);
+  }, []);
+
+  /**
+   * **LA BANDE DU BAS.** La page publie ce que la barre doit montrer pour qu'on
+   * navigue sans quitter le visuel : les **54 semaines** de la règle — la
+   * timeline, toujours en bas — et les **huit visuels** de la semaine ouverte :
+   * sa couverture, puis ses sept chapitres.
+   *
+   * La barre ne devine rien : elle affiche la bande, et lui rend ses gestes.
+   * `ouvrirSemaine` change de magazine, `ouvrirVisuel` ouvre le jour qui porte
+   * le chapitre voulu — les deux passent par `ouvrirJour`, la seule porte.
+   */
+  const ouvrirSemaine = useCallback(
+    (numero: number) => {
+      ouvrirJour(jourDuChapitre(numero, 1, annee));
+    },
+    [ouvrirJour, annee],
+  );
+  const ouvrirVisuel = useCallback(
+    (chapitre: number) => {
+      ouvrirJour(jourDuChapitre(visuels.magazine.numero, Math.max(1, chapitre), annee));
+    },
+    [ouvrirJour, visuels.magazine.numero, annee],
+  );
+  const bande = useMemo<BandeDuMagazine>(
+    () => bandeDuMagazineDeLaDate(jour.date, { ouvrirSemaine, ouvrirVisuel }),
+    [jour.date, ouvrirSemaine, ouvrirVisuel],
+  );
+  useEffect(() => {
+    publierBande(bande);
+    return () => publierBande(null);
+  }, [bande]);
+
+  /**
+   * **La couleur de l'application.** Le magazine est sombre : sur un téléphone,
+   * la barre du navigateur prend l'encre de la scène — l'écran est plein, sans
+   * liseré blanc. On rend la couleur d'avant en partant.
+   */
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return;
+    const avant = meta.getAttribute('content');
+    meta.setAttribute('content', '#0B0C12');
+    return () => {
+      if (avant) meta.setAttribute('content', avant);
+    };
+  }, []);
+
   // L'adresse amène le jour, le moment, la timeline : une fois, à l'arrivée.
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
@@ -137,21 +184,6 @@ export default function Magazine() {
     /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  /** La couverture du hero : celle du magazine, éclairée à l'heure qu'on regarde. */
-  const couvertureHero = useMemo(() => {
-    if (!moment) return couvertureDuJour(jour.date);
-    return (
-      couverturesDesParts(jour.date).find((p) => p.part.id === moment)?.couverture ??
-      couvertureDuJour(jour.date)
-    );
-  }, [moment, jour.date]);
-
-  /** **Ouvrir un jour** — la seule façon de changer de date. Les deux navigations y mènent. */
-  const ouvrirJour = (d: Date) => {
-    setDepart(d);
-    setIndex(0);
-  };
 
   /** Les flèches du dock feuillettent les jours ; au bord, la fenêtre glisse. */
   const feuilleter = (pas: number) => {
@@ -178,99 +210,23 @@ export default function Magazine() {
     ouvrirJour(new Date(annee, (m ?? 1) - 1, q ?? 1, 12));
   };
 
-  const dateCourte = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      {/* ═══════════════ BLOC 1 — LA COUVERTURE, LE CADRAN, LES CHAPITRES ═══════════════ */}
-      <header ref={surveiller} className="relative overflow-hidden bg-[#0B0C12] pb-10 pt-20 text-white">
-        <div className="vp-page flex flex-col items-center text-center">
-          <span className="vp-eyebrow !text-white/60">
-            {MARQUE_MAGAZINE} · 54 magazines · 7 chapitres par magazine
-          </span>
-          <h1 className="vp-title mt-4 text-center text-white" style={{ fontSize: 'clamp(2rem, 4.6vw, 3.2rem)', lineHeight: 1.05 }}>
-            SUPER MAGAZINE
-          </h1>
-
-          {/* LES TROIS NIVEAUX — quel jour, dans quel magazine, à quel chapitre. */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.16em]">
-            <span className="rounded-full border border-white/25 px-3 py-1.5 text-white/90">{niveaux.date}</span>
-            <span className="text-white/35">→</span>
-            <span className="rounded-full border border-white/25 px-3 py-1.5 text-white/75">
-              {niveaux.magazine} · {niveaux.titreDuMagazine}
-            </span>
-            <span className="text-white/35">→</span>
-            <span className="rounded-full border border-white/25 px-3 py-1.5 text-white/75">{niveaux.chapitre}</span>
-          </div>
-
-          {/* LA COUVERTURE, ENTRE LES DEUX FLÈCHES DU TEMPS — la couverture du
-              magazine, avec le cadran et ses aiguilles. */}
-          <div className="mt-7 flex w-full items-center justify-center gap-3 sm:gap-6">
-            <button
-              type="button"
-              onClick={() => feuilleter(-1)}
-              aria-label="Le jour précédent"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-white/45 hover:text-white"
-            >
-              <ChevronLeft size={18} />
-            </button>
-
-            <div className="overflow-hidden rounded-[18px] shadow-[0_30px_70px_-30px_rgba(0,0,0,0.8)]">
-              <CouvertureJour
-                couverture={couvertureHero}
-                visuel={visuels.couverture}
-                niveaux={niveaux}
-                className="h-[52svh] max-h-[540px] w-auto"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => feuilleter(1)}
-              aria-label="Le jour suivant"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-white/45 hover:text-white"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-
-          {/* LE CADRAN ET LA CAPSULE — ce que les aiguilles regardent. */}
-          <p className="mt-5 max-w-[620px] font-mono text-[10px] uppercase leading-relaxed tracking-[0.18em] text-white/55">
-            {legendeDeLHeure(capsule.heure)} · {capsule.pilote ? 'heure choisie dans la capsule' : 'heure réelle'} ·
-            la petite aiguille montre le chapitre {String(niveaux.numeroDeChapitre).padStart(2, '0')} ·
-            la capsule en bas pose les aiguilles
-          </p>
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
-            {jour.nom} · {dateCourte(jour.date)} · jour {index + 1} sur {jours.length}
-          </p>
-
-          {/* LES SIX TEMPS DU JOUR, EN UNE LIGNE — les mêmes que la capsule. */}
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5">
-            {(['aube', 'matin', 'midi', 'apres-midi', 'soir'] as const).map((id) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => choisirMoment(moment === id ? null : id)}
-                aria-pressed={moment === id}
-                className={`rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] transition ${
-                  moment === id
-                    ? 'border-white bg-white text-[#0B0C12]'
-                    : 'border-white/20 text-white/60 hover:border-white/50 hover:text-white'
-                }`}
-              >
-                {id.replace('-', ' ')}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => basculerTimeline(true)}
-              className="rounded-full border border-white/20 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white/60 transition hover:border-white/50 hover:text-white"
-            >
-              l’atelier du temps
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* ═══════════════ LA SCÈNE — LE MAGAZINE, PLEIN ÉCRAN ═══════════════ */}
+      {/* L'image du chapitre remplit la fenêtre, le cadran dit l'heure de la
+          capsule et le chapitre, et **la barre du bas** — publiée juste en
+          dessous — porte les visuels et la règle des 54 semaines. On ne quitte
+          jamais l'écran pour naviguer : on glisse, on touche, on tourne le
+          temps. */}
+      <SceneDuMagazine
+        ref={surveiller}
+        date={jour.date}
+        index={index}
+        total={jours.length}
+        onPrecedent={() => feuilleter(-1)}
+        onSuivant={() => feuilleter(1)}
+        onChapitre={ouvrirJour}
+      />
 
       {/* LES SEPT CHAPITRES DU MAGAZINE — la navigation éditoriale. */}
       <ChapitresDuMagazine date={jour.date} annee={annee} onChoisirChapitre={ouvrirJour} />
