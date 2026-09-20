@@ -171,3 +171,115 @@ p(`**Rappel des niveaux de correspondance :** ${NIVEAUX.map((n) => `${n.nom} (${
 
 writeFileSync(join(process.cwd(), 'docs', 'prompts-maitres.md'), `${lignes.join('\n')}\n`, 'utf8');
 console.log(`docs/prompts-maitres.md — ${lignes.length} lignes · ${etat.pretes} fiches prêtes sur ${etat.jours}`);
+
+
+/* ——————————————————————————————————————————————————————————————————————————
+   LE SECOND DOCUMENT : LES 365 FICHES DE L'ANNÉE
+   Tout ce qu'on sait d'un jour — et ce qui manque, nommé. C'est le document
+   « on sera tranquille » : rien n'y est laissé au hasard, et rien n'y est
+   inventé non plus.
+   —————————————————————————————————————————————————————————————————————————— */
+
+import { etatDeLAnnee, fichesDeLAnnee, METIERS_TRANSMIS } from '../src/lib/fichesAnnee';
+
+const anneeFiches = fichesDeLAnnee(ANNEE);
+const etatAnnee = etatDeLAnnee(ANNEE);
+const L: string[] = [];
+const q = (s = '') => L.push(s);
+
+q('# Les 365 fiches de l’année');
+q();
+q('> Document **engendré** comme l’autre : `npm run prompts` le réécrit à partir de `src/lib/fichesAnnee.ts`.');
+q('> Tout ce qui est ici est vérifié par les tests du site — ce qui n’y est pas n’est pas « à peu près », c’est à documenter.');
+q();
+q('## Le tableau de l’année');
+q();
+q(`- **${etatAnnee.jours} journées**, une fiche chacune.`);
+q(`- **${etatAnnee.pretes} fiches documentées** — origine, époque, lieu, métier, savoir-faire, culture, sens, ponts, casting.`);
+q(`- **${etatAnnee.amorcees} fiches amorcées** — le sens du prénom, et souvent le métier par la tradition : la journée a déjà **une porte**.`);
+q(`- **${etatAnnee.aDocumenter} fiches sans rien** — et ce sont **des fêtes**, pas des personnes : ${etatAnnee.fetes} journées de l’année sont des fêtes (la Toussaint, l’Assomption, les armistices), dont la fiche est un texte, pas une biographie.`);
+q();
+q('Autrement dit : **toutes les journées qui portent un prénom ont au moins le sens de ce prénom.** Rien n’est inventé pour combler les autres — elles disent leur nature.');
+q();
+q(`Ce que la tradition et les dictionnaires couvrent déjà : **${etatAnnee.avecEtymologie} journées** ont le sens de leur prénom, **${etatAnnee.avecMetier} journées** ont leur métier, et cela ouvre **${etatAnnee.portes} portes** du mariage différentes.`);
+q();
+q('| Mois | Documentées | Amorcées | Sans rien | Jours |');
+q('| --- | --- | --- | --- | --- |');
+etatAnnee.parMois.forEach((m) => q(`| ${m.nom} | ${m.pretes} | ${m.amorcees} | ${m.aDocumenter} | ${m.jours} |`));
+q();
+q('## Les métiers, et les portes qu’ils ouvrent');
+q();
+q('C’est la liste des saints patrons **telle qu’elle est transmise** : on la cite, on ne l’invente pas.');
+q('Les attributions varient d’une liste à l’autre, et certaines sont multiples — c’est dit.');
+q();
+q('| Métier | Saint | La porte du mariage |');
+q('| --- | --- | --- |');
+METIERS_TRANSMIS.forEach((p) => q(`| ${p.metier} | ${p.saint} | ${p.mot} |`));
+q();
+q('---');
+
+const MOIS_PLEINS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+MOIS_PLEINS.forEach((nomMois, index) => {
+  const duMois = anneeFiches.filter((f) => Number(f.jour.slice(0, 2)) === index + 1);
+  q();
+  q(`# ${nomMois.charAt(0).toUpperCase()}${nomMois.slice(1)} — ${duMois.length} jours`);
+  duMois.forEach((f) => {
+    q();
+    const marque = f.etat === 'prete'
+      ? '**Documentée.**'
+      : f.etat === 'amorcee'
+        ? '**Amorcée.**'
+        : f.categorie === 'fete'
+          ? '**Une fête, pas une personne.**'
+          : '**À documenter.**';
+    q(`### ${f.dateLongue} — ${f.personnage}`);
+    q();
+    q(`${marque}${f.enCeJourDe ? ` Le personnage du jour ouvre le numéro — ${f.enCeJourDe}, la fête du calendrier.` : ''}`);
+    q();
+    q('```text');
+    q(`FÊTE DU CALENDRIER   ${f.fete}`);
+    q(`CARTE                ${f.carte} · semaine ${f.semaine} · n° ${f.numero}`);
+    q(`SAISON               ${f.saison.nom} ${f.saison.symbole} — fond ${f.fond}${f.dense ? ' (assombri : temps clos)' : ''}${f.pasCommeLesAutres ? ` (noir : ${f.raison})` : ''}`);
+    q(`CIEL ET LUNE         ${f.ciel} · ${f.lune}`);
+    q(`CHIFFRE DU JOUR      ${f.chiffre}`);
+    q(`SIGNIFICATION        ${f.signification ?? 'à documenter'}`);
+    q(`MÉTIER (tradition)   ${f.metiers.length > 0 ? f.metiers.join(' ; ') : 'à documenter'}`);
+    q(`PORTES OUVERTES      ${f.portes.length > 0 ? f.portes.join(' ; ') : '—'}`);
+    if (f.historique) {
+      q(`ORIGINE              ${f.historique.origine}`);
+      q(`ÉPOQUE               ${f.historique.epoque}`);
+      q(`LIEU                 ${f.historique.lieu}`);
+      q(`MÉTIER (documenté)   ${f.historique.metier}`);
+      q(`SAVOIR-FAIRE         ${f.historique.savoirFaire}`);
+      q(`CULTURE              ${f.historique.culture}`);
+    }
+    f.ponts.forEach((pont, i) => q(`${`PONT ${i + 1}`.padEnd(20)} (${pont.niveau}) ${pont.mot} — ${pont.texte}`));
+    if (f.casting) q(`CASTING              ${f.casting.age}, ${f.casting.silhouette} — ${f.casting.gardeRobe}`);
+    f.inspirations.forEach((inspiration, i) => q(`${`INSPIRATION ${i + 1}`.padEnd(20)} ${inspiration}`));
+    q('```');
+    if (f.etat === 'prete') {
+      q();
+      q('<sub>Son prompt maître et ses cinq scènes sont dans `docs/prompts-maitres.md`.</sub>');
+    } else if (f.categorie === 'fete') {
+      q();
+      q('<sub>Sa fiche s’écrit comme un texte : ce que la fête raconte, et par où elle touche un mariage. Elle ne se documente pas comme une biographie.</sub>');
+    } else if (f.manquant.length > 0) {
+      q();
+      q(`<sub>À documenter : ${f.manquant.join(' ; ')}.</sub>`);
+    }
+    if (f.source) {
+      q(`<sub>Source : ${f.source}.</sub>`);
+    }
+  });
+});
+
+q();
+q('---');
+q();
+q(`**${etatAnnee.pretes} fiches documentées**, ${etatAnnee.amorcees} amorcées, ${etatAnnee.aDocumenter} sans rien — sur ${etatAnnee.jours}.`);
+q();
+q('La règle n’a pas bougé : **on n’illustre pas ce qu’on n’a pas documenté, et on n’écrit pas ce qu’on ne sait pas.**');
+
+writeFileSync(join(process.cwd(), 'docs', 'fiches-de-l-annee.md'), `${L.join('\n')}\n`, 'utf8');
+console.log(`docs/fiches-de-l-annee.md — ${L.length} lignes · ${etatAnnee.pretes} documentées, ${etatAnnee.amorcees} amorcées, ${etatAnnee.aDocumenter} sans rien`);

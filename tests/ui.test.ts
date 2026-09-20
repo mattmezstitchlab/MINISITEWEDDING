@@ -94,6 +94,11 @@ import GalerieCouvertures from '../src/components/GalerieCouvertures';
 import ProfilEditorial from '../src/components/ProfilEditorial';
 import MomentsDuJour from '../src/components/MomentsDuJour';
 import { CHAINE, CHAINE_LIGNE, CHAINE_PROMESSE, maillon } from '../src/lib/chaineDuMonde';
+import { PRENOMS, PRENOMS_DOCUMENTES, significationDe } from '../src/lib/prenoms';
+import { PATRONAGES, SAINTS_PATRONS, patronagesDe, portesDuJour } from '../src/lib/patronages';
+import {
+  categorieDuJour, etatDeLAnnee, ficheDuJour, fichesDeLAnnee, joursAvecPorte,
+} from '../src/lib/fichesAnnee';
 import {
   AVERTISSEMENT_PROFILS, NIVEAUX, PROFILS, REGLE_DES_PROFILS, chercherProfils, cleDuJour,
   personnageDuJour, plat, pontsParNiveau, profilDuJour, profilsDocumentes,
@@ -2898,8 +2903,19 @@ const renduSansFiche = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine'] },
     createElement(ProfilEditorial as never, { date: new Date(2026, 2, 3) })),
 );
-check('un jour sans fiche le dit à l’écran', renduSansFiche.includes('n’est pas encore documentée'), true);
+check('un jour sans fiche le dit à l’écran', renduSansFiche.includes('rien d’autre n’est inventé'), true);
 check('et n’affiche aucun pont', renduSansFiche.includes('Correspondance'), false);
+check('et nomme ce qui manque', renduSansFiche.includes('Ce qui manque, nommé'), true);
+
+/* Le jour sans fiche documentée n'est pas vide pour autant : la couche qui couvre
+   l'année entière s'affiche quand même (sens du prénom, métiers, portes). */
+const renduEloi = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] },
+    createElement(ProfilEditorial as never,
+      { date: new Date(2026, 5, 25) })), // 25 juin — Prosper
+);
+check('un jour sans fiche montre le sens de son prénom', renduEloi.includes('Ce que le prénom veut dire'), true);
+check('et sa source', renduEloi.includes('dictionnaires de prénoms'), true);
 
 /* La dixième règle de la charte est celle-ci. */
 check(
@@ -3107,6 +3123,107 @@ check(
   entreesDeLAnnee(2026)[0]!.jour + ' → ' + entreesDeLAnnee(2026)[364]!.jour,
   '01-01 → 12-31',
 );
+
+/* ——————— CE QUE LES PRÉNOMS VEULENT DIRE, ET LES MÉTIERS DE LA TRADITION ——————— */
+
+check('la table des prénoms est longue', PRENOMS_DOCUMENTES >= 320, true);
+check('chaque prénom dit son sens, en une phrase', Object.values(PRENOMS).every((s) => s.length > 20), true);
+check('et le sens finit par un point', Object.values(PRENOMS).every((s) => s.endsWith('.')), true);
+check('aucune ligne ne mélange deux prénoms', Object.entries(PRENOMS).every(([n]) => !n.includes('\n')), true);
+check('Matthieu est un don de Dieu', significationDe('Matthieu')!.includes('don de Dieu'), true);
+check('Basile veut dire roi', significationDe('Basile')!.includes('roi'), true);
+check('Éloi veut dire l’élu', significationDe('Éloi')!.includes('l’élu'), true);
+check('Cécile porte deux lectures', significationDe('Cécile')!.includes('Caecilii'), true);
+check(
+  'un nom composé se lit par son premier mot',
+  significationDe('Thomas d’Aquin'),
+  significationDe('Thomas'),
+);
+check('et Jean-François Régis par Jean', significationDe('Jean-François Régis'), significationDe('Jean'));
+check('ce qui n’est pas documenté ne rend rien', significationDe('La Toussaint'), null);
+check('ni un prénom inventé', significationDe('Zigomar'), null);
+check('« saint » ne gêne pas la lecture', significationDe('Saint Matthieu'), significationDe('Matthieu'));
+check('et les sens discutés le disent', Object.values(PRENOMS).some((s) => s.includes('sens discuté')), true);
+
+/* — les métiers de la tradition — */
+check('la liste des patronages est fournie', PATRONAGES.length >= 50, true);
+check('chaque patronage a un métier, un saint et une porte', PATRONAGES.every(
+  (p) => p.metier.length > 5 && p.saint.length > 2 && p.mot.length > 3 && p.texte.length > 30,
+), true);
+check('chaque porte dit ce que le métier apporte', PATRONAGES.every((p) => p.apport.length > 20), true);
+check('les orfèvres mènent aux alliances', patronagesDe('Éloi').some((p) => p.mot === 'Les alliances'), true);
+check('les photographes aux images', portesDuJour('Véronique').includes('Les images'), true);
+check('les jardiniers aux fleurs', portesDuJour('Fiacre').includes('Les fleurs'), true);
+check('les musiciens à la musique', portesDuJour('Cécile').includes('La musique'), true);
+check('un saint sans métier ne rend rien', patronagesDe('Zigomar').length, 0);
+check('les saints patrons sont plus de vingt', SAINTS_PATRONS.length >= 20, true);
+
+/* ——————— LES 365 FICHES DE L'ANNÉE ——————— */
+
+const anneeFiches = fichesDeLAnnee(2026);
+check('l’année compte ses fiches', anneeFiches.length, 365);
+check('la première est le 1ᵉʳ janvier', anneeFiches[0]!.jour, '01-01');
+check('la dernière est le 31 décembre', anneeFiches[364]!.jour, '12-31');
+check('aucune journée n’est vide : chacune a sa saison', anneeFiches.every((f) => f.saison.nom.length >= 3), true);
+check('chacune a sa carte et son chiffre', anneeFiches.every((f) => f.carte.length > 3 && f.chiffre >= 1 && f.chiffre <= 9), true);
+check('chacune dit son ciel et sa lune', anneeFiches.every((f) => f.ciel.length > 2 && f.lune.length > 4), true);
+
+const tresor = etatDeLAnnee(2026);
+check('le tableau de l’année est juste', tresor.pretes + tresor.amorcees + tresor.aDocumenter, 365);
+check('seize fiches documentées', tresor.pretes, 16);
+check('la grande majorité des journées sont amorcées', tresor.amorcees >= 300, true);
+check('trois cent quarante-six journées ont le sens de leur prénom', tresor.avecEtymologie, 346);
+check('vingt-neuf journées ont leur métier', tresor.avecMetier, 29);
+check('et cela ouvre quarante et une portes', tresor.portes, 41);
+check('vingt journées sont des fêtes', tresor.fetes, 20);
+
+/* L'invariant qui compte : aucune journée qui porte un prénom n'est vide. */
+const sansRien = anneeFiches.filter((f) => f.etat === 'a-documenter');
+check('les journées sans rien sont exactement les fêtes', sansRien.every((f) => f.categorie === 'fete'), true);
+check('et elles sont dix-neuf', sansRien.length, 19);
+check(
+  'toutes les autres portent au moins le sens de leur prénom',
+  anneeFiches.filter((f) => f.categorie === 'personne').every((f) => f.signification !== null),
+  true,
+);
+check(
+  'aucune journée de personne n’est sans rien',
+  anneeFiches.some((f) => f.categorie === 'personne' && f.etat === 'a-documenter'),
+  false,
+);
+
+/* La nature d'un jour, calculée — jamais devinée. */
+check('le 1ᵉʳ janvier est une fête', categorieDuJour(new Date(2026, 0, 1)), 'fete');
+check('le 21 septembre est une personne', categorieDuJour(new Date(2026, 8, 21)), 'personne');
+check('le 29 février est le joker', categorieDuJour(new Date(2028, 1, 29)), 'joker');
+
+/* Une fiche complète, une fiche amorcée, une fête. */
+const ficheMatthieu = ficheDuJour(new Date(2026, 8, 21));
+check('la fiche de Matthieu est documentée', ficheMatthieu.etat, 'prete');
+check('avec son origine', ficheMatthieu.historique!.origine.includes('Galilée'), true);
+check('son casting', ficheMatthieu.casting!.age, '40 ans');
+check('ses quatre ponts', ficheMatthieu.ponts.length, 4);
+check('et ses métiers', ficheMatthieu.metiers.length >= 3, true);
+check('elle ne manque de rien', ficheMatthieu.manquant.length, 0);
+check('et elle dit sa source', ficheMatthieu.source!.length > 20, true);
+
+const ficheBlaise = ficheDuJour(new Date(2026, 1, 3));
+check('la fiche de Blaise est amorcée', ficheBlaise.etat, 'amorcee');
+check('elle dit le sens du prénom', ficheBlaise.signification!.includes('bégaye'), true);
+check('et le métier de la tradition', ficheBlaise.metiers.includes('Les meuniers'), true);
+check('donc la porte du pain', ficheBlaise.portes, ['Le pain']);
+check('elle n’a pas d’histoire inventée', ficheBlaise.historique, null);
+check('et elle dit ce qui manque', ficheBlaise.manquant.some((m) => m.includes('origine')), true);
+
+const ficheToussaint = ficheDuJour(new Date(2026, 10, 1));
+check('la Toussaint est une fête, pas une personne', ficheToussaint.categorie, 'fete');
+check('elle n’invente pas de prénom', ficheToussaint.signification, null);
+check('et sa fiche est un texte', ficheToussaint.manquant.length > 0, true);
+
+/* Les portes : ce qui est déjà utile avant même d’être documenté. */
+const avecPorte = joursAvecPorte(2026);
+check('trente-cinq journées ont déjà une porte', avecPorte.length, 35);
+check('et chacune dit par où l’on entre', avecPorte.every((f) => f.portes.length > 0 || f.ponts.length > 0), true);
 
 /* ------------------------------------------------------------------- bilan */
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import CouvertureJour from './CouvertureJour';
 import { MOIS, couverturesDeLAnnee, couverturesDuMois, type CouvertureJour as Couverture } from '../lib/couvertureDuJour';
+import { etatDeLAnnee } from '../lib/fichesAnnee';
 
 /**
  * LES 365 COUVERTURES — LE KIOSQUE DE L'ANNÉE
@@ -28,6 +29,7 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
   const [saison, setSaison] = useState<string | null>(null);
 
   const anneeEntiere: Couverture[] = couverturesDeLAnnee(annee);
+  const etat = etatDeLAnnee(annee);
   const duMois = couverturesDuMois(annee, mois);
   const affichees = !saison
     ? duMois
@@ -122,6 +124,7 @@ export default function GalerieCouvertures({ annee = new Date().getFullYear() }:
           </div>
           <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-black/40">
             {affichees.length} couvertures affichées · {noirsDuMois} à fond noir · {densesDuMois} en saison assombrie
+            · {etat.avecEtymologie} journées ont le sens de leur prénom · {etat.pretes} fiches documentées
           </span>
         </div>
 

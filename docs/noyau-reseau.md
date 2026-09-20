@@ -2193,7 +2193,7 @@ courte) et **les 349 fiches à documenter**, avec ce qui manque à chacune.
 documenté*. Un jour sans fiche n'a **pas** de prompt — il a la liste de ce qui lui
 manque. C'est ce qui empêche la série de se remplir d'associations inventées.
 
-**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 1115**, `npm run
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 1179**, `npm run
 prompts` reproductible. Les vérifications de la passe : les trois raisons du noir
 et leur compte exact (52 / 10 / 1, et 63 en tout), les 73 jours assombris par
 famille (27 / 28 / 18), l'encre claire des temps clos, `studioDuJour` sur les
@@ -2205,3 +2205,84 @@ nivelés, la direction de casting), les cinq scènes (le maître conservé, cinq
 lumières, cinq narrations), le tableau de production (365 entrées, 16 prêtes,
 80 scènes), les jours sans fiche, et **le profil qui dit désormais le sens du
 prénom et ses cinq lumières**.
+
+---
+
+## §51 — Les 365 fiches de l'année : ce qui couvre l'année entière, et ce qui manque encore
+
+**La demande.** « Documente tout, même toute l'année, au moins on sera tranquille —
+puis après on aura plus qu'à mettre les visuels en fond. » Donc plus de travail par
+passes de vingt journées : **les 365 journées sont décrites d'un coup**, avec, pour
+chacune, tout ce qu'on sait déjà d'elle et **la liste nommée de ce qui lui manque**.
+
+**Quatre sources, un seul assemblage.** Trois tables nouvelles et une fiche.
+
+**Les prénoms** (`src/lib/prenoms.ts`) — la table des prénoms du calendrier et de
+ce qu'ils veulent dire : **329 entrées**, écrites au format `Nom | sens.` Le sens
+reste une phrase courte et **la source est citée** : *les dictionnaires de prénoms
+courants*. `significationDe` cherche le nom, puis le premier mot (pour que
+« Thomas d'Aquin » trouve Thomas), traverse les composés, et **renvoie `null` quand
+le prénom n'est pas documenté — jamais une invention**. C'est une table, pas une
+IA : elle ne devine rien.
+
+**Les patronages** (`src/lib/patronages.ts`) — la tradition du métier : **54
+entrées** `métier → saint → porte du mariage + ce qu'il apporte`. Cécile pour les
+musiciens, Éloi pour les orfèvres, Honoré pour les boulangers, Fiacre pour les
+jardiniers, Barbe pour les mineurs et les pompiers, Marthe pour les hôteliers,
+Isidore pour les informaticiens, Matthieu pour les comptables : le métier entre
+dans le mariage par **une porte concrète** — les alliances, le pain, les fleurs, la
+musique, le feu d'artifice, le budget, le site. `patronagesDe` et `portesDuJour`
+rendent la liste ; la table ne force jamais un métier sur un jour qui n'en a pas.
+
+**Les profils éditoriaux** (`profilsEditoriaux.ts`) — sa **base de seize personnes
+documentées** et ses `ADDENDA` (signification, inspirations, casting), avec les
+fêtes **réalignées sur le calendrier du magazine** pour que la couverture dise bien
+« en ce jour de… ». C'est la seule couche où une personne est **écrite** : origine,
+époque, lieu, métier, savoir-faire, culture, ponts vers le mariage.
+
+**La fiche** (`src/lib/fichesAnnee.ts`) — `ficheDuJour(date)` assemble tout :
+fête du calendrier, personnage (le profil s'il existe, sinon la fête), `categorie`
+(**personne | fete | joker**), saison, fond, `dense`, `pasCommeLesAutres` et **la
+raison** du noir, carte, semaine, numéro, ciel, lune, chiffre, signification du
+prénom, métiers, portes, puis — **seulement si la personne est documentée** —
+origine, époque, lieu, historique, ponts, casting, inspirations, source. `etat` vaut
+**`prete` | `amorcee` | `a-documenter`**, et `manquant` nomme explicitement les
+champs absents.
+
+**Le bilan, vérifié.** Sur 2026 : **16 fiches documentées, 330 amorcées, 19 sans
+rien** — et les dix-neuf sans rien sont **toutes des fêtes** (jour de l'An,
+Toussaint, Assomption, les armistices, Notre-Dame…). D'où **l'invariant** : *toute
+journée qui porte un prénom a au moins le sens de ce prénom*. En tout : **346
+étymologies, 29 métiers, 41 portes, 20 fêtes** ; aucune journée portant un prénom
+n'est vide.
+
+**Le document.** `npm run prompts` engendre **deux** documents, tous deux issus du
+site et jamais écrits à la main : `docs/prompts-maitres.md` (la production visuelle)
+et **`docs/fiches-de-l-annee.md`** — **6 537 lignes**, en **douze chapitres
+mensuels**, journée par journée : ce qu'elle est, ce qu'elle porte, ce qui lui
+manque. C'est l'état des lieux complet de l'année, lisible d'un bout à l'autre.
+
+**À l'écran, rien n'est caché.** Un jour sans fiche documentée **n'est pas vide pour
+autant** : le profil éditorial affiche désormais **ce que le prénom veut dire**
+(avec sa source), **le métier tel que la tradition le donne**, **la porte qu'il
+ouvre**, puis la phrase qui dit que rien d'autre n'est inventé et **la liste de ce
+qui manque, nommé**. Le kiosque affiche l'état de la production : combien de
+journées ont le sens de leur prénom, combien de fiches sont documentées.
+
+**La règle de la maison, encore.** *On n'illustre pas ce qu'on n'a pas documenté, et
+on n'écrit pas ce qu'on n'a pas vérifié.* Une journée sans source n'a pas de prompt
+maître : elle a la liste de ce qui lui manque. Les seize documentées sont la tête de
+pont ; les autres journées deviendront « prêtes » une par une, quand origine,
+époque, lieu, métier, savoir-faire et culture seront écrits — mai, juin, juillet et
+septembre en premier. **Ensuite seulement**, on remplace le fond des couvertures par
+les visuels, sans toucher à la mise en page.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm run prompts`
+reproductible (deux documents, mêmes comptes), `npm test` **178 / 55 / 1179**,
+`npx vite build` OK. Les vérifications ajoutées couvrent : le sens des prénoms (une
+phrase, jamais vide, jamais inventée), l'absence de prénom sans signification, les
+patronages (métier → saint → porte) et les portes du jour, la catégorie d'un jour
+(personne, fête, joker), les trois états d'une fiche et leurs comptes, **l'invariant
+des journées nommées**, la liste des manquants, et **l'écran** : le jour sans fiche
+qui montre quand même le sens de son prénom, sa source, ses métiers, ses portes, et
+qui nomme ce qui manque.

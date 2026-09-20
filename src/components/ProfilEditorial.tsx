@@ -5,6 +5,7 @@ import {
   profilDuJour, type Niveau, type Pont,
 } from '../lib/profilsEditoriaux';
 import { MOMENTS_VISUELS, PAS_DIMAGE_LA_NUIT } from '../lib/promptsVisuels';
+import { ficheDuJour } from '../lib/fichesAnnee';
 
 /**
  * LE PROFIL DU JOUR — LA PORTE D'ENTRÉE
@@ -71,6 +72,7 @@ const LIGNES_FICHE: Array<{ cle: 'origine' | 'epoque' | 'lieu' | 'metier' | 'sav
 
 export default function ProfilEditorial({ date = new Date() }: { date?: Date }) {
   const jour = profilDuJour(date);
+  const fiche = ficheDuJour(date);
   const genre = genreDuJour(date);
   const groupe = jour.profil ? pontsParNiveau(jour.profil) : [];
   const mot = genre === 'sainte' ? 'Sainte' : genre === 'fete' ? 'Le jour des' : 'Saint';
@@ -144,13 +146,50 @@ export default function ProfilEditorial({ date = new Date() }: { date?: Date }) 
         ) : (
           <>
             <p className="mt-4 max-w-[820px] text-[13.5px] leading-relaxed text-black/60">
-              {mot} {jour.personnage} — {jour.dateLongue}. Sa fiche n’est pas encore documentée : le jour garde son nom
-              du calendrier, sa couverture, sa carte et sa lumière, et{' '}
-              <strong className="font-bold text-black/75">rien d’autre n’est écrit</strong>.
+              {mot} {jour.personnage} — {jour.dateLongue}. Sa fiche documentée s’écrit à partir de sources : elle
+              n’est pas encore là, et{' '}
+              <strong className="font-bold text-black/75">rien d’autre n’est inventé</strong>.
             </p>
+
+            {/* CE QU'ON SAIT DÉJÀ : la couche qui couvre l'année. */}
+            {(fiche.signification || fiche.portes.length > 0) && (
+              <div className="mt-6 grid gap-x-8 gap-y-4 border-y border-black/10 py-6 sm:grid-cols-2 lg:grid-cols-3">
+                {fiche.signification && (
+                  <div>
+                    <span className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-black/40">
+                      Ce que le prénom veut dire
+                    </span>
+                    <p className="mt-1 text-[13.5px] leading-relaxed text-black/75">{fiche.signification}</p>
+                    <span className="mt-1 block font-mono text-[9px] uppercase tracking-[0.14em] text-black/35">
+                      {SIGNIFICATION_SOURCE}
+                    </span>
+                  </div>
+                )}
+                {fiche.metiers.length > 0 && (
+                  <div>
+                    <span className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-black/40">
+                      Le métier, par la tradition
+                    </span>
+                    <p className="mt-1 text-[13.5px] leading-relaxed text-black/75">{fiche.metiers.join(' · ')}</p>
+                    <span className="mt-1 block font-mono text-[9px] uppercase tracking-[0.14em] text-black/35">
+                      les saints patrons, tels qu’ils sont transmis
+                    </span>
+                  </div>
+                )}
+                {fiche.portes.length > 0 && (
+                  <div>
+                    <span className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-black/40">
+                      La porte qu’il ouvre
+                    </span>
+                    <p className="mt-1 text-[13.5px] leading-relaxed text-black/75">{fiche.portes.join(' · ')}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <p className="mt-6 rounded-[16px] border border-dashed border-black/15 px-4 py-5 text-[13px] leading-relaxed text-black/50">
-              Un profil s’écrit à partir de sources, jamais de mémoire. Les jours qui attendent leur fiche sont la
-              réserve de travail du magazine : ils s’ouvriront quand on aura vérifié, pas avant.
+              Ce qui manque, nommé : {fiche.manquant.join(' ; ')}. Un profil s’écrit à partir de sources, jamais de
+              mémoire — les journées qui attendent s’ouvriront quand on aura vérifié, pas avant.
             </p>
           </>
         )}

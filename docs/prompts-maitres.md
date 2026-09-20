@@ -226,13 +226,13 @@ MOMENT — LE SOIR
 
 ---
 
-## Patrick
+## Patrick — en ce jour de Patrice
 
 **17 mars 2026** · Irlande · Vᵉ siècle
 
 ```text
 DATE                 17 mars 2026 (03-17)
-SAINT / FÊTE         Patrick
+SAINT / FÊTE         Patrice
 PERSONNAGE           Patrick
 ORIGINE              Grande-Bretagne, captif devenu évangélisateur
 ÉPOQUE               Vᵉ siècle
@@ -258,7 +258,7 @@ COUVERTURE AIME MAGAZINE — PATRICK
 
 IDENTITÉ
 · Date : 17 mars.
-· Personnage : Patrick.
+· Personnage : Patrick — en ce jour de Patrice.
 · Origine : Grande-Bretagne, captif devenu évangélisateur.
 · Époque : Vᵉ siècle.
 · Lieu : Irlande.
@@ -296,7 +296,7 @@ DIRECTION ARTISTIQUE
 IDENTITÉ DU JOUR
 · Date : 17 mars 2026.
 · Personnage : Patrick.
-· Fête : Patrick.
+· Fête : Patrice.
 · Saison : Printemps ♥ — vert tendre.
 · Moment : le prompt maître : les cinq scènes s’ajoutent ensuite, une par moment.
 
@@ -672,13 +672,13 @@ MOMENT — LE SOIR
 
 ---
 
-## Véronique
+## Véronique — en ce jour de Olivier
 
 **12 juillet 2026** · Jérusalem · Iᵉʳ siècle
 
 ```text
 DATE                 12 juillet 2026 (07-12)
-SAINT / FÊTE         Véronique
+SAINT / FÊTE         Olivier
 PERSONNAGE           Véronique
 ORIGINE              Jérusalem, selon la tradition
 ÉPOQUE               Iᵉʳ siècle
@@ -704,7 +704,7 @@ COUVERTURE AIME MAGAZINE — VÉRONIQUE
 
 IDENTITÉ
 · Date : 12 juillet.
-· Personnage : Véronique.
+· Personnage : Véronique — en ce jour de Olivier.
 · Origine : Jérusalem, selon la tradition.
 · Époque : Iᵉʳ siècle.
 · Lieu : Jérusalem.
@@ -743,7 +743,7 @@ DIRECTION ARTISTIQUE
 IDENTITÉ DU JOUR
 · Date : 12 juillet 2026.
 · Personnage : Véronique.
-· Fête : Véronique.
+· Fête : Olivier.
 · Saison : Été ♦ — jaune chaud.
 · Moment : le prompt maître : les cinq scènes s’ajoutent ensuite, une par moment.
 
@@ -1271,13 +1271,13 @@ MOMENT — LE SOIR
 
 ---
 
-## Côme et Damien
+## Côme et Damien — en ce jour de Côme
 
 **26 septembre 2026** · Cilicie, Asie mineure · IIIᵉ siècle
 
 ```text
 DATE                 26 septembre 2026 (09-26)
-SAINT / FÊTE         Côme et Damien
+SAINT / FÊTE         Côme
 PERSONNAGE           Côme et Damien
 ORIGINE              Cilicie, frères jumeaux, médecins
 ÉPOQUE               IIIᵉ siècle
@@ -1303,7 +1303,7 @@ COUVERTURE AIME MAGAZINE — CÔME ET DAMIEN
 
 IDENTITÉ
 · Date : 26 septembre.
-· Personnage : Côme et Damien.
+· Personnage : Côme et Damien — en ce jour de Côme.
 · Origine : Cilicie, frères jumeaux, médecins.
 · Époque : IIIᵉ siècle.
 · Lieu : Cilicie, Asie mineure.
@@ -1342,7 +1342,7 @@ DIRECTION ARTISTIQUE
 IDENTITÉ DU JOUR
 · Date : 26 septembre 2026.
 · Personnage : Côme et Damien.
-· Fête : Côme et Damien.
+· Fête : Côme.
 · Saison : Automne ♣ — terracotta.
 · Moment : le prompt maître : les cinq scènes s’ajoutent ensuite, une par moment.
 
@@ -1569,13 +1569,13 @@ MOMENT — LE SOIR
 
 ---
 
-## Adolphe Sax — en ce jour de Sainte Bertille
+## Adolphe Sax — en ce jour de Bertille
 
 **6 novembre 2026** · Dinant, Belgique — Paris · XIXᵉ siècle — né en 1814, mort en 1894
 
 ```text
 DATE                 6 novembre 2026 (11-06)
-SAINT / FÊTE         Sainte Bertille
+SAINT / FÊTE         Bertille
 PERSONNAGE           Adolphe Sax
 ORIGINE              Dinant, fils d’un facteur d’instruments réputé
 ÉPOQUE               XIXᵉ siècle — né en 1814, mort en 1894
@@ -1602,7 +1602,7 @@ COUVERTURE AIME MAGAZINE — ADOLPHE SAX
 
 IDENTITÉ
 · Date : 6 novembre.
-· Personnage : Adolphe Sax — en ce jour de Sainte Bertille.
+· Personnage : Adolphe Sax — en ce jour de Bertille.
 · Origine : Dinant, fils d’un facteur d’instruments réputé.
 · Époque : XIXᵉ siècle — né en 1814, mort en 1894.
 · Lieu : Dinant, Belgique — Paris.
@@ -1643,7 +1643,7 @@ DIRECTION ARTISTIQUE
 IDENTITÉ DU JOUR
 · Date : 6 novembre 2026.
 · Personnage : Adolphe Sax.
-· Fête : Sainte Bertille.
+· Fête : Bertille.
 · Saison : Automne ♣ — terracotta.
 · Moment : le prompt maître : les cinq scènes s’ajoutent ensuite, une par moment.
 
@@ -1870,13 +1870,13 @@ MOMENT — LE SOIR
 
 ---
 
-## Éloi
+## Éloi — en ce jour de Florence
 
 **1 décembre 2026** · Limoges — Paris — Noyon, France · VIIᵉ siècle
 
 ```text
 DATE                 1 décembre 2026 (12-01)
-SAINT / FÊTE         Éloi
+SAINT / FÊTE         Florence
 PERSONNAGE           Éloi
 ORIGINE              Gaule, orfèvre, monétaire du roi, puis évêque
 ÉPOQUE               VIIᵉ siècle
@@ -1902,7 +1902,7 @@ COUVERTURE AIME MAGAZINE — ÉLOI
 
 IDENTITÉ
 · Date : 1 décembre.
-· Personnage : Éloi.
+· Personnage : Éloi — en ce jour de Florence.
 · Origine : Gaule, orfèvre, monétaire du roi, puis évêque.
 · Époque : VIIᵉ siècle.
 · Lieu : Limoges — Paris — Noyon, France.
@@ -1941,7 +1941,7 @@ DIRECTION ARTISTIQUE
 IDENTITÉ DU JOUR
 · Date : 1 décembre 2026.
 · Personnage : Éloi.
-· Fête : Éloi.
+· Fête : Florence.
 · Saison : Hiver ♠ — bleu profond.
 · Moment : le prompt maître : les cinq scènes s’ajoutent ensuite, une par moment.
 
@@ -2019,13 +2019,13 @@ MOMENT — LE SOIR
 
 ---
 
-## Barbe
+## Barbe — en ce jour de Barbara
 
 **4 décembre 2026** · Nicomédie, Asie mineure · IIIᵉ siècle
 
 ```text
 DATE                 4 décembre 2026 (12-04)
-SAINT / FÊTE         Barbe
+SAINT / FÊTE         Barbara
 PERSONNAGE           Barbe
 ORIGINE              Nicomédie, convertie et martyre
 ÉPOQUE               IIIᵉ siècle
@@ -2051,7 +2051,7 @@ COUVERTURE AIME MAGAZINE — BARBE
 
 IDENTITÉ
 · Date : 4 décembre.
-· Personnage : Barbe.
+· Personnage : Barbe — en ce jour de Barbara.
 · Origine : Nicomédie, convertie et martyre.
 · Époque : IIIᵉ siècle.
 · Lieu : Nicomédie, Asie mineure.
@@ -2090,7 +2090,7 @@ DIRECTION ARTISTIQUE
 IDENTITÉ DU JOUR
 · Date : 4 décembre 2026.
 · Personnage : Barbe.
-· Fête : Barbe.
+· Fête : Barbara.
 · Saison : Hiver ♠ — bleu profond.
 · Moment : le prompt maître : les cinq scènes s’ajoutent ensuite, une par moment.
 

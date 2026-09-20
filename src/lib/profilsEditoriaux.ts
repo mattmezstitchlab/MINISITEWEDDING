@@ -170,7 +170,7 @@ const BASE: Array<[string, string, string | null, Genre, Fiche, Pont[], string[]
   [
     '03-17',
     'Patrick',
-    'Patrick',
+    'Patrice',
     'saint',
     {
       origine: 'Grande-Bretagne, captif devenu évangélisateur',
@@ -233,7 +233,7 @@ const BASE: Array<[string, string, string | null, Genre, Fiche, Pont[], string[]
   [
     '07-12',
     'Véronique',
-    'Véronique',
+    'Olivier',
     'sainte',
     {
       origine: 'Jérusalem, selon la tradition',
@@ -318,7 +318,7 @@ const BASE: Array<[string, string, string | null, Genre, Fiche, Pont[], string[]
   [
     '09-26',
     'Côme et Damien',
-    'Côme et Damien',
+    'Côme',
     'saint',
     {
       origine: 'Cilicie, frères jumeaux, médecins',
@@ -360,7 +360,7 @@ const BASE: Array<[string, string, string | null, Genre, Fiche, Pont[], string[]
   [
     '11-06',
     'Adolphe Sax',
-    'Sainte Bertille',
+    'Bertille',
     'fete',
     {
       origine: 'Dinant, fils d’un facteur d’instruments réputé',
@@ -403,7 +403,7 @@ const BASE: Array<[string, string, string | null, Genre, Fiche, Pont[], string[]
   [
     '12-01',
     'Éloi',
-    'Éloi',
+    'Florence',
     'saint',
     {
       origine: 'Gaule, orfèvre, monétaire du roi, puis évêque',
@@ -424,7 +424,7 @@ const BASE: Array<[string, string, string | null, Genre, Fiche, Pont[], string[]
   [
     '12-04',
     'Barbe',
-    'Barbe',
+    'Barbara',
     'sainte',
     {
       origine: 'Nicomédie, convertie et martyre',
