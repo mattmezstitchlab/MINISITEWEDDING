@@ -48,7 +48,22 @@ mariage » — il ramène à la porte pour changer de mariage), sur l'écran de
 l'appareil, en haut du ticket, et au début de chaque ligne d'objet imprimé
 (`A7K-241-AV · BILLET D'AVION · JOSHUA TREE`).
 
-## 3. Le rêve, et le budget
+## 3. Les écrans : des chiffres, pas des phrases
+
+Deux écrans, et une règle : **ils montrent le mariage, ils ne parlent pas d'eux**.
+Pas de marque répétée à chaque ligne, pas de mode d'emploi, pas de phrase qui
+décrit l'écran lui-même. Ce qu'on y lit, dans l'ordre :
+
+| L'écran | Ce qu'il montre |
+| --- | --- |
+| **la machine** | l'en-tête (`SUPER MARIAGE`, la caisse, l'heure), la proposition en cours (`LE JOUR J`, son compte de lignes), et **le total en gros** avec le nombre de lignes |
+| **l'appareil** | la catégorie en haut à gauche, le code à droite, **le rêve sur l'image**, puis le pourcentage financé, la jauge, le reste à financer et le total du mariage |
+
+Un test le tient : l'écran de l'appareil doit porter le pourcentage, le reste et
+le mariage, et **ne doit contenir ni « affiché sur l'écran » ni la marque** ;
+l'écran de la machine ne doit plus réciter son mode d'emploi.
+
+## 4. Le rêve, et le budget
 
 Le site a **une cible** : les mariés le partagent à leurs invités pour **faire
 des économies et se payer leur voyage de rêve**.
@@ -75,7 +90,7 @@ Tous ces nombres sortent de `budgetDuRêve()` (`src/lib/codeDuMariage.ts`) ; le
 test les vérifie : à zéro ligne rien n'est mis de côté, dix lignes valent dix
 fois 180 €, et l'on ne dépasse jamais 4 320 €.
 
-## 4. Les objets, imprimés
+## 5. Les objets, imprimés
 
 Six objets s'impriment, et **chacun laisse sa ligne de code** sur le papier :
 
@@ -92,7 +107,7 @@ Le délire des objets est donc **dans la chaîne** : le ticket de caisse (la
 liste), le billet d'avion (le départ), la carte postale (ce qu'on envoie une fois
 là-bas), et le timbre qui l'affranchit.
 
-## 5. Les stickers
+## 6. Les stickers
 
 Chaque objet posé, chaque ligne cochée, chaque geste **tire un sticker** : un
 **carré coloré**, un mot dedans, comme les étiquettes d'une collection. Huit
@@ -100,14 +115,14 @@ couleurs, prises dans la palette des magazines (`COULEURS_DES_STICKERS`) ; même
 mot, même couleur (`stickerDe`). Dix au maximum restent à l'écran — au-delà, le
 premier s'en va.
 
-## 6. Le papier sort par le dessous
+## 7. Le papier sort par le dessous
 
 L'animation est celle de la fente, pas du papier : **la fente est en bas** de
 l'appareil (`data-fente-bas="vrai"`), et le papier **naît derrière elle puis
 descend** (`presse-par-le-bas`, 760 ms). On ne le voit donc jamais apparaître par
 le haut.
 
-## 7. Où c'est écrit
+## 8. Où c'est écrit
 
 | Le morceau | Le fichier |
 | --- | --- |
@@ -117,7 +132,7 @@ le haut.
 | l'ordre de la page | `src/pages/LaCaisse.tsx` |
 | les preuves | `tests/ui.test.ts` — « le tour : le code mariage, le rêve, les objets, les stickers, le header » |
 
-## 8. Aller voir
+## 9. Aller voir
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |

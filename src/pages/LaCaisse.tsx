@@ -414,9 +414,7 @@ export default function LaCaisse() {
             </span>
           </span>
           <span className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white/70">
-            <span>
-              {MAGASIN.nom} · {MAGASIN.rayon}
-            </span>
+            <span>{MAGASIN.rayon}</span>
             <span data-hero-heure="vrai">
               {String(heure).padStart(2, '0')}:00 · {lumiere.mot ?? 'LE JOUR'}
             </span>
@@ -605,7 +603,7 @@ export default function LaCaisse() {
       <section id="le-ticket" data-bande="ticket" data-section="ticket" className="vp-bande vp-bande-fond">
         <div className="vp-page">
           <p className="vp-bande-nom">
-            <b>SUPER MARIAGE</b>
+            <b>AIME</b>
             <span aria-hidden="true">·</span>
             <span>LE TICKET, ENTIER</span>
           </p>

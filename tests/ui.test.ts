@@ -2617,6 +2617,31 @@ check(
 );
 const ticketDuRêve = rendreLeTicket('/?reve=Vegas%20en%20janvier');
 check('et le ticket du voyage porte les mots du couple', ticketDuRêve.includes('VEGAS EN JANVIER · LE VOYAGE'), true);
+/* « Trop de texte sur l'écran, ça répète trop, et il n'y a rien sur l'écran. »
+   Les deux écrans sont donc pesés : des chiffres, pas des phrases — et aucune
+   phrase qui parle de l'écran lui-même. */
+const écranDeLaMachine = ticketVide.slice(ticketVide.indexOf('data-ecran="ripple"'), ticketVide.indexOf('data-touches'));
+const écranDeLAppareil = ticketVide.slice(ticketVide.indexOf('data-appareil-écran'), ticketVide.indexOf('data-appareil-objets'));
+check(
+  'l’écran de la machine ne récite plus son mode d’emploi',
+  [écranDeLaMachine.includes('pour la passer en revue'), écranDeLaMachine.includes('0 LIGNE')],
+  [false, true],
+);
+check(
+  'l’écran de l’appareil porte le rêve et les chiffres du mariage',
+  [/%/.test(écranDeLAppareil), écranDeLAppareil.includes('reste'), écranDeLAppareil.includes('mariage')],
+  [true, true, true],
+);
+check(
+  'et il ne parle plus de lui-même — aucune phrase sur l’écran',
+  [/affiché sur l’écran/.test(écranDeLAppareil), /SUPER MARIAGE/.test(écranDeLAppareil)],
+  [false, false],
+);
+check(
+  'la marque ne s’écrit pas dix fois : elle tient dans une poignée de bandes',
+  (ticketVide.match(/SUPER MARIAGE/g) ?? []).length <= 8,
+  true,
+);
 check(
   'la barre dit où en est le ticket, sans qu’on descende',
   [ticketVide.includes('data-barre-compte="0"'), ticketPlein.includes(`data-barre-compte="${cochesDessai.length}"`)],

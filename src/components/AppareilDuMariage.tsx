@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, CornerDownLeft, Lock, Plane, Receipt } from 'lucide-react';
+import { ArrowRight, CornerDownLeft, Lock, Receipt } from 'lucide-react';
 import { OBJETS_DE_LA_FABRIQUE, pictoDuRipple } from '../lib/ripple';
 import { LIGNES_DU_TICKET, type LigneDuTicket } from '../lib/categoriesDuTicket';
 import type { BudgetDuRêve, Rêve, Sticker } from '../lib/codeDuMariage';
@@ -76,9 +76,6 @@ export function LaPorteDuMariage({
             </span>
             <span className="mt-3 block text-[12px] uppercase tracking-[0.14em]">{LE_SPÉCIALISTE.metier}</span>
             <span className="mt-2 block text-[15px] text-[#9BF3C6]">ENTREZ LE CODE DU MARIAGE</span>
-            <span className="mt-1 block text-[9.5px] uppercase leading-relaxed tracking-[0.12em] text-[#7DE2B0]/50">
-              c’est le code écrit sur le ticket — celui que le couple partage
-            </span>
 
             <form
               data-porte-formulaire="vrai"
@@ -197,9 +194,9 @@ export default function AppareilDuMariage({
     <section id="l-appareil" data-bande="appareil" className="vp-bande vp-bande-fond">
       <div className="vp-page">
         <p className="vp-bande-nom">
-          <b>SUPER MARIAGE</b>
+          <b>{LE_SPÉCIALISTE.marque}</b>
           <span aria-hidden="true">·</span>
-          <span>{LE_SPÉCIALISTE.metier}</span>
+          <span>L’APPAREIL</span>
         </p>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-12">
@@ -209,19 +206,17 @@ export default function AppareilDuMariage({
               data-appareil="mariage"
               className="relative rounded-[26px] border border-[color:var(--vp-line)] bg-white p-3 shadow-[0_30px_70px_rgba(12,14,24,0.12)] sm:p-4"
             >
-              {/* L'écran : le rêve, son titre dessus, le budget dessous. */}
+              {/* L'écran : **le rêve, et les chiffres du mariage**. Pas de
+                  marque répétée, pas de phrase sur l'écran lui-même — l'image,
+                  le rêve, le pourcentage, et l'argent. Quatre choses à lire. */}
               <div data-appareil-écran="vrai" className="relative overflow-hidden rounded-[14px] bg-[#07090D]">
-                <span className="absolute inset-x-0 top-0 z-20 flex items-baseline justify-between gap-2 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/70">
-                  <span>{LE_SPÉCIALISTE.marque}</span>
-                  <span className="flex items-center gap-2">
-                    <span className="text-white/45">{LE_SPÉCIALISTE.metier}</span>
-                    <span data-appareil-code={code} className="text-[#7DE2B0]">
-                      {code}
-                    </span>
+                <span className="absolute inset-x-0 top-0 z-20 flex items-baseline justify-between gap-2 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/60">
+                  <span>{héros.mot}</span>
+                  <span data-appareil-code={code} className="tabular-nums text-[#7DE2B0]">
+                    {code}
                   </span>
                 </span>
 
-                {/* Le rêve : une image, le titre dessus — comme partout ailleurs. */}
                 <span className="relative block h-[280px] w-full sm:h-[330px]">
                   <img
                     src={héros.image}
@@ -231,31 +226,27 @@ export default function AppareilDuMariage({
                   />
                   <span aria-hidden="true" className="vp-heros-voile" />
                   <span className="absolute inset-x-0 bottom-0 z-10 block px-4 pb-4">
-                    <span className="block font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/65">
-                      {héros.mot}
-                    </span>
-                    <span data-appareil-titre={héros.id} className="vp-hero-titre mt-1 block max-w-[26ch] text-white">
-                      {héros.titre}
-                    </span>
-                    <span className="mt-1.5 block max-w-[38ch] text-[12.5px] leading-snug text-white/70">
-                      {héros.sous}
+                    <span data-appareil-titre={héros.id} className="vp-hero-titre block max-w-[26ch] text-white">
+                      {héros.id === 'voyage' ? rêve.mot : héros.titre}
                     </span>
                   </span>
                 </span>
 
-                {/* Le budget, sous l'image : la jauge, et les deux chiffres. */}
                 <span className="block px-4 pb-3.5 pt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-white/75">
                   <span className="flex items-baseline justify-between gap-3">
-                    <span data-appareil-jauge-mot="vrai" className="text-[#7DE2B0]">
-                      {partDuRêve(budget.part)} du rêve · {euros(budget.misDeCôté)} mis de côté
+                    <span data-appareil-jauge-mot="vrai" className="text-[13px] tracking-[0.06em] text-[#7DE2B0]">
+                      {partDuRêve(budget.part)}
                     </span>
-                    <span className="flex items-center gap-1.5">
-                      <Plane size={11} />
-                      {rêve.mot} · {euros(rêve.prix)}
-                    </span>
+                    <span className="tabular-nums">{euros(rêve.prix)}</span>
                   </span>
-                  <span className="vp-jauge mt-2 block">
+                  <span className="vp-jauge mt-1.5 block">
                     <i style={{ width: `${Math.round(budget.part * 100)}%` }} />
+                  </span>
+                  <span className="mt-1.5 flex items-baseline justify-between gap-3 text-[9.5px] text-white/50">
+                    <span className="tabular-nums">reste {euros(budget.reste)}</span>
+                    <span className="tabular-nums">
+                      mariage {euros(avatar.total)} · {avatar.lignes} ligne{avatar.lignes > 1 ? 's' : ''}
+                    </span>
                   </span>
                 </span>
               </div>

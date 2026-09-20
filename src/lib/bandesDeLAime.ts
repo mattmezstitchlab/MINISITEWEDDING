@@ -30,7 +30,7 @@ export const LA_BARRE = {
 
 /** La première bande : le titre, la promesse, et la couverture du jour. */
 export const LE_TITRE = {
-  eyebrow: 'SUPER MARIAGE · LE SPÉCIALISTE DU TICKET',
+  eyebrow: 'SUPER MARIAGE',
   titre: 'Tout le mariage, sur un seul ticket.',
   sous: 'On coche. La machine affiche. Le papier sort, et il part dans les portefeuilles : le couple, les invités, la famille, le DJ, les métiers.',
   pastilles: [
@@ -123,7 +123,7 @@ export const LES_QUESTIONS: Array<{ question: string; reponse: string }> = [
 /** Le pied : la marque, les portes, et rien de plus. */
 export const LE_PIED = {
   marque: 'AIME',
-  filet: 'SUPER MARIAGE · LE SPÉCIALISTE DU TICKET',
+  filet: 'SUPER MARIAGE',
   liens: [
     { mot: 'Le ticket', vers: '#la-machine' },
     { mot: 'Le magasin, tout en cases', vers: '/magazine?monde=magasin' },
@@ -187,8 +187,8 @@ export const LES_HÉROS: HérosDeLaLanding[] = [
   {
     id: 'voyage',
     mot: 'LE VOYAGE',
-    titre: 'Le rêve, affiché sur l’écran.',
-    sous: 'Ce pour quoi on économise : deux billets, six nuits, une voiture.',
+    titre: 'Le désert, la nuit, les étoiles.',
+    sous: 'Deux billets, six nuits, une voiture : 4 320 € à financer, ligne après ligne.',
     chemin: ['le billet d’avion', 'le budget du rêve', 'les économies', 'la date du départ'],
     image: '/images/desert-star-dance.jpg',
     vers: '#l-appareil',

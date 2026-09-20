@@ -158,10 +158,7 @@ export default function MachineDeRipple({
                   {motDeLaFamille(proposition.groupe)}
                 </span>
                 <span className="mt-1 block truncate text-[9.5px] uppercase tracking-[0.12em] text-[#7DE2B0]/50">
-                  {proposition.sous} · {proposition.lignes} ligne{proposition.lignes > 1 ? 's' : ''}
-                </span>
-                <span className="mt-2 block text-[9.5px] uppercase tracking-[0.12em] text-[#7DE2B0]/60">
-                  ✓ pour la passer en revue · ✗ la suivante
+                  {proposition.lignes} ligne{proposition.lignes > 1 ? 's' : ''} · {proposition.sous}
                 </span>
                 {marche && (
                   <span data-ecran-mot="vrai" className="mt-1.5 block truncate text-[9.5px] uppercase tracking-[0.14em] text-white/45">
@@ -189,9 +186,6 @@ export default function MachineDeRipple({
                   className="mt-1.5 line-clamp-2 block text-[13.5px] leading-[1.25] text-[#9BF3C6]"
                 >
                   {proposition.ligne.label}
-                </span>
-                <span className="mt-0.5 block truncate text-[9px] uppercase tracking-[0.12em] text-[#7DE2B0]/45">
-                  {motDeLaFamille(proposition.groupe)} · {proposition.catégorie}
                 </span>
                 <span className="mt-1.5 flex items-baseline justify-between gap-2">
                   <span className="text-[12px] tabular-nums">{prixDeLaLigne(proposition.ligne)}</span>
@@ -277,11 +271,12 @@ export default function MachineDeRipple({
             )}
           </div>
 
+          {/* Le pied de l'écran : **le chiffre qui compte**, en gros. */}
           <span className="mt-2 flex items-baseline justify-between gap-3 border-t border-[#7DE2B0]/20 pt-1.5">
-            <span className="uppercase tracking-[0.16em]">
+            <span className="uppercase tracking-[0.16em] text-[#7DE2B0]/60">
               {lignes} LIGNE{lignes > 1 ? 'S' : ''}
             </span>
-            <span className="text-[13px] tabular-nums tracking-[0.06em]">{euros(total)}</span>
+            <span className="text-[19px] tabular-nums tracking-[0.02em] text-[#9BF3C6]">{euros(total)}</span>
           </span>
         </div>
 

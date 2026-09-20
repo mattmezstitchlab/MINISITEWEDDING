@@ -42,6 +42,11 @@ Trois principes plus fins tiennent l'ensemble :
 | les questions | **cinq** : celles du thème, plus « est-ce que je paie ? » et « et si je ne sais pas quoi cocher ? » | `LesQuestions` |
 | le pied qui répète la marque | marque, portes, « ouvert quand tout est fermé » | `LePied` |
 
+**La règle des écrans** — les deux écrans (la machine, l'appareil) ne parlent pas
+d'eux-mêmes : ils portent des chiffres (le total, la part du rêve, le reste à
+financer) et le rêve, jamais un mode d'emploi ni la marque répétée. C'est la
+version « bande » du principe *une bande = une idée*.
+
 Et les trois principes fins : les bandes sont réglées par `src/index.css`
 (`.vp-bande`, `.vp-bande-nom`, `.vp-colonnes`, `.vp-pastille`), le nom de la
 bande s'écrit **toujours au même endroit**, et **une bande = une idée**.
