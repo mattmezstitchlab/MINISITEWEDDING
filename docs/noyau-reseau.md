@@ -3068,3 +3068,29 @@ bouton profil ne défile plus) ; les anciennes portes de création — `/creer`,
 **Ensuite, déjà dessiné :** que les réglages « gardés » deviennent vraiment la
 règle du site (le magazine s'habille avec), l'export du design system
 (Tailwind / JSON / DESIGN.md, comme un vrai outil), et les assets en un clic.
+
+---
+
+## §65 — La bibliothèque des visuels : l'autre repo est la source
+
+Les visuels ne naissent plus ici : un autre agent les produit dans
+`BIBLIOTHEQUESUPERMAGAZINE`. Le contrat est son `manifeste.json` : chaque
+image porte **cinq champs** (le moment, la lumière, la couleur, le cadrage, le
+sujet), le format est fixé (5:7, 1000×1400), la convention `images/MM-JJ/slot.jpg`,
+trois rangs au plus par plan, et la nuit n'a pas d'image (c'est la queue de la
+veille). L'ordre de production est écrit : **poser, normaliser, déclarer,
+vérifier** — et la leçon du casting est devenue règle : chaque fond porte au
+moins un accident de lumière.
+
+Ici, `scripts/importer-bibliotheque.mjs` copie **ce qui est déclaré** dans
+`public/images/biblio/` (le dépôt de la bibliothèque est privé : un navigateur
+ne lit pas ses liens bruts). Le manifeste local ne liste que ce qui est
+arrivé : jamais une image sans sa déclaration. Wedding OS lit cette copie :
+l'onglet **Les visuels** montre les fonds jour par jour, avec leur lumière en
+infobulle — l'écran du studio s'habille du fond choisi.
+
+État au jour de l'import : 34 fonds déclarés (janvier entamé, plus les deux
+fêtes de février), 0 raté. Le rythme de l'autre repo : dix images par tour,
+les fonds d'abord, les scènes ensuite ; sa PR #1 vers `main` mettra les images
+sur la branche par défaut. Quand ce repo sera public, les liens bruts
+deviendront appelables directement — l'import restera la voie propre.

@@ -10,6 +10,7 @@ import {
   reglerOS, useReglagesOS,
 } from '../lib/weddingOS';
 import { usePointZero } from '../lib/ripple';
+import { useBibliotheque } from '../lib/bibliotheque';
 import { pictoDuRipple, PICTOS_DU_RIPPLE, OBJETS_DE_LA_FABRIQUE } from '../lib/ripple';
 import { SAISONS } from '../lib/jeuDeCartes';
 
@@ -43,6 +44,8 @@ const ONGLETS_OS: Array<{ id: OngletOS; nom: string; Icone: LucideIcon }> = [
 export default function WeddingOS() {
   const reglages = useReglagesOS();
   const point = usePointZero();
+  /** Les fonds déclarés par la bibliothèque — l'autre repo, lus d'ici. */
+  const fonds = useBibliotheque();
   const [onglet, setOnglet] = useState<OngletOS>('couverture');
   const [parametres, setParametres] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -320,7 +323,32 @@ export default function WeddingOS() {
           )}
 
           {onglet === 'visuels' && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid gap-4">
+              {/* La bibliothèque : les fonds déclarés, jour par jour. */}
+              <div>
+                <div className={`mb-2 font-mono text-[9.5px] uppercase tracking-[0.16em] ${ton.sous}`}>
+                  La bibliothèque des visuels · {fonds.length} fond{fonds.length > 1 ? 's' : ''} déclaré{fonds.length > 1 ? 's' : ''}
+                </div>
+                <div className="grid max-h-[260px] grid-cols-3 gap-2 overflow-y-auto">
+                  {fonds.map((fond) => (
+                    <button
+                      key={fond.jour}
+                      type="button"
+                      onClick={() => reglerOS({ visuel: reglages.visuel === fond.fichier ? null : fond.fichier })}
+                      aria-label={`Fond du ${fond.jour} — ${fond.lumiere}`}
+                      aria-pressed={reglages.visuel === fond.fichier}
+                      title={`${fond.jour} · ${fond.lumiere}`}
+                      className={`overflow-hidden rounded-[10px] border ${ton.bord} ${
+                        reglages.visuel === fond.fichier ? 'ring-2 ring-black' : ''
+                      }`}
+                    >
+                      <img src={fond.fichier} alt={`Fond du ${fond.jour}`} className="aspect-[5/7] w-full object-cover" />
+                      <span className={`block px-1 py-0.5 text-center font-mono text-[8.5px] ${ton.sous}`}>{fond.jour}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={`grid grid-cols-2 gap-2`}>
               {VISUELS_OS.map((v) => (
                 <button
                   key={v.id}
@@ -333,6 +361,7 @@ export default function WeddingOS() {
                   <img src={v.fichier} alt={v.nom} className="aspect-[4/3] w-full object-cover" />
                 </button>
               ))}
+              </div>
             </div>
           )}
 
@@ -418,7 +447,7 @@ export default function WeddingOS() {
           >
             {reglages.visuel && (
               <img
-                src={VISUELS_OS.find((v) => v.id === reglages.visuel)?.fichier}
+                src={reglages.visuel.includes('/') ? reglages.visuel : VISUELS_OS.find((v) => v.id === reglages.visuel)?.fichier}
                 alt=""
                 className="mb-4 w-full object-cover"
                 style={{ borderRadius: Math.max(reglages.arrondi - 6, 4), maxHeight: 190 }}

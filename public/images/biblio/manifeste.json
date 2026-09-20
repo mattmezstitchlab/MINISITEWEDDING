@@ -1,0 +1,538 @@
+{
+  "meta": {
+    "magazine": "AIME MAGAZINE — la bibliothèque des visuels",
+    "regle": "Ce qui est documenté est cité ; ce qui est imaginé est signé. Une image sans ses cinq champs ne sert à rien : la déclaration fait partie de l'image.",
+    "format": {
+      "ratio": "5:7",
+      "largeur": 1000,
+      "hauteur": 1400
+    },
+    "moments": [
+      "couverture",
+      "aube",
+      "matin",
+      "midi",
+      "apres-midi",
+      "soir"
+    ],
+    "convention": "images/MM-JJ/slot.jpg — le premier rang est celui qu'on veut ; -2 et -3 sont des candidates du casting (trois rangs au plus par plan). La nuit n'a pas d'image : c'est la queue de la veille.",
+    "criteres": {
+      "le moment": 3,
+      "la lumière": 2,
+      "la couleur": 2,
+      "le cadrage": 1,
+      "le sujet": 1
+    }
+  },
+  "images": [
+    {
+      "fichier": "/images/biblio/01-01.jpg",
+      "moment": "couverture",
+      "lumiere": "froide, rasante, le bleu d'avant le jour",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "givre",
+        "nuit d'hiver"
+      ],
+      "note": "le fond du 1er janvier — premier rang",
+      "jour": "01-01"
+    },
+    {
+      "fichier": "/images/biblio/01-02.jpg",
+      "moment": "couverture",
+      "lumiere": "rasante, très douce, une seule arête",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "laine feutrée",
+        "plis lourds"
+      ],
+      "note": "le fond du 2 janvier — premier rang",
+      "jour": "01-02"
+    },
+    {
+      "fichier": "/images/biblio/01-03.jpg",
+      "moment": "couverture",
+      "lumiere": "froide, diffuse, brume basse",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "pierre mouillée"
+      ],
+      "note": "le fond du 3 janvier — premier rang",
+      "jour": "01-03"
+    },
+    {
+      "fichier": "/images/biblio/01-04.jpg",
+      "moment": "couverture",
+      "lumiere": "une seule bande très faible, le reste dans l'ombre",
+      "couleur": "#0B0B0F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "velours noir",
+        "plis profonds"
+      ],
+      "note": "le fond du 4 janvier — premier rang",
+      "jour": "01-04"
+    },
+    {
+      "fichier": "/images/biblio/01-05.jpg",
+      "moment": "couverture",
+      "lumiere": "rasante, une arête, douce",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "lin froissé",
+        "plis longs"
+      ],
+      "note": "le fond du 5 janvier — premier rang",
+      "jour": "01-05"
+    },
+    {
+      "fichier": "/images/biblio/01-06.jpg",
+      "moment": "couverture",
+      "lumiere": "une source décidée, transparence sombre",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "encre dans l'eau",
+        "volutes"
+      ],
+      "note": "le fond du 6 janvier — premier rang",
+      "jour": "01-06"
+    },
+    {
+      "fichier": "/images/biblio/01-07.jpg",
+      "moment": "couverture",
+      "lumiere": "bande faible, le reste dans un noir dense",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "cuir grainé",
+        "pénombre"
+      ],
+      "note": "le fond du 7 janvier — premier rang",
+      "jour": "01-07"
+    },
+    {
+      "fichier": "/images/biblio/01-08.jpg",
+      "moment": "couverture",
+      "lumiere": "faisceau froid dirigé, voiles gris-bleu",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "fumée fine",
+        "fond vide"
+      ],
+      "note": "le fond du 8 janvier — premier rang",
+      "jour": "01-08"
+    },
+    {
+      "fichier": "/images/biblio/01-09.jpg",
+      "moment": "couverture",
+      "lumiere": "une réflexion franche sur l'eau, la moitié du cadre calme",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "eau noire",
+        "ondes concentriques"
+      ],
+      "note": "le fond du 9 janvier — refait, plus de présence",
+      "jour": "01-09"
+    },
+    {
+      "fichier": "/images/biblio/01-10.jpg",
+      "moment": "couverture",
+      "lumiere": "diagonale de lumière froide, coupe nette",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "béton brut coulé",
+        "aspérités"
+      ],
+      "note": "le fond du 10 janvier — refait, la texture se lit",
+      "jour": "01-10"
+    },
+    {
+      "fichier": "/images/biblio/01-11.jpg",
+      "moment": "couverture",
+      "lumiere": "arête froide en diagonale, le reste noir",
+      "couleur": "#0B0B0F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "daim noir",
+        "grain velouté"
+      ],
+      "note": "le fond du 11 janvier — premier rang",
+      "jour": "01-11"
+    },
+    {
+      "fichier": "/images/biblio/01-12.jpg",
+      "moment": "couverture",
+      "lumiere": "lumière de gauche, deux courbes dessinées",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "huile sur eau nocturne"
+      ],
+      "note": "le fond du 12 janvier — premier rang",
+      "jour": "01-12"
+    },
+    {
+      "fichier": "/images/biblio/01-13.jpg",
+      "moment": "couverture",
+      "lumiere": "froide et rasante sur la pierre polie",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "marbre noir",
+        "veines claires"
+      ],
+      "note": "le fond du 13 janvier — premier rang",
+      "jour": "01-13"
+    },
+    {
+      "fichier": "/images/biblio/01-14.jpg",
+      "moment": "couverture",
+      "lumiere": "froide, très diffuse, venue de la droite",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "chaux bleu nuit",
+        "texture poudreuse"
+      ],
+      "note": "le fond du 14 janvier — premier rang",
+      "jour": "01-14"
+    },
+    {
+      "fichier": "/images/biblio/01-15.jpg",
+      "moment": "couverture",
+      "lumiere": "rasante de gauche, chaque pli lu",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "soie sauvage",
+        "plis verticaux"
+      ],
+      "note": "le fond du 15 janvier — premier rang",
+      "jour": "01-15"
+    },
+    {
+      "fichier": "/images/biblio/01-16.jpg",
+      "moment": "couverture",
+      "lumiere": "rasante de droite sur le relief du grain",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "sable mouillé",
+        "ondulation"
+      ],
+      "note": "le fond du 16 janvier — premier rang",
+      "jour": "01-16"
+    },
+    {
+      "fichier": "/images/biblio/01-17.jpg",
+      "moment": "couverture",
+      "lumiere": "froide derrière la vitre, chaque goutte piquée de clair",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "pluie fine sur verre",
+        "ruissellements"
+      ],
+      "note": "le fond du 17 janvier — premier rang",
+      "jour": "01-17"
+    },
+    {
+      "fichier": "/images/biblio/01-18.jpg",
+      "moment": "couverture",
+      "lumiere": "extrêmement rasante, venue du bord, ombre dominante",
+      "couleur": "#0B0B0F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "matière du jour",
+        "mur noir faïencé",
+        "craquelures"
+      ],
+      "note": "le fond du 18 janvier — premier rang",
+      "jour": "01-18"
+    },
+    {
+      "fichier": "/images/biblio/01-19.jpg",
+      "moment": "couverture",
+      "lumiere": "rasante sur l'ardoise mouillée, le grain nuancé lu",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "ardoise mouillée",
+        "plaques superposées",
+        "matière du jour"
+      ],
+      "note": "le fond du 19 janvier — premier rang",
+      "jour": "01-19"
+    },
+    {
+      "fichier": "/images/biblio/01-20.jpg",
+      "moment": "couverture",
+      "lumiere": "une arête dure, l'éclat métallique révélé",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "graphite étalé",
+        "poussière minérale",
+        "matière du jour"
+      ],
+      "note": "le fond du 20 janvier — premier rang",
+      "jour": "01-20"
+    },
+    {
+      "fichier": "/images/biblio/01-21.jpg",
+      "moment": "couverture",
+      "lumiere": "rétro-éclairée, translucide, une profondeur bleutée",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "albâtre",
+        "veines laiteuses",
+        "matière du jour"
+      ],
+      "note": "le fond du 21 janvier — premier rang",
+      "jour": "01-21"
+    },
+    {
+      "fichier": "/images/biblio/01-22.jpg",
+      "moment": "couverture",
+      "lumiere": "rasante de côté, les fibres carbonisées prises une à une",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "bois calciné",
+        "surface noire",
+        "matière du jour"
+      ],
+      "note": "le fond du 22 janvier — premier rang",
+      "jour": "01-22"
+    },
+    {
+      "fichier": "/images/biblio/01-23.jpg",
+      "moment": "couverture",
+      "lumiere": "dure sur le bitume mouillé, deux reflets larges",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "bitume",
+        "granulats serrés",
+        "matière du jour"
+      ],
+      "note": "le fond du 23 janvier — premier rang",
+      "jour": "01-23"
+    },
+    {
+      "fichier": "/images/biblio/01-24.jpg",
+      "moment": "couverture",
+      "lumiere": "froide sur la patine mate, une longue arête en diagonale",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "métal fondu refroidi",
+        "patine oxydée",
+        "matière du jour"
+      ],
+      "note": "le fond du 24 janvier — premier rang",
+      "jour": "01-24"
+    },
+    {
+      "fichier": "/images/biblio/01-25.jpg",
+      "moment": "couverture",
+      "lumiere": "une seule arête vive, le reste dans un noir absolu",
+      "couleur": "#0B0B0F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "obsidienne",
+        "arêtes coupantes",
+        "matière du jour"
+      ],
+      "note": "le fond du 25 janvier — premier rang",
+      "jour": "01-25"
+    },
+    {
+      "fichier": "/images/biblio/01-26.jpg",
+      "moment": "couverture",
+      "lumiere": "réflexion large et douce sur l'émail bombé",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "céramique émaillée",
+        "craquelures fines",
+        "matière du jour"
+      ],
+      "note": "le fond du 26 janvier — premier rang",
+      "jour": "01-26"
+    },
+    {
+      "fichier": "/images/biblio/01-27.jpg",
+      "moment": "couverture",
+      "lumiere": "rétro-éclairé par le fond, halo profond et contenu",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "verre soufflé",
+        "bulles retenues dans la masse",
+        "matière du jour"
+      ],
+      "note": "le fond du 27 janvier — premier rang",
+      "jour": "01-27"
+    },
+    {
+      "fichier": "/images/biblio/01-28.jpg",
+      "moment": "couverture",
+      "lumiere": "rasante en diagonale, le relief lu rangée après rangée",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "brique peinte",
+        "joints apparents",
+        "matière du jour"
+      ],
+      "note": "le fond du 28 janvier — premier rang",
+      "jour": "01-28"
+    },
+    {
+      "fichier": "/images/biblio/01-29.jpg",
+      "moment": "couverture",
+      "lumiere": "froide et rasante, elle longe la paroi et s'éteint",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "enduit mouillé",
+        "coulures verticales",
+        "matière du jour"
+      ],
+      "note": "le fond du 29 janvier — premier rang",
+      "jour": "01-29"
+    },
+    {
+      "fichier": "/images/biblio/01-30.jpg",
+      "moment": "couverture",
+      "lumiere": "rasante de gauche, chaque brin révélé",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "paille tressée",
+        "brins serrés",
+        "matière du jour"
+      ],
+      "note": "le fond du 30 janvier — premier rang",
+      "jour": "01-30"
+    },
+    {
+      "fichier": "/images/biblio/01-31.jpg",
+      "moment": "couverture",
+      "lumiere": "une arête froide qui suit le pli principal",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "papier de soie pressé",
+        "arêtes vives",
+        "matière du jour"
+      ],
+      "note": "le fond du 31 janvier — premier rang",
+      "jour": "01-31"
+    },
+    {
+      "fichier": "/images/biblio/02-01.jpg",
+      "moment": "couverture",
+      "lumiere": "froide, venue de derrière le verre, dissoute dans l'opacité",
+      "couleur": "#0B0B0F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "verre dépoli",
+        "buée qui se retire par plaques",
+        "matière du jour"
+      ],
+      "note": "le fond du 1er février — premier rang",
+      "jour": "02-01"
+    },
+    {
+      "fichier": "/images/biblio/02-02.jpg",
+      "moment": "couverture",
+      "lumiere": "rétro-éclairée derrière le tissu, les plis filtrent",
+      "couleur": "#16233F",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "lin épais",
+        "longs plis verticaux",
+        "matière du jour"
+      ],
+      "note": "le fond du 2 février — premier rang",
+      "jour": "02-02"
+    },
+    {
+      "fichier": "/images/biblio/02-14.jpg",
+      "moment": "apres-midi",
+      "lumiere": "qui penche, un côté chaud un côté froid, un rai qui traverse",
+      "couleur": "#0D1526",
+      "largeur": 1000,
+      "hauteur": 1400,
+      "contient": [
+        "valentin",
+        "trois-quarts",
+        "table de travail",
+        "papiers et tissu"
+      ],
+      "note": "l'après-midi — le pont, l'image qui mène au mariage",
+      "jour": "02-14"
+    }
+  ]
+}
