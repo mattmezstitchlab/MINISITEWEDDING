@@ -838,7 +838,7 @@ export const DIRECTIONS: DirectionDuMagazine[] = [
     titre: 'Septembre doré',
     style: 'Lumière d’arrière-saison, éditorial',
     terroir: 'un champ moissonné, une allée, un village fin septembre',
-    matiere: 'chaume, lin é cru, verre soufflé, cuivre',
+    matiere: 'chaume, lin écru, verre soufflé, cuivre',
     motif: 'la lumière basse qui traverse tout, jusqu’au verre',
     lumiere: 'golden hour longue, poussière en suspension',
     palette: { fond: '#C98A3E', accent: '#3E4B3A' },
