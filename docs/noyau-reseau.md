@@ -1557,3 +1557,71 @@ portes, l'interstice, le chiffre de 1 à 9, le Serpentaire donné pour ce qu'il
 est ; le flux balisé, qui glisse dans les deux sens, avec son jour ouvert
 marqué et ses sept jours qui se suivent ; le portrait qui porte le prénom, son
 fond et sa pose), `npm run build` OK.
+
+---
+
+## §41 — Vingt-quatre heures, le super saint, et le fil rouge
+
+**Le magazine passe de huit à vingt-quatre pages : une par heure.** Ce n'est pas
+une page qui s'allonge — c'est **la journée entière** qui entre dans le magazine.
+`HEURES` (dans `aimeMoteur.ts`) les nomme une à une et leur donne **leur
+lumière** : minuit et le creux de la nuit · cinq heures et l'avant-aube · six
+heures et **l'aube** · le grand matin · **midi** · le début d'après-midi · la fin
+d'après-midi · **dix-huit heures, la golden hour** · le crépuscule · la soirée ·
+la nuit qui vient. Chacune dit aussi **ce qu'on y fait un jour de mariage** :
+« six heures — la lumière qui monte, et le lieu qui se découvre », « onze heures
+— on s'habille, et le téléphone se tait », « quatorze heures — la cérémonie
+commence », « vingt-deux heures — la piste, et la première danse ».
+
+**Les huit rubriques font trois fois le tour de la journée** (8 × 3 = 24) : la
+matière reste la même, mais ce n'est plus la même page — **la lumière a changé, et
+ce qu'on fait à six heures n'est pas ce qu'on fait à dix-huit**. Le nombre de
+pages ne bouge pas : c'est la règle du §39, tenue. La page d'ouverture (minuit)
+dit **le temps qu'il fait**, la météo des moyennes du passé, la lune, la porte,
+l'interstice ; la page de onze heures reçoit **le chiffre du jour** et le signe.
+
+**Le temps universel, comme culture.** Le magazine ne dit pas seulement l'heure :
+il apprend **ce que chaque heure est** — l'aube, le midi, la golden hour, la nuit
+— ce que tout le monde traverse sans jamais le regarder. C'est de la culture
+utile, et c'est aussi un programme : les vingt-quatre pages **sont** la journée
+d'un Jour J, heure par heure.
+
+**Le SUPER SAINT du jour — l'architecte.** Chaque jour a son prénom : c'est lui
+qui compose. **AGENT SAINT-MATTHIEU**, **AGENT SAINT-SYLVESTRE** le 31 décembre
+(le jour de trop a le sien aussi). Il ne fait pas de bruit : il **regarde** (le
+ciel du jour, la lune, le jour de la semaine, le pas-de-temps) puis il **décide
+quels SUPER HÉROS travaillent aujourd'hui** — la météo s'il pleut, la santé s'il
+gèle ou s'il fait chaud, le chronomètre le samedi, le semeur au printemps,
+l'archiviste à l'automne, le veilleur en hiver, la boussole les jours de porte et
+d'interstice. Chacun est choisi **en le disant** : *pourquoi lui, aujourd'hui*.
+
+**Le fil rouge, et l'action parfaite.** L'histoire japonaise du fil rouge relie
+deux personnes ; ici, il relie **les jours**. `filRougeDuJour()` donne **le fil**
+— ce qui passe d'aujourd'hui à demain — et **l'action parfaite** : **une seule
+chose**, celle qui compte aujourd'hui. « Lundi : ouvrir une chose — une liste, un
+appel, une porte. » « Dimanche : ne rien faire, et le faire bien. » C'est le
+Chemin : jour après jour, le fil se déroule, et l'on n'a jamais qu'une chose à
+faire.
+
+**Dans la page.** Cliquer la couverture du flux **ouvre le magazine du jour** —
+aux **vingt-quatre heures**, et sur l'heure qu'il est (au clic : `heureCourante()`)
+— puis on glisse d'une heure à l'autre, exactement comme on glisse d'un jour à
+l'autre. Le même geste, une couche plus bas : **on glisse dans les jours, on
+ouvre le jour, on glisse dans les heures**. Sous les heures, l'architecte et ses
+héros, le fil rouge et l'action parfaite.
+
+**Le studio, première planche.** `public/images/studio/planche-{printemps,ete,automne,hiver}.jpg`
+— quatre portraits de studio, **fond blanc** avec ombre portée pour les trois
+premières saisons, **fond noir** à lumière dure pour l'hiver. C'est la **direction
+artistique** des 364 : le rendu (`PortraitStudio.tsx`) tient la place de chaque
+jour, et les photographies réelles prennent la suite, **planche après planche**,
+sans que rien d'autre change.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **720** (les
+vingt-quatre heures qui se suivent, chacune avec sa lumière et son moment, la
+golden hour à dix-huit heures ; les huit rubriques trois fois dans l'ordre ; les
+vrais textes sur toutes les pages et pour les 54 numéros ; la page d'ouverture
+qui dit le temps qu'il fait ; le super saint nommé d'après le calendrier, avec
+ses héros et son pourquoi ; le fil rouge qui relie le jour, et l'action parfaite
+qui reste une seule chose ; le bouton qui ouvre le magazine du jour et la phrase
+qui le dit), `npm run build` OK.

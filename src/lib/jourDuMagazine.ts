@@ -277,6 +277,129 @@ export function studioDuJour(date: Date): StudioDuJour {
   };
 }
 
+/* ————————————————————————— LE SUPER SAINT DU JOUR ————————————————————————— */
+
+/**
+ * **LE SUPER SAINT** — l'architecte du magazine du jour.
+ *
+ * Chaque jour a son prénom : c'est lui l'architecte. **AGENT SAINT-MATTHIEU**,
+ * par exemple. Ce n'est pas un personnage de plus : c'est **celui qui compose**,
+ * qui regarde le temps qu'il fait, la lune, le soleil, l'interstice, l'ombre et
+ * la lumière — et qui **décide quels SUPER HÉROS travailleront ce jour-là**.
+ *
+ * Il ne les choisit pas au hasard : la lune donne le rythme, la météo donne le
+ * risque, la saison donne la matière, le jour de la semaine donne le geste. Le
+ * magazine qui en sort n'est jamais le même, et il est **toujours justifié** :
+ * chaque page dit ce qui l'a décidée.
+ */
+export interface SuperSaint {
+  /** Le nom de l'agent : « AGENT SAINT-MATTHIEU ». */
+  nom: string;
+  /** Ce qu'il regarde en premier, ce jour-là. */
+  regard: string;
+  /** Les héros qu'il met au travail, dans l'ordre. */
+  heros: string[];
+  /** Pourquoi eux, aujourd'hui. */
+  pourquoi: string;
+}
+
+/** Les héros disponibles : leurs noms, tels qu'ils se disent. */
+const HEROS: Array<{ nom: string; quand: string[]; quoi: string }> = [
+  { nom: 'LA MÉTÉO', quand: ['pluie', 'giboulées', 'gel'], quoi: 'elle tient le plan B, et l’ordre des choses' },
+  { nom: 'LE CŒUR', quand: ['grand soleil', 'chaleur'], quoi: 'il vérifie que personne n’oublie personne' },
+  { nom: 'LA SANTÉ', quand: ['chaleur', 'gel'], quoi: 'eau, ombre, couvertures, traitements' },
+  { nom: 'LE CHRONOMÈTRE', quand: ['samedi', 'dimanche'], quoi: 'les heures du jour J, à la minute' },
+  { nom: 'LE SEMEUR', quand: ['printemps'], quoi: 'ce qui se plante maintenant pour dans six mois' },
+  { nom: 'L’INTENDANT', quand: ['été'], quoi: 'la logistique des longs jours' },
+  { nom: 'L’ARCHIVISTE', quand: ['automne'], quoi: 'ce qu’on garde, ce qu’on relira' },
+  { nom: 'LE VEILLEUR', quand: ['hiver'], quoi: 'l’intime, les petits comités' },
+  { nom: 'LA BOUSSOLE', quand: ['porte', 'interstice'], quoi: 'où l’on va, et par où l’on passe' },
+  { nom: 'LE PASSEUR DE LIEN', quand: ['lundi', 'mardi'], quoi: 'les annonces, les appels, les listes' },
+  { nom: 'L’ÉCHO', quand: ['mercredi', 'jeudi'], quoi: 'ce qui se dit, et à qui on le dit' },
+  { nom: 'LE TÉMOIN', quand: ['vendredi'], quoi: 'la parole donnée devant les autres' },
+  { nom: 'LA BALANCE', quand: ['chiffre'], quoi: 'l’équilibre entre les deux familles' },
+  { nom: 'L’ORFÈVRE', quand: ['signe'], quoi: 'ce qui se garde et se transmet' },
+];
+
+/** Le super saint d'un jour : son nom, son regard, ses héros. */
+export function superSaintDuJour(date: Date): SuperSaint {
+  const nomme = jourNomme(date);
+  const joker = jokerDuJour(date);
+  const meteo = meteoDuJour(date);
+  const cles = clesDuJour(date);
+  const jour = JOURS_DE_LA_SEMAINE[(date.getDay() + 6) % 7]!;
+  const pas = pasDeTempsDeLaSemaine(semaineDeLAnnee(date));
+
+  const brut = nomme?.nom ?? joker?.saint ?? '';
+  const nom = brut ? `AGENT SAINT-${brut.toUpperCase().replace(/^(SAINTE?|SAINT-)/, '')}` : 'AGENT DU JOUR DE TROP';
+
+  const indices = [
+    meteo.ciel,
+    jour.nom,
+    cles.porte ? 'porte' : '',
+    cles.interstice ? 'interstice' : '',
+    cles.signeCache ? 'signe' : '',
+    `chiffre-${cles.chiffre.nombre}`,
+  ].filter(Boolean);
+
+  // On note chaque héros : combien de ce que le jour apporte lui parle. Le
+  // classement est stable — à égalité, l'ordre du catalogue décide — et il y a
+  // toujours du monde au travail : un jour sans héros ne serait pas un jour.
+  const notes = HEROS.map((h, i) => {
+    let note = indices.filter((q) => h.quand.includes(q)).length;
+    if (h.quand.includes(saisonDeLaSemaine(semaineDeLAnnee(date)).id)) note += 1;
+    if (h.quand.includes(jour.nom)) note += 1;
+    return { h, note, i };
+  });
+  const liste = notes
+    .slice()
+    .sort((a, b) => b.note - a.note || a.i - b.i)
+    .slice(0, 4)
+    .map((n) => n.h);
+
+  return {
+    nom,
+    regard: `${meteo.ciel}, la lune ${cles.lune.nom}, ${jour.nom} — et ${pas.nom.toLowerCase()}`,
+    heros: liste.map((h) => h.nom),
+    pourquoi: liste.map((h) => `${h.nom} : ${h.quoi}`).join(' · '),
+  };
+}
+
+/* ————————————————————————— LE FIL ROUGE, ET L'ACTION PARFAITE ————————————————————————— */
+
+/**
+ * **LE FIL ROUGE** — ce qui relie les jours entre eux.
+ *
+ * Il vient de l'histoire japonaise du fil rouge du destin : le fil qui relie deux
+ * personnes, et qu'on ne voit pas. Ici, il relie **les jours** — et chaque jour,
+ * il y a **une action parfaite** : une seule, celle qui compte aujourd'hui, et qui
+ * n'a pas de prix. « Le Chemin » se lit ainsi : jour après jour, le fil se
+ * déroule, et l'on n'a jamais qu'une chose à faire.
+ */
+export function filRougeDuJour(date: Date): { fil: string; actionParfaite: string } {
+  const nom = jourNomme(date)?.nom ?? '';
+  const jour = JOURS_DE_LA_SEMAINE[(date.getDay() + 6) % 7]!;
+  const meteo = meteoDuJour(date);
+  const cles = clesDuJour(date);
+  const saison = saisonDeLaSemaine(semaineDeLAnnee(date));
+
+  const actions: Record<string, string> = {
+    lundi: 'ouvrir une chose : une liste, un appel, une porte',
+    mardi: 'dire une chose à quelqu’un, aujourd’hui, et pas « plus tard »',
+    mercredi: 'écrire une chose : un mot, un papier, une date',
+    jeudi: 'voir une chose de ses yeux : un lieu, une personne, un essai',
+    vendredi: 'rassembler deux personnes qui ne se connaissent pas encore',
+    samedi: 'dresser une chose : une table, une lumière, un plan',
+    dimanche: 'ne rien faire, et le faire bien',
+  };
+
+  return {
+    fil: `Le fil du jour passe par ${nom || 'le jour de trop'} : ${jour.sens}. ${meteo.phrase} ` +
+      `La lune est ${cles.lune.nom}, le chiffre est le ${cles.chiffre.nombre} — et la saison, ${saison.nom.toLowerCase()}, ${saison.sens.toLowerCase()}.`,
+    actionParfaite: actions[jour.nom] ?? 'tenir le fil',
+  };
+}
+
 /* ————————————————————————— LE JOUR, EN ENTIER ————————————————————————— */
 
 export interface JourDuMagazine {
@@ -299,8 +422,10 @@ export interface JourDuMagazine {
   meteo: Meteo;
   cles: Cles;
   studio: StudioDuJour;
-  /** L'édition du jour : huit pages, toujours. */
+  /** L'édition du jour : vingt-quatre pages, une par heure. */
   edition: Edition;
+  /** Le super saint du jour : l'architecte, et les héros qu'il met au travail. */
+  superSaint: SuperSaint;
 }
 
 /** L'édition d'un jour : les huit rubriques, et la première dit le temps qu'il fait. */
@@ -319,9 +444,9 @@ export function editionDuJour(date: Date, options: OptionsEdition = {}): Edition
     : `Le ${joker?.nom ?? 'jour'}`;
 
   const pages = edition.pages.map((page) => {
-    if (page.rubrique === 'Le temps') {
+    if (page.rubrique === 'Le temps' && page.heure === 0) {
       return {
-        rubrique: page.rubrique,
+        ...page,
         titre: `${titreDuJour} — ${page.titre}`,
         texte:
           `Aujourd’hui, ${jour.nom} : ${jour.sens}. Les moyennes du passé pour ce jour : ${meteo.resume}. ` +
@@ -331,9 +456,9 @@ export function editionDuJour(date: Date, options: OptionsEdition = {}): Edition
         source: `${nom ? `${nom} · ` : ''}Jour ${jourDeLAnnee(date)} · moyennes du passé`,
       };
     }
-    if (page.rubrique === 'Le passage') {
+    if (page.rubrique === 'Le passage' && page.heure === 11) {
       return {
-        rubrique: page.rubrique,
+        ...page,
         titre: page.titre,
         texte:
           `${page.texte} Le chiffre du jour est le ${cles.chiffre.nombre} : ${cles.chiffre.sens}.` +
@@ -373,6 +498,7 @@ export function jourDuMagazine(date: Date, options: OptionsEdition = {}): JourDu
     meteo: meteoDuJour(date),
     cles: clesDuJour(date),
     studio: studioDuJour(date),
+    superSaint: superSaintDuJour(date),
     edition: editionDuJour(date, options),
   };
 }

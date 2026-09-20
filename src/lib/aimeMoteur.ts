@@ -29,7 +29,52 @@ import {
  * plus : huit rubriques, toujours les mêmes, dans le même ordre.
  */
 
-export const PAGES_EDITION = 8;
+export const PAGES_EDITION = 24;
+
+/**
+ * **LES VINGT-QUATRE HEURES** — une page par heure, comme une journée de mariage.
+ *
+ * Le magazine n'est pas seulement un jour : c'est **une journée entière**, et
+ * chaque heure a sa page. L'aube, le matin, le midi, le début d'après-midi, la
+ * fin d'après-midi, la **golden hour**, la soirée, la nuit : c'est le temps
+ * universel — celui que tout le monde connaît sans jamais le regarder — et on
+ * s'en sert comme d'une **culture** : chaque page dit la lumière de cette heure,
+ * ce qu'on y fait, et ce que le ciel du jour y change.
+ *
+ * Les **huit rubriques** (ci-dessous) font le tour de la journée **trois fois** :
+ * 8 × 3 = 24 pages. Le nombre ne bouge pas — c'est la règle depuis le §39.
+ */
+export const HEURES: Array<{ heure: number; nom: string; lumiere: string; moment: string }> = [
+  { heure: 0, nom: 'minuit', lumiere: 'la nuit pleine', moment: 'ce qui se dit à voix basse' },
+  { heure: 1, nom: 'une heure', lumiere: 'la nuit pleine', moment: 'le silence, et ceux qui restent' },
+  { heure: 2, nom: 'deux heures', lumiere: 'la nuit pleine', moment: 'les dernières tables' },
+  { heure: 3, nom: 'trois heures', lumiere: 'le creux de la nuit', moment: 'le seul moment où rien n’est demandé' },
+  { heure: 4, nom: 'quatre heures', lumiere: 'le creux de la nuit', moment: 'ceux qui travaillent pendant que les autres dorment' },
+  { heure: 5, nom: 'cinq heures', lumiere: 'l’avant-aube', moment: 'le premier café, le premier camion' },
+  { heure: 6, nom: 'six heures', lumiere: 'l’aube', moment: 'la lumière qui monte, et le lieu qui se découvre' },
+  { heure: 7, nom: 'sept heures', lumiere: 'le lever', moment: 'le coiffeur, les mains, les fleurs qu’on monte' },
+  { heure: 8, nom: 'huit heures', lumiere: 'le matin clair', moment: 'on dresse, on répète, on vérifie' },
+  { heure: 9, nom: 'neuf heures', lumiere: 'le matin clair', moment: 'les prestataires arrivent, tout se met en place' },
+  { heure: 10, nom: 'dix heures', lumiere: 'le grand matin', moment: 'les invités de loin sont en route' },
+  { heure: 11, nom: 'onze heures', lumiere: 'le grand matin', moment: 'on s’habille, et le téléphone se tait' },
+  { heure: 12, nom: 'midi', lumiere: 'le plein jour', moment: 'le déjeuner de ceux qui travaillent' },
+  { heure: 13, nom: 'treize heures', lumiere: 'le plein jour', moment: 'le dernier moment tranquille' },
+  { heure: 14, nom: 'quatorze heures', lumiere: 'le début d’après-midi', moment: 'la cérémonie commence' },
+  { heure: 15, nom: 'quinze heures', lumiere: 'le début d’après-midi', moment: 'les vœux, les signatures, les photos de groupe' },
+  { heure: 16, nom: 'seize heures', lumiere: 'la fin d’après-midi', moment: 'le verre, les retrouvailles' },
+  { heure: 17, nom: 'dix-sept heures', lumiere: 'la fin d’après-midi', moment: 'le dîner se prépare, la lumière baisse' },
+  { heure: 18, nom: 'dix-huit heures', lumiere: 'la golden hour', moment: 'la plus belle lumière de la journée' },
+  { heure: 19, nom: 'dix-neuf heures', lumiere: 'la golden hour', moment: 'le coucher, et les portraits qui restent' },
+  { heure: 20, nom: 'vingt heures', lumiere: 'le crépuscule', moment: 'on passe à table' },
+  { heure: 21, nom: 'vingt et une heures', lumiere: 'la soirée', moment: 'les discours, les larmes, le rire' },
+  { heure: 22, nom: 'vingt-deux heures', lumiere: 'la soirée', moment: 'la piste, et la première danse' },
+  { heure: 23, nom: 'vingt-trois heures', lumiere: 'la nuit qui vient', moment: 'ceux qui dansent encore' },
+];
+
+/** L'heure qu'il est, dans la journée du magazine. */
+export function heureCourante(date: Date = new Date()): number {
+  return date.getHours();
+}
 
 /** Les huit rubriques, dans l'ordre — elles ne bougent pas. */
 export const RUBRIQUES = [
@@ -47,6 +92,11 @@ export type NomDeRubrique = (typeof RUBRIQUES)[number];
 
 export interface PageEdition {
   rubrique: NomDeRubrique;
+  /** L'heure de la journée : 0 à 23. Une page par heure. */
+  heure: number;
+  /** Comment cette heure s'appelle, et quelle lumière elle porte. */
+  nomDeLHeure: string;
+  lumiere: string;
   titre: string;
   texte: string;
   /** Une signature courte : ce qui a décidé cette page. */
@@ -166,7 +216,7 @@ export function composerEdition(options: OptionsEdition = {}): Edition {
   /** Ce que le temps fait aux mots : passé et futur se lisent à la même table. */
   const quand = temps === 'passe' ? `En ${annee - 1}` : temps === 'futur' ? `En ${annee + 1}` : 'Cette semaine';
 
-  const pages: PageEdition[] = [
+  const matieres: Array<Omit<PageEdition, 'heure' | 'nomDeLHeure' | 'lumiere'>> = [
     {
       rubrique: 'Le temps',
       titre: pas.nom,
@@ -262,6 +312,24 @@ export function composerEdition(options: OptionsEdition = {}): Edition {
       source: 'Les univers du passé',
     },
   ];
+
+  /**
+   * **LES VINGT-QUATRE PAGES.** Les huit rubriques font trois fois le tour de la
+   * journée : à chaque heure, la même matière — mais ce n'est plus la même page,
+   * parce que la lumière a changé, et que ce qu'on fait à six heures n'est pas ce
+   * qu'on fait à dix-huit.
+   */
+  const pages: PageEdition[] = HEURES.map((h) => {
+    const matiere = matieres[h.heure % matieres.length]!;
+    return {
+      ...matiere,
+      heure: h.heure,
+      nomDeLHeure: h.nom,
+      lumiere: h.lumiere,
+      texte: `${matiere.texte} À ${h.nom}, la lumière est ${h.lumiere} — ${h.moment}.`,
+      source: `${matiere.source} · ${h.nom}`,
+    };
+  });
 
   return {
     numero,

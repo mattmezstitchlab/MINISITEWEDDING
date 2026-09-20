@@ -5,7 +5,8 @@ import { ArrowRight, Clock } from 'lucide-react';
 import { COUVERTURES, MARQUE_MAGAZINE } from '../lib/aimeMagazine';
 import { JEU_DE_54, bornesDeLaSemaine, semaineDeLAnnee } from '../lib/jeuDeCartes';
 import { composerEdition, lesQuatreSaisons, numerosDeLaSaison } from '../lib/aimeMoteur';
-import { jourDuMagazine, joursAutour, lesQuatrePortes } from '../lib/jourDuMagazine';
+import { filRougeDuJour, jourDuMagazine, joursAutour, lesQuatrePortes } from '../lib/jourDuMagazine';
+import { HEURES, heureCourante } from '../lib/aimeMoteur';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
 import { useControlesDeBande, usePersonaCourante } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
@@ -59,6 +60,8 @@ export default function Magazine() {
   const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
   /** L'édition de thème ouverte, sous les couvertures. */
   const [themeId, setThemeId] = useState<string | null>(null);
+  /** Le magazine du jour est-il ouvert, et à quelle heure ? */
+  const [heureOuverte, setHeureOuverte] = useState<number | null>(null);
 
   const roleId = role?.id ?? moi.id;
   const jours = useMemo(
@@ -71,6 +74,8 @@ export default function Magazine() {
   const saisons = useMemo(() => lesQuatreSaisons({ roleId }), [roleId]);
 
   const siens = useMemo(() => (role ? articlesPourRole(role.id) : null), [role]);
+  const fil = useMemo(() => filRougeDuJour(jour.date), [jour.date]);
+  const superSaint = jour.superSaint;
   const theme = COUVERTURES.find((c) => c.id === themeId) ?? null;
 
   // La nav de droite : les saisons, le jour, les articles, et le shop.
@@ -139,6 +144,11 @@ export default function Magazine() {
               jours={jours}
               index={index}
               onIndex={setIndex}
+              onOuvrir={(j) => {
+                const i = jours.findIndex((x) => x.date.getTime() === j.date.getTime());
+                if (i >= 0) setIndex(i);
+                setHeureOuverte(heureCourante());
+              }}
               titreDuJour={(j) =>
                 `${j.nom} · ${j.carte.nom} · semaine ${j.semaine}${j.joker ? ' · joker' : ''}`
               }
@@ -146,6 +156,96 @@ export default function Magazine() {
           </div>
         </div>
       </header>
+
+      {/* ————————————— LE MAGAZINE DU JOUR, OUVERT À L'HEURE QU'IL EST ————————————— */}
+      {heureOuverte !== null && (
+        <section id="heures" className="bg-[#0B0C12] py-12 text-white">
+          <div className="vp-page">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">
+                  Le magazine du jour, ouvert
+                </span>
+                <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">
+                  {jour.nom} — les {HEURES.length} heures du jour
+                </h2>
+                <p className="mt-2 max-w-[620px] text-[13px] leading-relaxed text-white/60">
+                  Il est {HEURES[heureOuverte]!.nom} : le magazine s’ouvre là. On glisse d’une heure à
+                  l’autre — l’aube, le matin, le midi, l’après-midi, la golden hour, la soirée, la nuit —
+                  et chaque page dit la lumière de son heure, ce qu’on y fait, et ce que le ciel du jour
+                  y change.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHeureOuverte(null)}
+                className="rounded-full border border-white/20 px-3.5 py-1.5 text-[12px] font-semibold text-white/80 transition hover:border-white/60 hover:text-white"
+              >
+                Refermer
+              </button>
+            </div>
+
+            {/* Les heures : ça glisse, à l'horizontale comme dans le flux. */}
+            <div className="no-scrollbar mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
+              {jour.edition.pages.map((page) => (
+                <article
+                  key={page.heure}
+                  data-heure={page.heure}
+                  data-ouverte={page.heure === heureOuverte ? 'true' : 'false'}
+                  className={`w-[280px] shrink-0 snap-start rounded-[18px] border p-4 transition ${
+                    page.heure === heureOuverte ? 'border-white/45 bg-white/10' : 'border-white/12 bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="font-mono text-[10px] tabular-nums text-white/45">
+                      {String(page.heure).padStart(2, '0')} h
+                    </span>
+                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/45">
+                      {page.rubrique}
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-[13px] font-bold leading-snug">{page.nomDeLHeure} — {page.lumiere}</h3>
+                  <p className="mt-2 text-[12px] leading-relaxed text-white/65">{page.titre}</p>
+                  <p className="mt-2 text-[11.5px] leading-relaxed text-white/50">{page.texte}</p>
+                  <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white/35">
+                    {page.source}
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {/* Le super saint du jour : l'architecte, et ses héros. */}
+            <div className="mt-8 grid gap-5 rounded-[20px] border border-white/12 bg-white/5 p-5 lg:grid-cols-2">
+              <div>
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">
+                  Le super saint du jour — l’architecte
+                </span>
+                <h3 className="vp-title mt-2 text-[20px]">{superSaint.nom}</h3>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-white/60">
+                  Il regarde d’abord : {superSaint.regard}.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {superSaint.heros.map((h) => (
+                    <span key={h} className="rounded-full bg-white/10 px-3 py-1 text-[11.5px] font-semibold text-white/80">
+                      {h}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-3 text-[12px] leading-relaxed text-white/50">{superSaint.pourquoi}</p>
+              </div>
+              <div className="border-white/12 lg:border-l lg:pl-5">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/50">
+                  Le fil rouge, et l’action parfaite
+                </span>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-white/65">{fil.fil}</p>
+                <p className="mt-3 text-[13.5px] font-bold text-white">
+                  Aujourd’hui, une seule chose : {fil.actionParfaite}.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ————————————— LES QUATRE SAISONS, PUIS LES SEMAINES ————————————— */}
       <section id="saisons" className="pb-10 pt-14">

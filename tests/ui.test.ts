@@ -75,10 +75,11 @@ import {
 } from '../src/lib/aimeMoteur';
 import CouvertureSemaine from '../src/components/CouvertureSemaine';
 import FluxDuJour from '../src/components/FluxDuJour';
+import { HEURES } from '../src/lib/aimeMoteur';
 import PortraitStudio from '../src/components/PortraitStudio';
 import {
-  JOURS_DE_LA_SEMAINE, clesDuJour, editionDuJour, jourDeLAnnee, jourDuMagazine, joursAutour,
-  lesQuatrePortes, meteoDuJour, studioDuJour,
+  JOURS_DE_LA_SEMAINE, clesDuJour, editionDuJour, filRougeDuJour, jourDeLAnnee, jourDuMagazine,
+  joursAutour, lesQuatrePortes, meteoDuJour, studioDuJour,
 } from '../src/lib/jourDuMagazine';
 import { JOKERS_DU_CALENDRIER, JOURS_NOMMES, jourNomme, nomDuJour } from '../src/lib/saintsDuJour';
 import EditionSemaine from '../src/components/EditionSemaine';
@@ -1679,8 +1680,13 @@ check('la semaine d’une date est entre 1 et 52', semaineDeLAnnee(new Date(2026
 /* ——————————— LE MOTEUR : MÊME SEMAINE, MÊME ÉDITION ——————————— */
 
 const edition38 = composerEdition({ numero: 38, annee: 2026, roleId: 'photographe', temps: 'present' });
-check('une édition a toujours huit pages', edition38.pages.length, PAGES_EDITION);
-check('et les mêmes rubriques, dans le même ordre', edition38.pages.map((p) => p.rubrique), [...RUBRIQUES]);
+check('une édition a toujours vingt-quatre pages', edition38.pages.length, PAGES_EDITION);
+check(
+  'et les huit rubriques font trois fois le tour du jour',
+  edition38.pages.map((p) => p.rubrique),
+  [...RUBRIQUES, ...RUBRIQUES, ...RUBRIQUES],
+);
+check('les vingt-quatre heures s’y suivent', edition38.pages.map((p) => p.heure), Array.from({ length: 24 }, (_, i) => i));
 check('les rubriques sont huit', RUBRIQUES.length, 8);
 check('le titre donne le numéro et la saison', edition38.titre, 'N° 38 · Été');
 check('elle sait de quelle carte elle parle', edition38.carte.nom, 'Roi de carreau');
@@ -1708,7 +1714,7 @@ check(
     JSON.stringify(edition38),
   true,
 );
-check('aucune page ne reste vide, quelle que soit la semaine', Array.from({ length: 54 }, (_, i) => composerEdition({ numero: i + 1 })).every((e) => e.pages.length === 8 && e.pages.every((p) => p.titre.length > 3 && p.texte.length > 40)), true);
+check('aucune page ne reste vide, quelle que soit la semaine', Array.from({ length: 54 }, (_, i) => composerEdition({ numero: i + 1 })).every((e) => e.pages.length === PAGES_EDITION && e.pages.every((p) => p.titre.length > 3 && p.texte.length > 40 && p.nomDeLHeure.length > 2)), true);
 
 /* Passé, présent, futur : la même semaine, trois lectures. */
 const tempsLus = troisTemps({ numero: 38, roleId: 'photographe' });
@@ -1768,9 +1774,10 @@ check('sa carte vient de sa semaine', unJour.carte.numero, semaineDeLAnnee(new D
 check('et sa saison vient de sa carte', unJour.saison.id, unJour.carte.saison.id);
 check('le jour de la semaine dit ce qu’on y fait', JOURS_DE_LA_SEMAINE.length, 7);
 check('et il a son rôle', unJour.jourSemaine.sens.length > 10, true);
-check('son édition a toujours huit pages', unJour.edition.pages.length, PAGES_EDITION);
-check('les mêmes rubriques, dans le même ordre', unJour.edition.pages.map((p) => p.rubrique), [...RUBRIQUES]);
-check('la première page dit le temps qu’il fait', unJour.edition.pages[0]!.texte.includes(unJour.meteo.resume), true);
+check('son édition a bien vingt-quatre pages', unJour.edition.pages.length, PAGES_EDITION);
+check('les mêmes rubriques, dans le même ordre', unJour.edition.pages.map((p) => p.rubrique), [...RUBRIQUES, ...RUBRIQUES, ...RUBRIQUES]);
+check('la page d’ouverture dit le temps qu’il fait', unJour.edition.pages.find((p) => p.heure === 0)!.texte.includes(unJour.meteo.resume), true);
+check('et elle porte le prénom du jour', unJour.edition.pages.find((p) => p.heure === 0)!.titre.includes(unJour.nom), true);
 check('et l’édition porte le jour', unJour.edition.titre.includes(`le jour ${unJour.ordinal}`), true);
 check('le portrait sait pourquoi il est sur fond blanc ou noir', unJour.studio.raison.length > 12, true);
 check('deux jours de suite n’ont pas le même portrait', studioDuJour(new Date(2026, 8, 20)).graine !== studioDuJour(new Date(2026, 8, 21)).graine, true);
@@ -1811,6 +1818,22 @@ const portrait = renderToStaticMarkup(
 check('le portrait de studio porte le prénom', portrait.includes(unJour.nom), true);
 check('et son fond, écrit', portrait.includes('Studio blanc') || portrait.includes('Studio noir'), true);
 check('il dit la pose, sans mentir sur la source', portrait.includes(unJour.studio.pose), true);
+check('le super saint du jour est nommé', unJour.superSaint.nom.startsWith('AGENT SAINT-'), true);
+check('et il a ses héros', unJour.superSaint.heros.length >= 2, true);
+check('il dit pourquoi eux', unJour.superSaint.pourquoi.length > 40, true);
+check('le nom du super saint suit le calendrier', jourDuMagazine(new Date(2026, 8, 21)).superSaint.nom, 'AGENT SAINT-MATTHIEU');
+check('le jour de trop a le sien aussi', jourDuMagazine(new Date(2026, 11, 31)).superSaint.nom, 'AGENT SAINT-SYLVESTRE');
+check('il y a vingt-quatre heures', HEURES.length, 24);
+check('et elles se suivent', HEURES.every((h, i) => h.heure === i), true);
+check('chacune a sa lumière', HEURES.every((h) => h.lumiere.length > 3 && h.moment.length > 5), true);
+check('la golden hour est à dix-huit heures', HEURES[18]!.lumiere, 'la golden hour');
+check('le fil rouge relie le jour', filRougeDuJour(unJour.date).fil.length > 60, true);
+check('et l’action parfaite est une seule chose', filRougeDuJour(unJour.date).actionParfaite.length > 10, true);
+const pageOuverte = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(Magazine as never)),
+);
+check('le magazine du jour s’ouvre au clic (le bouton est là)', pageOuverte.includes('Ouvrir le magazine du jour'), true);
+check('et le flux dit ce que le clic fait', pageOuverte.includes('cliquer la couverture ouvre les 24 heures'), true);
 
 check('la couverture de semaine est un composant', typeof CouvertureSemaine, 'function');
 check('et l’édition aussi', typeof EditionSemaine, 'function');

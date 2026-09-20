@@ -22,11 +22,14 @@ export default function FluxDuJour({
   jours,
   index,
   onIndex,
+  onOuvrir,
   titreDuJour,
 }: {
   jours: JourDuMagazine[];
   index: number;
   onIndex: (i: number) => void;
+  /** Cliquer la couverture : on ouvre le magazine du jour, à l'heure qu'il est. */
+  onOuvrir: (jour: JourDuMagazine) => void;
   /** Ce qui s'écrit en haut de chaque écran : le jour, la carte, la semaine. */
   titreDuJour: (j: JourDuMagazine) => string;
 }) {
@@ -83,12 +86,19 @@ export default function FluxDuJour({
               <p className="text-center font-mono text-[10px] uppercase tracking-[0.2em] text-white/70">
                 {titreDuJour(jour)}
               </p>
-              <PortraitStudio
-                nom={jour.nom}
-                date={jour.date}
-                studio={jour.studio}
-                saison={jour.saison}
-              />
+              <button
+                type="button"
+                onClick={() => onOuvrir(jour)}
+                aria-label={`Ouvrir le magazine du jour — ${jour.nom}`}
+                className="rounded-[20px] transition hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              >
+                <PortraitStudio
+                  nom={jour.nom}
+                  date={jour.date}
+                  studio={jour.studio}
+                  saison={jour.saison}
+                />
+              </button>
               <p className="text-center text-[12px] leading-relaxed text-white/75">
                 {jour.meteo.resume}
                 {jour.cles.signeCache ? ` · ${jour.cles.signeCache.nom}` : ''}
@@ -121,7 +131,7 @@ export default function FluxDuJour({
       </div>
 
       <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-white/50">
-        glisser · molette · ← → · jour {index + 1} sur {jours.length}
+        glisser · molette · ← → · jour {index + 1} sur {jours.length} · cliquer la couverture ouvre les 24 heures
       </p>
     </div>
   );
