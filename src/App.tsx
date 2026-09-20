@@ -50,7 +50,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/theater" element={<Theater />} />
-            <Route path="/timeline" element={<Theater />} />
+            {/* La timeline est fusionnée avec le magazine : la languette du dock
+                la déploie ; l'ancienne page renvoie vers elle, ouverte. */}
+            <Route path="/timeline" element={<Navigate to="/magazine?timeline=1" replace />} />
             {/* Event OS retiré du produit : ses anciennes adresses ramènent à l'accueil. */}
             <Route path="/modules" element={<Navigate to="/" replace />} />
             <Route path="/features" element={<Navigate to="/" replace />} />

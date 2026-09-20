@@ -6,7 +6,8 @@ import { COUVERTURES, MARQUE_MAGAZINE } from '../lib/aimeMagazine';
 import { JEU_DE_54, bornesDeLaSemaine, semaineDeLAnnee } from '../lib/jeuDeCartes';
 import { composerEdition, lesQuatreSaisons, numerosDeLaSaison } from '../lib/aimeMoteur';
 import { filRougeDuJour, jourDuMagazine, joursAutour, lesQuatrePortes } from '../lib/jourDuMagazine';
-import { couvertureDuJour } from '../lib/couvertureDuJour';
+import { couvertureDuJour, couverturesDesParts } from '../lib/couvertureDuJour';
+import { basculerTimeline, choisirMoment, useMomentDeLaCapsule } from '../lib/capsuleCommande';
 import { HEURES, heureCourante } from '../lib/aimeMoteur';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
 import { useControlesDeBande, usePersonaCourante } from '../lib/personaCourant';
@@ -62,6 +63,8 @@ export default function Magazine() {
 
   /** Le jour ouvert : aujourd'hui, tant qu'on ne choisit pas autre chose. */
   const [depart, setDepart] = useState(() => new Date());
+  /** Le moment choisi dans la capsule : la couverture s'y éclaire. */
+  const moment = useMomentDeLaCapsule();
   const [index, setIndex] = useState(0);
   /** Le temps de lecture : l'an dernier, cette semaine, l'an prochain. */
   const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
@@ -90,6 +93,36 @@ export default function Magazine() {
     enregistrerNavVerticale(NAV_MAGAZINE);
     return () => enregistrerNavVerticale(null);
   }, []);
+
+  // L'adresse peut amener un jour, un moment, ou la timeline ouverte : la
+  // timeline est fusionnée ici, c'est la page du temps.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    // L'adresse amène le jour, le moment, la timeline : une fois, à l'arrivée.
+    const j = params.get('jour');
+    if (j) {
+      const [m, q] = j.split('-').map(Number);
+      if (m && q) {
+        setDepart(new Date(new Date().getFullYear(), m - 1, q, 12));
+        setIndex(0);
+      }
+    }
+    const mo = params.get('moment');
+    if (mo) choisirMoment(mo);
+    if (params.get('timeline') === '1') basculerTimeline(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // Une seule fois, à l'arrivée.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** La couverture du hero : celle du jour, éclairée au moment choisi. */
+  const couvertureHero = useMemo(() => {
+    if (!moment) return couvertureDuJour(jour.date);
+    return (
+      couverturesDesParts(jour.date).find((p) => p.part.id === moment)?.couverture ??
+      couvertureDuJour(jour.date)
+    );
+  }, [moment, jour.date]);
 
   /** Les flèches feuillettent les jours ; au bord, la fenêtre glisse d'un jour. */
   const feuilleter = (pas: number) => {
@@ -142,11 +175,11 @@ export default function Magazine() {
               aria-label={`Ouvrir le magazine du jour — ${jour.nom}`}
               className="h-[54svh] max-h-[560px] overflow-hidden rounded-[16px] transition hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
             >
-              <CouvertureJour couverture={couvertureDuJour(jour.date)} className="h-full w-auto" />
+              <CouvertureJour couverture={couvertureHero} className="h-full w-auto" />
             </button>
             <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-white/50">
-              {jour.nom} · {dateCourte(jour.date)} · jour {index + 1} sur {jours.length} ·
-              cliquer la couverture ouvre les 24 heures
+              {jour.nom} · {dateCourte(jour.date)}{moment ? ` · ${moment.replace('-', ' ')}` : ''} ·
+              jour {index + 1} sur {jours.length} · cliquer la couverture ouvre les 24 heures
             </p>
           </div>
         </div>

@@ -51,7 +51,7 @@ export default function SuperFooter() {
   };
 
   return (
-    <div className="vp-env min-h-screen bg-[#0A0A0A] pb-40 pt-24 text-white">
+    <div className="vp-env vp-env-dark min-h-screen bg-[#0A0A0A] pb-40 pt-24 text-white">
       <header className="vp-page">
         <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
           Le footer

@@ -48,7 +48,11 @@ import {
   type AttenduVisuel, type CandidatVisuel,
 } from '../src/lib/castingVisuels';
 import { MOMENTS_VISUELS } from '../src/lib/promptsVisuels';
-import { routeOutil } from '../src/lib/outilsDuDock';
+import LanguetteTimeline from '../src/components/LanguetteTimeline';
+import { basculerTimeline } from '../src/lib/capsuleCommande';
+import {
+  angleDuJour, chercherUnJour, joursDeLaSemaine, moisDeLaSaison, semainesDuMois,
+} from '../src/lib/deroulerLannee';
 import { PHOTOS_LIVREES, photoDuPlan } from '../src/lib/photosDuMagazine';
 import CouvertureJour from '../src/components/CouvertureJour';
 import { couvertureDuJour } from '../src/lib/couvertureDuJour';
@@ -1044,7 +1048,7 @@ const chromeMetier = renderToStaticMarkup(
 check('la barre du site est sur la page d’un métier', chromeMetier.includes('SUPER MARIAGE'), true);
 check('elle annonce la page', chromeMetier.includes('Les métiers'), true);
 check('elle porte le caddie et le magazine', ['Le Shop', 'Le Magazine'].every((m) => chromeMetier.includes(m)), true);
-check('le dock est là aussi', chromeMetier.includes('Outils') || chromeMetier.includes('SUPER MARIÉS'), true);
+check('le dock est là aussi', chromeMetier.includes('Créer sa carte'), true);
 const chromeAccueil = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -1062,7 +1066,7 @@ check(
   true,
 );
 check('et les portes du site', ['Le magazine', 'Le shop', 'La timeline'].every((l) => chromeAccueil.includes(l)), true);
-check('mais le dock y est', chromeAccueil.includes('SUPER MARIÉS'), true);
+check('mais le dock y est', chromeAccueil.includes('Créer sa carte'), true);
 /* La nav verticale, elle, est montée une fois pour tout le site. */
 check('la nav verticale y est', chromeAccueil.includes('aria-label="Le Magazine"'), true);
 const chromeSite = renderToStaticMarkup(
@@ -1616,9 +1620,10 @@ check('la bande des univers est toujours sous le hero', accueil.includes('Les un
 check('elle montre trois cartes', (accueil.match(/Aimer /g) ?? []).length, 6);
 check('et son milieu est la carte de la page', accueil.includes('data-actif="true"'), true);
 
-/* ------------------------- le dock suit le personnage courant -------------- */
+/* ------------------------- le dock est une capsule de commande -------------- */
 
-/* Sans choix, le dock montre les outils des mariés. */
+/* Le dock n'est plus un porte-outils de rôle : c'est la télécommande du
+   magazine — l'entrée stable, les cinq moments, et la timeline. */
 localStorage.removeItem('supermariage:persona');
 check('sans choix, on est les mariés', personaCourant(), 'maries');
 const dockDefaut = renderToStaticMarkup(
@@ -1626,35 +1631,21 @@ const dockDefaut = renderToStaticMarkup(
 );
 check('le dock a son entrée stable : créer sa carte', dockDefaut.includes('aria-label="Créer sa carte"'), true);
 check(
-  'et ses outils, un par un',
-  PERSONNAGES[0]!.entrees.every((e) => dockDefaut.includes(e)),
+  'les cinq moments pilotent la couverture',
+  ['l’aube', 'le matin', 'le midi', 'l’après-midi', 'le soir'].every((m) => dockDefaut.includes(`Le moment — ${m}`)),
   true,
 );
-check('les pictos du site ont quitté le dock', dockDefaut.includes('Zéro contrainte'), false);
+check('et la timeline a son picto', dockDefaut.includes('La timeline — déplier l&#x27;année'), true);
+check('les outils de rôle ont quitté le dock', dockDefaut.includes('les outils de'), false);
 /* Les deux flèches se posent de chaque côté du dock, quand une bande les mène. */
-check('sans bande menée, pas de flèches', dockDefaut.includes('Rôle précédent'), false);
-
-/* Le personnage change : le dock change d'outils. */
-localStorage.setItem('supermariage:persona', 'photographe');
-const photo = PERSONNAGES.find((p) => p.id === 'photographe')!;
-const dockPhoto = renderToStaticMarkup(
-  createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(BottomCapsuleNav as never)),
-);
-check('le dock suit le personnage par ses outils, pas par son bouton', dockPhoto.includes('aria-label="Créer sa carte"') && !dockPhoto.includes('Entrer comme'), true);
-check(
-  'et montre ses outils à lui',
-  photo.entrees.every((e) => dockPhoto.includes(e)),
-  true,
-);
-check('c’est bien un autre jeu d’outils', dockPhoto.includes(PERSONNAGES[0]!.entrees[0]!), false);
-check('la capsule défile', dockPhoto.includes('overflow-x-auto') && dockPhoto.includes('no-scrollbar'), true);
+check('sans bande menée, pas de flèches', dockDefaut.includes('aria-label="Précédent"'), false);
 /* Le rôle qui mène la bande met ses flèches à côté du dock. */
 enregistrerControlesBande({ precedent: () => undefined, suivant: () => undefined });
 const dockFleches = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(BottomCapsuleNav as never)),
 );
 enregistrerControlesBande(null);
-check('les flèches encadrent le dock', ['Rôle précédent', 'Rôle suivant'].every((f) => dockFleches.includes(f)), true);
+check('les flèches encadrent le dock', ['aria-label="Précédent"', 'aria-label="Suivant"'].every((f) => dockFleches.includes(f)), true);
 
 /* Deux bandes sur une page : le dock mène **celle qu'on regarde** — la dernière
    entrée à l'écran prend les flèches, et l'autre les rend en partant. */
@@ -1663,11 +1654,11 @@ const dockDe = () =>
   renderToStaticMarkup(createElement(MemoryRouter, null, createElement(BottomCapsuleNav as never)));
 enregistrerControlesBande(rien, 'roles');
 enregistrerControlesBande(rien, 'univers');
-check('les flèches suivent la bande à l’écran', dockDe().includes('Rôle précédent'), true);
+check('les flèches suivent la bande à l’écran', dockDe().includes('aria-label="Précédent"'), true);
 enregistrerControlesBande(null, 'univers');
-check('et reviennent quand on remonte', dockDe().includes('Rôle précédent'), true);
+check('et reviennent quand on remonte', dockDe().includes('aria-label="Précédent"'), true);
 enregistrerControlesBande(null, 'roles');
-check('sans bande à l’écran, plus de flèches', dockDe().includes('Rôle précédent'), false);
+check('sans bande à l’écran, plus de flèches', dockDe().includes('aria-label="Précédent"'), false);
 
 /* ————————————————— AIME MAGAZINE : LA REVUE, ÉDITION PAR ÉDITION ————————————————— */
 
@@ -3674,13 +3665,9 @@ check('et la page du magasin', magasin.includes('Le soleil-cadran'), true);
 /* ——— LE DOCK : UN BOUTON BLANC STABLE, DES OUTILS QUI MÈNENT À DES PAGES RÉELLES ——— */
 check('le bouton blanc propose toujours de créer sa carte', chromeAccueil.includes('aria-label="Créer sa carte"'), true);
 check('et il ne change plus avec le rôle', chromeAccueil.includes('Entrer comme'), false);
-check('la playlist mène à la playlist de l’univers', routeOutil('Playlist', 'supermarche', 'maries'), '/le-mariage/supermarche#playlist');
-check('le planning mène au programme', routeOutil('Planning', 'supermarche', 'maries'), '/le-mariage/supermarche#programme');
-check('les invités mènent à la carte', routeOutil('Invités', 'supermarche', 'maries'), '/carte');
-check('les photos aussi', routeOutil('Photos', 'supermarche', 'maries'), '/carte');
-check('le lieu mène à la page de l’univers', routeOutil('Lieu', 'supermarche', 'maries'), '/le-mariage/supermarche');
-check('les papiers mènent à l’espace prestataire', routeOutil('Contrats et papiers', 'supermarche', 'maries'), '/prestataire');
-check('et la table mène au shop filtré', routeOutil('Menu', 'supermarche', 'photographe'), '/shop?role=photographe');
+/* Les outils de rôle sont partis : le dock commande les moments et la timeline. */
+check('le dock montre les cinq moments', ['Le moment — l’aube', 'Le moment — le soir'].every((m) => chromeAccueil.includes(m)), true);
+check('et le picto de la timeline', chromeAccueil.includes('La timeline — déplier l&#x27;année'), true);
 check('la playlist de l’univers a bien son ancre', universBande.includes('id="playlist"'), true);
 check('et son programme aussi', universBande.includes('id="programme"'), true);
 
@@ -3688,6 +3675,37 @@ check('et son programme aussi', universBande.includes('id="programme"'), true);
 check('la page de l’article porte son ancre à elle', pageArticle.includes('id="article"'), true);
 check('et celle des moments aussi', pageArticle.includes('id="moments"'), true);
 
+
+
+/* ——— LA CAPSULE DE COMMANDE, LA LANGUETTE TIMELINE, LA NAV DU HEADER ——— */
+
+/* Le header porte les grandes entrées du concept. */
+check('la nav du header annonce les grands cœurs', entete.includes('aria-label="Les grandes entrées"'), true);
+check('le magazine d’abord', ['SUPER MAGAZINE', 'LE MARIAGE', 'SUPER SHOP', 'SUPER FOOTER'].every((m) => entete.includes(m)), true);
+
+/* La page SUPER FOOTER se lit : le fond sombre tient, le voile clair est parti. */
+check('la page super footer est sombre', pageFooter.includes('vp-env-dark'), true);
+
+/* La languette timeline : l'année en couvertures, des saisons aux jours. */
+basculerTimeline(true);
+const languette = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LanguetteTimeline as never)));
+basculerTimeline(false);
+check('la languette s’ouvre sur les quatre saisons', ['Printemps', 'Été', 'Automne', 'Hiver'].every((n) => languette.includes(n)), true);
+check('avec le cadran en repère', languette.includes('Le cadran de l&#x27;année'), true);
+check('et sa recherche', languette.includes('Chercher un jour'), true);
+check('fermée, elle n’est pas là', renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LanguetteTimeline as never))).includes('Chercher un jour'), false);
+check('l’été se déplie en trois mois', moisDeLaSaison('ete').map((m) => m.nom).join(','), 'juin,juillet,août');
+check('un mois se déplie en semaines', semainesDuMois(2026, 9).length >= 4, true);
+check('une semaine en sept jours', joursDeLaSemaine(2026, 38).length, 7);
+check('le 21 septembre est dans la semaine 38', joursDeLaSemaine(2026, 38).some((j) => j.jour === '09-21'), true);
+check('la recherche trouve Matthieu', chercherUnJour(2026, 'matthieu').some((j) => j.jour === '09-21'), true);
+check('l’aiguille du cadran connaît le 21 septembre', Math.round(angleDuJour(new Date(2026, 8, 21))), 259);
+
+/* Le magazine écoute l'adresse : jour, moment, timeline. */
+const revueMidi = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?moment=midi'] }, createElement(Magazine as never)),
+);
+check('le moment choisi éclaire la couverture du hero', revueMidi.includes('· midi'), true);
 
 /* ——— CE TOUR : UNE SEULE COUVERTURE AU HERO, LE COMPOSEUR SUR LA PAGE MAGAZINE ——— */
 check('le hero du magazine montre une seule couverture, au format du hero', heroMagazine.includes('h-full w-auto'), true);

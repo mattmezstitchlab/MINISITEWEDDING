@@ -2893,3 +2893,49 @@ synthétisé plus grand dans la barre, le hero du magazine à **une seule
 couverture** (et plus le flux des trois), le composeur sur la page magazine et
 **plus dans le hero de l'accueil**, la couverture sans numéro ni saison mais
 avec la marque, le titre et la date.
+
+---
+
+## §60 — La capsule de commande : le dock piloté, la timeline en languette, la nav dans le header
+
+**Le constat du jour :** on s'était perdus. Le dock était devenu un porte-outils
+de rôle qui changeait avec le personnage — des outils, pas une navigation ; la
+timeline vivait seule sur sa page, le temps était enfermé dans le footer, et la
+page SUPER FOOTER s'affichait toute blanche. On a posé **les bases définitives**
+de la mécanique du magazine, en pensant navigation d'abord.
+
+**1. Le dock est une capsule de commande.** Une seule capsule au bas de l'écran,
+partout, et elle commande la page — elle ne se change plus selon le rôle :
+- **les flèches** de part et d'autre : elles feuillettent ce que la page montre ;
+- **le bouton blanc** : créer sa carte, l'entrée stable ;
+- **les cinq moments** — l'aube, le matin, le midi, l'après-midi, le soir :
+  cliquer un moment éclaire la couverture du magazine à ce moment ;
+- **le picto timeline** : il ouvre la languette.
+Les outils de rôle sont partis du dock (la lib `outilsDuDock` avec).
+
+**2. La timeline est une languette, sous toutes les pages.** Elle sort du dock,
+en bas, quand on le lui demande — `LanguetteTimeline` est montée dans le chrome,
+on l'a donc **tout le temps sous la main**. Dedans, l'année se déplie en
+couvertures, du plus grand au plus petit : **les quatre saisons** → un mois →
+une semaine → **les sept jours** — et le jour ouvre le magazine avec ses heures.
+À gauche, **le cadran** : les quatre quartiers de saison, et l'aiguille du jour
+qu'on regarde. Une recherche en haut (un nom, une fête) amène les jours.
+La page `/timeline` ne vit plus : elle renvoie vers `/magazine?timeline=1`.
+
+**3. Le magazine lit son adresse.** `?jour=MM-JJ` ouvre ce jour, `?moment=midi`
+éclaire la couverture au midi, `?timeline=1` déplie la languette. Le studio de
+la timeline et la page du magazine sont **une seule page** : le temps n'a plus
+qu'une porte.
+
+**4. Le header annonce les grands cœurs.** Le menu des métiers et le profil ont
+quitté la barre : la nav du header, ce sont les grandes entrées du concept, en
+toutes lettres — **SUPER MAGAZINE**, LE MARIAGE, SUPER SHOP, SUPER FOOTER.
+
+**5. La page SUPER FOOTER se lit.** Le voile clair de `vp-env` passait par-dessus
+le noir de la page — elle porte désormais l'environnement sombre (`vp-env-dark`),
+le fond tient.
+
+**Ensuite, déjà dessiné :** le cadran au centre de la timeline, qui pivote en
+molette et défile les jours ; les filtres qui relient les 1 800 du concept aux
+couvertures ; et l'audit du reste du site dans le même sens — tout est dans le
+temps.

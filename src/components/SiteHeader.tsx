@@ -55,6 +55,25 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
           )}
         </Link>
 
+        {/* LA NAV DU HEADER : les plus grands cœurs du concept, en toutes
+            lettres — le magazine d'abord. */}
+        <nav aria-label="Les grandes entrées" className="hidden items-center gap-5 md:flex">
+          {[
+            ['SUPER MAGAZINE', '/magazine'],
+            ['LE MARIAGE', '/le-mariage'],
+            ['SUPER SHOP', '/supermarriage'],
+            ['SUPER FOOTER', '/footer'],
+          ].map(([label, to]) => (
+            <Link
+              key={to}
+              to={to}
+              className="font-mono text-[10.5px] font-bold uppercase tracking-[0.16em] text-white/70 no-underline transition hover:text-white"
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+
         {/* En haut à droite, une seule entrée : le profil — et tout part de là. */}
         <MenuProfil />
       </nav>

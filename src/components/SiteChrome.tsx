@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import SiteHeader from './SiteHeader';
 import BottomCapsuleNav from './BottomCapsuleNav';
+import LanguetteTimeline from './LanguetteTimeline';
 import NavVerticale from './NavVerticale';
 import BoutonParametres from './BoutonParametres';
 import FenteDocuments from './FenteDocuments';
@@ -70,6 +71,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       {/* Le pied commun : la signature, et les portes du site. */}
       <div className="pb-24">{children}</div>
       <SiteFooter />
+      {/* La languette timeline : elle sort du dock, sous toutes les pages. */}
+      <LanguetteTimeline />
       <BottomCapsuleNav />
     </>
   );
