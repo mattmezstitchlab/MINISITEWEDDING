@@ -64,6 +64,15 @@ import HomeCardShowcase from '../src/components/HomeCardShowcase';
 import Appareils from '../src/components/Appareils';
 import EditeurMiniSite from '../src/pages/EditeurMiniSite';
 import { MANIFESTE } from '../src/lib/manifeste';
+import SuperFooter from '../src/pages/SuperFooter';
+import FenteDocuments from '../src/components/FenteDocuments';
+import {
+  AXES_FOOTER, CHOIX_VIDE, DOCUMENTS, LIGNES_FOOTER, basculer, documentsOuverts, etatDuDocument,
+  lignesDuTicket as lignesDuTicketFooter, validationDuDocument,
+} from '../src/lib/superFooter';
+import {
+  annonceDuJour, chargerDemandes, demanderDocument, marquerDisponible, oublierDemande,
+} from '../src/lib/documents';
 import MenuProfil from '../src/components/MenuProfil';
 import LecteurHero from '../src/components/LecteurHero';
 import Magazine from '../src/pages/Magazine';
@@ -83,7 +92,7 @@ import { enregistrerNavVerticale } from '../src/lib/navVerticale';
 import { AIDE_PROFIL, MENU_PROFIL, SORTIE_PROFIL, rolesDuMenu } from '../src/lib/menuProfil';
 import {
   NAV_ACCUEIL, NAV_ARTICLE, NAV_MAGAZINE, NAV_METIER, NAV_PARAMETRES, NAV_PRODUIT, NAV_PRESTATAIRE,
-  NAV_SHOP, NAV_UNIVERS,
+  NAV_FOOTER, NAV_SHOP, NAV_UNIVERS,
 } from '../src/lib/navDesPages';
 import { FULL_ROLES_TAXONOMY } from '../src/lib/weddingTaxonomy';
 import { DUREE_OUVERTURE, DUREE_OUVERTURE_SANS_MOUVEMENT, ouvertureDejaVue } from '../src/lib/ouverture';
@@ -1604,6 +1613,93 @@ check('le shop s’appelle SUPER SHOP', accueil.includes('SUPER SHOP'), true);
 check('il garde son ticket de caisse', accueil.includes('TOTAL'), true);
 check('et n’ouvre plus l’éditeur des métiers', accueil.includes('L’éditeur des métiers'), false);
 
+/* ———————————————————— SUPER FOOTER : les rayons et le ticket ———————————————————— */
+
+/* Les axes : quatre questions, et leurs couches. */
+check('quatre grands axes', AXES_FOOTER.map((a) => a.label), [
+  'Qui vous êtes', 'Ce que vous vivez', 'Ce que vous savez faire', 'Ce que vous voulez',
+]);
+const options = AXES_FOOTER.flatMap((a) => a.entrees.flatMap((e) => e.entrees.map((s) => s.id)));
+check('chaque axe a ses couches', AXES_FOOTER.every((a) => a.entrees.length >= 3), true);
+check('et chaque couche ses entrées', AXES_FOOTER.every((a) => a.entrees.every((e) => e.entrees.length >= 3)), true);
+check('aucune coche en double', new Set(options).size, options.length);
+check('et l’on peut tout cocher', options.length > 40, true);
+
+/* Les documents : ce qui existe, qui le demande, au nom de qui, et la source. */
+check('trente documents et plus', DOCUMENTS.length >= 30, true);
+check(
+  'chaque document dit qui le demande, au nom de qui, et quoi réunir',
+  DOCUMENTS.every((d) => d.demandePar && d.auNomDe && d.pieces.length >= 2 && d.source),
+  true,
+);
+check(
+  'chaque document est ouvert par une situation réelle',
+  DOCUMENTS.every((d) => d.ouvrePar.length > 0 && d.ouvrePar.every((o) => options.includes(o))),
+  true,
+);
+check(
+  'ce qui engage le droit est marqué à valider',
+  ['facture', 'contrat-prestation', 'cessions-droits', 'testament', 'attestation-intermittent']
+    .every((id) => etatDuDocument(DOCUMENTS.find((d) => d.id === id)!) === 'à valider'),
+  true,
+);
+check(
+  'et l’on dit qui valide',
+  validationDuDocument(DOCUMENTS.find((d) => d.id === 'testament')!),
+  'À faire établir par un notaire',
+);
+check(
+  'les autres se réunissent seulement',
+  etatDuDocument(DOCUMENTS.find((d) => d.id === 'justificatif-domicile')!),
+  'à réunir',
+);
+
+/* Le ticket se compose tout seul. */
+check('sans coche, rien ne s’ouvre', documentsOuverts(CHOIX_VIDE).length, 0);
+const choixEtudiant = { options: ['etudiant', 'voyager', 'hebergement' in {} ? '' : 'visa'], lignes: ['mentions'] };
+check('un étudiant qui veut voyager ouvre ses documents', documentsOuverts(choixEtudiant).length >= 3, true);
+check(
+  'et le ticket les écrit',
+  lignesDuTicketFooter(choixEtudiant).length,
+  documentsOuverts(choixEtudiant).length,
+);
+check('la coche se bascule', basculer(['a', 'b'], 'a'), ['b']);
+check('et se pose', basculer(['a'], 'b'), ['a', 'b']);
+
+/* Le footer, lui, se choisit ligne par ligne. */
+check('huit lignes de footer', LIGNES_FOOTER.length, 8);
+check('dont les mentions légales', LIGNES_FOOTER[0]?.id, 'mentions');
+
+/* La page : les axes, le ticket, et les documents en détail. */
+const pageFooter = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/footer'] }, createElement(SuperFooter as never)),
+);
+check('la page s’appelle SUPER FOOTER', pageFooter.includes('SUPER FOOTER'), true);
+check('elle dit qu’on ne fabrique pas d’acte', pageFooter.includes('on ne fabrique pas d’acte'), true);
+check('elle montre les axes', AXES_FOOTER.every((a) => pageFooter.includes(a.label)), true);
+check('et les entrées à cocher', pageFooter.includes('Intermittent·e du spectacle'), true);
+check('et les lignes du footer', pageFooter.includes('Ce que votre footer porte'), true);
+check('sans coche, le ticket invite à en poser', pageFooter.includes('Cochez votre situation'), true);
+
+/* La fente : le ticket qui sort en haut, et seulement quand il y a à dire. */
+oublierDemande(chargerDemandes()[0]?.id ?? 'rien');
+const fenteVide = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(FenteDocuments as never)));
+check('sans demande, la fente ne dit rien', fenteVide.includes('Document'), false);
+const posee = demanderDocument('Attestation d’hébergement', 'SUPER MARIÉS', 'un proche');
+const fentePleine = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(FenteDocuments as never)));
+check('une demande fait sortir le ticket', fentePleine.includes('Document demandé'), true);
+check('avec le document', fentePleine.includes('Attestation d’hébergement'), true);
+check('qui l’a demandé', fentePleine.includes('demandé par SUPER MARIÉS'), true);
+check('et pour qui', fentePleine.includes('pour un proche'), true);
+check('ce que la fente annonce est la dernière demande', annonceDuJour(chargerDemandes())?.id, posee.id);
+marquerDisponible(posee.id);
+check('quand il est prêt, elle le dit', chargerDemandes()[0]?.etat, 'disponible');
+check(
+  'et la demande se retire',
+  (oublierDemande(posee.id), chargerDemandes().some((d) => d.id === posee.id)),
+  false,
+);
+
 /* LE MENU DU PROFIL : ses entrées, et « voir en tant que ». */
 /* Le profil, c'est **moi** : on repose le rôle par défaut avant de le lire. */
 definirPersonaCourant('maries');
@@ -1697,6 +1793,7 @@ const NAVS: Array<[string, ReturnType<typeof navDePage>]> = [
   ['une fiche produit', NAV_PRODUIT],
   ['l’espace prestataire', NAV_PRESTATAIRE],
   ['les paramètres', NAV_PARAMETRES],
+  ['le footer', NAV_FOOTER],
 ];
 check('chaque page a sa nav', NAVS.every(([, liste]) => liste.length >= 2), true);
 check(
@@ -1709,6 +1806,7 @@ check(
 const ancresAttendues: Record<string, string[]> = {
   accueil: ['univers-hero', 'manifeste', 'editeur', 'supermarriage', 'bande-son'],
   parametres: ['mini-site'],
+  footer: ['axe-statut', 'documents', 'footer'],
   univers: ['article', 'programme', 'carte-fidelite'],
   metier: ['playlist', 'ticket'],
   article: ['article'],
@@ -1718,7 +1816,7 @@ const ancresAttendues: Record<string, string[]> = {
 };
 const sourceDuSite = [
   accueil, universBande, metierBande, pageArticle, pageShop, pageProduit, pagePrestataire, pageMagazine,
-  pageParametres,
+  pageParametres, pageFooter,
 ].join(' ');
 check(
   'les ancres de la nav existent dans les pages',

@@ -1218,3 +1218,49 @@ l'éditeur qui a sa page, l'accueil qui ne l'a plus, le bouton Paramètres en ba
 gauche ; SUPER SHOP, son ticket, plus de porte des métiers ; tous les ancres de
 la nav présentes dans les pages ; et **les flèches du dock qui passent d'une
 bande à l'autre** selon ce qu'on regarde), `npm run build` OK.
+
+## 36. SUPER FOOTER, et la fente (passe 41)
+
+**Le magasin avait raison : on garde tout.** Même design que SUPER SHOP — des
+**rayons** qu'on coche, un **ticket** qui se compose tout seul — mais les rayons
+ici ne sont pas des objets : ce sont des **situations de vie**. `src/lib/superFooter.ts`
+tient **quatre grands axes** et leurs couches : *Qui vous êtes* (travail, études,
+sans activité, frontières), *Ce que vous vivez* (union, famille, logement,
+création), *Ce que vous savez faire* (ce qui se prouve, votre métier, ce que vous
+transmettez), *Ce que vous voulez* (le monde, accueillir, vos valeurs). 54 coches,
+et l'on descend les couches une à une.
+
+**Ce qui existe vraiment.** 31 documents — attestation d'hébergement, lettre
+d'invitation pour un visa, comparabilité d'un diplôme, Kbis, relève de droits des
+intermittents, quittance, cession de droits, testament, titre de séjour… Chacun
+dit **qui le demande**, **au nom de qui** il est établi, **les pièces à réunir**,
+sa **source**, et — quand il engage le droit — sa **validation** (`juriste` ou
+`notaire`). Le ticket porte l'état : *à réunir* ou *à valider*. **Le site ne
+fabrique aucun acte** : il montre la voie, la personne rassemble, un juriste
+valide. Et un footer, ça se choisit ligne à ligne (mentions, statut, documents,
+crédits, valeurs, langues, accessibilité, écologie).
+
+**La fente.** En haut du site, une fente : quand une demande part, **un ticket en
+sort** — « Document disponible concernant … », demandé par qui, pour qui, et le
+lien pour ouvrir SUPER FOOTER (`src/lib/documents.ts`, clé `vows:documents`).
+C'est le bandeau d'intégration : on apprend ici ce qui vient de se passer, sans
+ouvrir une page. Chacun ne voit que ses propres demandes.
+
+**Les routes et les entrées suivent.** `/footer` porte la page ; la
+**Documentation** du menu profil y mène ; la nav verticale de la page propose
+Votre situation · Les documents · Votre footer ; la barre annonce « Super
+Footer ». Et parce qu'une ancre ne doit jamais mener dans le vide, la section des
+documents existe toujours — avec son invitation à cocher.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **538** (quatre
+axes et leurs couches, aucune coche en double ; les documents qui disent tous qui
+demande, au nom de qui, quoi réunir et la source, chacun ouvert par une situation
+réelle ; ce qui engage le droit marqué à valider, et le testament renvoyé au
+notaire ; le ticket qui se compose et se vide ; la page — ses axes, ses lignes de
+footer, son invitation ; et la fente : muette sans demande, bavarde avec, qui
+annonce puis se tait), `npm run build` OK.
+
+**Et la revue juridique existe** : `docs/revue-juridique.md`, à remettre à la
+marraine du projet et à l'avocate — ce qui est collecté, où c'est stocké, ce qui
+touche des données sensibles, ce qui doit être validé avant de sortir du
+navigateur.

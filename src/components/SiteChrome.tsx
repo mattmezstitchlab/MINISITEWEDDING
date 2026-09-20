@@ -3,6 +3,7 @@ import SiteHeader from './SiteHeader';
 import BottomCapsuleNav from './BottomCapsuleNav';
 import NavVerticale from './NavVerticale';
 import BoutonParametres from './BoutonParametres';
+import FenteDocuments from './FenteDocuments';
 
 /**
  * LA NAVIGATION DU SITE, POSÉE UNE SEULE FOIS
@@ -41,6 +42,7 @@ const MENTIONS: Array<[string, string]> = [
   ['/prestataire', 'Espace prestataire'],
   ['/supermarriage', 'SuperShop'],
   ['/parametres', 'Paramètres'],
+  ['/footer', 'Super Footer'],
 ];
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
@@ -59,6 +61,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       <NavVerticale />
       {/* En bas à gauche : les paramètres, c'est-à-dire l'éditeur du mini-site. */}
       <BoutonParametres />
+      {/* En haut, la fente : un document demandé s'annonce là. */}
+      <FenteDocuments />
       {/* Le dock est fixe : la page laisse la place au bas. */}
       <div className="pb-24">{children}</div>
       <BottomCapsuleNav />

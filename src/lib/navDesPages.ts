@@ -25,6 +25,13 @@ export const NAV_ACCUEIL: ActionNav[] = [
   { id: 'playlist', label: 'La playlist', icone: Music2, ancre: 'bande-son' },
 ];
 
+/** SUPER FOOTER : ce qu'on vient y chercher. */
+export const NAV_FOOTER: ActionNav[] = [
+  { id: 'axes', label: 'Votre situation', icone: CreditCard, ancre: 'axe-statut' },
+  { id: 'documents', label: 'Les documents', icone: ScrollText, ancre: 'documents' },
+  { id: 'footer', label: 'Votre footer', icone: Store, ancre: 'footer' },
+];
+
 /** La page de l'éditeur : ce qu'on vient y faire. */
 export const NAV_PARAMETRES: ActionNav[] = [
   { id: 'mini-site', label: 'Le mini-site', icone: Wand2, ancre: 'mini-site' },

@@ -37,7 +37,7 @@ export const MENU_PROFIL: ItemDeMenu[] = [
 /** Les entrées du site : de l'aide, de la lecture, la communauté, et les apps. */
 export const AIDE_PROFIL: ItemDeMenu[] = [
   { label: 'Assistance', icone: 'aide', to: '/magazine', fleche: true },
-  { label: 'Documentation', icone: 'doc', to: '/supermarriage', fleche: true },
+  { label: 'Documentation', icone: 'doc', to: '/footer', fleche: true },
   { label: 'Communauté', icone: 'communaute', to: '/prestataire' },
   { label: 'Télécharger les applications', icone: 'telecharger', to: '/supermarriage' },
   { label: 'Accueil', icone: 'accueil', to: '/' },
