@@ -565,3 +565,42 @@ articles. Une case morte, jamais ; un objet emprunté, jamais non plus.
 Restent des **outils**, qui ne sont pas du contenu : `/ripple` (l'éditeur de
 blocs), `/editeur/:id`, `/parametres`, `/apercu`, `/p/:slug` (le rendu d'un
 mini-site public).
+
+## 17. La mosaïque plein écran : la stabilité
+
+La grille avait des sauts. Ils venaient tous de la même famille de causes, et
+chacune a sa correction :
+
+| Ce qui sautait | Pourquoi | Ce qui a changé |
+| --- | --- | --- |
+| la taille des cases | la mesure de l'écran repassait à chaque image, et le remplissage se recalculait sur des valeurs qui bougeaient | la mesure ne re-rend **que si l'écran change vraiment** (`ResizeObserver` + comparaison), et la géométrie ne dépend plus que de trois nombres |
+| la position | la grille se recentrait toute seule dès que la mesure arrivait, et à chaque changement de monde | le déplacement n'est décidé que par la personne ; la grille **repart de zéro à chaque monde** (`key`) |
+| le contenu | une fenêtre s'ouvrait et se fermait pendant le déplacement | **tout le monde est dessiné d'un seul tenant**, et la grille est traduite par un seul `transform` |
+| le fond | la scène du magazine restait derrière, et son image changeait au survol | **plus rien derrière** : la mosaïque couvre l'écran, toujours |
+| le chrome | la barre et le dock du site s'affichaient une image avant de s'effacer (le mode immersif se publie après le rendu) | les pages de contenu sont **sans chrome par l'adresse** (`SANS_CHROME`), donc dès le premier rendu |
+| le défilement de la page | le pied de page donnait de la hauteur au document sous une grille fixe | plus de chrome, plus de hauteur : la page ne défile plus du tout |
+
+### La règle de la couverture
+
+Une seule règle décide de la taille d'une case :
+
+```
+taille = max( la taille que l'échelle demande,
+              ce qu'il faut pour que la mosaïque couvre l'écran )
+```
+
+La grille est donc **toujours pleine** : jamais un fond visible, jamais une case
+à moitié, ni sur un téléphone, ni sur un écran large, ni pour un monde de trois
+cases. Les tailles sont des **pixels entiers** : pas de couture, pas de flou.
+
+Quatre vérifications tiennent cette règle pour l'année, un jour, une heure et la
+boutique, à quatre crans d'échelle : les bords de la mosaïque dépassent toujours
+l'écran, et toutes les cases sont des carrés entiers.
+
+### Le chrome ne vit plus que sur les outils
+
+Les pages de contenu — l'accueil, le magazine, le shop, les métiers, les
+personnes, le mariage, les prestataires, l'invitation — n'ont **plus de barre,
+plus de dock, plus de pied** : la mosaïque est la navigation. Le chrome reste sur
+les **outils** : `/ripple` (l'éditeur de blocs), `/parametres`, `/editeur/:id`,
+`/apercu`, `/p/:slug`.

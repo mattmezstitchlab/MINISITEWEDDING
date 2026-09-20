@@ -32,21 +32,19 @@ import {
   modulesAttendus,
   type Emplacement,
 } from '../lib/versoDuSite';
-import { lumiereDeLHeure } from '../lib/lumiereDuJour';
 import { publierImmersif } from '../lib/modeImmersif';
 import { partDeLHeure } from '../lib/moments';
 import { roleDuneAdresse } from '../lib/personaSuites';
 import { usePersonaCourante } from '../lib/personaCourant';
 import { magazineDeLaDate, niveauxDuJour } from '../lib/semaines';
-import { visuelsDuJour } from '../lib/visuelsDuMagazine';
 import CadranDuMagazine from './CadranDuMagazine';
+import { legendeDeLHeure } from './CouvertureJour';
 import ChampDuMagazine from './ChampDuMagazine';
 import EditionSemaine from './EditionSemaine';
 import Feuille from './Feuille';
 import GalerieCouvertures from './GalerieCouvertures';
 import GrilleDuMonde from './GrilleDuMonde';
 import MiseEnLumiere from './MiseEnLumiere';
-import SceneEditoriale from './SceneEditoriale';
 
 /**
  * L'APPLICATION GRILLE — LE SITE, EN CASES
@@ -178,10 +176,8 @@ export default function AppGrille({
   /** L'heure regardée : une case touchée, le moment de l'adresse, la capsule. */
   const heure =
     ((params.get('moment') ? HEURE_DES_MOMENTS[params.get('moment')!] : undefined) ?? heureDeLaCapsule()) as number;
-  const lumiere = lumiereDeLHeure(heure);
   const magazine = magazineDeLaDate(date);
   const niveaux = niveauxDuJour(date);
-  const visuels = visuelsDuJour(date);
   const accent = magazine.palette.accent;
 
   /** L'édition composée : ses vingt-quatre pages, une par heure. */
@@ -285,53 +281,44 @@ export default function AppGrille({
 
   /* ——————————————————————————— L'ÉCRAN ——————————————————————————— */
 
-  const scene = apercu
-    ? {
-        date: apercu.surTitre ?? monde.titre,
-        titre: apercu.titre,
-        moment: apercu.sousTitre ?? monde.sous,
-        image: apercu.image ?? null,
-        accent: apercu.couleur,
-      }
-    : {
-        date: `${dateCapitale(date)} · ${niveaux.magazine}`,
-        titre: niveaux.titreDuMagazine,
-        moment: niveaux.titreDuChapitre.toUpperCase(),
-        image: visuels.imageDuChapitre.url ?? visuels.couverture.url,
-        accent,
-      };
+  /**
+   * **Le monde, écrit à deux mots.** Ce n'est plus une scène derrière la
+   * mosaïque : c'est une ligne, en haut à gauche, qui dit où l'on est.
+   */
+  const scene = {
+    date: `${dateCapitale(date)} · ${niveaux.magazine}`,
+    titre: niveaux.titreDuMagazine,
+  };
 
   return (
-    <div data-page="magazine" className="relative h-svh w-full overflow-hidden bg-[#0B0C12] text-white">
-      {/* ————————— LA SCÈNE : L'IMAGE, DERRIÈRE LA GRILLE ————————— */}
-      <SceneEditoriale
-        className="absolute inset-0 z-0"
-        date={scene.date}
-        titre={scene.titre}
-        moment={scene.moment}
-        image={scene.image}
-        heure={heure}
-        clarte={lumiere.clarte}
-        voile={lumiere.voile}
-        alpha={lumiere.alpha}
-        accent={scene.accent}
-        cadran={
-          <CadranDuMagazine
-            heure={heure}
-            chapitre={niveaux.numeroDeChapitre}
-            fond="#0B0C12"
-            encre="#F3F1ED"
-            accent={accent}
-            vignette
-            className="h-9 w-9"
-          />
-        }
-      />
-      <span
-        aria-hidden="true"
-        className="absolute inset-0 z-[1]"
-        style={{ background: verso ? 'rgba(10,11,17,0.94)' : 'rgba(11,12,18,0.78)' }}
-      />
+    <div
+      data-page="magazine"
+      className="fixed inset-0 overflow-hidden bg-[#0B0C12] text-white"
+    >
+      {/* ————————— LE MONDE OÙ L'ON EST : LE CADRAN, ET DEUX MOTS ————————— */}
+      <div className="pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-2 sm:left-5 sm:top-4">
+        <CadranDuMagazine
+          heure={heure}
+          chapitre={niveaux.numeroDeChapitre}
+          fond="rgba(11,12,18,0.55)"
+          encre="#F3F1ED"
+          accent={accent}
+          vignette
+          className="h-9 w-9"
+        />
+        <span
+          data-etat="monde"
+          data-heure={heure}
+          className="flex flex-col"
+          style={{ textShadow: '0 1px 3px rgba(0,0,0,0.7)' }}
+        >
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/80">{scene.date}</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/45">{scene.titre}</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-white/35">
+            {niveaux.titreDuChapitre.toUpperCase()} · {legendeDeLHeure(heure)}
+          </span>
+        </span>
+      </div>
 
       {/* ————————— LE VERSO : LE MOTEUR, ET TOUT CE QUI PEUT SE LIER ————————— */}
       {verso && (
@@ -385,14 +372,14 @@ export default function AppGrille({
 
       {/* ————————— LA GRILLE : TOUT L'ÉCRAN ————————— */}
       <div
-        className="relative z-10 h-full w-full"
+        className="absolute inset-0 z-10"
         style={{
           opacity: sortie ? 0 : 1,
-          transform: sortie ? 'scale(0.94)' : 'none',
-          transition: 'opacity 300ms ease, transform 340ms cubic-bezier(.22,.9,.24,1)',
+          transition: 'opacity 260ms ease',
         }}
       >
         <GrilleDuMonde
+          key={monde.id}
           monde={monde}
           echelle={echelle}
           onEchelle={(e) => setEchelle(e)}
@@ -453,6 +440,17 @@ export default function AppGrille({
           {role ? `choisi pour ${role.nom.toLowerCase()}` : `${MARQUE_MAGAZINE} · 54 · 7 · 365`}
         </span>
       </div>
+
+      {/* ————————— LA CASE SOUS LE DOIGT : UNE LIGNE, SANS PLUS ————————— */}
+      {apercu && (
+        <span
+          data-apercu="case"
+          className="pointer-events-none absolute bottom-8 left-3 z-20 font-mono text-[10px] uppercase tracking-[0.18em] text-white/60 sm:left-5"
+          style={{ textShadow: '0 1px 3px rgba(0,0,0,0.7)' }}
+        >
+          {apercu.surTitre ? `${apercu.surTitre} · ` : ''}{apercu.titre}
+        </span>
+      )}
 
       {/* ————————— LE CHEMIN : OÙ L'ON EST, ET D'OÙ L'ON VIENT ————————— */}
       <div data-chemin="monde" className="absolute bottom-3 left-3 z-20 flex flex-wrap items-center gap-1.5 pr-24 sm:left-5">

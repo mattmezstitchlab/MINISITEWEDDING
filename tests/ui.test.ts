@@ -1147,7 +1147,18 @@ check('un métier inconnu renvoie vers la page du mariage', htmlInconnu.includes
 
 /* --------- le header, le dock, le dos de la carte, le billet, la postale ------ */
 
-/* Le header et le dock encadrent les grandes pages : la nav est la même partout. */
+/* Le header et le dock n'encadrent plus que les outils : les pages de contenu
+   sont la mosaïque, et la mosaïque est la navigation. */
+const chromeOutil = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/ripple'] },
+    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
+  ),
+);
+check('la barre du site est sur les outils', chromeOutil.includes('SUPER MARIAGE'), true);
+check('elle annonce la page', chromeOutil.includes('Super Ripple'), true);
+check('elle porte le caddie et le magazine', ['Le Shop', 'Le Magazine'].every((m) => chromeOutil.includes(m)), true);
 const chromeMetier = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -1155,30 +1166,20 @@ const chromeMetier = renderToStaticMarkup(
     createElement(SiteChrome, null, createElement('div', null, 'contenu')),
   ),
 );
-check('la barre du site est sur la page d’un métier', chromeMetier.includes('SUPER MARIAGE'), true);
-check('elle annonce la page', chromeMetier.includes('Les métiers'), true);
-check('elle porte le caddie et le magazine', ['Le Shop', 'Le Magazine'].every((m) => chromeMetier.includes(m)), true);
-check('le dock est là aussi', chromeMetier.includes('Le Point Zéro'), true);
-const chromeAccueil = renderToStaticMarkup(
-  createElement(
-    MemoryRouter,
-    { initialEntries: ['/'] },
-    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
-  ),
-);
-check('sur l’accueil, le chrome ne double pas la barre de la page', chromeAccueil.includes('aria-label="La barre du site"'), false);
-check('la barre est bien sur les autres pages', chromeMetier.includes('aria-label="La barre du site"'), true);
-/* Le pied, lui, est partout : c'est la même signature et les mêmes portes. */
-check('le pied commun est au bas de toutes les pages', [chromeMetier, chromeAccueil].every((h) => h.includes('aria-label="Les portes du site"')), true);
+check('sur une page de contenu, la barre du site a disparu', chromeMetier.includes('aria-label="La barre du site"'), false);
+check('et le dock aussi', chromeMetier.includes('Le Point Zéro'), false);
+check('le contenu est seul, la mosaïque prend l’écran', chromeMetier.includes('contenu'), true);
+/* Le pied, lui, est sur les outils : c'est la même signature et les mêmes portes. */
+check('le pied commun est au bas des outils', chromeOutil.includes('aria-label="Les portes du site"'), true);
 check(
   'il porte la signature du fondateur et l’association',
-  ['LE FONDATEUR ET CRÉATEUR D’AIME®', 'Association Le Monde Aime'].every((m) => chromeAccueil.includes(m)),
+  ['LE FONDATEUR ET CRÉATEUR D’AIME®', 'Association Le Monde Aime'].every((m) => chromeOutil.includes(m)),
   true,
 );
-check('et les portes du site', ['Le magazine', 'Le shop', 'La timeline'].every((l) => chromeAccueil.includes(l)), true);
-check('mais le dock y est', chromeAccueil.includes('Le Point Zéro'), true);
-/* La nav verticale, elle, est montée une fois pour tout le site. */
-check('la nav verticale y est', chromeAccueil.includes('aria-label="Le Magazine"'), true);
+check('et les portes du site', ['Le magazine', 'Le shop', 'La timeline'].every((l) => chromeOutil.includes(l)), true);
+check('mais le dock est sur les outils', chromeOutil.includes('Le Point Zéro'), true);
+/* La nav verticale, elle, est montée une fois pour les outils. */
+check('la nav verticale y est', chromeOutil.includes('aria-label="Le Magazine"'), true);
 const chromeSite = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -1191,9 +1192,9 @@ check('le site des mariés reste sans header ni dock', chromeSite.includes('Zér
 /* --------- le dock noir, la bande du hero, le header sans menu d'univers ------- */
 
 /* Le dock passe en noir, pictos en blanc : il se voit sur toutes les pages. */
-check('le dock est noir', chromeMetier.includes('bg-[#0B0C12]/95'), true);
-check('et ses pictos sont blancs', chromeMetier.includes('text-white/60'), true);
-check('l’étape courante s’inverse en blanc', chromeMetier.includes('bg-white text-[#0B0C12]'), true);
+check('le dock est noir', chromeOutil.includes('bg-[#0B0C12]/95'), true);
+check('et ses pictos sont blancs', chromeOutil.includes('text-white/60'), true);
+check('l’étape courante s’inverse en blanc', chromeOutil.includes('bg-white text-[#0B0C12]'), true);
 
 /* LA BARRE DU SITE : le nom à gauche, le profil à droite. */
 definirPersonaCourant('maries');
@@ -1317,7 +1318,7 @@ check(
   true,
 );
 check('les pages de lecture prennent le même contenant', [pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageUniversHtml, pageMetierHtml].every((h) => h.includes('vp-page')), true);
-check('le magazine, lui, est une application plein écran', pageMagazine.includes('h-svh') && pageMagazine.includes('overflow-hidden'), true);
+check('le magazine, lui, est une application plein écran', pageMagazine.includes('fixed inset-0') && pageMagazine.includes('overflow-hidden'), true);
 check('le magazine ne recopie plus ses propres largeurs', pageMagazine.includes('mx-auto max-w-6xl'), false);
 check('le shop non plus', pageShop.includes('mx-auto max-w-6xl'), false);
 check('le contenant est posé une fois, pas deux', pageShop.split('vp-page').length <= 9, true);
@@ -1840,7 +1841,7 @@ check('la marque est sur l’écran', revue.includes(MARQUE_MAGAZINE), true);
 check('et le magazine du jour est nommé', revue.includes(niveauxDuJour(new Date()).magazine), true);
 check('la page n’explique plus son interface', revue.includes('Votre magazine, maintenant'), false);
 check(
-  'et le chapitre du jour est nommé, sur la scène',
+  'et le chapitre du jour est nommé, en haut de la mosaïque',
   revue.includes(niveauxDuJour(new Date()).chapitre.split(' — ')[1]!.toUpperCase()),
   true,
 );
@@ -1949,12 +1950,42 @@ check('l’édition du moment est celle de cette semaine', editionDuMoment().num
 check('et les quatre saisons sont quatre numéros différents', new Set(lesQuatreSaisons().map((e) => e.numero)).size, 4);
 check('chacune prise dans sa saison', lesQuatreSaisons().every((e) => e.saison.id === e.carte.saison.id), true);
 
+/* ————————— LA GÉOMÉTRIE : LA MOSAÏQUE COUVRE TOUJOURS L'ÉCRAN ————————— */
+
+/** Les bords de la mosaïque, lus dans les cases elles-mêmes. */
+const bornes = (html: string) => {
+  let droite = 0;
+  let bas = 0;
+  let taille = 0;
+  // React écrit `0` sans unité : on lit les deux formes.
+  for (const m of html.matchAll(/left:(-?\d+)(?:px)?;top:(-?\d+)(?:px)?;width:(\d+)px;height:(\d+)px/g)) {
+    droite = Math.max(droite, Number(m[1]) + Number(m[3]));
+    bas = Math.max(bas, Number(m[2]) + Number(m[4]));
+    taille = Number(m[3]);
+  }
+  return { droite, bas, taille };
+};
+
+for (const [nom, monde, cran] of [
+  ['l’année', mondeDeLAnnee(leJourDeLaGrille), 1],
+  ['un jour', mondeDuJour(leJourDeLaGrille), 3],
+  ['une heure', mondeDUneHeure(18, leJourDeLaGrille), 2],
+  ['la boutique', mondeDeLaBoutique(), 5],
+] as const) {
+  const html = renderToStaticMarkup(
+    createElement(GrilleDuMonde as never, { monde, echelle: echelleDuCran(cran), onEchelle: () => {} }),
+  );
+  const b = bornes(html);
+  check(`la mosaïque couvre l’écran — ${nom}, cran ${cran}`, b.droite >= 1280 && b.bas >= 820, true);
+  check(`et ses cases sont des carrés entiers — ${nom}`, Number.isInteger(b.taille) && b.taille > 24, true);
+}
+
 /* ——————————— LA PAGE : L'IMAGE DERRIÈRE, LA GRILLE DEVANT ——————————— */
 
-const heroMagazine = revue.slice(revue.indexOf('data-scene="editoriale"'), revue.indexOf('data-grille'));
-check('l’écran s’ouvre sur la scène', heroMagazine.length > 0, true);
-check('et rien d’autre ne s’intercale avant la grille', heroMagazine.includes('data-case='), false);
-check('la grille prend l’écran', revue.includes('data-grille="du-monde"'), true);
+const heroMagazine = revue.slice(0, revue.indexOf('data-grille'));
+check('l’écran s’ouvre sur la mosaïque, et rien d’autre', heroMagazine.includes('data-case='), false);
+check('aucune image de fond ne traîne derrière', revue.includes('data-scene="editoriale"'), false);
+check('la mosaïque prend l’écran', revue.includes('data-grille="du-monde"'), true);
 
 /* ————————————— LA SCÈNE ÉDITORIALE : UNE IMAGE, TROIS LIGNES ————————————— */
 
@@ -2156,14 +2187,14 @@ const appEditeur = renderToStaticMarkup(
 const appProfil = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?feuille=profil'] }, createElement(Magazine as never)),
 );
-check('le magazine est un écran, pas une page qui défile', appMagazine.includes('h-svh') && appMagazine.includes('overflow-hidden'), true);
-check('la scène est dedans', appMagazine.includes('data-scene="editoriale"'), true);
-check('la grille aussi', appMagazine.includes('data-grille="du-monde"'), true);
-check('et la grille ferme l’écran', appMagazine.indexOf('data-grille') > appMagazine.indexOf('data-scene'), true);
+check('le magazine est un écran, pas une page qui défile', appMagazine.includes('fixed inset-0') && appMagazine.includes('overflow-hidden'), true);
+check('rien n’est dessiné derrière la mosaïque', appMagazine.includes('data-scene="editoriale"'), false);
+check('la mosaïque est là', appMagazine.includes('data-grille="du-monde"'), true);
+check('et elle est le seul dessin de contenu', (appMagazine.match(/data-grille=/g) ?? []).length, 1);
 check('on arrive devant l’année entière',
   appMagazine.includes('data-monde="annee"') && appMagazine.includes('data-cases="365"'), true);
-check('et la grille n’en dessine que ce qu’on voit',
-  (appMagazine.match(/data-case="jour-/g) ?? []).length < 365, true);
+check('la mosaïque dessine son monde entier, d’un seul tenant',
+  (appMagazine.match(/data-case=/g) ?? []).length, 365);
 check('l’année entière tient en une vue', (appAnnee.match(/data-case="jour-/g) ?? []).length, 365);
 check('et de si loin, elle ne dit que ses images', appAnnee.includes('data-densite="1"'), true);
 check('de très près, une case dit son détail', appZoom.includes('data-densite="5"'), true);
@@ -2172,6 +2203,7 @@ check('on arrive dans une case par son adresse', appJour.includes('data-monde="j
 check('la composition traverse l’adresse', appComposition.includes('data-monde="mini-site"') && (appComposition.match(/data-case="bloc-/g) ?? []).length >= 3, true);
 check('et la feuille de composition est là', appComposer.includes('data-composition="mini-site"'), true);
 check('l’adresse ouvre le jour qu’elle annonce', appJour.includes('21 SEPTEMBRE') && appJour.includes('LA FÊTE'), true);
+check('et l’écran entier est sa mosaïque', appJour.includes('data-monde="jour-09-21"') && appJour.includes('fixed inset-0'), true);
 check('aucun panneau permanent ne subsiste', /data-bloc-magazine|NavVerticale|vp-env-dark/.test(appMagazine), false);
 check('le mot « carreau » a quitté l’écran', /carreau|trèfle|pique|Roi de|Dame de|Valet de|♠|♥|♦|♣/.test(appMagazine), false);
 check('et le mot « tuile » aussi', appMagazine.includes('data-tuile'), false);
@@ -2321,7 +2353,7 @@ const grilleDuProduit = renderToStaticMarkup(
 );
 check('la page d’un produit s’ouvre en cases', grilleDuProduit.includes('data-grille="du-monde"'), true);
 check('et c’est bien le monde du produit', grilleDuProduit.includes('data-monde="produit-table-trestle-chene"'), true);
-check('la grille prend tout l’écran, même ici', grilleDuProduit.includes('h-svh') && grilleDuProduit.includes('overflow-hidden'), true);
+check('la grille prend tout l’écran, même ici', grilleDuProduit.includes('fixed inset-0') && grilleDuProduit.includes('overflow-hidden'), true);
 check('et aucune page classique ne subsiste autour', /data-page="(shop|metier|profil)"/.test(grilleDuProduit), false);
 
 /* La feuille : tout ce qui n'est pas l'image et la mosaïque. */
@@ -2341,7 +2373,7 @@ const chromeImmersif = renderToStaticMarkup(
 publierImmersif(false);
 check('en immersif, le contenu est seul', chromeImmersif.includes('la scène') && !chromeImmersif.includes('aria-label="Le Magazine"'), true);
 check('et le dock a quitté l’écran', chromeImmersif.includes('aria-label="Le Point Zéro"'), false);
-check('hors immersif, le site est là', chromeAccueil.includes('aria-label="Le Point Zéro"'), true);
+check('hors immersif, le site est là', chromeOutil.includes('aria-label="Le Point Zéro"'), true);
 check('le signe des saisons a quitté l’écran', SAISONS_DE_LA_COLLECTION.every((s) => !revue.includes(s.symbole)), true);
 check('les huit rubriques sont des cases du jour', RUBRIQUES.every((r) => mondeDeLId('univers-evenements', leJourDeLaGrille).cases.some((c) => c.titre === r.toUpperCase())), true);
 check(
@@ -4214,7 +4246,7 @@ check('le composeur y est, une seule fois sur l’accueil', (accueil.match(/Vill
 /* ——— LE MAGAZINE : HERO NOIR, SANS SOUS-TITRE, LA COUVERTURE À LA PLACE DU PERSONNAGE ——— */
 check('le hero du magazine n’a plus de sous-titre', revue.includes('Une couverture par jour'), false);
 check('et le rôle n’y est plus écrit non plus', heroMagazine.includes('Choisi pour'), false);
-check('le fond du hero est noir', heroMagazine.includes('bg-[#0B0C12]'), true);
+check('le fond de l’écran est noir', heroMagazine.includes('bg-[#0B0C12]'), true);
 check('et ce n’est plus le visuel de la saison', heroMagazine.includes('object-cover blur'), false);
 check('le flux montre la couverture, pas le personnage', (flux.match(/AIME MAGAZINE/g) ?? []).length >= 2, true);
 check('le flux n’a plus de portrait de studio', flux.includes('Studio blanc') || flux.includes('Studio noir'), false);
@@ -4226,16 +4258,16 @@ check('la couverture prend la police du site', svgCouverture.includes('Inter'), 
 check('et quitte Georgia', svgCouverture.includes('Georgia'), false);
 
 /* ——— LE SOLEIL-CADRAN : LE LOGO DE SUPER MARIAGE ——— */
-check('la barre du site porte le logo', chromeMetier.includes('Le soleil-cadran'), true);
-check('le pied aussi, partout', chromeAccueil.includes('Le soleil-cadran'), true);
+check('la barre du site porte le logo', chromeOutil.includes('Le soleil-cadran'), true);
+check('le pied aussi, partout', chromeOutil.includes('Le soleil-cadran'), true);
 check('et la page du magasin', magasin.includes('Le soleil-cadran'), true);
 
 /* ——— LE DOCK : UN BOUTON BLANC STABLE, DES OUTILS QUI MÈNENT À DES PAGES RÉELLES ——— */
-check('le bouton blanc mène au point zéro', chromeAccueil.includes('aria-label="Le Point Zéro"'), true);
-check('et il ne change plus avec le rôle', chromeAccueil.includes('Entrer comme'), false);
+check('le bouton blanc mène au point zéro', chromeOutil.includes('aria-label="Le Point Zéro"'), true);
+check('et il ne change plus avec le rôle', chromeOutil.includes('Entrer comme'), false);
 /* Les outils de rôle sont partis : le dock commande les moments et la timeline. */
-check('le dock montre les cinq moments', ['Le moment — l’aube', 'Le moment — le soir'].every((m) => chromeAccueil.includes(m)), true);
-check('et le picto de l’atelier du temps', chromeAccueil.includes('aria-label="L’atelier du temps — la timeline"'), true);
+check('le dock montre les cinq moments', ['Le moment — l’aube', 'Le moment — le soir'].every((m) => chromeOutil.includes(m)), true);
+check('et le picto de l’atelier du temps', chromeOutil.includes('aria-label="L’atelier du temps — la timeline"'), true);
 check('la playlist de l’univers a bien son ancre', universBande.includes('id="playlist"'), true);
 check('et son programme aussi', universBande.includes('id="programme"'), true);
 
@@ -4311,7 +4343,11 @@ check('l’aiguille du cadran connaît le 21 septembre', Math.round(angleDuJour(
 const revueMidi = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?moment=midi'] }, createElement(Magazine as never)),
 );
-check('le moment de l’adresse pose l’heure sur le cadran', revueMidi.includes('12:00'), true);
+check(
+  'le moment de l’adresse pose l’heure sur le cadran',
+  revueMidi.includes('data-heure="12"') && revueMidi.includes(legendeDeLHeure(12)),
+  true,
+);
 
 /* ——— L'ATELIER DE L'ANNÉE : LES 54 MAGAZINES SUR LA BANDE ——— */
 
@@ -4360,7 +4396,7 @@ check('elle garde la marque, le titre et la date',
 check('l’accueil n’a plus sa bande-pied en doublon', accueil.includes('Votre mariage. Votre histoire. Un seul endroit.'), false);
 check('la playlist de l’accueil est celle de l’année', accueil.includes('La playlist de l’année'), true);
 check('et elle a déjà toutes les cartes', accueil.includes('/ 365'), true);
-check('le logo synthétisé est plus grand dans la barre', chromeMetier.includes('width="26"'), true);
+check('le logo synthétisé est plus grand dans la barre', chromeOutil.includes('width="26"'), true);
 
 /* ——— LE « VOIR EN TANT QUE » EST RETIRÉ : ON SIMPLIFIE ——— */
 const menuFerme = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(MenuProfil as never)));

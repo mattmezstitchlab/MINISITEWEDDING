@@ -32,7 +32,7 @@ import {
 } from '../lib/versoDuSite';
 import {
   ECHELLES_DE_LA_GRILLE,
-  ajustementDeRemplissage,
+  TAILLE_DE_LA_CASE,
   borner,
   cranDeLEchelle,
   densiteDeLaTaille,
@@ -132,7 +132,13 @@ export default function GrilleDuMonde({
   useLayoutEffect(() => {
     const el = cadre.current;
     if (!el) return;
-    const mesurer = () => setTailleEcran({ l: el.clientWidth, h: el.clientHeight });
+    const mesurer = () => {
+      const l = Math.round(el.clientWidth);
+      const h = Math.round(el.clientHeight);
+      // On ne re-rend **que si l'écran a vraiment changé** : c'est ce qui
+      // empêche la grille de sauter à chaque image.
+      setTailleEcran((avant) => (avant.l === l && avant.h === h ? avant : { l, h }));
+    };
     mesurer();
     const observateur = new ResizeObserver(mesurer);
     observateur.observe(el);
@@ -152,10 +158,16 @@ export default function GrilleDuMonde({
   // Au verso, la grille s'élargit si l'on a posé des cases plus à droite.
   const colonnes = colonnesDuMonde(cases.length, verso ? places : {}, largeurEcran, hauteurEcran);
   const lignes = Math.max(1, Math.ceil(cases.length / colonnes));
-  // La taille d'une case : l'échelle, et ce qu'il faut pour couvrir l'écran.
-  const taille = Math.round(
-    tailleDeLaCase(echelle) * ajustementDeRemplissage(colonnes, lignes, largeurEcran, hauteurEcran),
+  /**
+   * **La taille d'une case**, en pixels entiers : celle que l'échelle demande, et
+   * jamais moins que ce qu'il faut pour que la mosaïque **couvre l'écran**. Ni
+   * fond visible, ni case à moitié : la grille est pleine, ou elle n'est pas.
+   */
+  const tailleVoulue = tailleDeLaCase(echelle);
+  const tailleQuiCouvre = Math.ceil(
+    Math.max(largeurEcran / Math.max(1, colonnes), hauteurEcran / Math.max(1, lignes)),
   );
+  const taille = Math.max(tailleVoulue, Math.min(tailleQuiCouvre, TAILLE_DE_LA_CASE * 12));
   // La densité se lit sur la taille réelle, jamais sur l'échelle.
   const densite = densiteDeLaTaille(taille);
   const largeur = colonnes * taille;
@@ -173,11 +185,13 @@ export default function GrilleDuMonde({
   /** Le déplacement est tenu dans la grille : on ne se perd jamais dehors. */
   const contenir = useCallback(
     (p: { x: number; y: number }) => {
+      // La mosaïque est toujours au moins aussi grande que l'écran : elle reste
+      // donc collée aux bords, et l'on ne voit jamais de fond.
       const margeX = Math.max(0, largeur - largeurEcran);
       const margeY = Math.max(0, hauteurGrille - hauteurEcran);
       return {
-        x: largeur <= largeurEcran ? Math.round((largeurEcran - largeur) / 2) : Math.min(0, Math.max(-margeX, p.x)),
-        y: hauteurGrille <= hauteurEcran ? Math.round((hauteurEcran - hauteurGrille) / 2) : Math.min(0, Math.max(-margeY, p.y)),
+        x: Math.round(Math.min(0, Math.max(-margeX, p.x))),
+        y: Math.round(Math.min(0, Math.max(-margeY, p.y))),
       };
     },
     [hauteurEcran, hauteurGrille, largeur, largeurEcran],
@@ -428,18 +442,15 @@ export default function GrilleDuMonde({
 
   /* —————————————————————— CE QU'ON DESSINE VRAIMENT —————————————————————— */
 
-  const col0 = Math.max(0, Math.floor(-pan.x / taille) - 1);
-  const colN = Math.min(colonnes - 1, Math.ceil((-pan.x + largeurEcran) / taille));
-  const lig0 = Math.max(0, Math.floor(-pan.y / taille) - 1);
-  const ligN = Math.min(lignes - 1, Math.ceil((-pan.y + hauteurEcran) / taille));
-
-  /** Au verso, tout est dessiné : un trait peut relier deux cases éloignées. */
-  const visibles = cases
-    .map((kase, i) => ({
-      kase,
-      place: table[kase.id] ?? { c: i % colonnes, l: Math.floor(i / colonnes) },
-    }))
-    .filter(({ place }) => verso || (place.c >= col0 && place.c <= colN && place.l >= lig0 && place.l <= ligN));
+  /**
+   * **Tout le monde est dessiné**, d'un seul tenant. La grille est traduite par
+   * un seul `transform` : rien ne s'ouvre ni ne se ferme pendant qu'on la
+   * parcourt, donc rien ne saute.
+   */
+  const visibles = cases.map((kase, i) => ({
+    kase,
+    place: table[kase.id] ?? { c: i % colonnes, l: Math.floor(i / colonnes) },
+  }));
 
   const unite = Math.max(8, Math.round(taille * 0.072));
 

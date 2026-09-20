@@ -19,8 +19,21 @@ import SiteFooter from './SiteFooter';
  * visiter.
  */
 
-/** Les adresses qui ne reçoivent ni header ni dock. */
+/**
+ * **Les adresses qui ne reçoivent ni header ni dock.** Depuis que tout le site
+ * est en grille, ce sont **toutes les pages de contenu** : la mosaïque est la
+ * navigation, et rien de permanent ne doit l'entourer. Le chrome ne vit plus que
+ * sur les **outils** — l'éditeur de blocs, les paramètres, l'aperçu, le site
+ * public d'un couple.
+ */
 const SANS_CHROME = [
+  '/', // la mosaïque du monde, et son année
+  '/magazine', // l'année, les jours, les mondes
+  '/shop', // la boutique, en cases
+  '/metiers', // les métiers, en cases
+  '/profil/', // une page du réseau, en cases
+  '/prestataire', // l'espace prestataire, en cases
+  '/le-mariage', // le mariage, en mondes
   '/p/', // le site des mariés, tel que leurs invités le voient
   '/apercu', // la même page, dans une fenêtre d'aperçu
   '/rejoindre/', // l'invitation d'un invité
@@ -60,7 +73,11 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
    * pas l'image et la mosaïque s'ouvre à la demande, dans une feuille.
    */
   const immersif = useModeImmersif();
-  const avecChrome = !immersif && !SANS_CHROME.some((prefixe) => pathname.startsWith(prefixe));
+  /** « / » se compare exactement — sinon, tous les chemins commenceraient par lui. */
+  const sansChrome = SANS_CHROME.some((prefixe) =>
+    prefixe === '/' ? pathname === '/' : pathname.startsWith(prefixe),
+  );
+  const avecChrome = !immersif && !sansChrome;
   const mention = MENTIONS.find(([prefixe]) => pathname.startsWith(prefixe))?.[1];
 
   if (!avecChrome) return <>{children}</>;
