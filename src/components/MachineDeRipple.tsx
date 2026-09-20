@@ -1,101 +1,74 @@
 import { useState } from 'react';
 import { Check, CornerDownLeft, X } from 'lucide-react';
 import { OBJETS_DE_LA_FABRIQUE, pictoDuRipple } from '../lib/ripple';
-import {
-  GROUPES_DU_TICKET,
-  type CatégorieDuTicket,
-  type LigneDuTicket,
-} from '../lib/categoriesDuTicket';
+import { GROUPES_DU_TICKET, type CatégorieDuTicket, type LigneDuTicket } from '../lib/categoriesDuTicket';
 import { motDeLaFamille } from '../lib/agentDuTicket';
+import type { DemandeEntendue, Proposition } from '../lib/machineDuTicket';
 import { motDuPortefeuille } from '../lib/portefeuille';
 import { euros } from '../lib/superMariage';
 
 /* LA MACHINE — L'ÉCRAN, LA FENTE, LES BOUTONS RONDS, ET LE CHAMP
  *
- * Il n'y a plus qu'un objet sur la page, et il tient dans un écran. **Tout ce
- * qui se coche arrive par l'écran** : on appuie sur une famille, ou on écrit ce
- * qu'on veut dans le champ du bas, et l'agent fait passer les lignes **une par
- * une**. En face, deux touches rondes : **✓ on valide, ✗ on passe.**
+ * Il n'y a plus qu'un objet sur la page, et il tient dans un écran. **La
+ * machine propose toujours quelque chose, et les deux touches rondes marchent
+ * toujours** : ✓ on prend, ✗ on passe. Jamais de bouton mort, jamais d'écran
+ * vide, et chaque geste laisse une trace visible.
  *
  * ```
  * ┌──────────────────────────────────────────┐
  * │  SUPER MARIAGE       CAISSE 3 · 22:00    │
- * │  VOUS VOULEZ : dîner            3 / 12   │   l'écran
- * │  23:00 · Dîner — caisse 3                │
- * │  LE JOUR J · HORAIRES                    │
- * │  1 200 €          → le couple · les invités
+ * │  LA MACHINE PROPOSE             1 / 3    │  elle propose d'abord
+ * │  LE JOUR J                               │  une famille…
+ * │  ce qui a un prix · 48 lignes            │
  * │  7 LIGNES                      5 472 €   │
  * └──────────────────────────────────────────┘
- *      ( ✓ valider )      ( ✗ passer )           les touches rondes
- *  ══════════════ LA FENTE ══════════════         la fente
- *        ┌──────────────────────┐                 le papier qui sort
+ *        ( ✓ valider )   ( ✗ passer )            …puis les lignes, une à une
+ *  ══════════════ LA FENTE ══════════════      le papier sort de là
+ *        ┌──────────────────────┐               (un objet le tamponne aussi)
  *        └──────────────────────┘
- *   (●)(✉)(♦)(◉)(▤)(✈)(★)                        les objets du Ripple
- *   (LE JOUR J)(VOTRE SITE)(LES DOCUMENTS)        les familles
- *   ┌──────────────────────────────┐  (→)        le champ
- *   └──────────────────────────────┘
+ *   (●)(✉)(♦)(◉)(▤)(✈)(★)                       les objets du Ripple, gardés
+ *   (LE JOUR J)(VOTRE SITE)(LES DOCUMENTS)      un mot par ligne, dans le cercle
+ *   ┌────────────────────────────────┐  (→)     le champ — on dit ce qu'on veut
+ *   └────────────────────────────────┘
  * ```
  *
- * La machine ne décide de rien : elle montre ce que l'agent propose, elle
- * rapporte les gestes, et **le papier sort de la fente** quand on valide.
- * L'adresse, elle, est le reçu (`?coches=…`) — et la demande aussi
- * (`?demande=…`).
+ * Le bouton rond du **reçu** ouvre le ticket entier sur l'écran : les lignes,
+ * les marques posées, les portefeuilles — et l'on retire une ligne d'un clic.
  */
 
 export interface SortieDeLaFente {
+  /** Le mot du papier : une ligne du ticket, ou un objet du Ripple. */
   label: string;
+  /** Le prix, quand c'est une ligne — vide quand c'est une marque. */
   prix: string;
-  vers: string;
-}
-
-/** Ce que l'écran montre : une ligne, son rang dans la file, et pourquoi elle. */
-export interface PropositionDeLEcran {
-  ligne: LigneDuTicket;
-  /** Le mot de la demande qui l'a fait venir — `null` quand elle vient d'une famille. */
-  motif: string | null;
-  /** Le rang dans la file, et sa taille : « 3 / 12 ». */
-  rang: number;
-  taille: number;
-  /** D'où elle vient : sa famille, et sa catégorie. */
-  groupe: CatégorieDuTicket['groupe'];
-  catégorie: string;
-}
-
-/** La demande, telle que l'agent l'a entendue. */
-export interface DemandeEntendue {
-  /** Ce qu'on a écrit, mot pour mot. */
-  texte: string;
-  /** Les mots qu'il a vraiment entendus. */
-  mots: string[];
-  /** Il n'a rien trouvé : il fait passer le magasin entier. */
-  àVide: boolean;
+  /** Ce qu'on lit dessous : les portefeuilles, ou le sens de l'objet. */
+  sous: string;
 }
 
 export interface MachineDeRippleProps {
-  /** L'heure du ticket, et son mot : « LE SOIR », « GOLDEN HOUR ». */
+  /** L'heure du ticket. */
   heure: number;
   /** Ce qui est pris, et ce que ça coûte. */
   lignes: number;
   total: number;
-  /** L'écran : les propositions de l'agent, ou le ticket entier. */
+  /** L'écran : les propositions, ou le ticket entier. */
   écran: 'propositions' | 'ticket';
-  /** Ce que l'agent propose maintenant — `null` quand il n'y a plus rien. */
-  proposition: PropositionDeLEcran | null;
-  /** La file est finie : tout a été passé. */
-  finie: boolean;
+  /** Ce que la machine propose maintenant — il y a toujours quelque chose. */
+  proposition: Proposition;
   /** La demande entendue, quand il y en a une. */
   demande: DemandeEntendue | null;
   /** Le ticket, pour l'écran du même nom. */
   ticket: LigneDuTicket[];
+  /** Les marques posées par les objets ronds. */
+  marques: string[];
   /** Les portefeuilles, comptés : ce qui part, et à qui. */
   portefeuilles: Array<{ id: string; mot: string; marque: string; lignes: number; total: number }>;
   /** Ce qui est déjà pris, famille par famille — le compte des boutons ronds. */
   prises: Record<string, number>;
   /** Le mot du dernier geste — il s'affiche sur l'écran. */
   marche: string | null;
-  /** Le papier qui sort de la fente, et les marques posées sur le ticket. */
+  /** Le papier qui sort de la fente. */
   sortie: SortieDeLaFente | null;
-  marques: string[];
   /** Les gestes. */
   onValider: () => void;
   onPasser: () => void;
@@ -117,14 +90,13 @@ export default function MachineDeRipple({
   total,
   écran,
   proposition,
-  finie,
   demande,
   ticket,
+  marques,
   portefeuilles,
   prises,
   marche,
   sortie,
-  marques,
   onValider,
   onPasser,
   onFamille,
@@ -139,7 +111,7 @@ export default function MachineDeRipple({
   const auTicket = écran === 'ticket';
   const motValider = auTicket ? 'retour' : 'valider';
   const motPasser = auTicket ? 'vider' : 'passer';
-  const corps = auTicket ? 'ticket' : proposition ? 'proposition' : finie ? 'fin' : 'repos';
+  const corps = auTicket ? 'ticket' : proposition.genre;
 
   const envoyer = () => {
     const propre = texte.trim();
@@ -168,15 +140,42 @@ export default function MachineDeRipple({
 
           {/* Le corps de l'écran : une seule chose à la fois. */}
           <div data-écran-corps={corps} className="mt-2 min-h-0 flex-1 overflow-hidden">
-            {corps === 'proposition' && proposition && (
+            {corps === 'famille' && proposition.genre === 'famille' && (
+              <span className="block">
+                <span className="flex items-baseline justify-between gap-2 text-[9.5px] uppercase tracking-[0.14em] text-[#7DE2B0]/55">
+                  <span className="truncate">
+                    {demande?.àVide ? 'RIEN DE TEL — PRENEZ UNE FAMILLE' : 'LA MACHINE PROPOSE'}
+                  </span>
+                  <span className="shrink-0 tabular-nums" data-rang={proposition.rang} data-file={proposition.taille}>
+                    {proposition.rang} / {proposition.taille}
+                  </span>
+                </span>
+
+                <span
+                  data-famille-proposee={proposition.groupe}
+                  className="mt-1.5 block text-[15px] uppercase tracking-[0.06em] text-[#9BF3C6]"
+                >
+                  {motDeLaFamille(proposition.groupe)}
+                </span>
+                <span className="mt-1 block truncate text-[9.5px] uppercase tracking-[0.12em] text-[#7DE2B0]/50">
+                  {proposition.sous} · {proposition.lignes} ligne{proposition.lignes > 1 ? 's' : ''}
+                </span>
+                <span className="mt-2 block text-[9.5px] uppercase tracking-[0.12em] text-[#7DE2B0]/60">
+                  ✓ pour la passer en revue · ✗ la suivante
+                </span>
+                {marche && (
+                  <span data-ecran-mot="vrai" className="mt-1.5 block truncate text-[9.5px] uppercase tracking-[0.14em] text-white/45">
+                    {marche}
+                  </span>
+                )}
+              </span>
+            )}
+
+            {corps === 'ligne' && proposition.genre === 'ligne' && (
               <span className="block">
                 <span className="flex items-baseline justify-between gap-2 text-[9.5px] uppercase tracking-[0.14em] text-[#7DE2B0]/55">
                   <span data-demande-mots={demande?.mots.join(',') ?? ''} className="truncate">
-                    {demande
-                      ? demande.àVide
-                        ? 'JE FAIS PASSER TOUT'
-                        : `VOUS VOULEZ : ${demande.mots.join(' · ')}`
-                      : 'LA MACHINE PROPOSE'}
+                    {demande ? `VOUS VOULEZ : ${demande.mots.join(' · ')}` : motDeLaFamille(proposition.groupe)}
                   </span>
                   <span className="shrink-0 tabular-nums" data-rang={proposition.rang} data-file={proposition.taille}>
                     {proposition.rang} / {proposition.taille}
@@ -205,32 +204,6 @@ export default function MachineDeRipple({
                     entendu : « {proposition.motif} »
                   </span>
                 )}
-              </span>
-            )}
-
-            {corps === 'repos' && (
-              <span className="block">
-                <span className="block text-[12px] text-[#9BF3C6]">LE TICKET EST OUVERT</span>
-                <span className="mt-1 block text-[9.5px] uppercase leading-relaxed tracking-[0.12em] text-[#7DE2B0]/50">
-                  une famille, ou dites ce qu’il vous faut — l’agent fait passer, vous validez
-                </span>
-                {marche && (
-                  <span data-ecran-mot="vrai" className="mt-2 block truncate text-[9.5px] uppercase tracking-[0.14em] text-white/45">
-                    {marche}
-                  </span>
-                )}
-              </span>
-            )}
-
-            {corps === 'fin' && (
-              <span className="block">
-                <span className="block text-[12px] text-[#9BF3C6]">C’EST TOUT — RIEN D’AUTRE À PASSER</span>
-                <span className="mt-1 block text-[9.5px] uppercase leading-relaxed tracking-[0.12em] text-[#7DE2B0]/50">
-                  {demande ? `demande : ${demande.texte}` : 'la famille est passée en entier'}
-                </span>
-                <span className="mt-2 block text-[9.5px] uppercase tracking-[0.12em] text-[#7DE2B0]/60">
-                  ✓ pour garder ce qui est sur le ticket · ✗ pour tout vider
-                </span>
               </span>
             )}
 
@@ -267,6 +240,15 @@ export default function MachineDeRipple({
                   )}
                 </span>
                 <span className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 border-t border-[#7DE2B0]/20 pt-1">
+                  {marques.map((id) => (
+                    <span
+                      key={id}
+                      data-marque={id}
+                      className="text-[9px] uppercase tracking-[0.1em] text-[#00FF88]"
+                    >
+                      {OBJETS_DE_LA_FABRIQUE.find((o) => o.id === id)?.nom ?? id}
+                    </span>
+                  ))}
                   {portefeuilles
                     .filter((p) => p.lignes > 0)
                     .map((p) => (
@@ -309,7 +291,7 @@ export default function MachineDeRipple({
             type="button"
             data-touche="passer"
             data-touche-mot={motPasser}
-            disabled={!auTicket && !proposition}
+            disabled={auTicket && lignes === 0}
             onClick={onPasser}
             className="flex h-[52px] w-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-white/15 text-white/55 transition hover:border-white/50 hover:text-white disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:text-white/55"
           >
@@ -320,9 +302,8 @@ export default function MachineDeRipple({
             type="button"
             data-touche="valider"
             data-touche-mot={motValider}
-            disabled={!auTicket && !proposition}
             onClick={onValider}
-            className="flex h-[52px] w-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-[#00FF88]/60 bg-[#00FF88] text-black transition hover:brightness-110 disabled:border-white/15 disabled:bg-transparent disabled:text-white/25"
+            className="flex h-[52px] w-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-[#00FF88]/60 bg-[#00FF88] text-black transition hover:brightness-110"
           >
             <Check size={15} />
             <span className="font-mono text-[7.5px] uppercase tracking-[0.08em]">{motValider}</span>
@@ -346,7 +327,7 @@ export default function MachineDeRipple({
                 <span className="shrink-0 tabular-nums">{sortie.prix}</span>
               </span>
               <span className="mt-0.5 block truncate text-[9.5px] uppercase tracking-[0.12em] text-black/45">
-                {sortie.vers}
+                {sortie.sous}
               </span>
             </span>
           )}
@@ -390,7 +371,11 @@ export default function MachineDeRipple({
                 type="button"
                 data-machine-famille={groupe.id}
                 data-rond-mot={groupe.mot}
-                data-actif={corps === 'proposition' && proposition?.groupe === groupe.id ? 'true' : 'false'}
+                data-actif={
+                  corps === 'famille' && proposition.genre === 'famille' && proposition.groupe === groupe.id
+                    ? 'true'
+                    : 'false'
+                }
                 data-prises={compte}
                 onClick={() => onFamille(groupe.id)}
                 className="relative flex h-[78px] w-[78px] flex-col items-center justify-center rounded-full border border-white/15 px-2 text-center font-mono text-[8.5px] uppercase leading-[1.3] tracking-[0.05em] text-white/55 transition hover:border-white/45 hover:text-white/90"

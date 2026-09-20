@@ -1,20 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { LIGNES_DU_TICKET, compteParFamille, euros, type LigneDuTicket } from '../lib/categoriesDuTicket';
 import {
-  LIGNES_DU_TICKET,
-  catégorieDeLaLigne,
-  compteParFamille,
-  euros,
-  type CatégorieDuTicket,
-  type LigneDuTicket,
-} from '../lib/categoriesDuTicket';
-import {
-  fileDeLaFamille,
-  lAgentFaitPasser,
-  motifDeLaLigne,
-  motDeLaFamille,
-  type FileDeLAgent,
-} from '../lib/agentDuTicket';
+  basculerLeTicket,
+  demandeDeLÉtat,
+  étatInitial,
+  écrireLaDemande,
+  ouvrirLaFamille,
+  passer,
+  propositionDeLÉtat,
+  retirer,
+  valider,
+  type ÉtatDeLaMachine,
+  type Geste,
+} from '../lib/machineDuTicket';
 import {
   PORTEFEUILLES,
   compteDesPortefeuilles,
@@ -22,40 +21,36 @@ import {
   portefeuillesVisés,
   totauxDuTicket,
 } from '../lib/portefeuille';
-import { OBJETS_DE_LA_FABRIQUE } from '../lib/ripple';
+import { OBJETS_DE_LA_FABRIQUE, papierDeLObjet } from '../lib/ripple';
 import { heureDeLaCapsule } from '../lib/capsuleCommande';
-import MachineDeRipple, {
-  type DemandeEntendue,
-  type PropositionDeLEcran,
-  type SortieDeLaFente,
-} from '../components/MachineDeRipple';
+import MachineDeRipple, { type SortieDeLaFente } from '../components/MachineDeRipple';
 
 /* LE SPÉCIALISTE DU TICKET — LA MACHINE, ET RIEN D'AUTRE
  *
- * La page **ne défile pas** : elle tient dans un écran, comme une machine pose
- * sur un comptoir. Autour, **un fond blanc, aucun visuel, aucun texte** — tout
- * ce qui se lit est sur la machine.
+ * La page **ne défile pas** : elle tient dans un écran, comme une machine posée
+ * sur un comptoir. Autour, **un fond blanc, aucun visuel, aucun texte**.
  *
- * **Tout ce qui se coche arrive par l'écran de la machine.** On appuie sur une
- * famille — le jour J, votre site, les documents — ou on écrit ce qu'on veut
- * dans le champ du bas, et l'agent fait passer les lignes **une par une** :
+ * **La machine propose toujours quelque chose, et les deux touches font toujours
+ * quelque chose** — c'est la règle du module `machineDuTicket` :
  *
- * ```
- *   (LE JOUR J)  ← une famille : l'agent fait passer ses lignes, une par une
- *   ┌──────────────────────┐  (→)
- *   │ un dîner pour vingt  │  ← ou une demande : l'agent entend, et il trie
- *   └──────────────────────┘
+ * 1. **elle propose une famille** — « LE JOUR J, ce qui a un prix, 48 lignes ».
+ *    ✓ la passe en revue ; ✗ propose la suivante ;
+ * 2. **elle passe les lignes, une par une** — ✓ la prend (le papier sort de la
+ *    fente et part vers ses portefeuilles), ✗ la laisse ;
+ * 3. **le reçu** ouvre le ticket entier sur l'écran : ✓ revient aux
+ *    propositions, ✗ vide le ticket.
  *
- *   ✓ on valide  →  la ligne monte sur le ticket, le papier sort de la fente
- *   ✗ on passe   →  l'agent passe à la suivante
- * ```
+ * On peut aussi **écrire ce qu'on veut** dans le champ : l'agent entend, trie le
+ * catalogue par mots, et fait passer ce qui répond. S'il ne trouve rien, il ne
+ * déroule pas les 99 lignes : il le dit, et il repropose les familles.
  *
- * Le bouton rond du **reçu** ouvre le ticket entier sur l'écran : c'est là qu'on
- * relit, ligne à ligne, et qu'on retire ce qu'on ne veut plus. Les six autres
- * objets du Ripple **marquent le papier** — tampon, timbre, carte, sticker.
+ * Les **six objets du Ripple** hors le reçu ne sont pas décoratifs : chacun
+ * **sort un papier de la fente** — « LE TAMPON · la marque qui valide, à l'encre
+ * du jour » — et reste posé sur le ticket.
  *
- * L'adresse reste le reçu (`?coches=…`), et elle porte aussi la demande
- * (`?demande=diner`) et l'écran (`?ecran=ticket`) : le lien dit tout.
+ * Cette page ne fait plus que deux choses : **le calcul et les effets** — le
+ * papier, le vol vers les portefeuilles, l'adresse. Le reste est dans les
+ * modules, et testé sans navigateur.
  */
 
 /** Le caddie de l'adresse : ce qui est coché, dans l'ordre du catalogue. */
@@ -74,31 +69,39 @@ interface Vol {
   rang: number;
 }
 
+/** Un papier qui sort de la fente, et ce qu'il emporte. */
+interface Papier {
+  cle: string;
+  sortie: SortieDeLaFente;
+}
+
 export default function LaCaisse() {
   const [params, setParams] = useSearchParams();
 
-  const [coches, setCoches] = useState<string[]>(() => cochesDeLAdresse(params.get('coches')));
-  const [demande, setDemande] = useState<string>(() => (params.get('demande') ?? '').trim());
-  const [file, setFile] = useState<FileDeLAgent | null>(() => {
-    const texte = (params.get('demande') ?? '').trim();
-    return texte ? lAgentFaitPasser(texte, cochesDeLAdresse(params.get('coches'))) : null;
-  });
-  const [rang, setRang] = useState(0);
-  const [écran, setÉcran] = useState<'propositions' | 'ticket'>(() =>
-    params.get('ecran') === 'ticket' ? 'ticket' : 'propositions',
+  /** **Tout l'état de la machine** — et rien d'autre. */
+  const [état, setÉtat] = useState<ÉtatDeLaMachine>(() =>
+    étatInitial({
+      coches: cochesDeLAdresse(params.get('coches')),
+      demande: params.get('demande') ?? '',
+      écran: params.get('ecran') === 'ticket' ? 'ticket' : 'propositions',
+    }),
   );
+
   const [marques, setMarques] = useState<string[]>([]);
   const [marche, setMarche] = useState<string | null>(null);
+  const [papier, setPapier] = useState<Papier | null>(null);
   const [vols, setVols] = useState<Vol[]>([]);
-  const [presse, setPresse] = useState<{ cle: string; ligne: string } | null>(null);
   const [avis, setAvis] = useState<string | null>(null);
   const [heure] = useState(() => Math.floor(heureDeLaCapsule()));
   const passage = useRef(0);
+
+  const coches = état.coches;
 
   /* ————————————————————— LE CALCUL, ET L'ADRESSE ————————————————————— */
 
   const lignesCochées = useMemo(() => LIGNES_DU_TICKET.filter((l) => coches.includes(l.id)), [coches]);
   const totaux = totauxDuTicket(lignesCochées);
+  /** Ce qui est pris, famille par famille — c'est le compte des boutons ronds. */
   const prises = compteParFamille(coches);
   const comptesDesPortefeuilles = useMemo(() => compteDesPortefeuilles(coches), [coches]);
   const portefeuilles = PORTEFEUILLES.map((p) => ({
@@ -112,26 +115,16 @@ export default function LaCaisse() {
     const suite = new URLSearchParams(params);
     if (coches.length) suite.set('coches', coches.join(','));
     else suite.delete('coches');
-    if (demande) suite.set('demande', demande);
+    if (état.demande) suite.set('demande', état.demande);
     else suite.delete('demande');
-    if (écran === 'ticket') suite.set('ecran', 'ticket');
+    if (état.écran === 'ticket') suite.set('ecran', 'ticket');
     else suite.delete('ecran');
     setParams(suite, { replace: true });
     // L'adresse est la sortie, jamais l'entrée : on ne suit que ce qu'on coche.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coches, demande, écran]);
+  }, [coches, état.demande, état.écran]);
 
   /* ——————————————— LE PAPIER QUI SORT, ET LE MOT DU GESTE ——————————————— */
-
-  const faireSortir = (ligneId: string) => {
-    passage.current += 1;
-    const cle = `${ligneId}-${passage.current}`;
-    setPresse({ cle, ligne: ligneId });
-    const visés = portefeuillesVisés([ligneId]);
-    setVols((v) => [...v, ...visés.map((p) => ({ cle: `${cle}-${p}`, portefeuille: p, rang: PORTEFEUILLES_RANGS[p] ?? 0 }))]);
-    window.setTimeout(() => setPresse((p) => (p && p.cle === cle ? null : p)), 2600);
-    window.setTimeout(() => setVols((v) => v.filter((x) => !x.cle.startsWith(cle))), 1100);
-  };
 
   const unMot = (texte: string) => {
     setMarche(texte);
@@ -143,116 +136,69 @@ export default function LaCaisse() {
     window.setTimeout(() => setAvis(null), 2400);
   };
 
-  /* ——————————————— L'AGENT : LA FILE DES PROPOSITIONS ——————————————— */
+  /** Le papier d'une ligne : son nom, son prix, et à qui elle part. */
+  const papierDuneLigne = (ligne: LigneDuTicket): SortieDeLaFente => ({
+    label: ligne.label,
+    prix: ligne.incluse ? 'inclus' : euros(ligne.prix * (ligne.quantite ?? 1)),
+    sous: ligne.vers.map((p) => motDuPortefeuille(p)).join(' · '),
+  });
 
-  /** On remet une file à l'écran : c'est le seul geste qui change le propos. */
-  const fairePasser = (propositions: LigneDuTicket[], texte: string, entendue: FileDeLAgent | null) => {
-    setFile({ lignes: propositions, mots: entendue?.mots ?? [], àVide: entendue?.àVide ?? false });
-    setRang(0);
-    setDemande(texte);
-    setÉcran('propositions');
+  /** Une ligne validée : le papier sort de la fente, et il part vers ses portefeuilles. */
+  const faireSortir = (ligne: LigneDuTicket) => {
+    passage.current += 1;
+    const cle = `${ligne.id}-${passage.current}`;
+    setPapier({ cle, sortie: papierDuneLigne(ligne) });
+    const visés = portefeuillesVisés([ligne.id]);
+    setVols((v) => [...v, ...visés.map((p) => ({ cle: `${cle}-${p}`, portefeuille: p, rang: PORTEFEUILLES_RANGS[p] ?? 0 }))]);
+    window.setTimeout(() => setPapier((p) => (p && p.cle === cle ? null : p)), 2600);
+    window.setTimeout(() => setVols((v) => v.filter((x) => !x.cle.startsWith(cle))), 1100);
   };
 
-  const parFamille = (groupe: CatégorieDuTicket['groupe']) => {
-    fairePasser(fileDeLaFamille(groupe, coches), '', null);
-    unMot(`${motDeLaFamille(groupe)} — l’agent fait passer`);
+  /** Un objet du Ripple : il sort son papier de la fente — c'est sa preuve. */
+  const sortirLaMarque = (id: string) => {
+    const objet = OBJETS_DE_LA_FABRIQUE.find((o) => o.id === id);
+    if (!objet) return;
+    passage.current += 1;
+    const cle = `${id}-${passage.current}`;
+    setPapier({ cle, sortie: papierDeLObjet(objet) });
+    window.setTimeout(() => setPapier((p) => (p && p.cle === cle ? null : p)), 2600);
   };
 
-  const parDemande = (texte: string) => {
-    const entendue = lAgentFaitPasser(texte, coches);
-    fairePasser(entendue.lignes, texte, entendue);
-    unMot(entendue.àVide ? 'rien de tel — je fais passer tout' : `entendu : ${entendue.mots.join(' · ')}`);
-  };
+  /* ——————————————— UN GESTE : L'ÉTAT CHANGE, ET LE PAPIER SUIT ——————————————— */
 
-  /* ——————————————— VALIDER, PASSER, ET LE RESTE ——————————————— */
-
-  const prendre = (id: string) => {
-    if (coches.includes(id)) return;
-    setCoches([...coches, id]);
-    faireSortir(id);
-  };
-
-  const retirer = (id: string) => {
-    setCoches(coches.filter((c) => c !== id));
-    unMot('ligne retirée du ticket');
-  };
-
-  const surValider = () => {
-    if (écran === 'ticket') {
-      setÉcran('propositions');
-      unMot('retour aux propositions');
-      return;
+  /** Chaque geste rend un nouvel état, un mot pour l'écran, et parfois un papier. */
+  const geste = (suivant: Geste) => {
+    setÉtat(suivant.état);
+    if (suivant.mot) unMot(suivant.mot);
+    if (suivant.pris) {
+      const ligne = LIGNES_DU_TICKET.find((l) => l.id === suivant.pris);
+      if (ligne) faireSortir(ligne);
     }
-    const proposée = file?.lignes[rang];
-    if (!proposée) return;
-    prendre(proposée.id);
-    unMot(`${proposée.label} — sur le ticket`);
-    setRang(rang + 1);
   };
 
-  const surPasser = () => {
-    if (écran === 'ticket') {
-      setCoches([]);
-      unMot('ticket vidé');
-      return;
-    }
-    const proposée = file?.lignes[rang];
-    if (!proposée) return;
-    unMot(`${proposée.label} — laissée de côté`);
-    setRang(rang + 1);
-  };
-
-  /** Les boutons ronds : le reçu ouvre le ticket, les autres marquent le papier. */
   const poserUnObjet = (id: string) => {
     const objet = OBJETS_DE_LA_FABRIQUE.find((o) => o.id === id);
     if (!objet) return;
     if (id === 'ticket-caisse') {
-      const ouvert = écran === 'ticket';
-      setÉcran(ouvert ? 'propositions' : 'ticket');
-      unMot(ouvert ? 'retour aux propositions' : 'le ticket, entier');
+      geste(basculerLeTicket(état));
       return;
     }
     const posée = marques.includes(id);
     setMarques(posée ? marques.filter((m) => m !== id) : [...marques, id]);
-    unMot(posée ? `${objet.nom} — retiré` : `${objet.nom} — ${objet.sens}`);
+    if (posée) unMot(`${objet.nom} — retiré`);
+    else {
+      sortirLaMarque(id);
+      unMot(`${objet.nom} — ${objet.sens}`);
+    }
   };
-
-  /* ——————————————— CE QUE L'ÉCRAN MONTRE MAINTENANT ——————————————— */
-
-  const ligneCourante: LigneDuTicket | null = file ? (file.lignes[rang] ?? null) : null;
-  const proposition: PropositionDeLEcran | null = ligneCourante
-    ? {
-        ligne: ligneCourante,
-        motif: file && file.mots.length > 0 ? motifDeLaLigne(ligneCourante, file.mots) : null,
-        rang: rang + 1,
-        taille: file?.lignes.length ?? 1,
-        groupe: catégorieDeLaLigne(ligneCourante.id)?.groupe ?? 'jour',
-        catégorie: catégorieDeLaLigne(ligneCourante.id)?.mot ?? '',
-      }
-    : null;
-
-  const demandeEntendue: DemandeEntendue | null = demande
-    ? { texte: demande, mots: file?.mots ?? [], àVide: Boolean(file?.àVide) }
-    : null;
-
-  const ligneSortie = presse
-    ? (lignesCochées.find((l) => l.id === presse.ligne) ?? LIGNES_DU_TICKET.find((l) => l.id === presse.ligne))
-    : undefined;
-  const sortie: SortieDeLaFente | null = ligneSortie
-    ? {
-        label: ligneSortie.label,
-        prix: ligneSortie.incluse ? 'inclus' : euros(ligneSortie.prix * (ligneSortie.quantite ?? 1)),
-        vers: ligneSortie.vers.map((p) => motDuPortefeuille(p)).join(' · '),
-      }
-    : null;
 
   return (
     <div
       data-page="ticket"
       data-cochees={coches.length}
       data-total={totaux.total}
-      data-écran={écran}
-      data-demande={demande}
+      data-écran={état.écran}
+      data-demande={état.demande}
       className="grid h-svh w-full place-items-center overflow-hidden bg-white px-3 py-4"
     >
       <div className="relative flex w-full flex-col items-center">
@@ -260,22 +206,21 @@ export default function LaCaisse() {
           heure={heure}
           lignes={coches.length}
           total={totaux.total}
-          écran={écran}
-          proposition={proposition}
-          finie={file !== null && rang >= file.lignes.length}
-          demande={demandeEntendue}
+          écran={état.écran}
+          proposition={propositionDeLÉtat(état)}
+          demande={demandeDeLÉtat(état)}
           ticket={lignesCochées}
+          marques={marques}
           portefeuilles={portefeuilles}
           prises={prises}
           marche={marche}
-          sortie={sortie}
-          marques={marques}
-          onValider={surValider}
-          onPasser={surPasser}
-          onFamille={parFamille}
+          sortie={papier?.sortie ?? null}
+          onValider={() => geste(valider(état))}
+          onPasser={() => geste(passer(état))}
+          onFamille={(groupe) => geste(ouvrirLaFamille(état, groupe))}
           onObjet={poserUnObjet}
-          onDemande={parDemande}
-          onRetirer={retirer}
+          onDemande={(texte) => geste(écrireLaDemande(état, texte))}
+          onRetirer={(id) => geste(retirer(état, id))}
           onEmporter={() => {
             const adresse = `${window.location.origin}${window.location.pathname}?coches=${coches.join(',')}`;
             void navigator.clipboard?.writeText(adresse);

@@ -136,6 +136,19 @@ import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LaCaisse from '../src/pages/LaCaisse';
 import { fileDeLaFamille, lAgentFaitPasser, motDeLaFamille } from '../src/lib/agentDuTicket';
+import { papierDeLObjet } from '../src/lib/ripple';
+/* La machine du ticket : ses gestes portent des noms uniques dans ce fichier —
+   `valider` est déjà pris par le journal, `passer` traîne partout. */
+import {
+  basculerLeTicket as ouvrirLeTicket,
+  demandeDeLÉtat as demandeDeLaMachine,
+  étatInitial as étatDeLaMachine,
+  écrireLaDemande as écrireDansLeChamp,
+  passer as passerLaMachine,
+  propositionDeLÉtat as ceQueLaMachinePropose,
+  retirer as retirerDuTicket,
+  valider as validerLaMachine,
+} from '../src/lib/machineDuTicket';
 import {
   CATÉGORIES_DU_TICKET,
   GROUPES_DU_TICKET,
@@ -2049,6 +2062,7 @@ const ticketVide = rendreLeTicket('/');
 const ticketPlein = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}`);
 const ticketDuReçu = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}&ecran=ticket`);
 const ticketSansRien = rendreLeTicket('/?demande=zzz');
+const ticketAvecDiner = rendreLeTicket('/?demande=diner');
 
 check('on arrive sur le ticket', ticketVide.includes('data-page="ticket"'), true);
 check(
@@ -2143,10 +2157,22 @@ check(
   false,
 );
 check(
-  'l’écran dit toujours le compte et le total',
-  ticketVide.includes('data-écran-corps="repos"') && ticketVide.includes('0 LIGNE'),
+  'la machine propose toujours quelque chose : d’abord une famille',
+  ticketVide.includes('data-écran-corps="famille"') &&
+    ticketVide.includes('data-famille-proposee="jour"') &&
+    ticketVide.includes('data-rang="1" data-file="3"'),
   true,
 );
+check(
+  'et ses deux touches sont vivantes — jamais un bouton mort',
+  (() => {
+    const touche = ticketVide.slice(ticketVide.indexOf('data-touche="valider"') - 200);
+    const bouton = touche.slice(touche.indexOf('<button'), touche.indexOf('>'));
+    return !bouton.includes('disabled');
+  })(),
+  true,
+);
+check('l’écran dit toujours le compte et le total', ticketVide.includes('0 LIGNE'), true);
 
 /* Le reçu, sur l'écran : le ticket entier, et où il part. */
 
@@ -2176,8 +2202,15 @@ check(
 /* L’agent : il fait passer les choses à l’écran, une par une. */
 
 check(
-  'une demande fait venir ses lignes, et l’écran le dit',
-  ticketSansRien.includes('data-écran-corps="proposition"') && ticketSansRien.includes('JE FAIS PASSER TOUT'),
+  'une demande qui ne répond à rien ne déroule pas tout le magasin',
+  ticketSansRien.includes('data-écran-corps="famille"') && ticketSansRien.includes('RIEN DE TEL'),
+  true,
+);
+check(
+  'une demande qui répond fait venir ses lignes, et l’écran le dit',
+  ticketAvecDiner.includes('data-écran-corps="ligne"') &&
+    ticketAvecDiner.includes('VOUS VOULEZ') &&
+    ticketAvecDiner.includes('data-demande-mots="diner"'),
   true,
 );
 check('« dîner » fait venir les menus', lAgentFaitPasser('un dîner pour vingt').lignes.some((l) => l.catégorie.startsWith('menu-')), true);
@@ -2189,8 +2222,30 @@ check(
   lAgentFaitPasser('diner', ['menu-super-essentiel']).lignes.every((l) => l.id !== 'menu-super-essentiel'),
   true,
 );
-check('un mot qu’il ne connaît pas : il fait passer tout le magasin', lAgentFaitPasser('zzz').àVide, true);
-check('et sans une demande, il fait passer les 99 lignes', lAgentFaitPasser('').lignes.length, LIGNES_DU_TICKET.length);
+check(
+  'un mot qu’il ne connaît pas : il ne fait rien passer, et il le dit',
+  [lAgentFaitPasser('zzz').lignes.length, lAgentFaitPasser('zzz').àVide],
+  [0, true],
+);
+check('et sans une demande, il ne propose rien non plus', lAgentFaitPasser('').lignes.length, 0);
+check(
+  'en revanche « robe » ne repart pas les mains vides',
+  lAgentFaitPasser('une robe pour la mairie').lignes.length > 0,
+  true,
+);
+check(
+  'et l’écran écrit les mots comme on les a écrits, avec leurs accents',
+  lAgentFaitPasser('un dîner').mots,
+  ['dîner'],
+);
+check(
+  'un objet du Ripple imprime toujours quelque chose',
+  OBJETS_DE_LA_FABRIQUE.every((o) => {
+    const papier = papierDeLObjet(o);
+    return papier.label.length > 2 && papier.sous.length > 8;
+  }),
+  true,
+);
 check(
   'les trois familles font passer tout le catalogue, et rien que lui',
   [fileDeLaFamille('jour').length, fileDeLaFamille('site').length, fileDeLaFamille('documents').length],
@@ -2201,6 +2256,97 @@ check('et une famille ne re-propose pas ce qui est pris', (() => {
   return fileDeLaFamille('site', [première]).every((l) => l.id !== première);
 })(), true);
 check('les familles portent les mots de l’écran', [motDeLaFamille('jour'), motDeLaFamille('site'), motDeLaFamille('documents')], ['LE JOUR J', 'VOTRE SITE', 'LES DOCUMENTS']);
+
+/* ——————— LA MACHINE, EN FONCTIONS PURES : UNE TOUCHE FAIT TOUJOURS ——————— */
+
+const départ = étatDeLaMachine();
+check('au départ, la machine propose la première famille', ceQueLaMachinePropose(départ).genre, 'famille');
+check('et elle a de quoi faire : trois familles, et 99 lignes', [ceQueLaMachinePropose(départ).taille, LIGNES_DU_TICKET.length], [3, 99]);
+check(
+  'aucun geste ne laisse l’état comme il était — c’est ça, « il ne se passe rien »',
+  [validerLaMachine, passerLaMachine, ouvrirLeTicket].every((g) => JSON.stringify(g(départ).état) !== JSON.stringify(départ)),
+  true,
+);
+
+const familleOuverte = validerLaMachine(départ);
+check(
+  '✓ sur une famille ouvre ses lignes — 48 pour le jour J',
+  [ceQueLaMachinePropose(familleOuverte.état).genre, familleOuverte.état.file!.length],
+  ['ligne', 48],
+);
+check('et l’écran dit d’où elle vient', ceQueLaMachinePropose(familleOuverte.état).groupe, 'jour');
+
+const première = validerLaMachine(familleOuverte.état);
+check(
+  '✓ sur une ligne la met sur le ticket',
+  [première.état.coches, première.pris, première.état.rang],
+  [[familleOuverte.état.file![0]], familleOuverte.état.file![0], 1],
+);
+check('et l’écran passe à la suivante', ceQueLaMachinePropose(première.état).rang, 2);
+
+const deuxième = passerLaMachine(première.état);
+check('✗ la laisse de côté et avance', [deuxième.pris, deuxième.état.rang, deuxième.état.coches.length], [null, 2, 1]);
+check(
+  'vingt fois ✓, et le ticket porte vingt lignes',
+  (() => {
+    let e = familleOuverte.état;
+    for (let i = 0; i < 20; i += 1) e = validerLaMachine(e).état;
+    return e.coches.length;
+  })(),
+  20,
+);
+check(
+  'et jamais deux fois la même',
+  (() => {
+    let e = familleOuverte.état;
+    for (let i = 0; i < 60; i += 1) e = validerLaMachine(e).état;
+    return new Set(e.coches).size;
+  })(),
+  48,
+);
+check(
+  'une famille passée en entier s’arrête, et la machine repropose les familles',
+  (() => {
+    let e = familleOuverte.état;
+    for (let i = 0; i < 48; i += 1) e = validerLaMachine(e).état;
+    return [ceQueLaMachinePropose(e).genre, e.coches.length];
+  })(),
+  ['famille', 48],
+);
+check(
+  '✗ sur une famille propose la suivante, puis la troisième, puis la première',
+  (() => {
+    const deux = passerLaMachine(départ).état;
+    const trois = passerLaMachine(deux).état;
+    const retour = passerLaMachine(trois).état;
+    return [
+      ceQueLaMachinePropose(deux).groupe,
+      ceQueLaMachinePropose(trois).groupe,
+      ceQueLaMachinePropose(retour).groupe,
+    ];
+  })(),
+  ['site', 'documents', 'jour'],
+);
+
+/* La demande : l'agent entend, trie, et ne laisse pas l'écran muet. */
+
+const parDiner = écrireDansLeChamp(départ, 'un dîner');
+check('une demande qui répond fait passer ses lignes', ceQueLaMachinePropose(parDiner.état).genre, 'ligne');
+check('et l’agent garde les mots tels qu’on les écrit', parDiner.état.mots, ['dîner']);
+const parZzz = écrireDansLeChamp(départ, 'zzz');
+check(
+  'une demande qui ne répond à rien repropose les familles',
+  [parZzz.état.file, ceQueLaMachinePropose(parZzz.état).genre, demandeDeLaMachine(parZzz.état)!.àVide],
+  [null, 'famille', true],
+);
+
+/* L'écran du reçu, et ce qu'on y fait. */
+
+const auTicket = ouvrirLeTicket(départ);
+check('le reçu retourne l’écran sur le ticket', auTicket.état.écran, 'ticket');
+check('et ✓ le remet à l’endroit', validerLaMachine(auTicket.état).état.écran, 'propositions');
+check('✗, dans le ticket, le vide entièrement', passerLaMachine(ouvrirLeTicket(première.état).état).état.coches, []);
+check('et retirer enlève une ligne, et une seule', retirerDuTicket(première.état, première.pris!).état.coches, []);
 
 /* Le papier sort de la fente, et part : deux animations, deux `transform`. */
 check('le ticket sort de la fente', LePapierSortDeLaFente(), true);

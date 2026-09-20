@@ -298,12 +298,13 @@ dans la machine ».
 └──────────────────────────────────────────────┘
 ```
 
-- **les objets du Ripple sont gardés** (`OBJETS_DE_LA_FABRIQUE`), et ils
-  servent enfin : le **reçu** ouvre **le ticket entier sur l'écran** — la liste
-  des lignes, avec ce que chacune coûte et à qui elle part, et l'on retire d'un
-  clic celle qu'on ne veut plus ; les six autres **marquent le papier** (tampon,
-  timbre, carte postale, ticket spectacle, billet d'avion, sticker) et l'écran
-  dit ce qu'ils font ;
+- **les objets du Ripple sont gardés** (`OBJETS_DE_LA_FABRIQUE`), et **aucun
+  n'est décoratif** : le **reçu** ouvre **le ticket entier sur l'écran** — la
+  liste des lignes, les marques posées, les portefeuilles — et l'on retire d'un
+  clic la ligne qu'on ne veut plus ; les six autres **sortent un papier de la
+  fente** — « LE TAMPON · la marque qui valide, à l'encre du jour » — et restent
+  posés sur le ticket. C'était la correction du 20 septembre 2026 : *« les
+  tampons et tout ça, ça ne fait rien du tout »* ;
 - **les trois familles** sont trois boutons ronds — LE JOUR J, VOTRE SITE, LES
   DOCUMENTS. Leur mot s'écrit **un mot par ligne** dans un cercle de 78 px : le
   texte ne touche plus le bord. Le compte des lignes prises s'affiche dans le
@@ -313,6 +314,30 @@ dans la machine ».
   arrivent **par l'écran** ;
 - **le champ** est en bas, sous la rangée : c'est là qu'on dit ce qu'on veut.
 
+### La machine, en fonctions pures (`src/lib/machineDuTicket.ts`)
+
+Tout l'état de la machine tient dans **un objet**, et **chaque geste rend un état
+différent** — c'est testable sans navigateur, et c'est testé :
+
+```
+étatInitial() ──✓──> famille ouverte ──✓──> une ligne sur le ticket ──✓──> …
+      │                    │                        │
+      ✗ famille suivante   ✗ ligne suivante         ✗ ligne suivante
+```
+
+**Les deux touches changent de mot selon l'écran, et ne sont jamais mortes :**
+
+| Ce que la machine propose | ✓ | ✗ |
+| --- | --- | --- |
+| une **famille** — « LE JOUR J, 48 lignes » | la passe en revue | la famille suivante |
+| une **ligne** — « 22:17 · Cérémonie — 900 € » | la met sur le ticket (le papier sort) | la laisse de côté |
+| le **ticket** (par le bouton rond du reçu) | revient aux propositions | vide le ticket |
+
+C'était la correction du 20 septembre 2026 : *« il répond bêtement mais rien ne
+se passe »* — au départ, il n'y avait **rien à proposer** et les deux touches
+étaient éteintes. Maintenant **la machine propose toujours quelque chose** :
+d'abord une famille, puis ses lignes.
+
 ### L'agent du ticket (`src/lib/agentDuTicket.ts`)
 
 **Tout ce qui se coche arrive par l'écran**, et rien d'autre. Deux entrées, une
@@ -321,27 +346,22 @@ seule sortie :
 1. **une famille** — `fileDeLaFamille('jour' | 'site' | 'documents')` rend ses
    lignes, dans l'ordre du catalogue, sans celles qui sont déjà prises ;
 2. **une demande** — `lAgentFaitPasser(texte, prises)` range le catalogue par
-   mots : le mot exact, sa tige (les pluriels), et une petite table
-   d'**évocations** écrite à la main (« dîner » → menu, repas, table, traiteur).
-   Rien trouvé ? **Il fait passer tout le magasin** : jamais d'écran muet.
+   mots : le mot exact, sa tige (les pluriels), le singulier, et une grande table
+   d'**évocations** écrite à la main (« dîner » → menu, repas, traiteur ; « robe »
+   → création, scénographie ; « papiers » → papeterie, attestation).
 
-En face, toujours la même chose : **une proposition, deux touches**.
-
-```
-✓ on valide  →  la ligne monte sur le ticket, le papier sort de la fente,
-                et il part vers ses portefeuilles (vol-du-ticket)
-✗ on passe   →  l'agent passe à la suivante
-```
-
-Quand la file est finie : `C'EST TOUT — RIEN D'AUTRE À PASSER`. Sur l'écran du
-ticket, les deux touches changent de mot : **✓ retour** aux propositions,
-**✗ vider** le ticket.
+**Rien trouvé : il ne déroule pas les 99 lignes** (c'est bête, et ça décourage).
+Il le dit — `RIEN DE TEL — PRENEZ UNE FAMILLE` — **et il propose les trois
+familles**, qui sont les trois boutons ronds juste sous l'écran. L'écran n'est
+jamais muet, et il n'est jamais bavard pour rien : les mots entendus s'écrivent
+**tels qu'on les a écrits**, accents compris.
 
 ### Ce qui a été retiré de la page, et pourquoi
 
 | Retiré | Pourquoi |
 | --- | --- |
 | le visuel du jour et les infos dessus | « un fond blanc sans visuel et sans texte pour l'instant » |
+| les 99 lignes proposées d'un coup quand la demande ne répond à rien | « il répond bêtement » — maintenant, il propose les familles |
 | les sections à faire défiler (cocher, le ticket, les portefeuilles) | « on doit scroller » — tout ce qui se coche est **dans** la machine |
 | la rangée des catégories | c'était le doublon de « VOTRE SITE », et ça serrait le texte dans les cercles |
 | « tout prendre » d'un rayon | l'agent fait passer la famille entière : c'est la même chose, sans un bouton de plus |
