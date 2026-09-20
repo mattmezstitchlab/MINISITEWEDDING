@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Cible } from './journal';
+import { enregistrerGeste } from './temps';
 
 /**
  * LE CHIFFRE — LA TRADITION, SA RÈGLE, ET SES LIMITES
@@ -432,10 +433,21 @@ export function enregistrerChiffre(naissance: Naissance): Naissance | null {
   } catch {
     /* pas de fenêtre : rien à garder */
   }
+  if (!vide) {
+    // **Le temps commun** : le chiffre posé est un geste — et il dit seulement
+    // qu'il a été posé, jamais le nombre : le temps n'est pas un registre d'état civil.
+    enregistrerGeste({
+      type: 'chiffre',
+      titre: 'Chiffre posé',
+      detail: propre.date ? 'avec la date de naissance' : 'sans la date de naissance',
+      qui: propre.prenom || undefined,
+    });
+  }
   return vide ? null : propre;
 }
 
 export function effacerChiffre(): void {
+  if (chargerChiffre()) enregistrerGeste({ type: 'chiffre', titre: 'Chiffre effacé' });
   try {
     if (typeof localStorage !== 'undefined') localStorage.removeItem(CLE);
     window.dispatchEvent(new Event(EVENEMENT));

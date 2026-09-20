@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { styleById, type WeddingStyle } from './weddingStyles';
 import { cartesDesPersonas, cartesDesUnivers, type CarteVivante } from './cartesVivantes';
 import { MANIFESTE } from './manifeste';
+import { enregistrerGeste } from './temps';
 
 /**
  * LA SÉLECTION — LES CARTES CHOISIES SUR L'ACCUEIL, DANS L'ORDRE
@@ -79,6 +80,12 @@ export function choisirCarte(carte: Pick<CarteChoisie, 'id' | 'sorte' | 'titre'>
     ...actuelle,
     { id: carte.id, sorte: carte.sorte, titre: carte.titre, choisiLe: new Date().toISOString() },
   ].slice(0, CARTES_MAX);
+  // **Le temps commun** : une carte retenue est un geste, et il s'écrit.
+  enregistrerGeste({
+    type: 'selection',
+    titre: `Carte retenue : ${carte.titre}`,
+    detail: carte.sorte === 'univers' ? 'un univers' : 'un rôle',
+  });
   return ecrire(suivante);
 }
 
@@ -106,6 +113,8 @@ export function deplacerCarte(carte: Pick<CarteChoisie, 'id' | 'sorte'>, pas: nu
 }
 
 export function viderSelection(): CarteChoisie[] {
+  const avant = chargerSelection().length;
+  if (avant > 0) enregistrerGeste({ type: 'selection', titre: `Sélection vidée (${avant} cartes)` });
   return ecrire([]);
 }
 

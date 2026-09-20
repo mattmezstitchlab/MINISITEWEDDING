@@ -88,6 +88,11 @@ import {
 } from '../src/lib/miseEnLumiere';
 import MiseEnLumiere from '../src/components/MiseEnLumiere';
 import LeChiffre from '../src/components/LeChiffre';
+import LeTemps from '../src/components/LeTemps';
+import {
+  GESTES, LIGNES_MAX, anneesDuTemps, chargerTemps, dateDUneLigne, effacerTemps, enregistrerGeste,
+  heureCourte, jourCourt, lignesDeLAnnee, lignesDuJour, moisDeLAnnee, regleDuGeste, resumeDuTemps,
+} from '../src/lib/temps';
 import {
   CONFIDENTIALITE_CHIFFRE, MAITRES, METHODE_PAR_DEFAUT, MOTS, SYSTEME, anneePersonnelle, chargerChiffre,
   chiffreAdeux, chiffreDePersonnalite, chiffreDUneDate, chiffreDuNom, chiffreIntime, chiffresDeLaPersonne,
@@ -2049,6 +2054,9 @@ check('elle montre les axes', AXES_FOOTER.every((a) => pageFooter.includes(a.lab
 check('et les entrées à cocher', pageFooter.includes('Intermittent·e du spectacle'), true);
 check('et les lignes du footer', pageFooter.includes('Ce que votre footer porte'), true);
 check('sans coche, le ticket invite à en poser', pageFooter.includes('Cochez votre situation'), true);
+check('et, tout en bas, le temps', pageFooter.includes('Ce qui s’est passé, à sa date'), true);
+check('qui dit d’où il vient', pageFooter.includes('le temps commence au premier geste'), true);
+check('et ouvre la timeline complète', pageFooter.includes('href="/timeline"'), true);
 
 /* ————————————— LE POINT D'ÉTAT, LA FENTE, ET LES TICKETS ————————————— */
 
@@ -2552,6 +2560,79 @@ check('et le calcul s’ouvre sur demande', chiffreRendu.includes('Voir le calcu
 check('ce qu’il ne fera jamais est écrit', chiffreRendu.includes('Il ne compare personne'), true);
 check('et la personne garde la main', chiffreRendu.includes('Effacer'), true);
 effacerChiffre();
+
+/* ————————— LE TEMPS COMMUN : CHAQUE GESTE ÉCRIT SA LIGNE ————————— */
+
+effacerTemps();
+check('le temps part vide', chargerTemps().length, 0);
+check('et chaque famille de geste a son mot', GESTES.every((g) => g.nom.length > 5 && g.sens.length > 15), true);
+check('une famille inconnue ne dit rien', regleDuGeste('inventee' as never), null);
+
+const geste1 = enregistrerGeste({ type: 'selection', titre: 'Carte retenue : Le Cinéma', quand: '2026-09-20T09:15:00.000Z' });
+enregistrerGeste({ type: 'document', titre: 'Acte de naissance validé', quand: '2026-09-20T14:05:00.000Z' });
+check('un geste s’écrit, et se date', [typeof geste1.id, typeof geste1.quand], ['string', 'string']);
+check('le plus récent vient en tête', chargerTemps()[0]!.titre, 'Acte de naissance validé');
+check('le geste garde sa famille', chargerTemps()[1]!.type, 'selection');
+
+const temps = chargerTemps();
+check('les lignes du jour sont celles du jour', lignesDuJour(temps, new Date('2026-09-20T20:00:00.000Z')).length, 2);
+check('et un autre jour est vide', lignesDuJour(temps, new Date('2026-09-21T10:00:00.000Z')).length, 0);
+check('l’année se filtre aussi', lignesDeLAnnee(temps, 2026).length, 2);
+check('une année sans geste ne compte rien', lignesDeLAnnee(temps, 2025).length, 0);
+check('l’année se lit en douze parts', moisDeLAnnee(temps, 2026).length, 12);
+check('et le bon mois compte les siens', moisDeLAnnee(temps, 2026)[8]!.gestes, 2);
+check('les années se listent, la plus récente d’abord', anneesDuTemps(temps), [2026]);
+
+const resume = resumeDuTemps(temps);
+check('le résumé compte les gestes', resume.total, 2);
+check('il dit le premier et le dernier', [resume.premier?.titre, resume.derniere?.titre], ['Carte retenue : Le Cinéma', 'Acte de naissance validé']);
+check('et la famille la plus active', resume.famille !== null, true);
+
+check('l’heure s’écrit court', heureCourte('2026-09-20T14:05:00.000Z').endsWith('05'), true);
+check('la date s’écrit en clair', dateDUneLigne('2026-09-20T14:05:00.000Z').includes('2026'), true);
+check('et le jour court aussi', jourCourt('2026-09-20T14:05:00.000Z'), '20.09');
+
+/* Le plafond : le temps ne grossit pas sans fin. */
+const long = Array.from({ length: LIGNES_MAX + 60 }, (_, i) => ({
+  id: `vieux-${i}`, quand: '2026-01-01T00:00:00.000Z', type: 'journal', titre: `Vieux ${i}`,
+}));
+localStorage.setItem('vows:temps', JSON.stringify(long));
+check('le temps est plafonné', chargerTemps().length, LIGNES_MAX + 60);
+enregistrerGeste({ type: 'journal', titre: 'Un geste de plus' });
+check('et il se taille au-delà', chargerTemps().length, LIGNES_MAX);
+check('en gardant le plus récent', chargerTemps()[0]!.titre, 'Un geste de plus');
+
+/* Les autres briques écrivent au temps : rien n’est à rebrancher à la main. */
+effacerTemps();
+viderSelection();
+choisirCarte({ id: WEDDING_STYLES[0]!.id, sorte: 'univers', titre: WEDDING_STYLES[0]!.name });
+check('retenir une carte s’écrit dans le temps', chargerTemps()[0]!.type, 'selection');
+check('avec son nom', chargerTemps()[0]!.titre.includes(WEDDING_STYLES[0]!.name), true);
+enregistrerChiffre({ prenom: 'Claire', nomDeNaissance: 'Martin', date: '1992-06-14', cible: 'prive' });
+check('poser son chiffre s’écrit aussi', chargerTemps()[0]!.type, 'chiffre');
+check('sans jamais écrire la date dans la ligne', chargerTemps()[0]!.titre.includes('1992'), false);
+effacerChiffre();
+check('et l’effacer laisse une trace', chargerTemps()[0]!.titre, 'Chiffre effacé');
+viderSelection();
+
+/* Le bloc du temps, tel qu’il se rend. */
+enregistrerGeste({ type: 'magazine', titre: 'Numéro du jour ouvert', detail: '24 pages' });
+const tempsRendu = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/footer'] }, createElement(LeTemps as never)),
+);
+check('le temps se montre', tempsRendu.includes('Ce qui s’est passé, à sa date'), true);
+check('avec la ligne du jour', tempsRendu.includes('Numéro du jour ouvert'), true);
+check('et sa famille', tempsRendu.includes('Le magazine'), true);
+check('les douze mois sont là', ['janvier', 'juin', 'décembre'].every((m) => tempsRendu.includes(m)), true);
+check('et l’on peut ouvrir la timeline', tempsRendu.includes('La timeline complète'), true);
+check('le temps se dit vivant, ou vide', chargerTemps().length > 0, true);
+
+effacerTemps();
+const tempsVide = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/footer'] }, createElement(LeTemps as never)),
+);
+check('vide, il dit ce qui l’écrira', tempsVide.includes('Rien encore aujourd’hui'), true);
+check('et n’invente aucune année', tempsVide.includes('Aucune année pour l’instant'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

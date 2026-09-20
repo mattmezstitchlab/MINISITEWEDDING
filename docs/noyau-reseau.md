@@ -1892,3 +1892,51 @@ quatre nombres, l'année personnelle, le chiffre à deux, les neuf familles et l
 trois maîtres, **l'absence de tout mot qui juge**, la règle dite, le stockage
 (vide → rien, donné → relu, cible inconnue → privé, effaçable), et le rendu du
 bloc (le chiffre, ses mots, le calcul sur demande, ce qu'il ne fera jamais).
+
+---
+
+## §46 — Le temps commun, et sa place : tout en bas du footer
+
+**Ce qui manquait, en une phrase** : chaque brique du site datait ses choses dans
+son coin — la sélection son `choisiLe`, les annonces leur `quand`, les documents
+leur `savedAt` — et **aucune ne parlait à l'autre**. `src/lib/temps.ts` règle ça :
+**tous les gestes écrivent au même endroit**, une ligne chacun, sous `vows:temps` :
+**qui, quoi, quand, où**. On ne modifie jamais une ligne, on en ajoute une — c'est
+ce qui permet de **rejouer** un jour, un mois, une année.
+
+**Huit familles de gestes** (`GESTES`), chacune avec son mot et son sens :
+une carte retenue, le chiffre, le journal, un document, une annonce, un avis, le
+magazine, la carte. Une famille inconnue ne rend rien : le temps n'invente pas de
+gestes.
+
+**Deux briques écrivent déjà au temps, sans qu'on ait rien à rebrancher** :
+`choisirCarte` / `viderSelection` (la sélection) et `enregistrerChiffre` /
+`effacerChiffre` (le chiffre). Le temps **n'est pas un registre d'état civil** : la
+ligne du chiffre dit *« Chiffre posé, avec la date de naissance »* — **jamais la
+date elle-même**.
+
+**Le plafond** : `LIGNES_MAX = 2000`. Le temps ne grossit pas sans fin ; ce qui
+dépasse est taillé, et le plus récent reste.
+
+**La lecture** : `lignesDuJour`, `lignesDeLAnnee`, `moisDeLAnnee` (l'année en
+douze parts, première lecture du cadran), `anneesDuTemps`, `resumeDuTemps` (le
+total, le premier, le dernier, la famille la plus active), et l'écriture courte
+d'une heure (`14 h 05`), d'une date, d'un jour (`20.09`).
+
+**`LeTemps.tsx` — tout en bas du SUPER FOOTER.** Trois échelles : **aujourd'hui**
+(ce qui vient de se passer, avec son heure), **l'année en douze parts** (la
+première lecture du cadran : l'angle pour le jour, le rayon pour ce qui s'est
+passé), et **depuis le début** (les années, et leurs gestes). Le bloc dit son
+état — *« N gestes, depuis le … , le plus souvent : … »* — et il **ouvre la
+timeline complète** (`/timeline`), qui existait déjà et **n'était branchée nulle
+part** : c'est la première fois que la page du défilé a une porte d'entrée.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 892**, `npm run
+build` OK. Les vérifications de la passe : le temps vide, les familles, une
+famille inconnue, une ligne écrite et datée, le plus récent en tête, les filtres
+du jour et de l'année, les douze mois et leur compte, les années ordonnées, le
+résumé, l'heure, la date et le jour courts, **le plafond** (on écrit au-delà,
+puis ça se taille en gardant le plus récent), **l'écriture par la sélection et
+par le chiffre**, le bloc rendu (les lignes, les familles, les douze mois, le
+lien), le bloc vide qui dit ce qui l'écrira, et **le footer qui porte le temps
+désormais**.

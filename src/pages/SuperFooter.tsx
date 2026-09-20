@@ -9,6 +9,7 @@ import { walletParCategorie, useWallet } from '../lib/wallet';
 import { usePersonaCourante } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_FOOTER } from '../lib/navDesPages';
+import LeTemps from '../components/LeTemps';
 
 /**
  * SUPER FOOTER — LE FOOTER D'UNE PERSONNE, ET LES DOCUMENTS QUI VONT AVEC
@@ -325,6 +326,9 @@ export default function SuperFooter() {
           </div>
         )}
       </section>
+
+      {/* ═════════ LE TEMPS : le journal des gestes, tout en bas ═════════ */}
+      <LeTemps />
     </div>
   );
 }
