@@ -74,9 +74,9 @@ export default function BottomCapsuleNav() {
         {/* L'entrée stable : créer sa carte. */}
         <button
           type="button"
-          onClick={() => navigate('/creer')}
-          aria-label="Créer sa carte"
-          title="Créer sa carte"
+          onClick={() => navigate('/ripple')}
+          aria-label="Le Point Zéro"
+          title="Le point zéro : créer l'objet unique"
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#0B0C12] shadow-[0_6px_16px_rgba(0,0,0,0.45)] transition hover:scale-105 sm:h-10 sm:w-10"
         >
           <Wand2 size={16} />

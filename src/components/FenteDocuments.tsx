@@ -107,10 +107,10 @@ export default function FenteDocuments() {
                     </button>
                   ))}
                   <Link
-                    to="/footer"
+                    to="/ripple"
                     className="inline-flex items-center rounded-full border border-black/15 px-3.5 py-1.5 text-[11.5px] font-semibold text-black/70 no-underline transition hover:border-black/50 hover:text-black"
                   >
-                    Ouvrir SUPER FOOTER
+                    Ouvrir SUPER RIPPLE
                   </Link>
                 </div>
 

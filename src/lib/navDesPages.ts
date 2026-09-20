@@ -1,6 +1,6 @@
 import {
   BookOpen, CalendarClock, CreditCard, Images, ListOrdered, Music2, Package,
-  ScrollText, ShoppingBag, Sparkles, Store, Tag, Users, Wand2,
+  Radar, ScrollText, ShoppingBag, Sparkles, Stamp, Store, Tag, Users, Wand2,
 } from 'lucide-react';
 import type { ActionNav } from './navVerticale';
 
@@ -25,11 +25,12 @@ export const NAV_ACCUEIL: ActionNav[] = [
   { id: 'playlist', label: 'La playlist', icone: Music2, ancre: 'bande-son', aide: 'Les morceaux du moment, et ceux que les invités proposent.' },
 ];
 
-/** SUPER FOOTER : ce qu'on vient y chercher. */
-export const NAV_FOOTER: ActionNav[] = [
+/** SUPER RIPPLE : ce qu'on vient y chercher. */
+export const NAV_RIPPLE: ActionNav[] = [
+  { id: 'point-zero', label: 'Le point zéro', icone: Radar, ancre: 'point-zero', aide: 'Une saisie au centre du cadran, et tout se répercute.' },
+  { id: 'fabrique', label: 'La fabrique', icone: Stamp, ancre: 'fabrique', aide: 'Les objets qu’on prépare ici, et leurs repères.' },
   { id: 'axes', label: 'Votre situation', icone: CreditCard, ancre: 'axe-statut', aide: 'Ce qui se coche, et ce que ça ouvre.' },
   { id: 'documents', label: 'Les documents', icone: ScrollText, ancre: 'documents', aide: 'Ce qui existe vraiment : qui demande, au nom de qui, quoi réunir.' },
-  { id: 'footer', label: 'Votre footer', icone: Store, ancre: 'footer', aide: 'Les lignes qu’on garde sur sa page profil et dans sa carte.' },
 ];
 
 /** La page de l'éditeur : ce qu'on vient y faire. */

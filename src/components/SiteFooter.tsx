@@ -18,7 +18,7 @@ const PORTES: Array<{ label: string; to: string }> = [
   { label: 'Le shop', to: '/shop' },
   { label: 'Le mariage', to: '/le-mariage' },
   { label: 'La timeline', to: '/timeline' },
-  { label: 'Le footer', to: '/footer' },
+  { label: 'Le Ripple', to: '/ripple' },
 ];
 
 export default function SiteFooter() {

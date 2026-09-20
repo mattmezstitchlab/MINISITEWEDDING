@@ -62,7 +62,7 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
             ['SUPER MAGAZINE', '/magazine'],
             ['LE MARIAGE', '/le-mariage'],
             ['SUPER SHOP', '/supermarriage'],
-            ['SUPER FOOTER', '/footer'],
+            ['SUPER RIPPLE', '/ripple'],
           ].map(([label, to]) => (
             <Link
               key={to}

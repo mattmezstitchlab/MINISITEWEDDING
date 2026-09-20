@@ -16,7 +16,7 @@ import {
  * - la **semaine** — ce que les gens faisaient à cette période, et la lune ;
  * - la **carte** — sa couleur, sa figure, son sens ;
  * - **votre rôle** — ce que vous avez à faire, et ceux avec qui vous le faites ;
- * - **vos coches** (SUPER FOOTER) — les papiers qui vous concernent ;
+ * - **vos coches** (SUPER RIPPLE) — les papiers qui vous concernent ;
  * - **votre univers** — le lieu de la journée ;
  * - et le **temps** : la même semaine se relit **au passé** (l'an dernier, la
  *   même semaine) et **au futur** (l'an prochain).
@@ -112,7 +112,7 @@ export interface OptionsEdition {
   roleId?: string;
   /** L'univers choisi. */
   styleId?: string;
-  /** Les coches de SUPER FOOTER. */
+  /** Les coches de SUPER RIPPLE. */
   options?: string[];
   /** Passé, présent, futur : la même semaine, trois fois. */
   temps?: 'passe' | 'present' | 'futur';
@@ -273,7 +273,7 @@ export function composerEdition(options: OptionsEdition = {}): Edition {
         const doc = papiers.length > 0 ? choisir(papiers, graine) : null;
         if (!doc) {
           return (
-            'Aucune coche dans SUPER FOOTER : le magazine ne sort aucun papier. Cochez votre situation, ' +
+            'Aucune coche dans SUPER RIPPLE : le magazine ne sort aucun papier. Cochez votre situation, ' +
             'et cette page dira ce qui existe pour vous — qui le demande, au nom de qui, et quoi réunir.'
           );
         }

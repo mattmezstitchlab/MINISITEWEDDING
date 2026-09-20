@@ -26,7 +26,7 @@ import LeMariage from './pages/LeMariage';
 import PageMetier from './pages/PageMetier';
 import PageProfil from './pages/PageProfil';
 import EditeurMiniSite from './pages/EditeurMiniSite';
-import SuperFooter from './pages/SuperFooter';
+import SuperRipple from './pages/SuperRipple';
 
 const Aime = lazy(() => import('./pages/Aime'));
 
@@ -67,7 +67,9 @@ export default function App() {
             {/* L'espace du prestataire : le même éditeur, dans la langue du métier. */}
             <Route path="/prestataire" element={<VendorStudio />} />
             <Route path="/parametres" element={<EditeurMiniSite />} />
-            <Route path="/footer" element={<SuperFooter />} />
+            <Route path="/ripple" element={<SuperRipple />} />
+            {/* SUPER RIPPLE a remplacé SUPER FOOTER : l'ancienne adresse suit. */}
+            <Route path="/footer" element={<Navigate to="/ripple" replace />} />
             {/* SuperMariage : le magasin où l'on coche son mariage, et le ticket suit. */}
             <Route path="/supermarriage" element={<SuperMariage />} />
             {/* Le mariage, en entier : l'article, la playlist, le récap — une page par univers. */}

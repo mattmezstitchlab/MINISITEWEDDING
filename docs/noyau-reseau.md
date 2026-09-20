@@ -2939,3 +2939,44 @@ le fond tient.
 molette et défile les jours ; les filtres qui relient les 1 800 du concept aux
 couvertures ; et l'audit du reste du site dans le même sens — tout est dans le
 temps.
+
+---
+
+## §61 — SUPER RIPPLE : le point de convergence, une saisie et tout se répercute
+
+**Le nettoyage d'abord.** Les pages de création à l'ancienne restent vivantes
+derrière leurs adresses (`/creer`, `/carte`, les studios), mais elles quittent
+la vitrine : le bouton blanc du dock ne mène plus à l'onboarding, et la grande
+entrée qui s'appelait SUPER FOOTER change de nom — son concept a dépassé le mot.
+
+**Elle s'appelle désormais SUPER RIPPLE** (`/ripple` ; `/footer` redirige, rien
+n'est perdu). Son idée : tout ce qui était dispersé — les formulaires de la
+carte, du mini-site, de chaque organisme, de chaque recherche — se réunit en
+**une seule page, en profondeur**, comme la timeline descend des saisons aux
+jours. Le but est assumé : **gagner les années perdues à tout re-rentrer
+partout**.
+
+**1. Le point zéro.** En haut de la page, le cadran — et son centre : trois
+champs, le nom, le jour, la ville. Saisis une fois. C'est le pendant du champ
+qui génère le magazine, pour tout ce qui concerne la personne. Le centre du
+cadran s'allume quand tout y est.
+
+**2. L'agent lit le ticket.** Le point zéro donne un aperçu structuré : l'agent
+dit ce qu'il manque encore, confirme quand tout peut se propager. C'est sur cet
+aperçu qu'il s'appuiera pour guider.
+
+**3. La fabrique.** Les objets qu'on prépare ici, comme des éléments prêts à
+partir dans la mise en page : ticket de caisse, carte postale, timbre, tampon,
+ticket spectacle, billet d'avion, sticker. Chacun porte le point zéro en direct
+— une modification se répercute sur tous. Et chacun choisit son **picto-repère**
+qui deviendra son repère signalétique dans le magazine : on prépare une fois,
+ça se propage partout, comme des éléments envoyés dans la mise en page.
+
+**4. Le ticket, les rayons, le portefeuille, les documents** — le mécanisme qui
+marchait déjà reste intact : on coche sa situation, le ticket dit ce que ça
+ouvre, le portefeuille range, et ce qui engage le droit porte sa source et se
+fait valider.
+
+**Le magazine devient l'objet unique** — à lui-même une carte. Le cadran en est
+le symbole : une information entre en son centre, elle est triée, puis propagée
+et classée. C'est ce qu'on vend et qu'on prouve ici.

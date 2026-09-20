@@ -49,6 +49,10 @@ import {
 } from '../src/lib/castingVisuels';
 import { MOMENTS_VISUELS } from '../src/lib/promptsVisuels';
 import LanguetteTimeline from '../src/components/LanguetteTimeline';
+import {
+  OBJETS_DE_LA_FABRIQUE, ceQuiManque, changerPointZero, endroitsTouches, lePointZero,
+  phraseDeLAgent, pictoDuRipple, repereDe, rippleComplet,
+} from '../src/lib/ripple';
 import { basculerTimeline } from '../src/lib/capsuleCommande';
 import {
   angleDuJour, chercherUnJour, joursDeLaSemaine, moisDeLaSaison, semainesDuMois,
@@ -172,7 +176,7 @@ import EditionSemaine from '../src/components/EditionSemaine';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import CouvertureMagazine from '../src/components/CouvertureMagazine';
-import SuperFooter from '../src/pages/SuperFooter';
+import SuperRipple from '../src/pages/SuperRipple';
 import FenteDocuments from '../src/components/FenteDocuments';
 import {
   AXES_FOOTER, CHOIX_VIDE, DOCUMENTS, LIGNES_FOOTER, basculer, documentsOuverts, etatDuDocument,
@@ -205,7 +209,7 @@ import { GESTES_UNIVERSELS, enregistrerNavVerticale } from '../src/lib/navVertic
 import { AIDE_PROFIL, MENU_PROFIL, SORTIE_PROFIL, rolesDuMenu } from '../src/lib/menuProfil';
 import {
   NAV_ACCUEIL, NAV_ARTICLE, NAV_MAGAZINE, NAV_METIER, NAV_PARAMETRES, NAV_PRODUIT, NAV_PRESTATAIRE,
-  NAV_FOOTER, NAV_SHOP, NAV_UNIVERS,
+  NAV_RIPPLE, NAV_SHOP, NAV_UNIVERS,
 } from '../src/lib/navDesPages';
 import { FULL_ROLES_TAXONOMY } from '../src/lib/weddingTaxonomy';
 import { DUREE_OUVERTURE, DUREE_OUVERTURE_SANS_MOUVEMENT, ouvertureDejaVue } from '../src/lib/ouverture';
@@ -1048,7 +1052,7 @@ const chromeMetier = renderToStaticMarkup(
 check('la barre du site est sur la page d’un métier', chromeMetier.includes('SUPER MARIAGE'), true);
 check('elle annonce la page', chromeMetier.includes('Les métiers'), true);
 check('elle porte le caddie et le magazine', ['Le Shop', 'Le Magazine'].every((m) => chromeMetier.includes(m)), true);
-check('le dock est là aussi', chromeMetier.includes('Créer sa carte'), true);
+check('le dock est là aussi', chromeMetier.includes('Le Point Zéro'), true);
 const chromeAccueil = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -1066,7 +1070,7 @@ check(
   true,
 );
 check('et les portes du site', ['Le magazine', 'Le shop', 'La timeline'].every((l) => chromeAccueil.includes(l)), true);
-check('mais le dock y est', chromeAccueil.includes('Créer sa carte'), true);
+check('mais le dock y est', chromeAccueil.includes('Le Point Zéro'), true);
 /* La nav verticale, elle, est montée une fois pour tout le site. */
 check('la nav verticale y est', chromeAccueil.includes('aria-label="Le Magazine"'), true);
 const chromeSite = renderToStaticMarkup(
@@ -1629,7 +1633,7 @@ check('sans choix, on est les mariés', personaCourant(), 'maries');
 const dockDefaut = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/le-mariage/vegas'] }, createElement(BottomCapsuleNav as never)),
 );
-check('le dock a son entrée stable : créer sa carte', dockDefaut.includes('aria-label="Créer sa carte"'), true);
+check('le dock a son entrée stable : le point zéro', dockDefaut.includes('aria-label="Le Point Zéro"'), true);
 check(
   'les cinq moments pilotent la couverture',
   ['l’aube', 'le matin', 'le midi', 'l’après-midi', 'le soir'].every((m) => dockDefaut.includes(`Le moment — ${m}`)),
@@ -2036,7 +2040,7 @@ check('le shop s’appelle SUPER SHOP', accueil.includes('SUPER SHOP'), true);
 check('il garde son ticket de caisse', accueil.includes('TOTAL'), true);
 check('et n’ouvre plus l’éditeur des métiers', accueil.includes('L’éditeur des métiers'), false);
 
-/* ———————————————————— SUPER FOOTER : les rayons et le ticket ———————————————————— */
+/* ———————————————————— SUPER RIPPLE : le point zéro, la fabrique, le ticket ———————————————————— */
 
 /* Les axes : quatre questions, et leurs couches. */
 check('quatre grands axes', AXES_FOOTER.map((a) => a.label), [
@@ -2095,13 +2099,19 @@ check('dont les mentions légales', LIGNES_FOOTER[0]?.id, 'mentions');
 
 /* La page : les axes, le ticket, et les documents en détail. */
 const pageFooter = renderToStaticMarkup(
-  createElement(MemoryRouter, { initialEntries: ['/footer'] }, createElement(SuperFooter as never)),
+  createElement(MemoryRouter, { initialEntries: ['/ripple'] }, createElement(SuperRipple as never)),
 );
-check('la page s’appelle SUPER FOOTER', pageFooter.includes('SUPER FOOTER'), true);
+check('la page s’appelle SUPER RIPPLE', pageFooter.includes('SUPER RIPPLE'), true);
+check('le point zéro est là, avec ses trois champs', ['Le nom', 'Le jour', 'La ville'].every((c) => pageFooter.includes(`${c} du point zéro`)), true);
+check('l’agent dit ce qui manque', pageFooter.includes('Il manque encore'), true);
+check('la fabrique prépare ses sept objets', ['Le ticket de caisse', 'La carte postale', 'Le timbre', 'Le tampon', 'Le ticket spectacle', 'Le billet d’avion', 'Le sticker'].every((o) => pageFooter.includes(o)), true);
+check('et chaque objet choisit son repère', pageFooter.includes('Repère Le reçu pour Le ticket de caisse'), true);
+check('le ticket porte le point zéro', pageFooter.includes('Point zéro'), true);
 check('elle dit qu’on ne fabrique pas d’acte', pageFooter.includes('on ne fabrique pas d’acte'), true);
+check('et le but : une saisie, tout se répercute', pageFooter.includes('gagner les années'), true);
 check('elle montre les axes', AXES_FOOTER.every((a) => pageFooter.includes(a.label)), true);
 check('et les entrées à cocher', pageFooter.includes('Intermittent·e du spectacle'), true);
-check('et les lignes du footer', pageFooter.includes('Ce que votre footer porte'), true);
+check('et les lignes qui se gardent partout', pageFooter.includes('Ce qui se garde partout'), true);
 check('sans coche, le ticket invite à en poser', pageFooter.includes('Cochez votre situation'), true);
 check('et, tout en bas, le temps', pageFooter.includes('Ce qui s’est passé, à sa date'), true);
 check('qui dit d’où il vient', pageFooter.includes('le temps commence au premier geste'), true);
@@ -2298,7 +2308,7 @@ const NAVS: Array<[string, ReturnType<typeof navDePage>]> = [
   ['une fiche produit', NAV_PRODUIT],
   ['l’espace prestataire', NAV_PRESTATAIRE],
   ['les paramètres', NAV_PARAMETRES],
-  ['le footer', NAV_FOOTER],
+  ['le ripple', NAV_RIPPLE],
 ];
 check('chaque page a sa nav', NAVS.every(([, liste]) => liste.length >= 2), true);
 check(
@@ -2311,7 +2321,7 @@ check(
 const ancresAttendues: Record<string, string[]> = {
   accueil: ['univers-hero', 'manifeste', 'editeur', 'supermarriage', 'bande-son'],
   parametres: ['mini-site'],
-  footer: ['axe-statut', 'documents', 'footer'],
+  footer: ['axe-statut', 'documents', 'footer', 'point-zero', 'fabrique'],
   univers: ['article', 'programme', 'carte-fidelite'],
   metier: ['playlist', 'ticket'],
   article: ['article', 'moments'],
@@ -3663,7 +3673,7 @@ check('le pied aussi, partout', chromeAccueil.includes('Le soleil-cadran'), true
 check('et la page du magasin', magasin.includes('Le soleil-cadran'), true);
 
 /* ——— LE DOCK : UN BOUTON BLANC STABLE, DES OUTILS QUI MÈNENT À DES PAGES RÉELLES ——— */
-check('le bouton blanc propose toujours de créer sa carte', chromeAccueil.includes('aria-label="Créer sa carte"'), true);
+check('le bouton blanc mène au point zéro', chromeAccueil.includes('aria-label="Le Point Zéro"'), true);
 check('et il ne change plus avec le rôle', chromeAccueil.includes('Entrer comme'), false);
 /* Les outils de rôle sont partis : le dock commande les moments et la timeline. */
 check('le dock montre les cinq moments', ['Le moment — l’aube', 'Le moment — le soir'].every((m) => chromeAccueil.includes(m)), true);
@@ -3677,14 +3687,28 @@ check('et celle des moments aussi', pageArticle.includes('id="moments"'), true);
 
 
 
+
+/* ——— LE RIPPLE : UNE SAISIE AU POINT ZÉRO, TOUT SE RÉPERCUTE ——— */
+
+changerPointZero({ nom: '', jour: '', ville: '' });
+check('au départ, tout manque', ceQuiManque(lePointZero()).length, 3);
+check('l’agent le dit', phraseDeLAgent(lePointZero()).includes('Il manque encore'), true);
+changerPointZero({ nom: 'Matthieu', jour: '21 septembre', ville: 'Bouray-sur-Juine' });
+check('trois champs suffisent : le point zéro est complet', rippleComplet(lePointZero()), true);
+check('et l’agent confirme', phraseDeLAgent(lePointZero()).includes('Tout y est'), true);
+check('une saisie touche huit endroits : le ticket et les sept objets', endroitsTouches(lePointZero()), 8);
+check('la fabrique a ses sept objets', OBJETS_DE_LA_FABRIQUE.length, 7);
+check('chaque objet a son picto par défaut', OBJETS_DE_LA_FABRIQUE.every((o) => pictoDuRipple(o.pictoParDefaut).id === o.pictoParDefaut), true);
+check('et son repère répond', repereDe('timbre'), 'timbre');
+
 /* ——— LA CAPSULE DE COMMANDE, LA LANGUETTE TIMELINE, LA NAV DU HEADER ——— */
 
 /* Le header porte les grandes entrées du concept. */
 check('la nav du header annonce les grands cœurs', entete.includes('aria-label="Les grandes entrées"'), true);
-check('le magazine d’abord', ['SUPER MAGAZINE', 'LE MARIAGE', 'SUPER SHOP', 'SUPER FOOTER'].every((m) => entete.includes(m)), true);
+check('le magazine d’abord', ['SUPER MAGAZINE', 'LE MARIAGE', 'SUPER SHOP', 'SUPER RIPPLE'].every((m) => entete.includes(m)), true);
 
-/* La page SUPER FOOTER se lit : le fond sombre tient, le voile clair est parti. */
-check('la page super footer est sombre', pageFooter.includes('vp-env-dark'), true);
+/* La page SUPER RIPPLE se lit : le fond sombre tient, le voile clair est parti. */
+check('la page super ripple est sombre', pageFooter.includes('vp-env-dark'), true);
 
 /* La languette timeline : l'année en couvertures, des saisons aux jours. */
 basculerTimeline(true);

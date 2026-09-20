@@ -45,7 +45,7 @@ const MENTIONS: Array<[string, string]> = [
   ['/prestataire', 'Espace prestataire'],
   ['/supermarriage', 'SuperShop'],
   ['/parametres', 'Paramètres'],
-  ['/footer', 'Super Footer'],
+  ['/ripple', 'Super Ripple'],
 ];
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
