@@ -2980,3 +2980,30 @@ fait valider.
 **Le magazine devient l'objet unique** — à lui-même une carte. Le cadran en est
 le symbole : une information entre en son centre, elle est triée, puis propagée
 et classée. C'est ce qu'on vend et qu'on prouve ici.
+
+---
+
+## §62 — Le cadran ouvre l'accueil, et rien n'est stocké
+
+**L'accueil change de porte.** Le hero d'hier — « qui êtes-vous dans ce
+mariage ? » — descend d'un étage : il reste, juste en dessous. Devant lui,
+**le cadran** : les quatre saisons en quartiers, les encoches de la roue, et
+autour, **les cinq grandes familles** (SUPER PRESTATAIRE, SUPER MARIÉ·E, SUPER
+FUTUR·E, SUPER FAMILLE, SUPER TÉMOIN). On fait pivoter le cadran pour choisir
+son rôle ; au centre, **le point zéro** :
+
+- sans rôle choisi, on clique : le cadran se met en rotation et **la voix du
+  concept** se lance — l'audio se génère à part (`/audio/explication-concept.mp3`) ;
+- un rôle choisi, on clique : **la vidéo de présentation de ce rôle** se lance
+  (`/videos/presentation-<role>.mp4`) — chacun comprend le fonctionnement chez
+  soi ;
+- derrière tout ça, **la vidéo de présentation** du site passe en fond.
+
+Tant que les fichiers ne sont pas là, la page le dit simplement : « la voix
+arrive bientôt », « la vidéo se prépare ». Rien de cassé, rien d'attendu.
+
+**Et le principe qui gouverne tout le reste : rien n'est stocké en fichier.**
+Un document qui arrive — un PDF, une capture d'écran, un SMS, une page — est
+**extrait (OCR), reconnu, puis classé**. Le fichier repart, l'information
+reste, rangée à sa place dans le portefeuille. C'est la condition pour que le
+Ripple reste léger, propre, et sans doublons.
