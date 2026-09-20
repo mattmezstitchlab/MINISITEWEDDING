@@ -1,122 +1,118 @@
-# PROMPT À DONNER À GEMINI / ARENA STUDIO / LEONARDO / UNE AUTRE CONVERSATION — LA BIBLIOTHÈQUE D'IMAGES SUR GITHUB
+# PROMPT À DONNER À GEMINI / ARENA STUDIO / LEONARDO / UNE AUTRE CONVERSATION — LA BIBLIOTHÈQUE DES 54 MAGAZINES
 
 > **Mode d'emploi.** Copiez le bloc ci-dessous dans la conversation de votre
-> choix (Gemini, Arena Studio, Leonardo, ou une autre conversation Arena) : il
-> décrit **la bibliothèque d'images à construire**, comme un dépôt GitHub à part
-> qui servira **de serveur et de liens** au site. Le site, lui, est déjà prêt à
-> la consommer : les noms de fichiers, la déclaration de chaque image et les
-> cinq critères de choix sont déjà écrits dans son code.
+> choix : il décrit **la bibliothèque d'images à construire**, comme un dépôt
+> GitHub à part qui sert de **serveur et de liens** au site. Le site, lui, est
+> déjà prêt à la consommer : les noms de fichiers, les 432 déclarations et le
+> plan de production sont déjà écrits dans son code
+> (`npm run prompts:aime`, `npm run visuels`).
+>
+> **Ce qui a changé.** L'ancien modèle demandait **365 fonds + 1 825 scènes**
+> (un dossier par jour, `MM-JJ`). Le nouveau demande **54 couvertures + 378
+> chapitres** (un dossier par semaine, `semaine-01` … `semaine-54`). Les deux
+> anciens dossiers restent lus comme repli de transition, mais la bibliothèque à
+> produire est celle-ci :
 
 ---
 
 ```
 Tu construis la bibliothèque d'images de AIME MAGAZINE : un dépôt GitHub à part,
-qui servira de SERVEUR et de LIENS au site. Le site attend des fichiers, des
-noms exacts, et une déclaration par image. Tout le reste — l'outil de
-génération, le rythme, les lots — est ta liberté.
+qui sert de SERVEUR et de LIENS au site. Le site attend des fichiers, des noms
+exacts, et une déclaration par image. Tout le reste — l'outil de génération, le
+rythme, les lots — est ta liberté.
 
-## CE QUE LE SITE ATTEND, SANS NÉGOCIATION
+## LE MODÈLE, SANS NÉGOCIATION
 
-1. UN DOSSIER PAR JOUR DE L'ANNÉE, au format MM-JJ :
+UN DOSSIER PAR MAGAZINE — une semaine de l'année, 54 en tout :
 
    images/
-     01-01/
-     01-02/
+     semaine-01/
+     semaine-02/
      …
-     12-31/
+     semaine-54/
 
-2. SIX PLANS PAR JOUR, avec des noms de fichiers EXACTS :
+HUIT FICHIERS PAR MAGAZINE, aux noms EXACTS :
 
-   MM-JJ/couverture.jpg      le fond de la couverture
-   MM-JJ/aube.jpg            les cinq moments de lumière
-   MM-JJ/matin.jpg
-   MM-JJ/midi.jpg
-   MM-JJ/apres-midi.jpg
-   MM-JJ/soir.jpg
+   semaine-NN/cover.jpg          la couverture du magazine
+   semaine-NN/01-amoureux.jpg    chapitre 01 — Les Amoureux
+   semaine-NN/02-style.jpg       chapitre 02 — Le Style
+   semaine-NN/03-lieux.jpg       chapitre 03 — Les Lieux
+   semaine-NN/04-recevoir.jpg    chapitre 04 — L'Art de recevoir
+   semaine-NN/05-fete.jpg        chapitre 05 — La Fête
+   semaine-NN/06-monde.jpg       chapitre 06 — Le Monde
+   semaine-NN/07-souvenirs.jpg   chapitre 07 — Les Souvenirs
 
-   La NUIT n'a pas d'image : elle garde le dessin du site. C'est une règle,
-   pas un manque.
+   semaine-53 = le 31 décembre (le jour de trop)
+   semaine-54 = le 29 février (le jour bissextile)
+   Les deux ont leurs sept chapitres, comme les autres.
 
-3. TROIS RANGS PAR PLAN, quand il y a plusieurs candidates : le premier est
-   celui qu'on veut, les autres sont des candidates de casting :
+TOTAL : 54 couvertures + 378 chapitres = 432 images.
+FORMAT : 5 / 7, portrait, 1000 × 1400, ≤ 250 Ko.
 
-   MM-JJ/couverture.jpg | couverture-2.jpg | couverture-3.jpg
+LES SEPT CHAPITRES SONT TOUJOURS LES MÊMES. Ce qui change à chaque semaine,
+c'est la DIRECTION ARTISTIQUE : matière, motif, lumière, palette, et le sujet
+propre à chacun des sept chapitres (écrits dans le code du site, semaine par
+semaine — demande-les si tu ne les as pas).
 
-4. DEUX FAMILLES D'IMAGES, PAS AU MÊME POINT :
-   - 365 FONDS DE COUVERTURE : un par jour, disponibles tout de suite — une
-     matière du jour, sans visage ni objet identifiable, qui tient du texte
-     par-dessus ;
-   - 1 825 SCÈNES : cinq moments par jour, LE MÊME PERSONNAGE CINQ FOIS. Une
-     scène ne se produit que si le personnage est documenté (on n'illustre pas
-     ce qu'on n'a pas documenté). L'AUBE est l'image de référence : les quatre
-     autres gardent le même visage, la même silhouette, le même stylisme —
-     seule la lumière change.
+## LA RÈGLE ABSOLUE
+
+Ne produis pas « des images de mariage ». Construis une bibliothèque éditoriale
+sur l'univers du mariage : une robe, une table, une ville, une chanson, une
+architecture, un objet transmis, une famille, un voyage — le mariage est le
+TERRITOIRE, pas le sujet. Sors de l'imagerie conventionnelle : pas de mariés
+souriants, pas d'alliances en gros plan, pas de bouquet sage, pas d'arche de
+fleurs.
+
+DIVERSITÉ : éditorial, mode, cinéma, documentaire, architecture, voyage,
+gastronomie, musique, art, culture, luxe, minimalisme, noir & blanc, argentique,
+rue, nature, surréalisme, pop, rétro, contemporain, brutalisme, Méditerranée,
+Japon, Inde, Afrique, Amérique latine, pays nordiques, France, Italie, États-Unis.
+
+SAISONS : hiver (neige, intérieur, lumière chaude, montagne, nuit) ;
+printemps (fleurs, jardins, renaissance, lumière douce) ; été (Méditerranée, mer,
+voyage, soleil, fête, extérieur) ; automne (forêt, architecture, gastronomie,
+terre, cinéma, lumière dorée). Une saison ne doit pas devenir une formule.
+
+COHÉRENCE : les sept images d'une semaine forment UN magazine — même palette,
+même matière, même lumière. Chaque chapitre reste immédiatement identifiable.
 
 ## LA DÉCLARATION DE CHAQUE IMAGE
 
-Chaque image produite porte sa déclaration, dans un fichier `manifeste.json` à
-la racine du dépôt — c'est elle qui permet au site de choisir sans voir :
+Chaque image porte sa déclaration, dans `manifeste.json` à la racine du dépôt :
 
 {
-  "fichier": "images/09-21/midi-2.jpg",
-  "moment": "midi",                  // aube | matin | midi | apres-midi | soir | couverture
-  "lumiere": "dure, studio, graphique",
-  "couleur": "#86B87F",              // la dominante, en #RRGGBB
-  "largeur": 1000,
-  "hauteur": 1400,                   // le format demandé est 5 / 7
-  "contient": ["matthieu", "portrait"],
-  "note": "candidate 2 — ombre plus nette"
+  "fichier": "images/semaine-38/04-recevoir.jpg",
+  "semaine": 38,
+  "chapitre": "04-recevoir",
+  "titre": "L'Art de recevoir",
+  "univers": "Tables, gastronomie, pâtisserie, fleurs, décoration, objets",
+  "saison": "Été",
+  "style": "Lumière d'arrière-saison, éditorial",
+  "sujet": "des figues, du miel et du vin blanc, table sous les arbres",
+  "dominante_color": "#C98A3E",
+  "description": "…une phrase qui dit ce qu'on voit…",
+  "mots_cles": ["arrière-saison", "éditorial", "table", "mariage"]
 }
 
-## LES CINQ CRITÈRES DE CHOIX DU SITE (le casting juge avec eux)
+## INTERDITS
 
-| critère | poids | ce qu'on regarde |
-| --- | --- | --- |
-| le moment | 3 | l'image montre-t-elle bien l'aube, le midi, le soir ? |
-| la lumière | 2 | la lumière décrite est-elle celle du moment ? |
-| la couleur | 2 | la dominante est-elle proche de la couleur du jour ? |
-| le cadrage | 1 | est-ce bien du 5 / 7 ? |
-| le sujet | 1 | voit-on ce que la scène demande ? |
-
-Une image qui ne peut pas déclarer ces cinq champs ne sert à rien : la
-déclaration fait partie de l'image.
-
-## LA DIRECTION ARTISTIQUE
-
-- photographie éditoriale de mode, pas une illustration ;
-- une véritable direction de casting : un visage, un âge, une silhouette tenus ;
-- stylisme contemporain, matières nobles, coupes nettes ;
-- mise en scène cinématographique, une intention par image ;
-- fond et lumière maîtrisés : une source décidée, une ombre assumée ;
-- format 5 / 7, portrait, 85 mm ou 50 mm, ouverture ouverte ;
-- grain fin, couleurs désaturées sauf la couleur de la saison.
-
-INTERDITS : aucun kitsch religieux, aucune icône, aucune auréole, aucun vitrail ;
-aucune silhouette anonyme ni foule ; pas d'illustration, pas de cartoon, pas de
-rendu 3D lisse.
-
-## CE QUE TU DOIS CONSTRUIRE, DANS CE DÉPÔT
-
-1. `manifeste.json` — la déclaration de chaque image, au format ci-dessus.
-2. `images/` — les dossiers MM-JJ et leurs fichiers, aux noms exacts.
-3. `LISEZ-MOI.md` — comment produire un lot : le personnage, sa fiche, les cinq
-   moments, la déclaration à remplir.
-4. Les scripts ou la méthode qui produisent les images PAR LOTS de 16 journées
-   (16 personnages × 5 scènes = 80 images), l'aube d'abord, puis les quatre
-   autres tenues sur la même référence.
-5. Le dépôt servi tel quel : les liens bruts du dépôt (ou GitHub Pages) sont les
-   URLs que le site appellera — aucun serveur intermédiaire.
+aucun texte, aucun lettrage, aucun logo, aucun filigrane ; aucune icône
+religieuse, aucun vitrail, aucune auréole ; aucune illustration, aucun rendu 3D
+lisse, aucun cartoon ; aucune image empruntée à une autre semaine.
 
 ## L'ORDRE DE PRODUCTION
 
-1. Les 365 FONDS DE COUVERTURE d'abord — ils n'attendent personne.
-2. Puis les scènes, par journées documentées, en commençant par celles qui ont
-   déjà leur brief (16 journées aujourd'hui, 80 scènes).
-3. Chaque lot produit remplit le manifeste : le site prend la photo là où elle
-   est, et garde son dessin partout ailleurs. Une image manquante ne casse
-   jamais une page.
+1. LES 54 COUVERTURES d'abord : ce sont les portes d'entrée, et elles suffisent
+   à faire vivre la collection.
+2. PUIS LES SEPT CHAPITRES, semaine par semaine (huit images par lot).
+3. Chaque lot livré se relève d'un coup : le site prend les photos là où elles
+   sont, garde ses dessins partout ailleurs, et dit ce qui manque.
 
 Commence par me proposer la structure exacte du dépôt, la méthode de production
-par lots, et le format du manifeste que tu vas écrire — puis attends ma
-validation avant de produire le premier lot.
+par lots, et le format du manifeste — puis attends ma validation avant de
+produire le premier lot.
 ```
+
+Le site n'attend pas la bibliothèque pour fonctionner : **le dessin tient la
+place**, et le repli est visible (« à paraître »). Voir
+`docs/magazine-54-semaines.md` pour le mapping complet.

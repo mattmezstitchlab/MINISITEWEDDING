@@ -666,3 +666,159 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
     animation: none;
   }
 }
+
+
+/* ————————————————— LE TICKET QUI SORT, ET LE TICKET QUI PART —————————————————
+ * Deux mouvements, deux `transform`, aucune mesure : le papier sort du haut de
+ * l'écran en glissant, et il repart vers les portefeuilles en rétrécissant.
+ */
+@keyframes presse-de-la-fente {
+  from { transform: translate3d(0, -130%, 0); opacity: 0; }
+  65%  { transform: translate3d(0, 3%, 0); opacity: 1; }
+  to   { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+.presse-de-la-fente {
+  display: block;
+  animation: presse-de-la-fente 700ms cubic-bezier(.2,.9,.25,1) both;
+}
+
+@keyframes vol-du-ticket {
+  from { transform: translate3d(-50%, 0, 0) scale(1); opacity: 0.9; }
+  to   { transform: translate3d(calc(-50% + (var(--vol) - 2) * 9vw), 34svh, 0) scale(0.2); opacity: 0; }
+}
+
+.vol-du-ticket {
+  animation: vol-du-ticket 900ms cubic-bezier(.4,.05,.6,.95) both;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Les bandes — la composition de la page d'entrée
+ *
+ *  Une bande = un nom à gauche, un contenu au centre, un filet entre les
+ *  deux. C'est le rythme de la référence étudiée le 20 septembre 2026,
+ *  écrit avec le matériel d'AIME : hairline, encre, chiffres tabulaires,
+ *  aucune couleur de marque, aucun fond coloré qui ne vienne du magazine.
+ * ------------------------------------------------------------------ */
+
+.vp-bande {
+  border-top: 1px solid var(--vp-line);
+  padding-block: clamp(3.5rem, 9vw, 7rem);
+}
+
+.vp-bande-fond {
+  background: var(--vp-env-light-c);
+}
+
+/* Le nom de la bande : la marque, un point, le sujet — à gauche, toujours. */
+.vp-bande-nom {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vp-muted);
+}
+
+.vp-bande-nom b {
+  color: var(--vp-ink);
+  font-weight: 700;
+}
+
+/* Le titre d'une bande : grand, centré, tout de suite suivi de sa ligne. */
+.vp-bande-titre {
+  font-family: var(--font-spatial);
+  font-weight: 640;
+  letter-spacing: -0.032em;
+  line-height: 1.05;
+  font-size: clamp(1.9rem, 5vw, 3.4rem);
+}
+
+.vp-bande-sous {
+  font-size: clamp(0.95rem, 1.6vw, 1.06rem);
+  line-height: 1.6;
+  color: var(--vp-muted);
+  letter-spacing: -0.008em;
+}
+
+/* Les pastilles : une pleine (l'encre), une au trait. Jamais de couleur. */
+.vp-pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--vp-r-pill);
+  border: 1px solid var(--vp-ink);
+  background: var(--vp-ink);
+  color: #fff;
+  padding: 0.62rem 1.1rem;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: transform 0.35s var(--vp-ease), opacity 0.35s var(--vp-ease);
+}
+
+.vp-pastille:hover { opacity: 0.88; }
+.vp-pastille:active { transform: scale(0.97); }
+
+.vp-pastille-trait {
+  background: transparent;
+  color: var(--vp-ink);
+  border-color: var(--vp-line);
+}
+
+.vp-pastille-trait:hover { border-color: rgba(15, 17, 28, 0.28); opacity: 1; }
+
+/* Trois colonnes égales, séparées par des filets — pas par des cartes. */
+.vp-colonnes {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--vp-line);
+}
+
+.vp-colonne {
+  padding: 1.6rem 0;
+  border-bottom: 1px solid var(--vp-line);
+}
+
+@media (min-width: 760px) {
+  .vp-colonnes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vp-colonne {
+    padding: 1.8rem 1.6rem 1.8rem 0;
+    border-bottom: 0;
+    border-right: 1px solid var(--vp-line);
+  }
+  .vp-colonne:last-child { border-right: 0; padding-right: 0; }
+}
+
+/* Le numéro d'un geste : écrit grand, en chiffres tabulaires. */
+.vp-geste-numero {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--vp-ink);
+}
+
+/* La bande d'image : pleine largeur, calme, avec sa légende dessous. */
+.vp-bande-image {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--vp-env-light-c);
+}
+
+.vp-bande-image img {
+  width: 100%;
+  height: clamp(240px, 46vw, 520px);
+  object-fit: cover;
+  display: block;
+}
+
+/* Le filet de pied : la marque répétée, et les portes. */
+.vp-pied {
+  border-top: 1px solid var(--vp-line);
+  padding-block: 2.4rem 3rem;
+}
+

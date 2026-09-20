@@ -102,6 +102,14 @@ export const OBJETS_DE_LA_FABRIQUE: ObjetDeLaFabrique[] = [
   { id: 'sticker', nom: 'Le sticker', sens: 'Le picto qui colle partout et sert de repère.', pictoParDefaut: 'sticker' },
 ];
 
+/**
+ * **Ce qu'un objet de la fabrique sort de la fente** : son nom, et son sens.
+ * Un bouton rond n'est jamais décoratif : il imprime quelque chose.
+ */
+export function papierDeLObjet(objet: ObjetDeLaFabrique): { label: string; prix: string; sous: string } {
+  return { label: objet.nom.toUpperCase(), prix: '', sous: objet.sens };
+}
+
 export interface PictoDuRipple {
   id: string;
   nom: string;
