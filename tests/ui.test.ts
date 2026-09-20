@@ -27,7 +27,13 @@ import WeddingCard from '../src/components/WeddingCard';
 import GuestPhoneScreen from '../src/components/phone/GuestPhoneScreen';
 import Landing from '../src/pages/Landing';
 import ChampDuMagazine from '../src/components/ChampDuMagazine';
+import Generating from '../src/pages/Generating';
 import { prenomsDuChamp } from '../src/lib/champDuMagazine';
+import {
+  CLE_DU_MAGAZINE, composerLeMagazine, effacerMagazine, enregistrerMagazine, magazineCompose,
+  phraseDuMagazine,
+} from '../src/lib/composition';
+import { RUBRIQUES } from '../src/lib/aimeMoteur';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
 import LeMariage from '../src/pages/LeMariage';
@@ -3244,18 +3250,88 @@ check('« Paul · Emma » aussi', prenomsDuChamp('Paul · Emma').join('|'), 'Pau
 check('un seul prénom ne fabrique pas le second', prenomsDuChamp('Paul').join('|'), 'Paul|');
 check('un champ vide ne fabrique rien', prenomsDuChamp('   ').join('|'), '|');
 
+/* Le champ vide : un titre, deux champs, un bouton — et rien d'autre. */
+localStorage.removeItem(CLE_DU_MAGAZINE);
 const champVide = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(ChampDuMagazine as never, {})),
 );
+check('le bloc porte son titre, au-dessus du champ', champVide.includes('Votre magazine'), true);
 check('le champ demande les deux prénoms', champVide.includes('Vos deux prénoms'), true);
 check('et la date', champVide.includes('La date'), true);
 check('et il est une entrée du site, pas un formulaire', champVide.includes('Paul &amp; Emma'), true);
-check('sans réponse, il propose le magazine du jour', champVide.includes('Voir le magazine du jour'), true);
-check('et il dit que l’année entière existe déjà', champVide.includes('365 magazines'), true);
+check('le bouton dit ce qu’il fait', champVide.includes('Générer mon magazine'), true);
+check('et il n’y a plus de phrase à la place du bouton', champVide.includes('Aucune réponse n’est nécessaire'), false);
+check('le bloc annonce la structure du magazine', champVide.includes('24 pages · une par heure'), true);
 
-check('le champ est la première chose du hero de l’accueil', accueil.indexOf('Vos deux prénoms') < accueil.indexOf('Qui êtes-vous dans ce mariage'), true);
+/* Le magazine existe : le bloc de l'accueil devient sa couverture. */
+localStorage.setItem(CLE_DU_MAGAZINE, JSON.stringify({ prenoms: ['Paul', 'Emma'], date: '2027-06-12' }));
+const champCompose = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(ChampDuMagazine as never, {})),
+);
+check('quand le magazine existe, le bloc devient sa couverture', champCompose.includes('Ouvrir le magazine'), true);
+check('et il porte la date composée', champCompose.includes('12 juin 2027'), true);
+check('et on peut compléter les questions laissées en attente', champCompose.includes('Compléter les questions'), true);
+check('et le refaire', champCompose.includes('Refaire'), true);
+localStorage.removeItem(CLE_DU_MAGAZINE);
+
+/* Sa place : dans le hero, après l'intro, avant les cartes. */
+check('le champ vient après la question du hero', accueil.indexOf('Qui êtes-vous dans ce mariage') < accueil.indexOf('Vos deux prénoms'), true);
 check('et il est bien dans le hero', accueil.indexOf('id="hero"') < accueil.indexOf('Vos deux prénoms'), true);
 check('et le hero garde sa question à lui', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
+
+/* ---------------------------------------------------------------------------
+ * LA SUPER COMPOSITION — ce qui sort du champ
+ *
+ * Deux prénoms et une date : le magazine se compose. Vingt-quatre pages, une par
+ * heure, huit rubriques qui font trois fois le tour de la journée. Rien n'est
+ * inventé — et ce qu'on retient, ce n'est que la réponse : le magazine, lui, se
+ * recompose à l'identique.
+ */
+
+const mag = composerLeMagazine(['Paul', 'Emma'], '2027-06-12');
+check('le magazine composé a vingt-quatre pages', mag.edition.pages.length, 24);
+check(
+  'et huit rubriques, toujours les mêmes, dans le même ordre',
+  [...new Set(mag.edition.pages.map((p) => p.rubrique))].join(' · '),
+  RUBRIQUES.join(' · '),
+);
+check('chaque page est une heure de la journée', mag.edition.pages.every((p, i) => p.heure === i), true);
+check('et chacune a sa lumière', mag.edition.pages.every((p) => p.lumiere.length > 0), true);
+check('la couverture est celle du jour demandé', mag.couverture.dateLongue, '12 juin 2027');
+check('la fiche est celle du même jour', mag.fiche.dateLongue, '12 juin 2027');
+check('le magazine se lit avec ses deux prénoms', phraseDuMagazine(mag), 'Paul & Emma · 12 juin 2027');
+
+const magSansRien = composerLeMagazine(['', '']);
+check('sans réponse, c’est le magazine du jour', phraseDuMagazine(magSansRien).startsWith('Le magazine du '), true);
+check('et il n’invente aucun prénom', magSansRien.prenoms.join('|'), '|');
+check('une seule date suffit aussi', composerLeMagazine(['', ''], '2027-06-12').fiche.dateLongue, '12 juin 2027');
+
+enregistrerMagazine(mag);
+const relu = magazineCompose();
+check('le magazine composé se retient', relu?.couverture.dateLongue, '12 juin 2027');
+check('et se recompose à l’identique', relu?.edition.pages.length, 24);
+check(
+  'la mémoire ne garde que la réponse, jamais le magazine calculé',
+  localStorage.getItem(CLE_DU_MAGAZINE),
+  '{"prenoms":["Paul","Emma"],"date":"2027-06-12"}',
+);
+effacerMagazine();
+check('et on peut le refaire', magazineCompose(), null);
+
+/* L'écran de composition : les pages défilent, nommées. */
+const superComposition = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/generer?prenoms=Paul%20%26%20Emma&jour=2027-06-12'] },
+    createElement(Generating as never),
+  ),
+);
+check('l’écran s’annonce SUPER COMPOSITION', superComposition.includes('SUPER COMPOSITION'), true);
+check('il dit ce qu’il compose', superComposition.includes('Vingt-quatre pages, une par heure'), true);
+check('il nomme les pages par leur heure', superComposition.includes('l’aube') || superComposition.includes('minuit'), true);
+check('il dit où il en est', superComposition.includes('01 / 24'), true);
+check('il nomme la rubrique en cours', superComposition.includes('Le temps'), true);
+check('la couverture n’arrive qu’à la fin', superComposition.includes('Votre magazine est composé'), false);
 
 /* ------------------------------------------------------------------- bilan */
 

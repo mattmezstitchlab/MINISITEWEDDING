@@ -2193,7 +2193,7 @@ courte) et **les 349 fiches à documenter**, avec ce qui manque à chacune.
 documenté*. Un jour sans fiche n'a **pas** de prompt — il a la liste de ce qui lui
 manque. C'est ce qui empêche la série de se remplir d'associations inventées.
 
-**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 1194**, `npm run
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 1220**, `npm run
 prompts` reproductible. Les vérifications de la passe : les trois raisons du noir
 et leur compte exact (52 / 10 / 1, et 63 en tout), les 73 jours assombris par
 famille (27 / 28 / 18), l'encre claire des temps clos, `studioDuJour` sur les
@@ -2278,7 +2278,7 @@ septembre en premier. **Ensuite seulement**, on remplace le fond des couvertures
 les visuels, sans toucher à la mise en page.
 
 **Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm run prompts`
-reproductible (deux documents, mêmes comptes), `npm test` **178 / 55 / 1194**,
+reproductible (deux documents, mêmes comptes), `npm test` **178 / 55 / 1220**,
 `npx vite build` OK. Les vérifications ajoutées couvrent : le sens des prénoms (une
 phrase, jamais vide, jamais inventée), l'absence de prénom sans signification, les
 patronages (métier → saint → porte) et les portes du jour, la catégorie d'un jour
@@ -2367,3 +2367,74 @@ leurs résultats, **l'absence de fabrication** (un seul prénom n'en donne pas d
 un champ vide ne donne rien), le champ à l'écran (les deux champs, la date, le
 bouton du jour quand rien n'est répondu, la phrase des 365 magazines), et **sa
 place** : dans le hero, avant la question du hero.
+
+---
+
+## §53 — Le champ après l'intro, la SUPER COMPOSITION, et le magazine qui se retient
+
+**Les précisions de l'auteur.** « Oui mais sans modifier les pages. Le but c'est de
+générer une page profil sur laquelle on pourrait même mettre le magazine de la
+personne : la page verticale afficherait l'essentiel, et si on veut en savoir plus,
+ça amène dans le magazine — au moins ça permet de tout aligner grâce au magazine et
+sa structure. Donc sur le hero, **après l'intro**, faire apparaître ce champ **avec
+un titre au-dessus**, et pas la phrase « Aucune réponse n'est nécessaire… » dans le
+bloc, **mais un bouton “Générer mon magazine”**. Puis un *loaded* en plein milieu
+genre **SUPER COMPOSITION**, et **chaque page indiquée** pour voir en vrai que ça
+tourne et compose — et c'est ça qui mettrait à jour les choix des cartes dans
+l'accueil pour compléter. »
+
+**Sans modifier les pages.** Aucune page n'est réécrite : ni la page d'une personne,
+ni le magazine, ni le kiosque. On touche **le hero de l'accueil** (l'emplacement du
+champ) et **l'écran de composition** — les deux endroits demandés. Le reste suit par
+la route, pas par la refonte.
+
+**Le champ, à sa place finale.** Il vient **après l'intro du hero** — la question
+« Qui êtes-vous dans ce mariage ? », le titre du moment, son picto — et **avant les
+cartes**. Il porte **son titre au-dessus du champ** (« Votre magazine », avec la
+structure annoncée : 24 pages, une par heure), puis les deux champs et **un seul
+bouton : « Générer mon magazine »**. La phrase « aucune réponse n'est nécessaire »
+disparaît du bloc : ce qui reste, c'est ce qui se fait.
+
+**La SUPER COMPOSITION.** L'écran de génération ne tourne plus à vide : il **compose
+sous les yeux**. L'anneau de progression, et **les vingt-quatre pages qui arrivent
+l'une après l'autre** — leur numéro, **leur heure** (*06 · l'aube*, *12 · midi*),
+**leur rubrique** (*Le temps*, *La carte*, *L'amour*, *Le passage*, *Les gens*, *Vos
+papiers*, *La musique*, *L'archive*), la page en cours mise en avant, les pages
+faites cochées, et la ligne du moment : *« 07 / 24 · Le passage »*. Ce n'est pas une
+animation inventée : c'est **le sommaire réel du magazine composé** — chaque page
+listée existe à l'arrivée. À la fin, la couverture apparaît, et **« Votre magazine
+est composé »**.
+
+**Deux provenances, un seul écran.** Du **champ de l'accueil** on revient à
+l'accueil : le magazine est retenu sur l'appareil. De **la création** (`?site=`) on
+ouvre l'éditeur, exactement comme avant — le parcours des cinq questions n'est pas
+touché.
+
+**Ce qui se retient : la réponse, jamais le magazine.** `src/lib/composition.ts` ne
+garde que les deux prénoms et la date ; **le magazine se recompose à l'identique à
+la lecture** (le numéro de la semaine, sa carte, sa saison, la couverture du jour, la
+fiche du jour, les 24 pages). Il ne peut donc pas vieillir, ni diverger. Sans date,
+c'est aujourd'hui ; sans prénoms, c'est **le magazine du jour** — on n'invente jamais
+un prénom, ni un métier, ni une histoire.
+
+**Et l'accueil se met à jour.** Quand le magazine existe, le bloc du hero **devient
+sa couverture** : la couverture du jour, « Paul & Emma · 12 juin 2027 », le numéro et
+les 24 pages, puis trois gestes — **Ouvrir le magazine**, **Compléter les questions**
+(la carte repart avec les réponses déjà données : rôle, univers, événements,
+musique), **Refaire**. C'est la boucle : le champ répond, la composition travaille,
+l'accueil reprend la main pour compléter.
+
+**Ce qui vient ensuite, tel que l'auteur l'a fixé.** La **page d'une personne** (la
+verticale) dit **l'essentiel** ; « en savoir plus » **amène dans le magazine** — et
+c'est le magazine, avec sa structure de 24 pages et ses 8 rubriques, qui **aligne
+tout**. Elle n'est pas touchée dans cette passe, par décision : on ne réécrit pas une
+page pour y mettre un magazine qui n'existe pas encore pour elle.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npx vite build` OK, `npm test` **178 / 55 /
+1220**. Vérifications ajoutées : les 24 pages et leur heure, **les 8 rubriques dans
+l'ordre**, la couverture et la fiche du jour demandé, la phrase qui nomme les deux
+prénoms, **l'absence d'invention** (sans réponse : le magazine du jour, aucun prénom),
+**la mémoire qui ne garde que la réponse** (et le magazine relu identique), le
+`Refaire`, l'écran de composition (son titre, la phrase, l'heure des pages, le
+compteur, la rubrique en cours, la couverture qui n'arrive qu'à la fin), et le bloc
+de l'accueil **dans ses deux états** — le champ vide, puis la couverture.

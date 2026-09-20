@@ -216,12 +216,6 @@ export default function Landing() {
       <div id="hero" ref={surveillerLeHero}>
         <HeroCycle visuels={VISUELS_DU_HERO} actifId={persona.id}>
           <div className="flex flex-col items-center text-center">
-            {/* LE CHAMP DU MAGAZINE : la première chose qu'on voit, avant le
-                titre. On demande le strict nécessaire — les deux prénoms, la
-                date — et le magazine commence. Sans réponse, c'est le magazine
-                du jour : il y a toujours quelque chose à ouvrir. */}
-            <ChampDuMagazine className="mb-8 sm:mb-10" />
-
             <span className="vp-eyebrow !text-white/70">Qui êtes-vous dans ce mariage ?</span>
 
             {/* LE TITRE DU MOMENT : la grande famille, et son picto */}
@@ -256,9 +250,16 @@ export default function Landing() {
               )}
             </div>
 
-            {/* LES CARTES À CHOISIR, JUSTE SOUS LE TITRE : on les a sous les yeux
-                dans le hero, sans bande blanche et sans flèches — celles du dock
-                mènent la bande. */}
+            {/* LE CHAMP DU MAGAZINE : APRÈS L'INTRO, AVANT LES CARTES.
+                L'intro a posé la question (« Qui êtes-vous dans ce mariage ? ») et
+                le titre du moment ; le champ demande maintenant le strict
+                nécessaire — deux prénoms, une date — et le magazine se compose.
+                Sans réponse, c'est le magazine du jour : il y a toujours quelque
+                chose à ouvrir. Une fois composé, ce bloc devient la couverture. */}
+            <ChampDuMagazine className="mt-9 w-full sm:mt-11" />
+
+            {/* LES CARTES À CHOISIR : on les a sous les yeux dans le hero, sans
+                bande blanche et sans flèches — celles du dock mènent la bande. */}
             <div className="mt-9 w-full sm:mt-11">{bandeDuTitre}</div>
           </div>
         </HeroCycle>

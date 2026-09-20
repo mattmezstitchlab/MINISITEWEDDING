@@ -2,50 +2,95 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CalendarDays } from 'lucide-react';
 import { prenomsDuChamp } from '../lib/champDuMagazine';
+import { effacerMagazine, magazineCompose, phraseDuMagazine, type MagazineCompose } from '../lib/composition';
+import CouvertureJour from './CouvertureJour';
 
 /**
- * LE CHAMP DU MAGAZINE — LA PREMIÈRE CHOSE QU'ON VOIT, ET LA SEULE QUESTION
+ * LE CHAMP DU MAGAZINE — LA QUESTION DU HERO, APRÈS L'INTRO
  *
- * Sur l'accueil, avant tout le reste, un seul champ : **vos deux prénoms, votre
- * date** — et le magazine commence. Le champ ne demande rien d'autre, parce que
- * tout le reste **existe déjà** : les 365 journées, leurs couvertures, leurs
- * cartes, leurs personnages, leurs métiers, leurs portes, les univers, la
- * playlist. On ne fait donc pas remplir un formulaire : on prend la seule
- * information que le site ne peut pas deviner, et il travaille.
+ * Un titre, un champ, un bouton : **vos deux prénoms, votre date**, et le
+ * magazine se compose. Le champ ne demande rien d'autre, parce que tout le reste
+ * **existe déjà** : les 365 journées, leurs couvertures, leurs cartes, leurs
+ * personnages, leurs métiers, leurs portes, les univers, la playlist. On prend la
+ * seule information que le site ne peut pas deviner, et il travaille.
  *
- * Ensuite, **une question à la fois** (la règle de l'éditeur) : le champ passe
- * la main à la création, qui continue avec ce qui manque. Et celui qui ne répond
- * rien n'est pas bloqué : **le magazine du jour existe toujours** — il y a trois
- * cent soixante-cinq magazines, un par jour, et celui d'aujourd'hui est ouvert.
+ * **Rien n'est un cul-de-sac** : sans une seule réponse, le bouton compose le
+ * magazine **du jour** — il y en a trois cent soixante-cinq, un par jour.
  *
- * Un champ ne se remplit pas d'invention : rien n'est déduit d'un prénom, rien
- * n'est publié avant d'avoir été validé.
+ * **Et quand le magazine existe**, ce bloc devient **sa couverture** : le titre
+ * du bloc passe de la question au magazine lui-même — on ouvre, ou on complète
+ * les questions laissées en attente. C'est ainsi que l'accueil tient à jour ce
+ * qui a été répondu.
  */
 
 export default function ChampDuMagazine({ className = '' }: { className?: string }) {
   const navigate = useNavigate();
   const [prenoms, setPrenoms] = useState('');
   const [date, setDate] = useState('');
-
-  const rien = prenoms.trim().length === 0 && date.length === 0;
+  /** Le magazine déjà composé sur cet appareil : l'accueil le reprend. */
+  const [compose, setCompose] = useState<MagazineCompose | null>(() => magazineCompose());
 
   const generer = (e: FormEvent) => {
     e.preventDefault();
-    // Sans une seule réponse : le magazine du jour, qui est toujours prêt.
-    if (rien) {
-      navigate('/magazine');
-      return;
-    }
-    const [partner1, partner2] = prenomsDuChamp(prenoms);
-    navigate('/creer', { state: { partner1, partner2, weddingDate: date } });
+    const query = new URLSearchParams();
+    if (prenoms.trim().length > 0) query.set('prenoms', prenoms.trim());
+    if (date.length > 0) query.set('jour', date);
+    navigate(`/generer${query.toString() ? `?${query}` : ''}`);
   };
 
+  const completer = () => {
+    const [partner1, partner2] = compose?.prenoms ?? prenomsDuChamp(prenoms);
+    navigate('/creer', { state: { partner1, partner2, weddingDate: compose?.date ?? date } });
+  };
+
+  /* LE MAGAZINE EXISTE : le bloc devient sa couverture. */
+  if (compose) {
+    return (
+      <div className={`vp-glass w-full max-w-3xl rounded-[26px] p-4 text-left ${className}`}>
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+          <CouvertureJour couverture={compose.couverture} largeur={112} vignette />
+          <div className="min-w-0 flex-1">
+            <span className="vp-eyebrow">Votre magazine</span>
+            <div className="vp-title mt-1 text-[17px]">{phraseDuMagazine(compose)}</div>
+            <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--vp-muted)]">
+              {compose.edition.titre} · {compose.edition.pages.length} pages · une par heure
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" onClick={() => navigate('/magazine')} className="vp-btn !py-2.5 !text-[13px]">
+                Ouvrir le magazine
+                <ArrowRight size={14} />
+              </button>
+              <button type="button" onClick={completer} className="vp-btn-glass !py-2.5 !text-[13px]">
+                Compléter les questions
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  effacerMagazine();
+                  setCompose(null);
+                }}
+                className="rounded-full px-3 py-2 text-[12.5px] font-semibold text-[var(--vp-muted)] underline decoration-black/20 underline-offset-4 transition hover:text-[var(--vp-ink)]"
+              >
+                Refaire
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* RIEN ENCORE : le titre, le champ, le bouton. */
   return (
-    <form
-      onSubmit={generer}
-      className={`vp-glass w-full max-w-3xl rounded-[26px] p-3 text-left sm:p-4 ${className}`}
-    >
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+    <form onSubmit={generer} className={`vp-glass w-full max-w-3xl rounded-[26px] p-4 text-left ${className}`}>
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2 px-1">
+        <h2 className="vp-title text-[clamp(1.15rem,2.2vw,1.5rem)]">Votre magazine</h2>
+        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--vp-muted)]">
+          24 pages · une par heure
+        </span>
+      </div>
+
+      <div className="flex flex-wrap items-end gap-2 sm:gap-3">
         <div className="min-w-[9rem] flex-1">
           <label htmlFor="champ-prenoms" className="vp-label ml-1 !text-[10px]">
             Vos deux prénoms
@@ -80,29 +125,11 @@ export default function ChampDuMagazine({ className = '' }: { className?: string
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="vp-btn vp-spec mt-4 w-full shrink-0 !py-3.5 !text-[14.5px] sm:mt-[1.35rem] sm:w-auto"
-        >
-          {rien ? 'Voir le magazine du jour' : 'Générer notre magazine'}
+        <button type="submit" className="vp-btn vp-spec w-full shrink-0 !py-3.5 !text-[14.5px] sm:w-auto">
+          Générer mon magazine
           <ArrowRight size={15} />
         </button>
       </div>
-
-      <p className="mt-3 px-1 text-[12px] leading-relaxed text-[var(--vp-muted)]">
-        {rien ? (
-          <>
-            Aucune réponse n’est nécessaire pour commencer :{' '}
-            <span className="font-semibold text-[var(--vp-ink)]">365 magazines</span>, un par jour — celui
-            d’aujourd’hui est ouvert.
-          </>
-        ) : (
-          <>
-            Ensuite, <span className="font-semibold text-[var(--vp-ink)]">une question à la fois</span> : le
-            magazine se compose, puis on coche ce qu’on garde, ce qu’on modifie, ce qu’on retire.
-          </>
-        )}
-      </p>
     </form>
   );
 }
