@@ -1223,12 +1223,15 @@ export function mondeDeLId(id: string | null | undefined, date: Date = new Date(
  */
 const CACHE_DES_MONDES = new Map<string, Monde>();
 
-/** Un monde déjà construit ne se reconstruit pas. */
+/** Un monde déjà construit ne se reconstruit pas — et le plus ancien s'en va. */
 export function mondeEnCache(cle: string, fabrique: () => Monde): Monde {
   const trouve = CACHE_DES_MONDES.get(cle);
   if (trouve) return trouve;
   const monde = fabrique();
-  if (CACHE_DES_MONDES.size > 32) CACHE_DES_MONDES.clear();
+  if (CACHE_DES_MONDES.size >= 256) {
+    const plusAncien = CACHE_DES_MONDES.keys().next().value;
+    if (plusAncien !== undefined) CACHE_DES_MONDES.delete(plusAncien);
+  }
   CACHE_DES_MONDES.set(cle, monde);
   return monde;
 }

@@ -2081,6 +2081,23 @@ check('et une case publique n’en porte aucune',
     monde: mondeDuMiniSite(ouverteATous), echelle: echelleDuCran(5), onEchelle: () => {},
   })).includes('data-famille="prive"'), false);
 
+/* Et **chaque porte mène quelque part** : on ouvre tous les mondes du monde. */
+const portesMortes: string[] = [];
+let portesComptees = 0;
+const verifierLesPortes = (id: string) => {
+  const monde = mondeDeLId(id, le21SeptembreGrille);
+  monde.cases.forEach((c) => {
+    if (!c.ouvre) return;
+    portesComptees += 1;
+    const suivant = mondeDeLId(c.ouvre, le21SeptembreGrille);
+    if (suivant.cases.length === 0 || suivant.id !== c.ouvre) portesMortes.push(`${id} → ${c.ouvre}`);
+  });
+};
+NŒUDS_DU_MONDE.forEach((n) => verifierLesPortes(n.id));
+['jour-09-21', 'univers-musique', 'univers-lieux', 'heure-18', 'piste-3'].forEach(verifierLesPortes);
+check('aucune porte ne mène nulle part', portesMortes.length, 0);
+check('et il y a de quoi ouvrir toute une année', portesComptees > 500, true);
+
 /* La lumière des heures : la même image, vingt-quatre fois. */
 check('la nuit est plus sombre que midi', lumiereDeLHeure(2).clarte < lumiereDeLHeure(12).clarte, true);
 check('la golden hour est nommée', lumiereDeLHeure(18).mot, 'GOLDEN HOUR');
@@ -2128,7 +2145,10 @@ check('le magazine est un écran, pas une page qui défile', appMagazine.include
 check('la scène est dedans', appMagazine.includes('data-scene="editoriale"'), true);
 check('la grille aussi', appMagazine.includes('data-grille="du-monde"'), true);
 check('et la grille ferme l’écran', appMagazine.indexOf('data-grille') > appMagazine.indexOf('data-scene'), true);
-check('on arrive devant les grandes portes du monde', (appMagazine.match(/data-case="porte-/g) ?? []).length >= 8, true);
+check('on arrive devant l’année entière',
+  appMagazine.includes('data-monde="annee"') && appMagazine.includes('data-cases="365"'), true);
+check('et la grille n’en dessine que ce qu’on voit',
+  (appMagazine.match(/data-case="jour-/g) ?? []).length < 365, true);
 check('l’année entière tient en une vue', (appAnnee.match(/data-case="jour-/g) ?? []).length, 365);
 check('et de si loin, elle ne dit que ses images', appAnnee.includes('data-densite="1"'), true);
 check('de très près, une case dit son détail', appZoom.includes('data-densite="5"'), true);
@@ -2261,7 +2281,7 @@ check('et l’action parfaite est une seule chose', filRougeDuJour(unJour.date).
 const pageOuverte = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(Magazine as never)),
 );
-check('la grille d’ouverture compte ses portes', (appMagazine.match(/data-case="porte-/g) ?? []).length, 10);
+check('et les grandes portes sont à un pas, dans le chemin', mondeDeLId('monde', le21SeptembreGrille).cases.filter((c) => c.ouvre).length, 10);
 
 check(
   'la couverture ouvre les deux aiguilles du cadran',

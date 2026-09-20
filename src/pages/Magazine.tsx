@@ -99,12 +99,16 @@ function cranDeLAdresse(valeur: string | null): number {
   return n >= 1 && n <= 5 ? n : 3;
 }
 
-/** **Le monde de l'adresse** : `?monde=annee`, ou le jour qu'elle annonce. */
+/**
+ * **Le monde de l'adresse.** Sans rien, on arrive devant **l'année entière** :
+ * trois cent soixante-cinq cases, l'ensemble du contenu en une vue. Le premier
+ * pas du chemin, en bas à gauche, ramène aux grandes portes — `LE MONDE`.
+ */
 function mondeDeLAdresse(params: URLSearchParams): string {
   const monde = params.get('monde');
   if (monde) return monde;
   const jour = params.get('jour');
-  return jour ? `jour-${cleDuJour(jourDeLAdresse(jour))}` : 'monde';
+  return jour ? `jour-${cleDuJour(jourDeLAdresse(jour))}` : 'annee';
 }
 
 export default function Magazine() {

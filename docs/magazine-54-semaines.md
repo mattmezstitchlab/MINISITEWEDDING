@@ -396,10 +396,14 @@ Tout ce qui existe dans le produit existe **quelque part sous forme de case**.
 `src/lib/grilleDuMonde.ts` ne réécrit aucune donnée : il découpe le monde en
 cases, à partir des sources du site.
 
+**On arrive sur l'année** — trois cent soixante-cinq cases, tout le contenu en
+une vue. Le premier mot du chemin, en bas à gauche, s'appelle `LE MONDE` : il
+ouvre les dix grandes portes du produit.
+
 | monde | cases | ce qu'une case est | d'où elle vient |
 | --- | --- | --- | --- |
-| `monde` | 10 | les grandes portes | tout le site |
 | `annee` | 365 | un jour | `semaines` · `saintsDuJour` · `visuelsDuMagazine` |
+| `monde` | 10 | les grandes portes | tout le site |
 | `jour-09-21` | 9 | les 8 univers, + les 24 heures | `semaines` · `jourDuMagazine` |
 | `univers-musique` | 8 | un morceau du jour | `playlistDeLAnnee` |
 | `heures` | 24 | une heure et sa lumière | `lumiereDuJour` · `l'édition` |
