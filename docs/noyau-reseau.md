@@ -1625,3 +1625,73 @@ qui dit le temps qu'il fait ; le super saint nommé d'après le calendrier, avec
 ses héros et son pourquoi ; le fil rouge qui relie le jour, et l'action parfaite
 qui reste une seule chose ; le bouton qui ouvre le magazine du jour et la phrase
 qui le dit), `npm run build` OK.
+
+---
+
+## §42 — Le socle : la charte, la mise en lumière, et l'alignement
+
+**Ce qu'on construit ici est le socle.** Rien de ce qui suit ne tient sans lui :
+un **calendrier** (364 prénoms, §40), **une journée** (24 heures, §41), **des
+règles** (§42), et **une lumière** qui dit qui l'on voit.
+
+**La charte** (`src/lib/charte.ts`) : huit règles écrites une fois, **vérifiées**,
+et qui valent pour le site, pour le magazine **et pour les portraits** que les
+gens envoient — fond uni par saison, création au centre et rien dessus, marque en
+haut / titre au centre / date en bas, **24 pages, une par heure**, portrait de
+studio (fond blanc, fond noir les jours qui ne sont pas comme les autres),
+**mêmes choix = même édition**, **chaque page dit sa source**, et un cadre
+constant (page 1180, lecture 820, trois tailles de titre). C'est le **prix
+d'entrée** : c'est parce que la règle est tenue que des inconnus peuvent se
+suivre dans les mêmes pages.
+
+**Signé : l'éditeur.** `SIGNATURE_EDITEUR` et `QUI_EDITE` — « Mille mariages,
+jamais marié, pas d'enfants : ce magazine tient ce qu'il a vu. » La crédibilité,
+ici, ne vient pas de ce qu'on a vécu : elle vient de **ce qu'on a vu**, et de ce
+qu'on sait refaire. Le nom reste **à donner** (constante à nommer).
+
+**La mise en lumière** (`src/lib/miseEnLumiere.ts`) : **six paliers**, et l'on ne
+saute aucune marche — 1 *le prénom* → 2 *le portrait* (conforme) → 3 *la date* →
+4 *le lieu* → 5 *le rôle et l'univers* → 6 *la mise en lumière*. **Le portrait
+conforme est la première marche** : sans lui, on n'est pas montrable, donc on ne
+monte pas. `pourMonter` dit **ce qui manque**, en deux mots ; `opportunites` dit
+**ce que la lumière ouvre**, et la liste s'allonge avec le palier (être vu,
+recevoir des propositions quand la date et le lieu se répondent, entrer dans la
+composition des magazines du jour, **passer en couverture le jour de sa fête**).
+
+**Le jour de votre fête, la couverture est la vôtre.** `feteDuPrenom()` retrouve
+le prénom dans les 364 jours du calendrier (sans accents, sans casse) : « Élodie »
+et « elodie » tombent le 22 octobre, « Augustin » revient **deux fois** dans
+l'année. `joursDuPrenom()` les liste. Quand le jour tombe, `enCouvertureAujourdHui`
+passe à vrai : **votre portrait passe en couverture, avec les personnes alignées
+autour de vous selon vos informations** — et le même jour, ailleurs, d'autres
+fêtent le même prénom : `alignesAutour()` retrouve ceux du même nom et du même
+lieu. **L'alignement est spatio-temporel, et il traverse le monde.**
+
+**La gamification, et ce qu'elle fait.** Elle n'humilie personne : elle **élève**.
+On monte en **donnant** (un portrait, une date, un lieu, un rôle, un inédit), et
+ce qu'on donne profite aux autres — un inconnu du même jour, un mariage du même
+lieu, un métier qui cherche exactement ce qu'on sait faire. C'est le même
+mécanisme qu'une page qu'on développe : **plus on se montre, plus on est vu**, et
+plus on a d'opportunités.
+
+**Dans la page.** Sur `/magazine`, sous les éditions, la section **« Se montrer,
+et élever les autres »** : les six paliers, le palier où l'on est, ce qui manque
+pour monter, le jour de sa fête, les opportunités — et **la charte**, en clair,
+signée. Le bloc est un composant (`MiseEnLumiere.tsx`) : il prendra le profil réel
+dès que le profil sera branché.
+
+**Ce qui reste, et qui vient après.** La **proximité géographique** (le lieu, la
+date : les propositions à côté), les **données d'actions** (ce qu'on a coché,
+aimé, composé, qui entre dans *son* magazine et pas dans un autre), et **le profil
+réel** branché sur la mise en lumière. Chaque mariage aura sa date : le socle est
+calculé pour ça — il ne dépend que d'une date, d'un lieu, d'un prénom et d'un
+portrait.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **742** (la charte
+tenue en règles écrites, chacune avec son pourquoi, signée ; six paliers, six
+marches sans saut ; le profil vide au premier, le portrait conforme qui ouvre le
+deuxième, le profil complet au sixième ; la fête déduite du prénom, avec et sans
+accents, les prénoms qui reviennent deux fois, et ceux qui ne sont pas au
+calendrier ; la couverture le jour de sa fête, et seulement ce jour-là ; les
+opportunités qui s'allongent avec le palier ; le bloc qui se rend), `npm run
+build` OK.

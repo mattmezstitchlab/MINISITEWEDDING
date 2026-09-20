@@ -77,6 +77,11 @@ import CouvertureSemaine from '../src/components/CouvertureSemaine';
 import FluxDuJour from '../src/components/FluxDuJour';
 import { HEURES } from '../src/lib/aimeMoteur';
 import PortraitStudio from '../src/components/PortraitStudio';
+import { CHARTE, QUI_EDITE, SIGNATURE_EDITEUR } from '../src/lib/charte';
+import {
+  PALIERS as PALIERS_LUMIERE, feteDuPrenom, joursDuPrenom, miseEnLumiere, profilDeBase,
+} from '../src/lib/miseEnLumiere';
+import MiseEnLumiere from '../src/components/MiseEnLumiere';
 import {
   JOURS_DE_LA_SEMAINE, clesDuJour, editionDuJour, filRougeDuJour, jourDeLAnnee, jourDuMagazine,
   joursAutour, lesQuatrePortes, meteoDuJour, studioDuJour,
@@ -1834,6 +1839,36 @@ const pageOuverte = renderToStaticMarkup(
 );
 check('le magazine du jour s’ouvre au clic (le bouton est là)', pageOuverte.includes('Ouvrir le magazine du jour'), true);
 check('et le flux dit ce que le clic fait', pageOuverte.includes('cliquer la couverture ouvre les 24 heures'), true);
+check('la mise en lumière est dans la page', revue.includes('La mise en lumière') && revue.includes('Se montrer, et élever les autres'), true);
+
+/* ————————— LA CHARTE, ET LA MISE EN LUMIÈRE ————————— */
+
+check('la charte tient en règles écrites', CHARTE.length >= 6, true);
+check('chacune dit la règle et son pourquoi', CHARTE.every((r) => r.regle.length > 20 && r.pourquoi.length > 20), true);
+check('et elle est signée', SIGNATURE_EDITEUR.length > 2 && QUI_EDITE.length > 20, true);
+check('la charte parle du fond uni et de la création au centre', CHARTE.some((r) => r.id === 'fond-uni') && CHARTE.some((r) => r.id === 'creation-centre'), true);
+check('et de la page par heure', CHARTE.some((r) => r.id === 'page-par-heure'), true);
+check('six paliers de mise en lumière', PALIERS_LUMIERE.length, 6);
+check('six marches, et on n’en saute aucune', PALIERS_LUMIERE.map((p) => p.n).join(','), '1,2,3,4,5,6');
+check('un profil vide est au premier palier', miseEnLumiere(profilDeBase('Personne')).palier.n, 1);
+check('un portrait, et l’on passe au deuxième', miseEnLumiere({ prenom: 'Matthieu', photoStudio: true, photoConforme: true }).palier.n, 2);
+check('il dit ce qui manque pour monter', miseEnLumiere(profilDeBase('Personne')).pourMonter.length >= 1, true);
+check('la fête se déduit du prénom', feteDuPrenom('Matthieu'), { mois: 9, jour: 21 });
+check('et sans accent aussi', feteDuPrenom('elodie'), { mois: 10, jour: 22 });
+check('un prénom hors calendrier n’a pas de jour', feteDuPrenom('Zorglub'), null);
+check('certains prénoms reviennent dans l’année', joursDuPrenom('Augustin').length, 2);
+const profilComplet = {
+  prenom: 'Matthieu', date: '2027-06-12', lieu: 'Bouray-sur-Juine', roleId: 'photographe',
+  styleId: 'vegas', photoStudio: true, photoConforme: true, inedits: 1, playlist: 1, documents: 1,
+};
+check('un profil complet va au sixième palier', miseEnLumiere(profilComplet).palier.n, 6);
+check('et n’a plus rien à remplir', miseEnLumiere(profilComplet).pourMonter.length, 0);
+const jourDeLaFete = new Date(2026, 8, 21);
+check('le jour de sa fête, la couverture est la sienne', miseEnLumiere(profilComplet, jourDeLaFete).enCouvertureAujourdHui, true);
+check('et les autres jours, elle ne l’est pas', miseEnLumiere(profilComplet, new Date(2026, 8, 22)).enCouvertureAujourdHui, false);
+check('la lumière ouvre des opportunités, et elles grandissent avec le palier', miseEnLumiere(profilComplet).opportunites.length > miseEnLumiere(profilDeBase('Personne')).opportunites.length, true);
+check('sans portrait conforme, on ne monte pas : c’est le prix d’entrée', miseEnLumiere({ ...profilComplet, photoStudio: false }).palier.n, 1);
+check('le bloc se rend', renderToStaticMarkup(createElement(MiseEnLumiere, { profil: profilComplet })).includes('Les six paliers'), true);
 
 check('la couverture de semaine est un composant', typeof CouvertureSemaine, 'function');
 check('et l’édition aussi', typeof EditionSemaine, 'function');

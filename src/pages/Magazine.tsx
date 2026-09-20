@@ -15,6 +15,7 @@ import CouvertureMagazine from '../components/CouvertureMagazine';
 import CouvertureSemaine from '../components/CouvertureSemaine';
 import EditionSemaine from '../components/EditionSemaine';
 import FluxDuJour from '../components/FluxDuJour';
+import MiseEnLumiere from '../components/MiseEnLumiere';
 
 /**
  * LE MAGAZINE — UN JOUR, UNE COUVERTURE, ET ON GLISSE
@@ -449,6 +450,25 @@ export default function Magazine() {
                 </Link>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ———————————————— LA MISE EN LUMIÈRE ———————————————— */}
+      <section id="lumiere" className="border-t border-black/8 py-14">
+        <div className="vp-page">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
+            La mise en lumière
+          </span>
+          <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">Se montrer, et élever les autres</h2>
+          <p className="mt-3 max-w-[720px] text-[13.5px] leading-relaxed text-black/55">
+            Le magazine ne demande rien : il rend ce qu’on lui donne. Plus le profil est complet, plus on
+            est vu — et le jour de votre fête, la couverture peut être la vôtre, avec les personnes
+            alignées autour de vous selon vos informations. Le même jour, ailleurs, d’autres fêtent le
+            même prénom : l’alignement continue à l’autre bout du monde.
+          </p>
+          <div className="mt-8">
+            <MiseEnLumiere />
           </div>
         </div>
       </section>
