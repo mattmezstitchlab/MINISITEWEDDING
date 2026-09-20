@@ -443,3 +443,156 @@ révèle juste** — parce que B est une décision de composition, pas de foncti
 | **52 — Jumo** | la conversation, le rangement, la citation des cartes et des pages (« voici pourquoi celle-ci ») | il a besoin du canevas pour écrire, et du temps pour se souvenir |
 | **53 — L'alphabet et la mosaïque** | la grille des lettres, la lettre qu'on travaille, la mosaïque datée sur l'accueil, son texte et sa musique | il faut des lettres **avant** de faire une œuvre : elle vient après le canevas |
 | **54 — LE MONDE AIME** | la fusion (comptoir + entrepôt), la restitution en langue par Jumo, la page de l'œuvre | c'est le bout du chemin : ça demande des gens, des langues, et des règles |
+
+---
+
+# Troisième lecture — la numérologie, après vérification
+
+> Le texte reçu (numérologie comme mécanique UX invisible) : voici ce que la
+> vérification donne, dans le code et dans les sources. Toujours **aucune ligne
+> touchée**.
+
+## 8.1 Ce qui existe déjà — et c'est plus qu'on ne croit
+
+| L'idée du texte | Ce qui existe **déjà**, et où |
+|---|---|
+| « le chiffre » d'une personne | **le chiffre du jour** est déjà calculé : `clesDuJour(date).chiffre = { nombre, sens }` (jour + mois, réduit de 1 à 9) — `jourDuMagazine.ts` |
+| la table des 9 sens | **`SENS_DES_CHIFFRES`** : les neuf sens sont **déjà écrits** |
+| les autres couches symboliques | la **lune** (`phaseDeLune`), les **quatre portes** (solstices, équinoxes), l'**interstice** alpha-omega (26/12 → 5/1), le **signe caché** (le Serpentaire, 30/11 → 17/12) |
+| « une clé personnalise tout le site » | **`composerEdition`** (FNV-1a) : **une clé donne une édition stable** — 24 pages, mêmes choix, même résultat |
+| « une composition graphique générée automatiquement » | **`PortraitStudio`** : une **graine** engendre un portrait SVG (peau, cheveux, étoffe, pose, lumière) — le précédent exact d'une « DNA » |
+| « la playlist des nombres » | **`trackForText`** (les mots donnent le morceau) et **`MUSIC_MOODS`** — **six ambiances** existent (disco, jazz, pop, électro, musiques du monde, classique) : neuf nombres, six ambiances |
+| « le casting / la constellation » | les **27 rôles**, les **5 titres**, les **cartes vivantes**, les **4 moments** du Jour J (`DAY_EVENTS` : cérémonie 15 h, cocktail 17 h 30, dîner 20 h, soirée 23 h), et les **alignés autour** (passe 47) |
+| « la date du mariage est une donnée » | elle l'est **déjà** : `editionDuJour`, `superSaintDuJour`, la carte de la semaine, la lune, la météo |
+| « la carte a deux couches » | `CardData` a déjà un **recto** et un **verso**, et `people.card` est un **`jsonb` libre** : une date de naissance s'y ajoute **sans migration** |
+
+**La conclusion de cette colonne** : la numérologie **n'est pas à importer** dans
+ce site. C'est **la clé personnelle d'un mécanisme qui calcule déjà une clé pour
+le jour**. Le travail n'est pas de la créer : il est de **la brancher au bon
+endroit**, et de **dire sa règle**.
+
+## 8.2 Ce que la vérification dit des calculs
+
+- **La réduction théosophique** : on additionne, on réduit à 1-9, **sauf 11, 22 et
+  33** — les nombres maîtres, jamais réduits (certaines écoles ajoutent 44, très
+  minoritaire en francophonie).
+- **Deux méthodes pour le chemin de vie**, et elles **ne donnent pas toujours le
+  même résultat** : *globale* (tous les chiffres d'un coup) ou *par composant*
+  (jour, mois, année réduits séparément) — la seconde **révèle des maîtres
+  intermédiaires** que la première masque. Exemple cité partout : 29/11/1985 →
+  9 dans les deux cas, mais en passant par 11 dans la seconde. **On doit donc
+  écrire laquelle on utilise.**
+- **Le nombre d'expression** vient du **nom complet de naissance** (table
+  pythagoricienne : A=1 … I=9, J=1 … R=9, S=1 … Z=8), **le nombre intime** des
+  **voyelles**, **le nombre de personnalité** des **consonnes**.
+- **Les accents sont retirés** avant le calcul (É=E, À=A, Ç=C, Ü=U) — la pratique
+  sérieuse le fait ; beaucoup de sites ne le font pas.
+- **Le nom de naissance, pas le nom d'épouse** : la question est posée dans tous
+  les calculateurs (« nom de naissance vs nom marital »), et la réponse
+  traditionnelle est **le nom de naissance**. **Pour un site de mariage, c'est un
+  cadeau** : ce qui ne change pas, c'est le nom de naissance — le reste, on
+  l'écrit, on le choisit.
+- **L'année personnelle** = jour + mois de naissance + l'année en cours : elle
+  **change chaque année** (donc elle bouge, alors que le chemin de vie ne bouge
+  pas).
+- **Et le point décisif, vérifié** : **tout dépend de l'alphabet**. La table
+  pythagoricienne ne couvre que **l'alphabet latin** ; le **système chaldéen**
+  va de **1 à 8** (le 9 était sacré) avec une répartition différente, et il
+  **donne d'autres résultats pour le même nom** ; l'hébreu (gematria) et l'arabe
+  (abjad) ont les leurs. **La mosaïque d'un alphabet est universelle ; le nombre,
+  lui, ne l'est pas.** Il devra dire *quel système* — sinon LE MONDE AIME
+  additionnerait des lettres qui n'ont pas la même valeur.
+
+## 8.3 Ce que la vérification dit du droit (France)
+
+- **La voyance n'est pas une profession réglementée** : aucun texte ne la régit
+  directement — mais elle est soumise au **Code de la consommation** et au
+  **Code pénal**.
+- **Pratiques commerciales trompeuses** (art. L121-1 et L121-8) : **interdiction
+  de promettre des résultats**. Sanctions : jusqu'à **300 000 € et 2 ans**
+  d'emprisonnement (art. L132-2).
+- **Cour de cassation, 2020** : « *le caractère divinatoire d'une prestation
+  n'exonère pas son prestataire des obligations légales en matière d'information
+  du consommateur et de loyauté des pratiques commerciales* ».
+- **Escroquerie** (art. 313-1), **charlatanisme**, **abus de faiblesse**,
+  **exercice illégal d'une profession réglementée** — visés dès qu'on glisse vers
+  la promesse ou le soin.
+- La **DGCCRF** contrôle : en 2020, sur **78 sites contrôlés, 55 présentaient des
+  anomalies** (informations légales absentes, pratiques trompeuses).
+- Ce que le secteur lui-même propose comme garde-fous : **rappeler le caractère
+  ludique et non scientifique**, **ne jamais prédire la santé ni la mort**,
+  limiter les consultations, prévoir une médiation.
+- **RGPD** : la date de naissance est une **donnée personnelle** ; l'heure et le
+  lieu de naissance en disent encore plus. **La numérologie du couple exige les
+  données de l'autre personne** — donc son accord, et pas le nôtre.
+
+## 8.4 Mon avis, en clair
+
+**L'idée est bonne, et le texte a raison sur l'essentiel** : la numérologie n'est
+pas une page, c'est une **couche** ; une information → beaucoup de conséquences
+visuelles ; le site **ne prétend rien** sur les gens. Je le garde tel quel.
+
+**Ce que je ferais autrement, en cinq points :**
+
+1. **Le mot.** « Signature » est **déjà pris** dans le code : `themeSignatures.ts`
+   (`signatureFor`, `signatureLabel`) désigne **la signature d'un univers** — son
+   fond, son accent, son geste. Si on appelle « signature » le nombre d'une
+   personne, les deux se confondront dans le code **et dans la tête des gens**.
+   Je propose **« le chiffre »** : *le chiffre du jour* (il existe), *le chiffre
+   de la personne*, *le chiffre du mariage*. **Un seul mot, trois échelles.**
+2. **Pas de distance dans la constellation.** « La distance peut représenter le
+   rôle » : une distance **a l'air d'une mesure**. Je préfère **des couronnes** —
+   une couronne par famille de rôle (les cinq titres), les personnes posées
+   dessus, la **taille** = ce qu'elles apportent (les modules de leur fiche), la
+   **teinte** = leur chiffre. Ça se lit d'un regard, et ça ne prétend rien
+   mesurer.
+3. **Jamais de verdict sur un couple.** Additionner deux nombres, c'est **déjà**
+   porter un jugement si on l'écrit comme un résultat (« 5 + 6 = 11, vous êtes
+   faits l'un pour l'autre »). Chez nous : on **révèle les deux chiffres** et,
+   **seulement si les deux l'ont donné**, leur somme — **jamais** un score, un
+   classement, une « compatibilité ». Un site qui a vu mille mariages ne dit pas
+   qui va ensemble.
+4. **Jamais « dette karmique » ni « nombre supérieur ».** Les dettes 13/14/16/19
+   et la hiérarchie des maîtres (11 « Illuminé », 22 « Bâtisseur ») sont des
+   **jugements déguisés en arithmétique**, et ils tombent toujours sur quelqu'un.
+   Chez nous : **neuf mots de la même famille**, aucun numéro au-dessus d'un
+   autre, et **les mêmes mots pour tout le monde** — c'est déjà la règle de la
+   mise en lumière (« ce qui manque », jamais « ce que vous valez »).
+5. **Le moins de données possible.** Le texte demande **date, heure et lieu de
+   naissance**. L'heure et le lieu servent à l'astrologie (thème natal), **pas à
+   la numérologie** : on ne les demandera pas. **La date suffit** — et pour le
+   nom, le nom de naissance, comme le veut la tradition. Moins on demande, plus
+   on est crédible : c'est exactement le raisonnement de la charte.
+
+Et deux remarques de forme : **pas d'emojis** dans l'interface (on les a sortis
+du hero, on ne les remet pas — le site a ses pictos), et **on n'écrit pas
+« vibrations »** comme une mesure : on **choisit** une musique à partir des
+couleurs et des mots, et on le dit.
+
+## 8.5 Les trois règles à inscrire dans la charte
+
+1. **Le chiffre dit sa règle.** Un clic sur le nombre ouvre **le calcul** :
+   *système pythagoricien · alphabet latin · accents retirés · nom de naissance ·
+   méthode par composant · 11 non réduit*. C'est la règle `source-dite`, et c'est
+   ce qui nous met à l'abri — personne ne pourra dire qu'on a fait semblant.
+2. **Le chiffre ne juge personne.** Ni compatibilité, ni dette, ni supériorité,
+   ni prédiction de santé ou de mort. Neuf mots, les mêmes pour tous.
+3. **Le chiffre est facultatif, et privé par défaut.** La carte porte la date de
+   naissance **seulement si la personne la donne** ; elle reste `prive` tant que
+   la personne n'a pas choisi autre chose. Aucune donnée de naissance ne part
+   sans décision explicite.
+
+## 8.6 Où ça s'accroche, et combien ça coûte
+
+**Une passe, petite et isolée** — **55 — Le chiffre** :
+
+| Ce qu'elle fait | Réutilise |
+|---|---|
+| un module pur `chiffre.ts` (réduction, maîtres, systèmes, accents, nom de naissance, année personnelle) | rien à installer |
+| l'affichage : **le nombre + ses mots**, et le calcul en un clic | la façon d'`ouEstLeMot` |
+| la propagation : sa carte → son profil → son hero → la constellation → la playlist | `cartesVivantes`, `PortraitStudio` (graine → dessin), `composerEdition` |
+| la constellation du mariage (couronnes + moments du Jour J) | `DAY_EVENTS`, les 27 rôles, les 5 titres |
+
+C'est **indépendant** des passes 49 → 54 : on peut la faire **avant** (elle est
+petite et elle rend le profil plus riche tout de suite) ou **après** le temps
+commun et le canevas. À toi de dire.
