@@ -24,10 +24,16 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FAMILLES, type CaseDuMonde, type Monde } from '../lib/grilleDuMonde';
 import {
+  colonnesDuMonde,
+  emplacementsDuMonde,
+  faceTechnique,
+  liaisonsDuMonde,
+  type Emplacement,
+} from '../lib/versoDuSite';
+import {
   ECHELLES_DE_LA_GRILLE,
   ajustementDeRemplissage,
   borner,
-  colonnesDeLaGrille,
   cranDeLEchelle,
   densiteDeLaTaille,
   echelleDuCran,
@@ -57,6 +63,16 @@ export interface GrilleDuMondeProps {
   sortie?: boolean;
   /** Ce que la personne a masqué. */
   masquees?: string[];
+  /* ——————————————————— LE VERSO : L'ENVERS DU DÉCOR ———————————————————
+   * Retournée, la grille montre le système : le module de chaque case, sa
+   * source, ses ports, et **tout ce qui peut se lier**. On y déplace les cases ;
+   * posées bord à bord, leurs liaisons se font.
+   */
+  verso?: boolean;
+  /** Les places posées à la main, dans le verso. */
+  places?: Record<string, Emplacement>;
+  /** On repose une case : elle se pose bord à bord, et elle se lie. */
+  onPoser?: (id: string, place: Emplacement) => void;
   className?: string;
 }
 
@@ -83,6 +99,9 @@ export default function GrilleDuMonde({
   caseActive = null,
   sortie = false,
   masquees = [],
+  verso = false,
+  places = {},
+  onPoser,
   className = '',
 }: GrilleDuMondeProps) {
   const cadre = useRef<HTMLDivElement>(null);
@@ -97,6 +116,15 @@ export default function GrilleDuMonde({
   /** Le déplacement voulu par la personne ; `null` = la grille se pose seule. */
   const [panVoulu, setPanVoulu] = useState<{ x: number; y: number } | null>(null);
   const [modeSelection, setModeSelection] = useState(false);
+  /** Au verso : la case qu'on regarde, et celle qu'on est en train de déplacer. */
+  const [survolVerse, setSurvolVerse] = useState<string | null>(null);
+  const [prise, setPrise] = useState<{
+    id: string;
+    x: number;
+    y: number;
+    cible: Emplacement | null;
+  } | null>(null);
+  /** Le nom du monde sous la forme brute, pour les dépendances des gestes. */
   const [cadreDeSelection, setCadreDeSelection] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
 
   /* ————————————————————————— LA MESURE DE L'ÉCRAN ————————————————————————— */
@@ -121,7 +149,8 @@ export default function GrilleDuMonde({
    */
   const largeurEcran = tailleEcran.l || ECRAN_SUPPOSE.l;
   const hauteurEcran = tailleEcran.h || ECRAN_SUPPOSE.h;
-  const colonnes = colonnesDeLaGrille(cases.length, largeurEcran, hauteurEcran);
+  // Au verso, la grille s'élargit si l'on a posé des cases plus à droite.
+  const colonnes = colonnesDuMonde(cases.length, verso ? places : {}, largeurEcran, hauteurEcran);
   const lignes = Math.max(1, Math.ceil(cases.length / colonnes));
   // La taille d'une case : l'échelle, et ce qu'il faut pour couvrir l'écran.
   const taille = Math.round(
@@ -131,6 +160,15 @@ export default function GrilleDuMonde({
   const densite = densiteDeLaTaille(taille);
   const largeur = colonnes * taille;
   const hauteurGrille = lignes * taille;
+
+  /** **Où chaque case est posée.** Au verso, c'est la place que l'on a voulue. */
+  const table = emplacementsDuMonde({ ...monde, cases }, verso ? places : {}, colonnes);
+
+  /**
+   * **Les liaisons du monde** — ce qui peut se relier, et ce qui se relie : deux
+   * cases bord à bord sont connectées, et leur produit s'écrit dans la liaison.
+   */
+  const liaisons = verso ? liaisonsDuMonde({ ...monde, cases }, places, colonnes) : [];
 
   /** Le déplacement est tenu dans la grille : on ne se perd jamais dehors. */
   const contenir = useCallback(
@@ -241,6 +279,18 @@ export default function GrilleDuMonde({
 
   const surBas = (e: React.PointerEvent) => {
     points.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    // **Au verso, un doigt sur une case la prend** : c'est ainsi qu'on la pose.
+    if (verso && points.current.size === 1) {
+      const sousLeDoigt = (e.target as HTMLElement).closest('[data-case]')?.getAttribute('data-case');
+      const kase = cases.find((c) => c.id === sousLeDoigt);
+      if (kase && e.button === 0) {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        setPrise({ id: kase.id, x: e.clientX, y: e.clientY, cible: table[kase.id] ?? null });
+        setSurvolVerse(kase.id);
+        geste.current = { type: 'rien' };
+        return;
+      }
+    }
     if (points.current.size === 2) {
       const [a, b] = [...points.current.values()];
       pincement.current = { distance: Math.hypot(a!.x - b!.x, a!.y - b!.y), echelle };
@@ -262,6 +312,22 @@ export default function GrilleDuMonde({
 
   const surBouge = (e: React.PointerEvent) => {
     if (points.current.has(e.pointerId)) points.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    // La case prise suit le doigt, et cherche l'emplacement où se poser.
+    if (prise) {
+      const rect = cadre.current?.getBoundingClientRect();
+      const x = e.clientX - (rect?.left ?? 0) - pan.x;
+      const y = e.clientY - (rect?.top ?? 0) - pan.y;
+      const cible = {
+        c: Math.max(0, Math.min(colonnes - 1, Math.floor(x / taille))),
+        l: Math.max(0, Math.floor(y / taille)),
+      };
+      const occupee = cases.some(
+        (c) => c.id !== prise.id && table[c.id]?.c === cible.c && table[c.id]?.l === cible.l,
+      );
+      setPrise((p) => (p ? { ...p, x: e.clientX, y: e.clientY, cible: occupee ? null : cible } : p));
+      return;
+    }
 
     // Deux doigts : c'est le pincement qui parle.
     if (points.current.size >= 2 && pincement.current) {
@@ -294,6 +360,17 @@ export default function GrilleDuMonde({
   const surHaut = (e: React.PointerEvent) => {
     points.current.delete(e.pointerId);
     if (points.current.size < 2) pincement.current = null;
+
+    // La case est reposée : si la place est libre, elle s'y pose — bord à bord.
+    if (prise) {
+      const cible = prise.cible;
+      setPrise(null);
+      if (cible && onPoser && (cible.c !== table[prise.id]?.c || cible.l !== table[prise.id]?.l)) {
+        onPoser(prise.id, cible);
+      }
+      return;
+    }
+
     const g = geste.current;
 
     // **Le clic est rattrapé ici** : la capture du doigt fait passer le `click`
@@ -356,13 +433,13 @@ export default function GrilleDuMonde({
   const lig0 = Math.max(0, Math.floor(-pan.y / taille) - 1);
   const ligN = Math.min(lignes - 1, Math.ceil((-pan.y + hauteurEcran) / taille));
 
-  const visibles: Array<{ kase: CaseDuMonde; x: number; y: number }> = [];
-  for (let l = lig0; l <= ligN; l += 1) {
-    for (let c = col0; c <= colN; c += 1) {
-      const kase = cases[l * colonnes + c];
-      if (kase) visibles.push({ kase, x: c * taille, y: l * taille });
-    }
-  }
+  /** Au verso, tout est dessiné : un trait peut relier deux cases éloignées. */
+  const visibles = cases
+    .map((kase, i) => ({
+      kase,
+      place: table[kase.id] ?? { c: i % colonnes, l: Math.floor(i / colonnes) },
+    }))
+    .filter(({ place }) => verso || (place.c >= col0 && place.c <= colN && place.l >= lig0 && place.l <= ligN));
 
   const unite = Math.max(8, Math.round(taille * 0.072));
 
@@ -376,6 +453,8 @@ export default function GrilleDuMonde({
       data-cases={cases.length}
       data-selection={modeSelection ? 'arme' : 'libre'}
       data-sortie={sortie ? 'true' : 'false'}
+      data-verso={verso ? 'ouvert' : 'ferme'}
+      data-places={verso ? Object.keys(places).length : 0}
       className={`relative isolate h-full w-full touch-none select-none overflow-hidden overscroll-none ${className}`}
       onPointerDown={surBas}
       onPointerMove={surBouge}
@@ -395,11 +474,52 @@ export default function GrilleDuMonde({
           transition: 'opacity 420ms ease',
         }}
       >
-        {visibles.map(({ kase, x, y }) => {
+        {/* ————————————— LES LIAISONS, SOUS LES CASES ————————————— */}
+        {verso && (
+          <svg
+            aria-hidden="true"
+            data-liaisons={liaisons.length}
+            data-connexions={liaisons.filter((l) => l.faite).length}
+            className="pointer-events-none absolute left-0 top-0 overflow-visible"
+            width={largeur}
+            height={hauteurGrille}
+          >
+            {liaisons.map((liaison) => {
+              const a = table[liaison.de];
+              const b = table[liaison.vers];
+              if (!a || !b) return null;
+              const proche = survolVerse === liaison.de || survolVerse === liaison.vers;
+              return (
+                <line
+                  key={`${liaison.de}|${liaison.vers}`}
+                  x1={(a.c + 0.5) * taille}
+                  y1={(a.l + 0.5) * taille}
+                  x2={(b.c + 0.5) * taille}
+                  y2={(b.l + 0.5) * taille}
+                  stroke={liaison.faite ? '#7DE2B0' : proche ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.16)'}
+                  strokeWidth={liaison.faite ? 2 : 1}
+                  strokeDasharray={liaison.faite ? undefined : '3 5'}
+                />
+              );
+            })}
+          </svg>
+        )}
+
+        {visibles.map(({ kase, place }) => {
+          const x = place.c * taille;
+          const y = place.l * taille;
           const choisi = selection.includes(kase.id);
           const actif = caseActive === kase.id;
           const image = kase.image ?? null;
           const marque = FAMILLES.find((f) => f.id === kase.famille);
+          const technique = faceTechnique(
+            kase,
+            liaisons.filter((l) => l.de === kase.id || l.vers === kase.id).length,
+          );
+          const enPrise = prise?.id === kase.id;
+          const cible = prise?.cible;
+          const visee = Boolean(cible && cible.c === place.c && cible.l === place.l);
+
           return (
             <button
               key={kase.id}
@@ -415,94 +535,189 @@ export default function GrilleDuMonde({
               data-choisi={choisi ? 'true' : 'false'}
               data-actif={actif ? 'true' : 'false'}
               data-porte={kase.ouvre ? 'true' : 'false'}
+              data-liaisons={verso ? technique.liaisons : undefined}
+              data-source={verso ? technique.source : undefined}
+              data-place={verso ? `${place.c},${place.l}` : undefined}
               aria-label={`${kase.surTitre ?? ''} ${kase.titre}`.trim()}
-              /* Au clavier seulement : au doigt, c'est `surHaut` qui décide. */
               onClick={(e) => {
                 if (e.detail === 0) choisir(kase, e);
               }}
-              onMouseEnter={() => onApercu?.(kase)}
+              onMouseEnter={() => {
+                onApercu?.(kase);
+                if (verso) setSurvolVerse(kase.id);
+              }}
+              onMouseLeave={() => {
+                if (verso) setSurvolVerse(null);
+              }}
               onFocus={() => onApercu?.(kase)}
-              className="absolute block overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+              className={`absolute block overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
+                verso ? 'border border-white/12' : ''
+              }`}
               style={{
                 left: x,
                 top: y,
                 width: taille,
                 height: taille,
-                background: kase.couleur,
+                background: verso ? '#0A0B11' : kase.couleur,
                 color: kase.encre ?? '#F4F5FB',
+                opacity: enPrise ? 0.35 : 1,
               }}
             >
-              {image ? (
-                <img
-                  src={image}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 h-full w-full object-cover"
-                  style={{ filter: densite >= 3 ? 'brightness(0.88)' : 'none' }}
-                />
-              ) : (
-                <span
-                  aria-hidden="true"
-                  data-initiales="vrai"
-                  className="absolute inset-0 flex items-center justify-center font-mono"
-                  style={{ fontSize: Math.round(taille * 0.2), opacity: 0.14, letterSpacing: '0.04em' }}
-                >
-                  {kase.titre.slice(0, 2).toUpperCase()}
-                </span>
-              )}
+              {/* ————————————————— LE VERSO : LE MÉCANISME ————————————————— */}
+              {verso ? (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-0 top-0 h-full"
+                    style={{ width: 3, background: kase.couleur }}
+                  />
+                  <span className="relative flex h-full w-full flex-col justify-between gap-1 p-1.5 pl-2.5">
+                    <span className="flex items-start justify-between gap-1">
+                      <span
+                        className="font-mono uppercase leading-none tracking-[0.16em] text-white/90"
+                        style={{ fontSize: Math.max(7, unite - 1) }}
+                      >
+                        {technique.module}
+                      </span>
+                      <span className="font-mono leading-none text-white/35" style={{ fontSize: Math.max(7, unite - 1) }}>
+                        {marque?.marque}
+                      </span>
+                    </span>
+                    <span
+                      className="block truncate font-mono lowercase leading-none text-white/40"
+                      style={{ fontSize: Math.max(7, unite - 1) }}
+                    >
+                      {kase.id}
+                    </span>
+                    <span className="block">
+                      <span
+                        className="block truncate font-mono uppercase leading-none tracking-[0.12em] text-white/55"
+                        style={{ fontSize: Math.max(7, unite - 1) }}
+                      >
+                        {technique.source}
+                      </span>
+                      {technique.ouverture && (
+                        <span
+                          className="mt-0.5 block truncate font-mono leading-none text-[#7DE2B0]/70"
+                          style={{ fontSize: Math.max(7, unite - 1) }}
+                        >
+                          → {technique.ouverture}
+                        </span>
+                      )}
+                    </span>
+                  </span>
 
-              {densite >= 2 && (
-                <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+                  {/* Les quatre ports : par là que la case se lie. */}
+                  {[
+                    'left-1/2 top-0 h-1.5 w-px -translate-x-1/2',
+                    'left-1/2 bottom-0 h-1.5 w-px -translate-x-1/2',
+                    'top-1/2 left-0 w-1.5 h-px -translate-y-1/2',
+                    'top-1/2 right-0 w-1.5 h-px -translate-y-1/2',
+                  ].map((classe) => (
+                    <span
+                      key={classe}
+                      aria-hidden="true"
+                      data-port="vrai"
+                      className={`absolute ${classe}`}
+                      style={{
+                        background:
+                          technique.liaisons > 0
+                            ? 'rgba(125,226,176,0.75)'
+                            : 'rgba(255,255,255,0.18)',
+                      }}
+                    />
+                  ))}
+                </>
+              ) : (
+                <>
+                  {image ? (
+                    <img
+                      src={image}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover"
+                      style={{ filter: densite >= 3 ? 'brightness(0.88)' : 'none' }}
+                    />
+                  ) : (
+                    <span
+                      aria-hidden="true"
+                      data-initiales="vrai"
+                      className="absolute inset-0 flex items-center justify-center font-mono"
+                      style={{ fontSize: Math.round(taille * 0.2), opacity: 0.14, letterSpacing: '0.04em' }}
+                    >
+                      {kase.titre.slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
+
+                  {densite >= 2 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent"
+                    />
+                  )}
+
+                  <span className="relative flex h-full flex-col justify-end gap-1 p-1.5">
+                    {densite >= 2 && kase.surTitre && (
+                      <span
+                        className="font-mono uppercase leading-none tracking-[0.14em] text-white/70"
+                        style={{ fontSize: Math.max(8, unite - 1) }}
+                      >
+                        {kase.surTitre}
+                      </span>
+                    )}
+                    {densite >= 3 && (
+                      <span
+                        className="vp-title leading-[0.95] text-white"
+                        style={{ fontSize: Math.round(taille * 0.15), letterSpacing: '-0.02em' }}
+                      >
+                        {kase.titre}
+                      </span>
+                    )}
+                    {densite >= 4 && kase.sousTitre && (
+                      <span className="line-clamp-2 text-white/65" style={{ fontSize: unite, lineHeight: 1.25 }}>
+                        {kase.sousTitre}
+                      </span>
+                    )}
+                    {densite >= 5 && kase.detail && kase.detail.length > 0 && (
+                      <span className="mt-1 flex flex-col gap-0.5 border-t border-white/20 pt-1">
+                        {kase.detail.slice(0, 3).map((ligne) => (
+                          <span key={ligne.label} className="flex items-baseline gap-1.5 truncate">
+                            <span
+                              className="font-mono uppercase tracking-[0.12em] text-white/40"
+                              style={{ fontSize: Math.max(7, unite - 1) }}
+                            >
+                              {ligne.label}
+                            </span>
+                            <span className="truncate text-white/80" style={{ fontSize: unite }}>
+                              {ligne.valeur}
+                            </span>
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                  </span>
+
+                  {/* L'ouverture : la marque des droits, minuscule, et jamais pour tous. */}
+                  {densite >= 4 && kase.famille !== 'public' && (
+                    <span
+                      aria-hidden="true"
+                      title={marque?.mot}
+                      className="absolute bottom-1 right-1 font-mono leading-none text-white/45"
+                      style={{ fontSize: Math.max(7, unite - 1) }}
+                    >
+                      {marque?.marque}
+                    </span>
+                  )}
+                </>
               )}
 
               {/* La tête de lecture : un trait blanc, trois pixels, et rien d'autre. */}
               {actif && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] bg-white" />}
 
-              <span className="relative flex h-full flex-col justify-end gap-1 p-1.5">
-                {densite >= 2 && kase.surTitre && (
-                  <span className="font-mono uppercase leading-none tracking-[0.14em] text-white/70" style={{ fontSize: Math.max(8, unite - 1) }}>
-                    {kase.surTitre}
-                  </span>
-                )}
-                {densite >= 3 && (
-                  <span className="vp-title leading-[0.95] text-white" style={{ fontSize: Math.round(taille * 0.15), letterSpacing: '-0.02em' }}>
-                    {kase.titre}
-                  </span>
-                )}
-                {densite >= 4 && kase.sousTitre && (
-                  <span className="line-clamp-2 text-white/65" style={{ fontSize: unite, lineHeight: 1.25 }}>
-                    {kase.sousTitre}
-                  </span>
-                )}
-                {densite >= 5 && kase.detail && kase.detail.length > 0 && (
-                  <span className="mt-1 flex flex-col gap-0.5 border-t border-white/20 pt-1">
-                    {kase.detail.slice(0, 3).map((ligne) => (
-                      <span key={ligne.label} className="flex items-baseline gap-1.5 truncate">
-                        <span className="font-mono uppercase tracking-[0.12em] text-white/40" style={{ fontSize: Math.max(7, unite - 1) }}>
-                          {ligne.label}
-                        </span>
-                        <span className="truncate text-white/80" style={{ fontSize: unite }}>
-                          {ligne.valeur}
-                        </span>
-                      </span>
-                    ))}
-                  </span>
-                )}
-              </span>
-
-              {/* L'ouverture : la marque des droits, minuscule, et jamais pour tous. */}
-              {densite >= 4 && kase.famille !== 'public' && (
-                <span
-                  aria-hidden="true"
-                  title={marque?.mot}
-                  className="absolute bottom-1 right-1 font-mono leading-none text-white/45"
-                  style={{ fontSize: Math.max(7, unite - 1) }}
-                >
-                  {marque?.marque}
-                </span>
+              {visee && (
+                <span aria-hidden="true" className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-[#7DE2B0]" />
               )}
-
               {choisi && <span aria-hidden="true" className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-white" />}
             </button>
           );

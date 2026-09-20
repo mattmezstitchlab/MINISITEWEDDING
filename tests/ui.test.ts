@@ -102,6 +102,19 @@ import {
   mondeDuMiniSite,
 } from '../src/lib/grilleDuMonde';
 import { lumiereDeLHeure, teinteDeLHeure, melangeHex } from '../src/lib/lumiereDuJour';
+import {
+  LIAISONS_POSSIBLES,
+  PALETTES_DU_SYSTÈME,
+  RÉGLAGES_DU_SYSTÈME,
+  chaineDuMonde,
+  colonnesDuMonde,
+  emplacementsDuMonde,
+  faceTechnique,
+  liaisonEntre,
+  liaisonsDuMonde,
+  modulesAttendus,
+  sontVoisines,
+} from '../src/lib/versoDuSite';
 import { publierImmersif } from '../src/lib/modeImmersif';
 import { legendeDeLHeure } from '../src/components/CouvertureJour';
 import {
@@ -2165,6 +2178,95 @@ check('les trois portes sont discrètes',
 check('et le composeur n’encombre plus l’écran', appMagazine.includes('Ville de naissance'), false);
 check('mais il est là dès qu’on demande la feuille', appEditeur.includes('Ville de naissance'), true);
 check('et l’adresse peut ouvrir une feuille', appEditeur.includes('data-feuille="ouverte"'), true);
+
+/* ————————————————— LE VERSO : L'ENVERS DU DÉCOR ————————————————— */
+
+/** Le monde d'un jour, au verso : le moteur, ses réglages, et ses liaisons. */
+const appVerso = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?monde=jour-09-21&verso=1'] }, createElement(Magazine as never)),
+);
+/** Le même jour, à l'endroit : rien du verso ne doit rester. */
+const appJourRecto = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?monde=jour-09-21'] }, createElement(Magazine as never)),
+);
+const nombre = (html: string, attribut: string) =>
+  Number(html.match(new RegExp(`${attribut}="(\\d+)"`))?.[1] ?? NaN);
+
+check('le verso s’ouvre par l’adresse', appVerso.includes('data-verso="ouvert"'), true);
+check('et le recto ne le montre pas', appJourRecto.includes('data-verso="ouvert"'), false);
+check('la grille dessine toutes ses liaisons', nombre(appVerso, 'data-liaisons') > 0, true);
+check(
+  'et celles qui sont faites sont bord à bord',
+  nombre(appVerso, 'data-connexions') > 0 && nombre(appVerso, 'data-connexions') < nombre(appVerso, 'data-liaisons'),
+  true,
+);
+check('chaque case du verso montre sa face technique', appVerso.includes('data-source="la grille du monde"'), true);
+check('et ses quatre ports', (appVerso.match(/data-port="vrai"/g) ?? []).length % 4, 0);
+check(
+  'les réglages du système sont écrits au verso',
+  nombre(appVerso, 'data-reglages') === RÉGLAGES_DU_SYSTÈME.length &&
+    ['case', 'echelle', 'densite', 'separation', 'couleur', 'ouverture'].every((id) =>
+      appVerso.includes(`data-reglage="${id}"`),
+    ),
+  true,
+);
+check('et les palettes des cinquante-quatre magazines aussi', PALETTES_DU_SYSTÈME.length, 54);
+check(
+  'toutes les liaisons possibles sont montrées, et ce qu’elles produisent',
+  nombre(appVerso, 'data-liaisons-possibles') === LIAISONS_POSSIBLES.length &&
+    appVerso.includes('data-liaison="image+texte"') &&
+    appVerso.includes('une page'),
+  true,
+);
+check(
+  'chaque liaison dit ce qu’elle produit',
+  LIAISONS_POSSIBLES.every((l) => l.produit.startsWith('un') || l.produit.startsWith('une')),
+  true,
+);
+
+/* Les liaisons, à la main : deux cases, et ce qui naît de leur rencontre. */
+const mondeDuVerso = mondeDeLId('jour-09-21');
+const laDate = mondeDuVerso.cases.find((c) => c.module === 'date')!;
+const laPersonne = mondeDuVerso.cases.find((c) => c.module === 'personne')!;
+const leLieu = mondeDuVerso.cases.find((c) => c.module === 'lieu')!;
+const leTexte = mondeDuVerso.cases.find((c) => c.module === 'texte')!;
+const unFormulaire = { ...laPersonne, id: 'essai-formulaire', module: 'formulaire' } as never;
+check('une date et un formulaire font un billet', liaisonEntre(laDate, unFormulaire)?.produit, 'un billet');
+check('deux cases identiques ne se lient pas', liaisonEntre(laDate, laDate), null);
+check('et deux modules qui ne vont pas ensemble non plus', liaisonEntre(laDate, laPersonne), null);
+
+const colonnesDuJour = colonnesDuMonde(mondeDuVerso.cases.length, {}, 1280, 820);
+const posees = { [laDate.id]: { c: 0, l: 0 }, [leLieu.id]: { c: 1, l: 0 } };
+check(
+  'posées bord à bord, la liaison se fait',
+  liaisonsDuMonde(mondeDuVerso, posees, colonnesDuJour).some(
+    (l) => l.faite && ((l.de === laDate.id && l.vers === leLieu.id) || (l.de === leLieu.id && l.vers === laDate.id)),
+  ),
+  true,
+);
+check('une date et un lieu font un itinéraire', liaisonEntre(laDate, leLieu)?.produit, 'un itinéraire');
+check('un texte et une personne font un portrait', liaisonEntre(leTexte, laPersonne)?.produit, 'un portrait');
+check('côte à côte, c’est un pas, et un seul', [sontVoisines({ c: 0, l: 0 }, { c: 1, l: 0 }), sontVoisines({ c: 0, l: 0 }, { c: 0, l: 1 }), sontVoisines({ c: 0, l: 0 }, { c: 1, l: 1 })], [true, true, false]);
+check(
+  'et une case posée reste où on l’a posée',
+  emplacementsDuMonde(mondeDuVerso, posees, colonnesDuJour)[leLieu.id],
+  { c: 1, l: 0 },
+);
+check(
+  'le monde relié dit ce qu’il produit',
+  chaineDuMonde(liaisonsDuMonde(mondeDuVerso, posees, colonnesDuJour)).includes('un itinéraire'),
+  true,
+);
+check(
+  'la face technique d’une case dit son module, sa source et son ouverture',
+  faceTechnique(laDate, 3).module === 'date' && faceTechnique(laDate, 3).source.length > 0 && faceTechnique(laDate, 3).liaisons === 3,
+  true,
+);
+check(
+  'et elle sait ce qu’elle attend en face',
+  modulesAttendus('date').includes('formulaire') && modulesAttendus('date').includes('lieu'),
+  true,
+);
 
 /* La feuille : tout ce qui n'est pas l'image et la mosaïque. */
 const feuille = renderToStaticMarkup(
