@@ -2,23 +2,26 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
-import {
-  GUIDE_ARTICLES,
-  INSOLITE_ARTICLES,
-  MAGAZINE_HERO,
-  MAGAZINE_HERO_REPLI,
-  UNIVERSE_ARTICLES,
-} from '../lib/magazine';
-import { WEDDING_STYLES } from '../lib/weddingStyles';
+import { COUVERTURES, MARQUE_MAGAZINE, couvertureParId } from '../lib/aimeMagazine';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
+import { useControlesDeBande } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_MAGAZINE } from '../lib/navDesPages';
+import CouvertureMagazine from '../components/CouvertureMagazine';
 
 /**
- * LE MAGAZINE
+ * LE MAGAZINE — LA REVUE, ÉDITION PAR ÉDITION
  *
- * La porte d'entrée éditoriale du site : les articles qui racontent chaque
- * univers, et les guides qui répondent aux questions de tous les mariages.
+ * Une seule porte, et pas d'étagère : **une couverture**, et le thème qu'elle
+ * ouvre. On feuillette — les flèches du dock, ou un clic sur une couverture — et
+ * les articles de l'édition se lisent en dessous.
+ *
+ * Tout ce qui se répétait a disparu : plus de double titre (la barre dit déjà où
+ * l'on est), plus de compteurs, plus de boutons de filtres. **Les couvertures
+ * sont le rangement.**
+ *
+ * « ?role=fleuriste » reste : la revue ne montre alors que ce qui concerne ce
+ * rôle, et propose de tout reprendre.
  */
 
 const fadeUp = {
@@ -28,17 +31,13 @@ const fadeUp = {
 };
 
 export default function Magazine() {
-  const [filtre, setFiltre] = useState<'tout' | 'univers' | 'guide' | 'insolite'>('tout');
-  const [visuelHero, setVisuelHero] = useState(true);
-  /**
-   * LE MAGAZINE D'UN RÔLE
-   *
-   * « ?role=photographe » : le magazine ne parle plus que de ce qui concerne ce
-   * rôle — ses conseils, ses articles. Les filtres restent, mais ils filtrent
-   * d'abord ce qui le regarde : c'est le rôle qui remplace le tri par défaut.
-   */
   const [params] = useSearchParams();
   const role = roleDuneAdresse(params.get('role'));
+
+  /** L'édition ouverte : celle dont on lit les articles. */
+  const [editionId, setEditionId] = useState(COUVERTURES[0]!.id);
+  const index = Math.max(0, COUVERTURES.findIndex((c) => c.id === editionId));
+  const edition = COUVERTURES[index] ?? COUVERTURES[0]!;
 
   const siens = useMemo(() => (role ? articlesPourRole(role.id) : null), [role]);
 
@@ -48,191 +47,209 @@ export default function Magazine() {
     return () => enregistrerNavVerticale(null);
   }, []);
 
-  const listeUnivers = role ? [] : UNIVERSE_ARTICLES;
-  const listeGuides = role ? siens!.filter((a) => a.category === 'guide') : GUIDE_ARTICLES;
-  const listeInsolite = role ? siens!.filter((a) => a.category === 'insolite') : INSOLITE_ARTICLES;
-  const aLaUne = role ? siens![0] ?? GUIDE_ARTICLES[0]! : UNIVERSE_ARTICLES[0]!;
-  const total = role
-    ? siens!.length
-    : UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length + INSOLITE_ARTICLES.length;
+  /**
+   * **Les flèches du dock feuillettent la revue** : quand ce hero est à l'écran,
+   * elles passent d'une édition à la suivante — comme les rôles et les univers.
+   */
+  const feuilleter = (pas: number) => {
+    const suivant = COUVERTURES[(index + pas + COUVERTURES.length) % COUVERTURES.length]!;
+    setEditionId(suivant.id);
+  };
+  const surveiller = useControlesDeBande('magazine', {
+    precedent: () => feuilleter(-1),
+    suivant: () => feuilleter(1),
+  });
+
+  /** Ce qui se lit : l'édition ouverte, ou les articles d'un rôle. */
+  const articles = role ? siens! : edition.articles;
 
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      
-      {/* Le hero : le visuel, puis ce que contient le magazine */}
-      <header className="relative flex min-h-[100svh] items-end overflow-hidden bg-[#0B0C12] pt-32 text-white">
-        {visuelHero && (
-          <img
-            src={MAGAZINE_HERO}
-            alt=""
-            onError={() => setVisuelHero(false)}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        )}
-        {!visuelHero && (
-          <img src={MAGAZINE_HERO_REPLI} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/55 to-black/35" />
+      {/* ————————————————— LA COUVERTURE : LE TITRE, PUIS LES ÉDITIONS ————————————————— */}
+      <header
+        ref={surveiller}
+        className="relative overflow-hidden bg-[#0B0C12] pb-14 pt-28 text-white sm:pt-32"
+      >
+        <div className="vp-page">
+          <div className="flex flex-col items-center text-center">
+            <h1
+              className="vp-title text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+              style={{ fontSize: 'clamp(2.2rem, 5.4vw, 4rem)', lineHeight: 1.04 }}
+            >
+              SUPER MAGAZINE
+            </h1>
+            <p className="mt-3 max-w-xl text-[14.5px] leading-relaxed text-white/70">
+              {role
+                ? `Choisi pour ${role.nom} : ce qui parle de son métier, et rien d’autre.`
+                : `${MARQUE_MAGAZINE} — ${COUVERTURES.length} éditions : un thème par couverture, et les articles dedans.`}
+            </p>
+          </div>
 
-        <div className="vp-page relative w-full pb-10 sm:pb-14">
-          <span className="vp-eyebrow !text-white/70">
-            {role ? `Le Magazine de ${role.nom}` : 'Le Magazine Super Mariage'}
-          </span>
-          <h1
-            className="vp-title mt-4 max-w-3xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
-            style={{ fontSize: 'clamp(2.2rem, 5.4vw, 4.2rem)', lineHeight: 1.04 }}
-          >
-            {role ? 'Les articles qui parlent de ce rôle.' : 'Ce qu’il faut savoir avant de choisir.'}
-          </h1>
-          <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-white/75">
-            {role
-              ? `${total} articles choisis pour ce rôle : ceux qui parlent de son métier, et rien d’autre. Le magazine entier reste à un clic.`
-              : `${UNIVERSE_ARTICLES.length} univers racontés en détail — le lieu, la journée heure par heure, les métiers qui la font tourner — et ${GUIDE_ARTICLES.length} guides sur ce qui vaut pour tous les mariages : rétroplanning, budget, cagnotte, RSVP, allergènes.`}
-          </p>
+          {/* LES COUVERTURES : la précédente, l'ouverte, la suivante. */}
+          <div className="mt-12 flex items-center justify-center gap-5">
+            {COUVERTURES.length >= 3 && (
+              <div className="hidden lg:block">
+                <CouvertureMagazine
+                  couverture={COUVERTURES[(index - 1 + COUVERTURES.length) % COUVERTURES.length]!}
+                  facteur={0.2}
+                  onChoisir={() => feuilleter(-1)}
+                />
+              </div>
+            )}
 
-          <div className="mt-6 flex flex-wrap gap-2.5">
-            {[
-              { label: 'Articles', value: String(total) },
-              { label: 'Univers', value: String(UNIVERSE_ARTICLES.length) },
-              { label: 'Guides', value: String(GUIDE_ARTICLES.length) },
-              { label: 'Insolite', value: String(INSOLITE_ARTICLES.length) },
-            ].map((fait) => (
-              <span
-                key={fait.label}
-                className="rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-[12px] text-white backdrop-blur-sm"
+            <CouvertureMagazine couverture={edition} active onChoisir={() => setEditionId(edition.id)} />
+
+            {COUVERTURES.length >= 3 && (
+              <div className="hidden lg:block">
+                <CouvertureMagazine
+                  couverture={COUVERTURES[(index + 1) % COUVERTURES.length]!}
+                  facteur={0.2}
+                  onChoisir={() => feuilleter(1)}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Le sommaire des éditions : un mot par couverture, pour aller droit au but. */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+            {COUVERTURES.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setEditionId(c.id)}
+                aria-pressed={c.id === edition.id}
+                className={`rounded-full border px-3 py-1.5 text-[11.5px] transition ${
+                  c.id === edition.id
+                    ? 'border-white bg-white font-semibold text-[#0B0C12]'
+                    : 'border-white/20 text-white/70 hover:border-white/50 hover:text-white'
+                }`}
               >
-                <span className="font-mono text-[10px] uppercase tracking-wider text-white/55">{fait.label}</span>
-                <span className="ml-1.5 font-semibold">{fait.value}</span>
-              </span>
+                <span className="font-mono text-[9.5px] text-current opacity-60">{c.numero}</span>{' '}
+                {c.theme}
+              </button>
             ))}
           </div>
+
+          {role && (
+            <div className="mt-6 text-center">
+              <Link
+                to="/magazine"
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[12.5px] font-semibold text-white/85 no-underline transition hover:border-white hover:text-white"
+              >
+                Tout le magazine <ArrowRight size={13} />
+              </Link>
+            </div>
+          )}
         </div>
       </header>
 
-      {/* Les filtres */}
-      <section className="pb-8 pt-10 sm:pt-12">
-        <div className="vp-page flex flex-wrap items-center gap-2">
-          {([
-            ['tout', 'Tout le magazine'],
-            ['univers', `Les ${UNIVERSE_ARTICLES.length} univers`],
-            ['guide', `Les ${GUIDE_ARTICLES.length} guides`],
-            ['insolite', `Insolite (${INSOLITE_ARTICLES.length})`],
-          ] as const).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setFiltre(id)}
-              className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-semibold transition ${
-                filtre === id
-                  ? 'border-black bg-black text-white'
-                  : 'border-black/12 bg-white text-[#0B0C12] hover:border-black/40'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+      {/* ————————————————————— L'ÉDITION OUVERTE ————————————————————— */}
+      <section id="articles" className="pb-16 pt-12">
+        <div className="vp-page">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/10 pb-4">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-black/45">
+                {MARQUE_MAGAZINE} · N° {edition.numero}
+              </span>
+              <h2 className="vp-title mt-2 text-[24px] sm:text-[30px]">
+                {role ? `Les articles de ${role.nom}` : edition.theme}
+              </h2>
+            </div>
+            <span className="text-[12.5px] text-black/50">
+              {articles.length} article{articles.length > 1 ? 's' : ''}
+            </span>
+          </div>
+
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {articles.map((article) => (
+              <motion.div key={article.slug} {...fadeUp} transition={{ duration: 0.5 }}>
+                <Link
+                  to={`/magazine/${article.slug}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-black/8 bg-white transition hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img
+                      src={article.cover}
+                      alt={article.title}
+                      className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                    />
+                    <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
+                      {article.kicker}
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col p-4">
+                    <h3 className="text-[15.5px] font-bold leading-snug text-[#0B0C12]">{article.title}</h3>
+                    <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-black/55">{article.intro}</p>
+                    <span className="mt-auto flex items-center gap-2 pt-4 text-[12px] font-semibold text-black/60">
+                      <Clock size={12} /> {article.readingMinutes} min
+                      <span className="flex items-center gap-1 transition group-hover:translate-x-0.5">
+                        Lire <ArrowRight size={12} />
+                      </span>
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* L'article à la une */}
-      {filtre === 'tout' && (
-        <section className="pb-14">
+      {/* ————————————————————— LES AUTRES ÉDITIONS ————————————————————— */}
+      {!role && (
+        <section id="editions" className="border-t border-black/5 bg-[#FAFAFC] py-14">
           <div className="vp-page">
-            <Link
-              to={`/magazine/${aLaUne.slug}`}
-              className="group grid overflow-hidden rounded-[30px] border border-black/8 bg-[#FAFAFC] lg:grid-cols-2"
-            >
-              <div className="relative aspect-[16/11] overflow-hidden lg:aspect-auto lg:h-full">
-                <img
-                  src={aLaUne.cover}
-                  alt={aLaUne.title}
-                  className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
-                />
-              </div>
-              <div className="flex flex-col justify-center p-6 sm:p-10">
-                <span className="inline-flex w-fit items-center rounded-full bg-black/5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-black/55">
-                  À la une · {aLaUne.kicker}
-                </span>
-                <h2 className="vp-title mt-4 text-[26px] leading-tight sm:text-[34px]">{aLaUne.title}</h2>
-                <p className="mt-3 text-[15px] leading-relaxed text-black/60">{aLaUne.intro}</p>
-                <span className="mt-5 flex items-center gap-3 text-[12.5px] font-semibold text-black/70">
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} /> {aLaUne.readingMinutes} min de lecture
+            <h2 className="vp-title text-[20px] sm:text-[24px]">Les autres éditions</h2>
+            <p className="mt-2 text-[13.5px] text-black/55">
+              Un thème par couverture — et un article peut appartenir à plusieurs, quand le sujet
+              le mérite.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-4">
+              {COUVERTURES.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => {
+                    setEditionId(c.id);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={`group flex items-center gap-3 rounded-[16px] border p-3 text-left transition ${
+                    c.id === edition.id
+                      ? 'border-black/40 bg-white'
+                      : 'border-black/10 bg-white/60 hover:border-black/30 hover:bg-white'
+                  }`}
+                >
+                  <span
+                    className="block h-14 w-11 shrink-0 overflow-hidden rounded-[6px] bg-[#0B0C12]"
+                    style={{ boxShadow: `inset 0 3px 0 ${c.accent}` }}
+                  >
+                    <img src={c.visuel} alt="" className="h-full w-full object-cover opacity-85" />
                   </span>
-                  <span className="flex items-center gap-1 transition group-hover:translate-x-0.5">
-                    Lire l’article <ArrowRight size={13} />
+                  <span className="min-w-0">
+                    <span className="block font-mono text-[9.5px] uppercase tracking-[0.18em] text-black/40">
+                      N° {c.numero}
+                    </span>
+                    <span className="mt-0.5 block max-w-[190px] truncate text-[13.5px] font-semibold">
+                      {c.theme}
+                    </span>
+                    <span className="mt-0.5 block font-mono text-[10px] text-black/45">
+                      {c.articles.length} articles
+                    </span>
                   </span>
-                </span>
-              </div>
-            </Link>
+                </button>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* Le magazine entier, quand on est entré par un rôle */}
-      {role && (
-        <div className="vp-page -mt-8 pb-4">
-          <Link
-            to="/magazine"
-            className="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-[12.5px] font-semibold text-black/70 no-underline transition hover:border-black/35 hover:text-black"
-          >
-            Tout le magazine <ArrowRight size={13} />
-          </Link>
-        </div>
-      )}
-
-      {/* Les grilles d'articles */}
-      <div id="articles" />
-      {[
-        { titre: role ? 'Choisis pour ce rôle' : 'Les univers, racontés', liste: role ? siens! : listeUnivers, visible: filtre !== 'guide' },
-        { titre: 'Les guides', liste: listeGuides, visible: filtre === 'tout' || filtre === 'guide' },
-        { titre: 'Insolite', liste: listeInsolite, visible: filtre === 'tout' || filtre === 'insolite' },
-      ]
-        .filter((bloc) => bloc.visible)
-        .map((bloc) => (
-          <section key={bloc.titre} className="pb-16">
-            <div className="vp-page">
-              <h2 className="vp-title text-[22px] sm:text-[26px]">{bloc.titre}</h2>
-              <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {bloc.liste.map((article) => (
-                  <motion.div key={article.slug} {...fadeUp} transition={{ duration: 0.5 }}>
-                    <Link
-                      to={`/magazine/${article.slug}`}
-                      className="group flex h-full flex-col overflow-hidden rounded-[24px] border border-black/8 bg-white transition hover:-translate-y-1 hover:shadow-xl"
-                    >
-                      <div className="relative aspect-[16/10] overflow-hidden">
-                        <img
-                          src={article.cover}
-                          alt={article.title}
-                          className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.04]"
-                        />
-                        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
-                          {article.kicker}
-                        </span>
-                      </div>
-                      <div className="flex flex-1 flex-col p-4">
-                        <h3 className="text-[15.5px] font-bold leading-snug text-[#0B0C12]">{article.title}</h3>
-                        <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-black/55">{article.intro}</p>
-                        <span className="mt-auto flex items-center gap-2 pt-4 text-[12px] font-semibold text-black/60">
-                          <Clock size={12} /> {article.readingMinutes} min
-                          <span className="flex items-center gap-1 transition group-hover:translate-x-0.5">
-                            Lire <ArrowRight size={12} />
-                          </span>
-                        </span>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </section>
-        ))}
-
       <footer className="border-t border-black/5 py-10">
         <div className="vp-page flex flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
-          <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">SUPER MARIAGE</span>
+          <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">
+            {MARQUE_MAGAZINE}
+          </span>
           <span>
-            {WEDDING_STYLES.length} univers · {UNIVERSE_ARTICLES.length + GUIDE_ARTICLES.length + INSOLITE_ARTICLES.length} articles
+            {COUVERTURES.length} éditions · {couvertureParId(edition.id)?.articles.length ?? 0} articles
+            dans celle-ci
           </span>
           <Link to="/" className="underline transition hover:text-black">
             Revenir au site

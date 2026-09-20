@@ -23,6 +23,11 @@ export interface ActionNav {
   ancre?: string;
   /** La page à ouvrir, si l'action sort de la page. */
   to?: string;
+  /**
+   * **Ce que ça fait, en une phrase** — ce que dit le clic droit. On ne devine
+   * pas : la capsule explique, et l'explication est la même partout.
+   */
+  aide?: string;
 }
 
 let actions: ActionNav[] | null = null;
@@ -51,3 +56,19 @@ export function useNavVerticale(): ActionNav[] {
 
   return etat;
 }
+
+/* ——————————————— LES GESTES — LES MÊMES SUR TOUTE LA CAPSULE ——————————————— */
+
+/**
+ * Les gestes de la capsule, écrits une fois pour tout le site : c'est ce qui la
+ * rend **universelle**. On apprend un geste ici, il marche ailleurs — sur une
+ * autre page, un autre rôle, un autre métier.
+ */
+export const GESTES_UNIVERSELS: Array<{ geste: string; fait: string }> = [
+  { geste: 'Survoler', fait: 'Le nom de l’action s’écrit, à gauche du picto' },
+  { geste: 'Cliquer', fait: 'On descend à la section, ou l’on ouvre la page' },
+  { geste: 'Clic droit', fait: 'Ce que ça fait, et pourquoi — sans quitter la page' },
+  { geste: 'Appui long', fait: 'La même chose, sur téléphone' },
+  { geste: 'Échap', fait: 'On ferme ce qui s’est ouvert' },
+  { geste: 'Molette', fait: 'La page descend — la capsule reste à sa place' },
+];

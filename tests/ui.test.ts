@@ -64,6 +64,8 @@ import HomeCardShowcase from '../src/components/HomeCardShowcase';
 import Appareils from '../src/components/Appareils';
 import EditeurMiniSite from '../src/pages/EditeurMiniSite';
 import { MANIFESTE } from '../src/lib/manifeste';
+import { COUVERTURES, MARQUE_MAGAZINE, couvertureDArticle, couvertureParId } from '../src/lib/aimeMagazine';
+import CouvertureMagazine from '../src/components/CouvertureMagazine';
 import SuperFooter from '../src/pages/SuperFooter';
 import FenteDocuments from '../src/components/FenteDocuments';
 import {
@@ -93,7 +95,7 @@ import { DOMAINES_PRESTATAIRES, PERSONNAGES, TITRES, VISUELS_DU_HERO, personnage
 import {
   definirPersonaCourant, definirPersonaSurvolee, enregistrerControlesBande, personaCourant,
 } from '../src/lib/personaCourant';
-import { enregistrerNavVerticale } from '../src/lib/navVerticale';
+import { GESTES_UNIVERSELS, enregistrerNavVerticale } from '../src/lib/navVerticale';
 import { AIDE_PROFIL, MENU_PROFIL, SORTIE_PROFIL, rolesDuMenu } from '../src/lib/menuProfil';
 import {
   NAV_ACCUEIL, NAV_ARTICLE, NAV_MAGAZINE, NAV_METIER, NAV_PARAMETRES, NAV_PRODUIT, NAV_PRESTATAIRE,
@@ -1311,7 +1313,7 @@ check('plus de capsule « Un univers »', accueil.includes('Un univers ·'), fal
 /* La même hauteur de hero partout : celle de l'accueil. */
 check(
   'toutes les pages ont le hero de l’accueil',
-  [accueil, universBande, metierBande, pageMagazine, pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageArticle].every((h) =>
+  [accueil, universBande, metierBande, pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageArticle].every((h) =>
     h.includes('min-h-[100svh]'),
   ),
   true,
@@ -1555,6 +1557,52 @@ enregistrerControlesBande(null, 'univers');
 check('et reviennent quand on remonte', dockDe().includes('Rôle précédent'), true);
 enregistrerControlesBande(null, 'roles');
 check('sans bande à l’écran, plus de flèches', dockDe().includes('Rôle précédent'), false);
+
+/* ————————————————— AIME MAGAZINE : LA REVUE, ÉDITION PAR ÉDITION ————————————————— */
+
+check('la marque de la revue', MARQUE_MAGAZINE, 'AIME MAGAZINE');
+check('les éditions sont là', COUVERTURES.length >= 6, true);
+check('chacune a son numéro, son thème et sa couverture', COUVERTURES.every((c) => c.numero && c.theme && c.visuel), true);
+check('numérotées dans l’ordre', COUVERTURES.map((c) => c.numero), COUVERTURES.map((_, i) => String(i + 1).padStart(2, '0')));
+check('aucune couverture vide', COUVERTURES.every((c) => c.articles.length >= 2), true);
+check('et trois titres à la une, au plus', COUVERTURES.every((c) => c.aLaUne.length >= 1 && c.aLaUne.length <= 3), true);
+check(
+  'les titres à la une sont ceux de l’édition',
+  COUVERTURES.every((c) => c.aLaUne.every((t) => c.articles.some((a) => a.title === t))),
+  true,
+);
+check(
+  'un thème mène vraiment le sujet',
+  couvertureParId('lumiere')!.articles[0]!.title.toLowerCase().includes('cinéma') ||
+    couvertureParId('lumiere')!.articles[0]!.title.toLowerCase().includes('35mm'),
+  true,
+);
+check(
+  'et l’on sait de quelle édition vient un article',
+  Boolean(couvertureDArticle(couvertureParId('insolite')!.articles[0]!.slug)),
+  true,
+);
+check(
+  'tous les articles du site sont dans au moins une édition',
+  ALL_ARTICLES.every((a) => COUVERTURES.some((c) => c.articles.some((x) => x.slug === a.slug))),
+  true,
+);
+
+/* La page : un titre, une couverture ouverte, ses articles — et rien de répété. */
+const pageRevue = rendrePage('/magazine', Magazine);
+const revue = pageRevue.replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, "'");
+check('le magazine s’appelle SUPER MAGAZINE', revue.includes('SUPER MAGAZINE'), true);
+check('et il ne répète plus le nom de la barre', revue.includes('Le Magazine Super Mariage'), false);
+check('ni la phrase d’avant', revue.includes('Ce qu’il faut savoir avant de choisir'), false);
+check('ni ses compteurs', revue.includes('>Articles<') || revue.includes('>Univers<'), false);
+check('ni ses boutons de filtres', revue.includes('Tout le magazine</button>'), false);
+check('la couverture porte la marque', revue.includes(MARQUE_MAGAZINE), true);
+check('et son numéro', revue.includes('N° 01'), true);
+check('et le thème de l’édition', revue.includes(COUVERTURES[0]!.theme), true);
+check('et les titres à la une', revue.includes(COUVERTURES[0]!.aLaUne[0]!), true);
+check('les autres éditions sont listées', revue.includes('Les autres éditions'), true);
+check('la couverture est une carte à part', typeof CouvertureMagazine, 'function');
+check('les couvertures ont leur état', revue.includes('aria-pressed'), true);
 
 /* ------------------- le nom se transforme, les deux portes suivent le rôle --- */
 
@@ -1850,7 +1898,7 @@ check('moins que le magazine entier', articlesPhoto.length < ALL_ARTICLES.length
 const pageMagazinePhoto = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?role=photographe'] }, createElement(Magazine as never)),
 );
-check('le magazine dit de qui il est', pageMagazinePhoto.includes('Le Magazine de SUPER PHOTOGRAPHE'), true);
+check('le magazine dit de qui il est', pageMagazinePhoto.includes('Choisi pour SUPER PHOTOGRAPHE'), true);
 check('et reste ouvert en entier', pageMagazinePhoto.includes('Tout le magazine'), true);
 
 /* ------------- la nav verticale : le shop, le magazine, et la page ---------- */
@@ -1919,6 +1967,19 @@ check(
   false,
 );
 check('elle se tient à droite', navRendue.includes('fixed right-3 top-1/2'), true);
+check('elle propose les gestes', navRendue.includes('aria-label="Les gestes de la capsule"'), true);
+check('et chaque action sait dire ce qu’elle fait', NAV_UNIVERS.every((a) => Boolean(a.aide)), true);
+check(
+  'aucune action de page n’oublie son aide',
+  NAVS.every(([, liste]) => liste.every((a) => Boolean(a.aide))),
+  true,
+);
+check('les gestes sont écrits une fois pour tout le site', GESTES_UNIVERSELS.length >= 5, true);
+check(
+  'et ils couvrent le survol, le clic et le clic droit',
+  ['Survoler', 'Cliquer', 'Clic droit'].every((g) => GESTES_UNIVERSELS.some((x) => x.geste === g)),
+  true,
+);
 
 /* ------------------------------------------------------------------- bilan */
 

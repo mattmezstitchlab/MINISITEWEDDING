@@ -1311,3 +1311,55 @@ ticket qui dit le document, qui l'a demandé, la mention de droits et les trois
 gestes ; le point qui s'allume au palier le plus haut ; les états écarté, validé,
 négocié ; le classement automatique, la famille créée pour une pièce inconnue ;
 vingt héros, tous les paliers couverts), `npm run build` OK.
+
+## 38. AIME MAGAZINE, la revue par éditions (passe 43)
+
+**Ce qui se répétait est parti.** La page du magazine portait son nom deux fois
+(« SUPER MARIAGE magazine » dans la barre, « Le Magazine Super Mariage » dans le
+hero), une phrase d'accroche, **quatre compteurs** puis **quatre boutons de
+filtres** qui disaient la même chose, et un paragraphe de chiffres. Il reste
+**un titre** et **la revue**.
+
+**Le titre, au centre : SUPER MAGAZINE.** Le logo reste en haut à gauche
+(« SUPER MARIAGE »), et la barre annonce « Magazine » à côté — la page, elle,
+ne le redit plus.
+
+**La revue s'appelle AIME MAGAZINE** (la marque est déposée à l'INPI). Elle se
+feuillette **par éditions** : une couverture, un thème, et les articles dedans.
+`src/lib/aimeMagazine.ts` construit les **neuf éditions** à partir des vrais
+articles — *Les univers, racontés* · *Le jour J, heure par heure* · *Lumière &
+Image* · *La table* · *Végétal & Fleurs* · *Les métiers du jour J* · *La nuit* ·
+*Ce qu'on oublie toujours* · *Insolite* — et une édition qui ne rassemblerait pas
+deux articles n'existe pas. **Un article peut appartenir à plusieurs éditions**,
+quand le sujet le mérite.
+
+**Comment une édition se compose.** Les mots du thème ouvrent l'édition, et
+**l'endroit où le mot apparaît** décide de l'ordre : dans le **titre** d'abord,
+puis la signature, puis le chapô. C'est ce qui met « Cinéma : Rideau rouge. 35mm.
+Première » en couverture de *Lumière & Image*, « Garden Botanica » en tête de
+*Végétal*, et « Les prestataires : qui fait quoi » en tête de *Les métiers*.
+
+**La couverture est un objet.** En haut **AIME MAGAZINE** et le numéro ; au
+milieu **le thème**, en grand ; en bas, sur la photo, **trois titres à la une**.
+Celle du centre est l'édition ouverte, celles de côté sont les suivantes — et le
+sommaire (un mot par couverture) permet d'aller droit au but. Sous la bande, les
+articles de l'édition ; plus bas, **Les autres éditions**.
+
+**Les flèches du dock feuillettent la revue** : `useControlesDeBande('magazine',
+…)` — le même geste que les rôles et les univers.
+
+**Les gestes de la capsule** (`src/lib/navVerticale.ts`) sont désormais écrits une
+fois pour tout le site : **survoler** (le nom s'écrit), **cliquer** (on y va),
+**clic droit** — ou appui long (ce que ça fait, et pourquoi), **Échap** (on
+ferme), **molette** (la page descend). Chaque action porte son `aide`, une phrase
+qui dit ce qu'elle fait ; le clic droit l'affiche, et le point d'interrogation en
+bas de la capsule relit les gestes à tout moment. **Toutes les actions des huit
+pages ont leur aide** : c'est testé.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **595** (la marque,
+les éditions numérotées, aucune couverture vide, les titres à la une qui viennent
+bien de l'édition, le thème qui mène le sujet, **tous les articles du site dans au
+moins une édition** ; la page sans son double titre, ses compteurs, ses filtres ni
+sa phrase ; la couverture, son numéro, son thème, ses titres ; les gestes écrits
+une fois et toutes les actions qui savent dire ce qu'elles font),
+`npm run build` OK.
