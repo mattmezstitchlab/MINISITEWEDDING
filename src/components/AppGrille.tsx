@@ -23,6 +23,7 @@ import {
   type Famille,
 } from '../lib/grilleDuMonde';
 import { echelleDuCran } from '../lib/echelleDeLaGrille';
+import { useFace } from '../lib/faceDuSite';
 import {
   LIAISONS_POSSIBLES,
   PALETTES_DU_SYSTÈME,
@@ -37,6 +38,7 @@ import { partDeLHeure } from '../lib/moments';
 import { roleDuneAdresse } from '../lib/personaSuites';
 import { usePersonaCourante } from '../lib/personaCourant';
 import { magazineDeLaDate, niveauxDuJour } from '../lib/semaines';
+import BasculeDeFace from './BasculeDeFace';
 import CadranDuMagazine from './CadranDuMagazine';
 import { legendeDeLHeure } from './CouvertureJour';
 import ChampDuMagazine from './ChampDuMagazine';
@@ -143,8 +145,18 @@ export default function AppGrille({
   const [echelle, setEchelle] = useState(() => echelleDuCran(cranDeLAdresse(params.get('niveau'))));
   const [selection, setSelection] = useState<string[]>(() => casesDeLAdresse(params.get('cases')));
   const [masquees, setMasquees] = useState<string[]>([]);
-  /** **Le verso** : on retourne le site et l'on voit ce qui le tient. */
-  const [verso, setVerso] = useState(() => versoInitial || params.get('verso') === '1');
+  /**
+   * **La face du site.** Elle vit dans l'adresse (`?face=verso`) : le verso se
+   * partage, il survit à la navigation, et il se quitte d'un mot. `versoInitial`
+   * sert aux pages qui l'ouvrent d'elles-mêmes.
+   */
+  const { face, changer } = useFace();
+  const verso = versoInitial || face === 'verso';
+  /** La touche `V` retourne le site — toujours par l'adresse, jamais autrement. */
+  const faceSuivante = useRef<() => void>(() => {});
+  useEffect(() => {
+    faceSuivante.current = () => changer(face === 'verso' ? 'grille' : 'verso');
+  }, [face, changer]);
   /** Les places posées à la main : au verso, une case se déplace et se lie. */
   const [places, setPlaces] = useState<Record<string, Emplacement>>({});
   const [feuille, setFeuille] = useState<FeuilleOuverte>(() => feuilleDeLAdresse(params.get('feuille')));
@@ -245,7 +257,7 @@ export default function AppGrille({
       const cible = e.target as HTMLElement | null;
       if (cible && ['INPUT', 'TEXTAREA', 'SELECT'].includes(cible.tagName)) return;
       if (e.key === 'v' || e.key === 'V') {
-        setVerso((v) => !v);
+        faceSuivante.current();
         return;
       }
       if (e.key !== 'Escape') return;
@@ -412,16 +424,7 @@ export default function AppGrille({
 
       {/* ————————— LES PORTES : L'ÉDITEUR, LA COLLECTION, LE PROFIL ————————— */}
       <div className="absolute right-12 top-3 z-20 flex flex-col items-end gap-1 sm:right-14 sm:top-4">
-        <button
-          type="button"
-          data-bascule="verso"
-          onClick={() => setVerso((v) => !v)}
-          className={`font-mono text-[10px] uppercase tracking-[0.18em] transition ${
-            verso ? 'text-[#7DE2B0]' : 'text-white/55 hover:text-white'
-          }`}
-        >
-          {verso ? 'le recto' : 'le verso'}
-        </button>
+        <BasculeDeFace faces={['grille', 'verso']} />
         {([
           ['editeur', 'l’éditeur'],
           ['collection', 'la collection'],

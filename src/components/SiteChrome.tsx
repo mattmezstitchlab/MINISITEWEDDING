@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import { useFace } from '../lib/faceDuSite';
 import { useModeImmersif } from '../lib/modeImmersif';
 import SiteHeader from './SiteHeader';
 import BottomCapsuleNav from './BottomCapsuleNav';
@@ -73,10 +74,16 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
    * pas l'image et la mosaïque s'ouvre à la demande, dans une feuille.
    */
   const immersif = useModeImmersif();
+  /**
+   * **La face change le chrome.** Sur la grille et au verso, la mosaïque est la
+   * navigation : rien autour. Au **recto**, on revoit la page d'avant — avec sa
+   * barre, son dock et son pied, exactement comme ils étaient.
+   */
+  const { face } = useFace();
   /** « / » se compare exactement — sinon, tous les chemins commenceraient par lui. */
-  const sansChrome = SANS_CHROME.some((prefixe) =>
-    prefixe === '/' ? pathname === '/' : pathname.startsWith(prefixe),
-  );
+  const sansChrome =
+    face !== 'recto' &&
+    SANS_CHROME.some((prefixe) => (prefixe === '/' ? pathname === '/' : pathname.startsWith(prefixe)));
   const avecChrome = !immersif && !sansChrome;
   const mention = MENTIONS.find(([prefixe]) => pathname.startsWith(prefixe))?.[1];
 

@@ -604,3 +604,32 @@ personnes, le mariage, les prestataires, l'invitation — n'ont **plus de barre,
 plus de dock, plus de pied** : la mosaïque est la navigation. Le chrome reste sur
 les **outils** : `/ripple` (l'éditeur de blocs), `/parametres`, `/editeur/:id`,
 `/apercu`, `/p/:slug`.
+
+## 18. Trois faces, sur chaque adresse
+
+Chaque page du site a maintenant **trois faces**, et elles vivent dans
+l'adresse :
+
+```
+/shop/table-trestle-chene              la grille : le produit en cases
+/shop/table-trestle-chene?face=verso   le verso : le même produit, retourné
+/shop/table-trestle-chene?face=recto   le recto : la page d'avant, entière
+```
+
+| La face | Ce qu'on voit | Ce qu'on peut faire |
+| --- | --- | --- |
+| **la grille** | le monde de l'adresse, en cases, plein écran | entrer dans une case, choisir, composer |
+| **le verso** | les modules, les sources, les ouvertures, les quatre ports de chaque case, les réglages du design system, les dix-huit liaisons possibles, et **les liaisons dessinées sous la grille** | prendre une case, la poser **bord à bord**, et voir la liaison se faire (en vert) |
+| **le recto** | la page d'avant, exactement comme elle était — et son chrome avec elle | revenir à la grille d'un mot |
+
+`src/lib/faceDuSite.ts` écrit la règle (`FACES`, `faceDeLAdresse`, `useFace`) ;
+`src/components/FaceDuSite.tsx` monte les trois faces sur chaque route, en
+gardant la page d'avant sous la main (`recto={…}`) ; `src/components/BasculeDeFace.tsx`
+donne le seul contrôle : **trois mots**.
+
+Le chrome du site suit la face : il disparaît sur la grille et au verso — rien
+autour de la mosaïque — et il **revient au recto**, sinon la page d'avant serait
+nue.
+
+**Rien n'a été détruit** : les pages d'avant sont toujours là, montées au recto
+de leur propre adresse. C'est le verso du site, au sens propre.

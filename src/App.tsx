@@ -6,8 +6,20 @@ import SiteChrome from './components/SiteChrome';
 /**
  * Chaque page est chargée avec gestion propre des routes.
  */
-import GrilleDuneRoute from './components/GrilleDuneRoute';
+import FaceDuSite from './components/FaceDuSite';
 import SuperRipple from './pages/SuperRipple';
+import Aime from './pages/Aime';
+import Invitation from './pages/Invitation';
+import Landing from './pages/Landing';
+import LeMariage from './pages/LeMariage';
+import MagazineArticle from './pages/MagazineArticle';
+import PageMetier from './pages/PageMetier';
+import PageProfil from './pages/PageProfil';
+import Shop from './pages/Shop';
+import ShopProduct from './pages/ShopProduct';
+import Theater from './pages/Theater';
+import VendorStudio from './pages/VendorStudio';
+import WeddingPeople from './pages/WeddingPeople';
 import Editor from './pages/Editor';
 import PublicSite from './pages/PublicSite';
 import Magazine from './pages/Magazine';
@@ -34,25 +46,31 @@ export default function App() {
         <Suspense fallback={<PageFallback />}>
           <Routes>
             {/* On n'arrive plus sur une page : on arrive devant tout le contenu. */}
-            <Route path="/" element={<GrilleDuneRoute monde="annee" />} />
+            <Route path="/" element={<FaceDuSite recto={<Landing />} monde="monde" />} />
             {/* Tout le site parle le langage de la grille : une adresse, un monde. */}
-            <Route path="/theater" element={<GrilleDuneRoute monde="monde" />} />
+            <Route path="/theater" element={<FaceDuSite recto={<Theater />} monde="monde" />} />
             {/* La timeline est fusionnée avec le magazine : la languette du dock
                 la déploie ; l'ancienne page renvoie vers elle, ouverte. */}
             <Route path="/timeline" element={<Navigate to="/magazine?timeline=1" replace />} />
             {/* Event OS retiré du produit : ses anciennes adresses ramènent à l'accueil. */}
             <Route path="/modules" element={<Navigate to="/" replace />} />
             <Route path="/features" element={<Navigate to="/" replace />} />
-            <Route path="/shop" element={<GrilleDuneRoute monde="boutique" />} />
-            <Route path="/shop/:slug" element={<GrilleDuneRoute monde={(p) => `produit-${p.slug}`} />} />
+            <Route path="/shop" element={<FaceDuSite recto={<Shop />} monde="boutique" />} />
+            <Route
+              path="/shop/:slug"
+              element={<FaceDuSite recto={<ShopProduct />} monde={(p) => `produit-${p.slug}`} />}
+            />
             <Route path="/magazine" element={<Magazine />} />
-            <Route path="/magazine/:slug" element={<GrilleDuneRoute monde={(p) => `article-${p.slug}`} />} />
-            <Route path="/aime" element={<GrilleDuneRoute monde="magazines" />} />
-            <Route path="/taxonomie" element={<GrilleDuneRoute monde="magazines" />} />
+            <Route
+              path="/magazine/:slug"
+              element={<FaceDuSite recto={<MagazineArticle />} monde={(p) => `article-${p.slug}`} />}
+            />
+            <Route path="/aime" element={<FaceDuSite recto={<Aime />} monde="magazines" />} />
+            <Route path="/taxonomie" element={<FaceDuSite recto={<Aime />} monde="magazines" />} />
             <Route path="/creer" element={<Navigate to="/ripple" replace />} />
             <Route path="/carte" element={<Navigate to="/ripple" replace />} />
             {/* L'espace du prestataire : le même éditeur, dans la langue du métier. */}
-            <Route path="/prestataire" element={<GrilleDuneRoute monde="metiers" />} />
+            <Route path="/prestataire" element={<FaceDuSite recto={<VendorStudio />} monde="metiers" />} />
             <Route path="/parametres" element={<EditeurMiniSite />} />
             <Route path="/ripple" element={<SuperRipple />} />
             {/* SUPER RIPPLE a remplacé SUPER FOOTER : l'ancienne adresse suit. */}
@@ -60,16 +78,28 @@ export default function App() {
             {/* Une seule page SUPER SHOP : le shop, son ticket, ses coches. */}
             <Route path="/supermarriage" element={<Navigate to="/shop" replace />} />
             {/* Le mariage, en entier : l'article, la playlist, le récap — une page par univers. */}
-            <Route path="/le-mariage" element={<GrilleDuneRoute monde="monde" />} />
-            <Route path="/le-mariage/:styleId" element={<GrilleDuneRoute monde="monde" />} />
+            <Route path="/le-mariage" element={<FaceDuSite recto={<LeMariage />} monde="monde" />} />
+            <Route path="/le-mariage/:styleId" element={<FaceDuSite recto={<LeMariage />} monde="monde" />} />
             {/* La page entière d'un métier : sa mission, ses moments, son ticket. */}
-            <Route path="/metiers" element={<GrilleDuneRoute monde="metiers" />} />
-            <Route path="/metiers/:slug" element={<GrilleDuneRoute monde={(p) => `metier-${p.slug}`} />} />
+            <Route path="/metiers" element={<FaceDuSite recto={<PageMetier />} monde="metiers" />} />
+            <Route
+              path="/metiers/:slug"
+              element={<FaceDuSite recto={<PageMetier />} monde={(p) => `metier-${p.slug}`} />}
+            />
             {/* La page d'une personne : la carte faite avec le formulaire, en
                 entier — sa couverture, son timbre, son univers, ses mariages. */}
-            <Route path="/profil/:slug" element={<GrilleDuneRoute monde={(p) => `personne-${p.slug}`} />} />
-            <Route path="/mariage/:slug" element={<GrilleDuneRoute monde={(p) => `personne-${p.slug}`} />} />
-            <Route path="/rejoindre/:slug" element={<GrilleDuneRoute monde="mini-site" />} />
+            <Route
+              path="/profil/:slug"
+              element={<FaceDuSite recto={<PageProfil />} monde={(p) => `personne-${p.slug}`} />}
+            />
+            <Route
+              path="/mariage/:slug"
+              element={<FaceDuSite recto={<WeddingPeople />} monde={(p) => `personne-${p.slug}`} />}
+            />
+            <Route
+              path="/rejoindre/:slug"
+              element={<FaceDuSite recto={<Invitation />} monde="mini-site" />}
+            />
             <Route path="/generer" element={<Navigate to="/ripple" replace />} />
             <Route path="/generation" element={<Navigate to="/ripple" replace />} />
             <Route path="/editeur/:id" element={<Editor />} />

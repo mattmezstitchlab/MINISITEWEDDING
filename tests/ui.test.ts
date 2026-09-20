@@ -103,7 +103,8 @@ import {
 } from '../src/lib/grilleDuMonde';
 import { lumiereDeLHeure, teinteDeLHeure, melangeHex } from '../src/lib/lumiereDuJour';
 import { ROUTES_DU_MONDE, mondeDUneAdresse, promesseDUneAdresse } from '../src/lib/grilleDesRoutes';
-import GrilleDuneRoute from '../src/components/GrilleDuneRoute';
+import FaceDuSite from '../src/components/FaceDuSite';
+import { FACES, faceDeLAdresse } from '../src/lib/faceDuSite';
 import {
   LIAISONS_POSSIBLES,
   PALETTES_DU_SYSTÈME,
@@ -1188,6 +1189,17 @@ const chromeSite = renderToStaticMarkup(
   ),
 );
 check('le site des mariés reste sans header ni dock', chromeSite.includes('Zéro contrainte'), false);
+/* Au recto, la page d'avant retrouve son chrome — sinon elle serait nue. */
+const chromeMetierRecto = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/metiers/dj-resident-clubbing-sound-engineer?face=recto'] },
+    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
+  ),
+);
+check('au recto, la barre du site revient', chromeMetierRecto.includes('aria-label="La barre du site"'), true);
+check('et le dock avec elle', chromeMetierRecto.includes('Le Point Zéro'), true);
+check('sur la grille, il n’y a rien autour', chromeMetier.includes('Les portes du site'), false);
 
 /* --------- le dock noir, la bande du hero, le header sans menu d'univers ------- */
 
@@ -2334,27 +2346,48 @@ check('un métier inconnu ouvre les métiers', mondeDeLId('metier-inconnu').id, 
 check('une personne inconnue ouvre les personnes', mondeDeLId('personne-inconnue').id, 'personnes');
 check('un article inconnu ouvre les articles', mondeDeLId('article-inconnu').id, 'articles');
 
-/** La route d'un produit : la grille s'ouvre sur le monde du produit. */
-const grilleDuProduit = renderToStaticMarkup(
-  createElement(
-    MemoryRouter,
-    { initialEntries: ['/shop/table-trestle-chene'] },
+/**
+ * **La route d'un produit, dans ses trois faces.** La grille ouvre le monde du
+ * produit ; le verso retourne ce même monde ; le recto rend la page d'avant.
+ */
+const produitEnFace = (entree: string) =>
+  renderToStaticMarkup(
     createElement(
-      Routes,
-      null,
-      createElement(Route, {
-        path: '/shop/:slug',
-        element: createElement(GrilleDuneRoute as never, {
-          monde: (segments: Record<string, string | undefined>) => `produit-${segments.slug}`,
+      MemoryRouter,
+      { initialEntries: [entree] },
+      createElement(
+        Routes,
+        null,
+        createElement(Route, {
+          path: '/shop/:slug',
+          element: createElement(FaceDuSite as never, {
+            recto: createElement(ShopProduct as never),
+            monde: (segments: Record<string, string | undefined>) => `produit-${segments.slug}`,
+          }),
         }),
-      }),
+      ),
     ),
-  ),
-);
+  );
+const grilleDuProduit = produitEnFace('/shop/table-trestle-chene');
+const versoDuProduit = produitEnFace('/shop/table-trestle-chene?face=verso');
+const rectoDuProduit = produitEnFace('/shop/table-trestle-chene?face=recto');
 check('la page d’un produit s’ouvre en cases', grilleDuProduit.includes('data-grille="du-monde"'), true);
 check('et c’est bien le monde du produit', grilleDuProduit.includes('data-monde="produit-table-trestle-chene"'), true);
 check('la grille prend tout l’écran, même ici', grilleDuProduit.includes('fixed inset-0') && grilleDuProduit.includes('overflow-hidden'), true);
 check('et aucune page classique ne subsiste autour', /data-page="(shop|metier|profil)"/.test(grilleDuProduit), false);
+check('le verso retourne le même produit', versoDuProduit.includes('data-verso="ouvert"') && versoDuProduit.includes('data-monde="produit-table-trestle-chene"'), true);
+check(
+  'et le recto rend la page d’avant, entière',
+  rectoDuProduit.includes('data-grille="du-monde"') === false &&
+    rectoDuProduit.includes('Dans le même univers') &&
+    rectoDuProduit.includes('vp-page'),
+  true,
+);
+check(
+  'les trois faces sont écrites, et la face se lit dans l’adresse',
+  FACES.map((f) => f.mot).join(' · ') === 'la grille · le verso · le recto' && faceDeLAdresse('verso') === 'verso' && faceDeLAdresse(null) === 'grille',
+  true,
+);
 
 /* La feuille : tout ce qui n'est pas l'image et la mosaïque. */
 const feuille = renderToStaticMarkup(
