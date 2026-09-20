@@ -44,7 +44,7 @@
       "aucune image d’une autre semaine"
     ]
   },
-  "livrees": 25,
+  "livrees": 30,
   "attendues": 432,
   "images": [
     {
@@ -4093,7 +4093,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-23/01-amoureux.jpg",
@@ -4276,7 +4276,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-24/01-amoureux.jpg",
@@ -4459,7 +4459,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-25/01-amoureux.jpg",
@@ -4642,7 +4642,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-26/01-amoureux.jpg",
@@ -4825,7 +4825,7 @@
         "mariage"
       ],
       "couverture": true,
-      "livree": false
+      "livree": true
     },
     {
       "fichier": "/images/magazine/semaine-27/01-amoureux.jpg",

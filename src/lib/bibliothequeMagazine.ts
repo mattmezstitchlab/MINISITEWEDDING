@@ -102,6 +102,21 @@ export const VISUELS_DU_MAGAZINE: Record<string, string[]> = {
   "semaine-22": [
     "cover.jpg"
   ],
+  "semaine-23": [
+    "cover.jpg"
+  ],
+  "semaine-24": [
+    "cover.jpg"
+  ],
+  "semaine-25": [
+    "cover.jpg"
+  ],
+  "semaine-26": [
+    "cover.jpg"
+  ],
+  "semaine-27": [
+    "cover.jpg"
+  ],
   "semaine-38": [
     "cover.jpg",
     "01-amoureux.jpg"
@@ -109,7 +124,7 @@ export const VISUELS_DU_MAGAZINE: Record<string, string[]> = {
 };
 
 /** Le nombre de visuels livrés, toutes semaines confondues. */
-export const VISUELS_LIVRES = 25;
+export const VISUELS_LIVRES = 30;
 
 /** Vrai quand ce visuel est arrivé pour cette semaine. */
 export function visuelLivre(numero: number, slot: string): boolean {

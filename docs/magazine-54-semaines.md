@@ -204,6 +204,12 @@ la couverture, nombre de chapitres livrés. À ce jour : **les couvertures de la
 collection sont produites en premier** (elles sont les portes d'entrée), puis les
 chapitres, semaine par semaine — 432 visuels sont attendus au total.
 
+Livrées : **30 visuels sur 432** — les couvertures des semaines 01 à 27, plus
+celle de la semaine 38, et deux chapitres (`semaine-01/02-style`,
+`semaine-38/01-amoureux`). La suite s'écrit dans l'ordre des semaines : 28, 29,
+30… Les témoins des tests suivent la livraison : quand une semaine arrive, le
+témoin du repli passe à la semaine suivante encore vide.
+
 ## 11. La page du magazine : une couverture, cinq blocs
 
 L'information a été **simplifiée** : la page disait la même chose sous dix

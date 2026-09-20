@@ -4329,7 +4329,7 @@ check('sa couleur vient du magazine', blocs[5]!.colorAccent, MAGAZINES[5]!.palet
 check('sa période est écrite', blocs[0]!.startTime.includes('–'), true);
 check('le joker 53 n’a pas de semaine', blocs[52]!.chapter, 'Hors calendrier');
 check('la couverture livrée est posée sur le bloc', blocs[37]!.mediaUrl, '/images/magazine/semaine-38/cover.jpg');
-check('et un magazine non livré garde son bloc, sans image', blocs[22]!.mediaUrl, undefined);
+check('et un magazine non livré garde son bloc, sans image', blocs[27]!.mediaUrl, undefined);
 check('la somme des durées fait l’année', Math.round(blocs.reduce((t, b) => t + b.durationMinutes, 0)), TIMELINE_TOTAL_MINUTES);
 check('un magazine vaut un cinquante-quatrième de la bande', Math.round(PAS_DU_MAGAZINE * NOMBRE_DE_MAGAZINES), TIMELINE_TOTAL_MINUTES);
 check('et les blocs se suivent sans trou', blocs.every((b, i) => i === 0 || b.startMinuteOfDay > blocs[i - 1]!.startMinuteOfDay), true);
@@ -4456,7 +4456,8 @@ check('un chapitre non livré reste dans son magazine', chapitreManquant.magazin
 check('et il le dit', chapitreManquant.raison.includes('23'), true);
 check('sans jamais emprunter à une autre semaine',
   chapitreManquant.url === null || chapitreManquant.url.includes('semaine-23') || chapitreManquant.url.includes('semaine 23'), true);
-check('une couverture non livrée est dessinée', visuelDeLaCouverture(23).origine, 'dessin');
+check('une couverture non livrée est dessinée', visuelDeLaCouverture(28).origine, 'dessin');
+check('et une couverture livrée est une couverture', visuelDeLaCouverture(23).origine, 'couverture-semaine');
 const visuels21 = visuelsDuJour(le21Septembre);
 check('un jour a sa couverture et son chapitre', [visuels21.couverture.magazine, visuels21.imageDuChapitre.magazine], [38, 38]);
 check('et la provenance est toujours dite', visuels21.couverture.raison.length > 20 && visuels21.imageDuChapitre.raison.length > 20, true);
