@@ -86,7 +86,6 @@ Rien de la page n'est inventé pour la page :
 ## 5. L'ordre de la page, aujourd'hui
 
 ```
-la porte             on arrive, on donne le code du mariage (sans lui, rien ne s'ouvre)
 barre                AIME · les portes · le compte et le total · le code · « Ouvrir le ticket »
 la machine           seule, sur fond blanc — elle propose, on valide, le papier sort
 le visuel du jour    la bande d'image calme, les infos dessus
@@ -111,11 +110,11 @@ machine** — le premier écran ne contient qu'elle.
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |
-| `/` | **la porte** : le code du mariage demandé avant tout |
-| `/?code=A7K-241` | la page entière : la machine, les héros, l'appareil, les bandes, le ticket |
-| `/?code=A7K-241#la-machine` | la machine (la barre et les pastilles y mènent) |
-| `/?code=A7K-241#l-appareil` | l'appareil : le rêve, le budget, les objets, la fente |
-| `/?code=A7K-241` puis `#groupe-site` | une famille, ouverte depuis sa colonne |
+| `/` | la page entière : la machine, les héros, l'appareil, les bandes, le ticket |
+| `/#la-machine` | la machine (la barre et les pastilles y mènent) |
+| `/#l-appareil` | l'appareil : le rêve, le budget, les objets, la fente |
+| `/` puis `#groupe-site` | une famille, ouverte depuis sa colonne |
+| `/?code=A7K-241` | la même page, avec le code d'un autre mariage sur le ticket |
 | `/caisse?face=recto` | la grande page d'avant, entière (sans code) |
 
 ## 7. Ce que la référence ne donne pas, et qu'on garde à nous
@@ -130,9 +129,9 @@ AIME, et que la référence n'a pas :
 - **les portefeuilles** : cinq papiers, cinq adresses, le lien qui est le reçu ;
 - **le magazine** : 54 semaines, 7 chapitres, et des images qui ne se répètent
   jamais d'une semaine à l'autre ;
-- **la porte** : le code du mariage — trois signes, un tiret, trois chiffres :
-  c'est lui qui ouvre le site, et c'est lui qu'on met dans le lien envoyé aux
-  invités (voir `docs/le-code-du-mariage.md`) ;
+- **le code du mariage** : trois signes, un tiret, trois chiffres, écrit au
+  début du ticket et dans le lien envoyé aux invités — sans être une porte (voir
+  `docs/le-code-du-mariage.md`) ;
 - **l'appareil** : le rêve sur l'écran, la jauge du budget, les six objets qui
   laissent chacun leur ligne de code sur le papier, les stickers carrés — et le
   papier qui **sort par le dessous**.

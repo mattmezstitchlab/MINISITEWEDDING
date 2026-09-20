@@ -2075,13 +2075,9 @@ const rendreLAdresse = (url: string) =>
   renderToStaticMarkup(
     createElement(MemoryRouter, { initialEntries: [url] }, createElement(LaCaisse as never)),
   ).replace(/&amp;/g, '&');
-/* **On n'arrive pas sur le site : on entre par un code.** Les vérifications de la
-   page passent donc par la porte, comme un invité ; celles de la porte elle-même
-   se font sans code. */
 const avecLeCode = (url: string) =>
   url.includes('code=') ? url : `${url}${url.includes('?') ? '&' : '?'}code=${CODE_DE_DÉMONSTRATION}`;
 const rendreLeTicket = (url: string) => rendreLAdresse(avecLeCode(url));
-const laPorte = rendreLAdresse('/');
 const ticketVide = rendreLeTicket('/');
 const ticketPlein = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}`);
 const ticketDuReçu = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}&ecran=ticket`);
@@ -2443,20 +2439,20 @@ check(
    rêve », « un appareil qui contrôle le budget et imprime des stickers carrés »,
    « le papier sort par le dessous ». Cinq promesses, cinq séries de preuves. */
 
+/* « Supprime le bloc avec le code, je l'ai même pas. » Le code n'est plus une
+   porte du tout : on arrive sur la page, et le code s'écrit au début du ticket
+   — c'est ce qui part dans le lien envoyé aux invités. */
 check(
-  'sans code, on tombe sur la porte — jamais sur la page',
-  laPorte.includes('data-porte="vrai"') && !laPorte.includes('data-page="ticket"'),
+  'on arrive sur la page : plus de porte, plus rien à saisir',
+  ticketVide.includes('data-page="ticket"') &&
+    !ticketVide.includes('ENTREZ LE CODE') &&
+    !ticketVide.includes('data-porte="vrai"') &&
+    !ticketVide.includes('data-porte-champ') &&
+    !ticketVide.includes('data-porte-ouvrir'),
   true,
 );
-check(
-  'la porte dit ce qu’elle attend, et à qui',
-  laPorte.includes('ENTREZ LE CODE DU MARIAGE') &&
-    laPorte.includes(LE_SPÉCIALISTE.metier) &&
-    laPorte.includes('data-porte-champ="vrai"') &&
-    laPorte.includes('data-porte-ouvrir="vrai"'),
-  true,
-);
-check('et elle offre un code à essayer, celui du couple', laPorte.includes(`data-porte-démo="${CODE_DE_DÉMONSTRATION}"`), true);
+check('sans code dans l’adresse, c’est celui du mariage de démonstration', ticketVide.includes(`data-code="${CODE_DE_DÉMONSTRATION}"`), true);
+check('et le code s’écrit au début du ticket, pas ailleurs', (ticketVide.match(/data-ticket-marque="vrai"/g) ?? []).length, 1);
 check(
   'un code, c’est trois signes, un tiret, trois chiffres — et il ouvre',
   [codeAccepté('A7K-241'), codeAccepté('a7k 241'), codeAccepté('A7K-24'), codeAccepté('A7K-2411')],
@@ -2464,7 +2460,15 @@ check(
 );
 check('le code s’écrit proprement, même tapé n’importe comment', codeDepuis(' a7k 241 '), 'A7K-241');
 check('et le même mariage redonne toujours le même code', codeDuMariage(TICKET_COUPLE), CODE_DE_DÉMONSTRATION);
-check('derrière la porte, la page porte son code', ticketVide.includes(`data-code="${CODE_DE_DÉMONSTRATION}"`), true);
+check(
+  'un lien avec un autre code imprime cet autre code, et rien d’autre',
+  (() => {
+    const autre = rendreLAdresse('/?code=XK9-318');
+    const papier = autre.slice(autre.indexOf('data-ticket-de-lappareil'));
+    return autre.includes('data-code="XK9-318"') && papier.includes('XK9-318') && papier.includes('SUPER MARIAGE');
+  })(),
+  true,
+);
 
 check(
   'le budget du rêve, à zéro : rien de coché, rien de mis de côté, tout à financer',
@@ -2566,10 +2570,10 @@ check(
   [LES_HÉROS.length, true],
 );
 check(
-  'la barre est flottante : la marque, les portes, le code du mariage',
+  'la barre est flottante : la marque, les portes, la cible',
   ticketVide.includes('data-bande="barre"') &&
     ticketVide.includes('vp-barre-flottante') &&
-    ticketVide.includes(`data-barre-code="${CODE_DE_DÉMONSTRATION}"`),
+    !ticketVide.includes('data-barre-code'),
   true,
 );
 check(
@@ -2612,7 +2616,8 @@ check(
   'l’appareil laisse écrire le rêve, et partager le lien aux invités',
   ticketVide.includes('data-appareil-reve-champ="vrai"') &&
     ticketVide.includes('data-appareil-reve-envoyer="vrai"') &&
-    ticketVide.includes('data-action="partager-aux-invités"'),
+    ticketVide.includes('data-action="partager-aux-invités"') &&
+    !ticketVide.includes('data-action="changer-de-code"'),
   true,
 );
 const ticketDuRêve = rendreLeTicket('/?reve=Vegas%20en%20janvier');

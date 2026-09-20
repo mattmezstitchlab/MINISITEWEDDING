@@ -40,19 +40,15 @@ import { euros } from '../lib/superMariage';
  * de burger, pas de tiroir, pas de deuxième barre.
  */
 export function BarreDeLAime({
-  code,
   lignes,
   total,
   part,
-  surCode,
 }: {
-  code: string;
   /** Ce qu'il y a sur le ticket : le compte, et le total. */
   lignes: number;
   total: number;
   /** **La part du rêve** déjà financée, de zéro à un : la cible, dans la barre. */
   part: number;
-  surCode: () => void;
 }) {
   const pourcent = Math.round(part * 100);
   /* La barre se resserre dès qu'on descend : elle prend moins de place quand on
@@ -127,17 +123,6 @@ export function BarreDeLAime({
               </span>
               <span className="tabular-nums">{euros(total)}</span>
             </span>
-
-            <button
-              type="button"
-              data-barre-code={code}
-              onClick={surCode}
-              title="le code du mariage"
-              className="hidden items-center gap-1.5 rounded-full border border-[color:var(--vp-line)] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-muted)] transition hover:border-[color:var(--vp-ink)] hover:text-[color:var(--vp-ink)] sm:flex"
-            >
-              <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-[color:var(--vp-ink)]" />
-              {code}
-            </button>
 
             <a href="#la-machine" data-action="ouvrir-le-ticket" className="vp-pastille !py-2 !text-[11px]">
               Ouvrir le ticket

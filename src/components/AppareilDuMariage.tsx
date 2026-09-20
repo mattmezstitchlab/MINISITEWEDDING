@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, CornerDownLeft, Lock, Receipt } from 'lucide-react';
+import { ArrowRight, Receipt } from 'lucide-react';
 import { OBJETS_DE_LA_FABRIQUE, pictoDuRipple } from '../lib/ripple';
 import { LIGNES_DU_TICKET, type LigneDuTicket } from '../lib/categoriesDuTicket';
 import type { BudgetDuRêve, Rêve, Sticker } from '../lib/codeDuMariage';
@@ -35,107 +35,6 @@ import { euros } from '../lib/superMariage';
  * ```
  */
 
-/* ————————————————————————— LA PORTE : LE CODE DU MARIAGE ————————————————————————— */
-
-/** La porte : on arrive, on donne le code, et tout s'ouvre. */
-export function LaPorteDuMariage({
-  surOuvrir,
-  démonstration,
-}: {
-  surOuvrir: (code: string) => void;
-  démonstration: string;
-}) {
-  const [texte, setTexte] = useState('');
-  const [refusé, setRefusé] = useState(false);
-
-  const ouvrir = () => {
-    const propre = texte.trim();
-    if (!propre) return;
-    // Un code bien formé ouvre : c'est un cadenas, pas un mot de passe.
-    if (/^[A-Za-z0-9]{3}-?\d{3}$/.test(propre.replace(/\s/g, ''))) {
-      surOuvrir(propre);
-      return;
-    }
-    setRefusé(true);
-  };
-
-  return (
-    <div
-      data-porte="vrai"
-      className="grid min-h-svh place-items-center bg-white px-4 py-10 text-[color:var(--vp-ink)]"
-    >
-      <div className="w-full max-w-[420px]">
-        <div className="rounded-[26px] border border-[color:var(--vp-line)] bg-white p-4 shadow-[0_30px_70px_rgba(12,14,24,0.10)]">
-          <div className="rounded-[14px] border border-black/10 bg-[#06120C] px-4 py-5 font-mono text-[#7DE2B0] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]">
-            <span className="flex items-baseline justify-between gap-3 text-[9.5px] uppercase tracking-[0.16em] text-[#7DE2B0]/60">
-              <span>{LE_SPÉCIALISTE.marque}</span>
-              <span className="flex items-center gap-1.5">
-                <Lock size={11} />
-                fermé
-              </span>
-            </span>
-            <span className="mt-3 block text-[12px] uppercase tracking-[0.14em]">{LE_SPÉCIALISTE.metier}</span>
-            <span className="mt-2 block text-[15px] text-[#9BF3C6]">ENTREZ LE CODE DU MARIAGE</span>
-
-            <form
-              data-porte-formulaire="vrai"
-              onSubmit={(e) => {
-                e.preventDefault();
-                ouvrir();
-              }}
-              className="mt-4 flex items-center gap-2 rounded-full border border-[#7DE2B0]/25 px-3 py-1.5"
-            >
-              <input
-                data-porte-champ="vrai"
-                value={texte}
-                onChange={(e) => {
-                  setTexte(e.target.value);
-                  setRefusé(false);
-                }}
-                placeholder="A7K-241"
-                aria-label="code du mariage"
-                autoComplete="off"
-                className="min-w-0 flex-1 bg-transparent font-mono text-[15px] uppercase tracking-[0.22em] text-[#9BF3C6] outline-none placeholder:text-[#7DE2B0]/30"
-              />
-              <button
-                type="submit"
-                data-porte-ouvrir="vrai"
-                aria-label="ouvrir"
-                disabled={!texte.trim()}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#00FF88] text-black transition hover:brightness-110 disabled:bg-white/10 disabled:text-white/25"
-              >
-                <CornerDownLeft size={14} />
-              </button>
-            </form>
-
-            <span
-              data-porte-refus={refusé ? 'vrai' : 'false'}
-              className={`mt-2 block text-[9.5px] uppercase tracking-[0.12em] ${refusé ? 'text-[#FF7A6B]' : 'text-[#7DE2B0]/35'}`}
-            >
-              {refusé ? 'six signes : trois, un tiret, trois' : 'trois signes, un tiret, trois chiffres'}
-            </span>
-          </div>
-        </div>
-
-        <p className="mt-5 text-center font-mono text-[10.5px] uppercase tracking-[0.16em] text-[color:var(--vp-muted)]">
-          pas de code sous la main ? essayez{' '}
-          <button
-            type="button"
-            data-porte-démo={démonstration}
-            onClick={() => {
-              setTexte(démonstration);
-              setRefusé(false);
-            }}
-            className="underline decoration-[color:var(--vp-line)] underline-offset-4 transition hover:text-[color:var(--vp-ink)]"
-          >
-            {démonstration}
-          </button>
-        </p>
-      </div>
-    </div>
-  );
-}
-
 /* —————————————————————————————— L'APPAREIL —————————————————————————————— */
 
 export interface AppareilDuMariageProps {
@@ -163,8 +62,6 @@ export interface AppareilDuMariageProps {
   surSticker: () => void;
   /** Le ticket, ligne à ligne. */
   ticket: LigneDuTicket[];
-  /** Changer de mariage : on redemande le code. */
-  surCode: () => void;
 }
 
 export default function AppareilDuMariage({
@@ -183,7 +80,6 @@ export default function AppareilDuMariage({
   stickers,
   surSticker,
   ticket,
-  surCode,
 }: AppareilDuMariageProps) {
   const héros: HérosDeLaLanding = LES_HÉROS.find((h) => h.id === cible) ?? LES_HÉROS[0]!;
   /** Le rêve s'écrit ici, dans les mots du couple — puis il part sur le papier. */
@@ -211,10 +107,8 @@ export default function AppareilDuMariage({
                   le rêve, le pourcentage, et l'argent. Quatre choses à lire. */}
               <div data-appareil-écran="vrai" className="relative overflow-hidden rounded-[14px] bg-[#07090D]">
                 <span className="absolute inset-x-0 top-0 z-20 flex items-baseline justify-between gap-2 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white/60">
-                  <span>{héros.mot}</span>
-                  <span data-appareil-code={code} className="tabular-nums text-[#7DE2B0]">
-                    {code}
-                  </span>
+                  <span className="text-[#7DE2B0]">{héros.mot}</span>
+                  <span data-appareil-date={avatar.date}>{avatar.date}</span>
                 </span>
 
                 <span className="relative block h-[280px] w-full sm:h-[330px]">
@@ -497,14 +391,6 @@ export default function AppareilDuMariage({
                   ? 'aucune ligne sur le ticket'
                   : `${ticket.length} ligne${ticket.length > 1 ? 's' : ''} sur le ticket`}
               </span>
-              <button
-                type="button"
-                data-action="changer-de-code"
-                onClick={surCode}
-                className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-muted)] underline decoration-[color:var(--vp-line)] underline-offset-4 transition hover:text-[color:var(--vp-ink)]"
-              >
-                changer de code
-              </button>
               <button
                 type="button"
                 data-action="partager-aux-invités"

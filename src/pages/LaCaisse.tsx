@@ -44,7 +44,7 @@ import { formatDateLong } from '../lib/format';
 import CadranDuMagazine from '../components/CadranDuMagazine';
 import MachineDeRipple, { type SortieDeLaFente } from '../components/MachineDeRipple';
 import TicketCaisse from '../components/TicketCaisse';
-import AppareilDuMariage, { LaPorteDuMariage } from '../components/AppareilDuMariage';
+import AppareilDuMariage from '../components/AppareilDuMariage';
 import {
   BarreDeLAime,
   LePied,
@@ -104,8 +104,11 @@ interface Papier {
 export default function LaCaisse() {
   const [params, setParams] = useSearchParams();
 
-  /** La porte : sans code, on ne voit rien. */
-  const code = codeDepuis(params.get('code') ?? '');
+  /** **Le code du mariage** — plus une porte, une signature. C'est celui qui
+   *  part dans le lien envoyé aux invités (`?code=…`) ; sans code dans
+   *  l'adresse, c'est celui du mariage de démonstration. Il s'écrit au début
+   *  du ticket, et nulle part ailleurs sur la page. */
+  const code = codeDepuis(params.get('code') ?? '') ?? CODE_DE_DÉMONSTRATION;
 
   const [état, setÉtat] = useState<ÉtatDeLaMachine>(() =>
     étatInitial({
@@ -281,24 +284,7 @@ export default function LaCaisse() {
     ?? portefeuillesDesCoches(coches)[0]
     ?? null;
 
-  /* ═════════════════════════ LA PORTE ═════════════════════════ */
-
-  if (!code) {
-    return (
-      <LaPorteDuMariage
-        démonstration={CODE_DE_DÉMONSTRATION}
-        surOuvrir={(saisi) => {
-          const propre = codeDepuis(saisi);
-          if (!propre) return;
-          const suite = new URLSearchParams(params);
-          suite.set('code', propre);
-          setParams(suite, { replace: true });
-        }}
-      />
-    );
-  }
-
-  /* ═════════════════════════ LA PAGE, DERRIÈRE LA PORTE ═════════════════════════ */
+  /* ═════════════════════════ LA PAGE ═════════════════════════ */
 
   return (
     <div
@@ -311,15 +297,9 @@ export default function LaCaisse() {
       className="min-h-svh bg-white text-[color:var(--vp-ink)]"
     >
       <BarreDeLAime
-        code={code}
         lignes={coches.length}
         total={totaux.total}
         part={budget.part}
-        surCode={() => {
-          const suite = new URLSearchParams(params);
-          suite.delete('code');
-          setParams(suite, { replace: true });
-        }}
       />
 
       {/* ═════════════════════ EN HAUT : LA MACHINE DE RIPPLE, SEULE ═════════════════════ */}
@@ -467,11 +447,6 @@ export default function LaCaisse() {
           unAvis('un sticker de plus');
         }}
         ticket={lignesCochées}
-        surCode={() => {
-          const suite = new URLSearchParams(params);
-          suite.delete('code');
-          setParams(suite, { replace: true });
-        }}
       />
 
       {/* ═════════════════════ LE PROGRAMME, ET LES CINQ PAPIERS ═════════════════════ */}

@@ -1,8 +1,12 @@
-# Le code du mariage — on arrive, on entre
+# Le code du mariage — une signature, pas une porte
 
-« On arrive et on doit donner un code mariage. » Un mini-site de mariage se
-**partage** : il y a un couple, une date, un lieu, et un code. On ne tombe donc
-pas sur la page par hasard — on ouvre une porte.
+Un mini-site de mariage se **partage** : il y a un couple, une date, un lieu, et
+un code. Le code est ce qui rend le mariage reconnaissable — il s'écrit **au
+début du ticket** et il voyage dans le lien qu'on envoie aux invités.
+
+**Ce n'est pas une condition d'entrée.** « Supprime le bloc avec le code, je
+l'ai même pas » : la porte qui demandait le code a été retirée le 21 septembre.
+On arrive sur la page, tout de suite.
 
 ## 1. La forme du code
 
@@ -27,26 +31,26 @@ qu'on ne puisse pas *tomber* sur la page — il faut le lien que le couple a
 envoyé. Le couple partage donc une adresse : `https://…/?code=A7K-241`, et
 l'invité qui l'ouvre est dedans.
 
-## 2. La porte
+## 2. Le code n'est plus une porte
 
-| Ce qu'on voit | Ce que ça dit |
+Personne n'a de code sous la main au premier passage — et une porte fermée sur un
+site de mariage, c'est un mur. Le code est donc devenu **une conséquence, jamais
+une condition** :
+
+| Où le code vit | Ce qu'il y fait |
 | --- | --- |
-| un écran vert-de-gris, fermé | c'est une machine, pas un formulaire |
-| `SUPER MARIAGE` / `LE SPÉCIALISTE DU TICKET DE CAISSE` | la marque, et le métier |
-| `ENTREZ LE CODE DU MARIAGE` | ce qu'on attend, en clair |
-| le champ + la touche entrée | trois signes, un tiret, trois chiffres |
-| « c'est le code écrit sur le ticket — celui que le couple partage » | d'où il vient |
-| le refus, si le code est mal formé | « six signes : trois, un tiret, trois » |
-| un code à essayer | pour voir la page sans être invité |
+| l'adresse (`?code=A7K-241`) | c'est le lien que le couple envoie : l'invité qui l'ouvre voit le mariage de ce couple |
+| le début du ticket | juste sous la marque, à côté de `SUPER MARIAGE` — c'est ce qui identifie le papier |
+| le bouton « partager aux invités » | le lien recopié part avec le code dedans |
 
-La porte est `LaPorteDuMariage` (`src/components/AppareilDuMariage.tsx`) ; ses
-repères de test sont `data-porte`, `data-porte-champ`, `data-porte-ouvrir`,
-`data-porte-refus`, `data-porte-démo`.
+Sans code dans l'adresse, la page prend **celui du mariage de démonstration**
+(calculé depuis le couple et sa date, comme les autres). Un lien avec un autre
+code (`?code=XK9-318`) imprime cet autre code sur le ticket — c'est tout.
 
-Une fois entré, le code est **partout** : dans la barre (bouton « le code du
-mariage » — il ramène à la porte pour changer de mariage), sur l'écran de
-l'appareil, en haut du ticket, et au début de chaque ligne d'objet imprimé
-(`A7K-241-AV · BILLET D'AVION · JOSHUA TREE`).
+Ce qui a été retiré : l'écran de porte (`LaPorteDuMariage`), le bouton « changer
+de code », la puce du code dans la barre, et le code affiché sur l'écran de
+l'appareil (il porte maintenant **la date du mariage**). L'écran de porte reste
+dans l'historique git si un jour on veut le reprendre.
 
 ## 3. Les écrans : des chiffres, pas des phrases
 
@@ -136,8 +140,8 @@ le haut.
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |
-| `/` | la porte, fermée |
-| `/?code=A7K-241` | le site, ouvert |
-| `/?code=A7K-241&coches=…` | le site avec un ticket déjà rempli |
-| `/?code=A7K-241&reve=…` | le site avec le rêve, dans les mots des mariés |
-| `/caisse?face=recto` | la grande page d'avant, sans porte |
+| `/` | le site, tout de suite (code de démonstration) |
+| `/?code=A7K-241` | le même site, avec le code d'un autre mariage sur le ticket |
+| `/?coches=…` | le site avec un ticket déjà rempli |
+| `/?reve=…` | le site avec le rêve, dans les mots des mariés |
+| `/caisse?face=recto` | la grande page d'avant |
