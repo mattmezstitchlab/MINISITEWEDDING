@@ -1,6 +1,7 @@
 import { jourNomme, jokerDuJour } from './saintsDuJour';
 import { cleDuJour, plat, PROFILS } from './profilsEditoriaux';
 import { MOIS, MOIS_LONGS } from './calendrier';
+import { heuresDeLaPart, partActuelle, partDeLHeure, partParId, PARTS, type PartDuJour } from './moments';
 import { carteDuNumero, semaineDeLAnnee, type Saison } from './jeuDeCartes';
 import { clesDuJour, jourDeLAnnee, meteoDuJour, studioDuJour } from './jourDuMagazine';
 
@@ -86,6 +87,8 @@ export interface CouvertureJour {
   raison: string;
   /** Ce que le studio donnerait : fond blanc, ou fond noir. */
   studio: 'blanc' | 'noir';
+  /** Le temps du jour qu'on regarde, quand la couverture s'éclaire à son heure. */
+  part?: { id: string; nom: string; heures: number[] };
   /** Les clés du jour, en une ligne chacune. */
   cles: Array<{ label: string; valeur: string }>;
   /** Le cadran : vingt-quatre branches, une par heure. */
@@ -180,6 +183,34 @@ export function couverturesDeLAnnee(annee: number): CouvertureJour[] {
   }
   return jours;
 }
+
+/**
+ * **LA COUVERTURE À UNE HEURE DU JOUR** — le même dessin, une autre lumière.
+ *
+ * Le fond, le titre, la carte et la date ne bougent pas : ce sont **les branches
+ * du cadran** qui s'allument. On regarde le même jour, à l'aube, à midi ou à
+ * minuit — et c'est la même couverture, lue à une autre heure.
+ */
+export function couvertureDeLaPart(date: Date, partId: string): CouvertureJour {
+  const base = couvertureDuJour(date);
+  return couvertureDeLaPartSur(base, partParId(partId) ?? partActuelle(date));
+}
+
+/** La même chose, sur une couverture déjà composée — pour ne pas la refaire. */
+export function couvertureDeLaPartSur(base: CouvertureJour, part: PartDuJour): CouvertureJour {
+  const heures = heuresDeLaPart(part);
+  const branches = base.branches.map((b) => ({ ...b, eclatante: heures.includes(b.heure) }));
+  return { ...base, part: { id: part.id, nom: part.nom, heures }, branches };
+}
+
+/** Les six temps du jour, chacun avec sa couverture : le visage qui change. */
+export function couverturesDesParts(date: Date): Array<{ part: PartDuJour; couverture: CouvertureJour }> {
+  const base = couvertureDuJour(date);
+  return PARTS.map((part) => ({ part, couverture: couvertureDeLaPartSur(base, part) }));
+}
+
+/** Le temps d'une heure, réexporté pour ceux qui n'ont que la couverture sous la main. */
+export { partDeLHeure };
 
 /** Les jours d'un mois, pour la galerie : on ne fabrique que ce qu'on regarde. */
 export function couverturesDuMois(annee: number, mois: number): CouvertureJour[] {

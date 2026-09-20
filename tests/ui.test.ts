@@ -92,10 +92,16 @@ import LeTemps from '../src/components/LeTemps';
 import CouvertureJour from '../src/components/CouvertureJour';
 import GalerieCouvertures from '../src/components/GalerieCouvertures';
 import ProfilEditorial from '../src/components/ProfilEditorial';
+import MomentsDuJour from '../src/components/MomentsDuJour';
+import { CHAINE, CHAINE_LIGNE, CHAINE_PROMESSE, maillon } from '../src/lib/chaineDuMonde';
 import {
   AVERTISSEMENT_PROFILS, NIVEAUX, PROFILS, REGLE_DES_PROFILS, chercherProfils, cleDuJour,
   personnageDuJour, plat, pontsParNiveau, profilDuJour, profilsDocumentes,
 } from '../src/lib/profilsEditoriaux';
+import {
+  PARTS, REGLE_EDITORIALE, bornesDeLaPart, heuresDeLaPart, partActuelle, partDeLHeure, partParId,
+} from '../src/lib/moments';
+import { couvertureDeLaPart, couverturesDesParts } from '../src/lib/couvertureDuJour';
 import {
   FOND_NOIR, HEURES_DE_LUMIERE, MOIS, couverturesDeLAnnee, couverturesDuMois, couvertureDuJour, graine,
 } from '../src/lib/couvertureDuJour';
@@ -2855,6 +2861,112 @@ check(
   CHARTE.some((r) => r.id === 'profils-editoriaux'),
   true,
 );
+
+/* ————————— LES SIX TEMPS DU JOUR : LE MÊME JOUR, SIX LUMIÈRES ————————— */
+
+check('le jour se lit en six temps', PARTS.length, 6);
+check(
+  'et ils se suivent sans trou ni recouvrement',
+  PARTS.map((p) => `${p.de}-${p.a}`).join(' '),
+  '0-4 5-7 8-11 12-13 14-17 18-23',
+);
+check('les vingt-quatre heures sont toutes rangées', PARTS.reduce((n, p) => n + heuresDeLaPart(p).length, 0), 24);
+check('les cinq moments du jour, plus la nuit', PARTS.filter((p) => p.id !== 'nuit').length, 5);
+check('chaque temps dit sa lumière et sa phrase', PARTS.every((p) => p.lumiere.length > 8 && p.phrase.length > 20), true);
+check('le temps d’une heure se trouve', partDeLHeure(6).id, 'aube');
+check('midi est au midi', partDeLHeure(12).id, 'midi');
+check('dix-sept heures est l’après-midi', partDeLHeure(17).id, 'apres-midi');
+check('vingt-trois heures est le soir', partDeLHeure(23).id, 'soir');
+check('et trois heures du matin, la nuit', partDeLHeure(3).id, 'nuit');
+check('une heure hors bornes retombe sur la nuit', partDeLHeure(99).id, 'nuit');
+check('le temps actuel suit l’horloge', partActuelle(new Date(2026, 8, 21, 18, 30)).id, 'soir');
+check('un temps se retrouve par son identifiant', partParId('matin')!.nom, 'Le matin');
+check('et un identifiant inconnu ne rend rien', partParId('aube-du-dimanche'), null);
+check('les bornes s’écrivent comme on les dit', bornesDeLaPart(PARTS[1]!), '5 h → 7 h');
+
+check('la règle éditoriale pose trois questions', REGLE_EDITORIALE.map((r) => r.cle).join('/'), 'QUI/QUAND/QUOI');
+check('et chacune dit ce qu’elle règle', REGLE_EDITORIALE.every((r) => r.sens.length > 20), true);
+
+/* La couverture, lue à une heure : même dessin, autre lumière. */
+const jourDesParts = new Date(2026, 8, 21);
+const couvertureMatin = couvertureDeLaPart(jourDesParts, 'matin');
+const couvertureSoir = couvertureDeLaPart(jourDesParts, 'soir');
+const couvertureBase = couvertureDeLaPart(jourDesParts, 'midi');
+check('le temps est écrit sur la couverture', couvertureMatin.part!.nom, 'Le matin');
+check('la couverture garde ses vingt-quatre branches', couvertureMatin.branches.length, 24);
+check(
+  'et seules celles du temps s’allument',
+  couvertureMatin.branches.filter((b) => b.eclatante).map((b) => b.heure),
+  [8, 9, 10, 11],
+);
+check(
+  'le soir allume les siennes',
+  couvertureSoir.branches.filter((b) => b.eclatante).map((b) => b.heure),
+  [18, 19, 20, 21, 22, 23],
+);
+check('la nuit en allume cinq', couvertureDeLaPart(jourDesParts, 'nuit').branches.filter((b) => b.eclatante).length, 5);
+check(
+  'le fond, le titre et la date ne changent pas d’un temps à l’autre',
+  [couvertureMatin.fond, couvertureMatin.titre, couvertureMatin.dateLongue].join('|'),
+  [couvertureSoir.fond, couvertureSoir.titre, couvertureSoir.dateLongue].join('|'),
+);
+check(
+  'les longueurs des branches, elles non plus',
+  couvertureMatin.branches.map((b) => b.longueur).join() === couvertureBase.branches.map((b) => b.longueur).join(),
+  true,
+);
+check('les six temps ont chacun leur couverture', couverturesDesParts(jourDesParts).length, 6);
+check(
+  'et ce sont bien six lumières différentes',
+  new Set(
+    couverturesDesParts(jourDesParts).map((c) =>
+      c.couverture.branches.filter((b) => b.eclatante).map((b) => b.heure).join(),
+    ),
+  ).size,
+  6,
+);
+
+/* Le bloc, tel qu’il se rend. */
+const renduMoments = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] },
+    createElement(MomentsDuJour as never, { date: new Date(2026, 8, 21, 18, 30) })),
+);
+check('le bloc annonce les six temps', renduMoments.includes('Le jour, en six temps'), true);
+check('il compte les heures du jour', renduMoments.includes('24 heures'), true);
+check('il nomme le temps qu’il est', renduMoments.includes('maintenant'), true);
+check('il pose la règle', ['QUI', 'QUAND', 'QUOI'].every((c) => renduMoments.includes(c)), true);
+check('les six temps sont là', ['La nuit', 'L’aube', 'Le matin', 'Le midi', 'L’après-midi', 'Le soir'].every(
+  (n) => renduMoments.includes(n),
+), true);
+check('avec leurs bornes', renduMoments.includes('18 h → 23 h'), true);
+check('et le nom du personnage du jour', renduMoments.includes('Matthieu'), true);
+check('aucun astérisque ne s’affiche', renduMoments.includes('**'), false);
+
+/* ————————— LA CHAÎNE DU MONDE : DE LA CARTE AU CONTENU ————————— */
+
+check('la chaîne a huit maillons', CHAINE.length, 8);
+check(
+  'et ils s’enchaînent dans l’ordre',
+  CHAINE_LIGNE,
+  'LA CARTE → LA PERSONNE → LE RÔLE → LE MARIAGE → LE JOUR → LE MOMENT → L’HEURE → LE CONTENU',
+);
+check('chaque maillon dit sa question', CHAINE.every((m) => m.question.length > 8), true);
+check('et où il vit', CHAINE.every((m) => m.ou.length > 12), true);
+check('un maillon se retrouve par son identifiant', maillon('moment')!.nom, 'Le moment');
+check('et un identifiant inconnu ne rend rien', maillon('cocktail'), null);
+
+/* Chaque nombre de la chaîne est vérifié contre la brique qui le porte : si l'une
+   bouge sans l'autre, c'est ici que ça casse. */
+check('les cartes sont 54', maillon('carte')!.combien, JEU_DE_54.length);
+check('les jours sont ceux de l’année', maillon('jour')!.combien, couverturesDeLAnnee(2026).length);
+check('les temps sont ceux du jour', maillon('moment')!.combien, PARTS.length);
+check('les heures sont celles de l’édition', maillon('heure')!.combien, HEURES.length);
+check(
+  'et le contenu, c’est la page de l’heure',
+  maillon('contenu')!.ou.includes('rubrique'),
+  true,
+);
+check('la chaîne se dit en une phrase', CHAINE_PROMESSE.includes('sa carte'), true);
 
 /* ------------------------------------------------------------------- bilan */
 

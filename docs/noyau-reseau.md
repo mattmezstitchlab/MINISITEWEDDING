@@ -2075,3 +2075,73 @@ quatre ponts, les alliances d'Éloi, le brevet de Sax, le jour sans fiche, la
 recherche (dont le résultat vide), le rangement des ponts par niveau, le titre de
 couverture mené par le personnage, et le bloc rendu — règle, avertissement, source,
 et **aucun astérisque affiché**.
+
+## §49 — Les six temps du jour, et la chaîne qui va de la carte au contenu
+
+**L'idée, en une phrase.** Une journée de mariage ne se lit pas heure par heure :
+elle se lit en **temps**. `src/lib/moments.ts` en fixe **six** — cinq pour le
+jour, et la nuit, qui est la queue de la veille :
+
+```
+LA NUIT       0 h → 4 h    ce qui se dit à voix basse
+L’AUBE        5 h → 7 h    la lumière qui monte, le lieu qui se découvre
+LE MATIN      8 h → 11 h   on dresse, on répète, on s’habille
+LE MIDI      12 h → 13 h   le plein jour, le dernier moment tranquille
+L’APRÈS-MIDI 14 h → 17 h   la cérémonie, les vœux, le verre
+LE SOIR      18 h → 23 h   la golden hour, la table, la piste
+```
+
+Six temps, **vingt-quatre heures** : les bornes se suivent sans trou et sans
+recouvrement, et c'est vérifié.
+
+**La couverture ne change pas de dessin : elle s'éclaire autrement.**
+`couvertureDeLaPart(date, part)` reprend la couverture du jour et n'allume que
+**les branches du temps qu'on regarde**. Le fond, le titre, la carte et la date ne
+bougent pas — c'est la règle *« la création est au centre, rien ne passe dessus »*
+tenue autrement : le cadran se lit maintenant à l'heure qu'il est, et l'on passe
+d'un temps à l'autre sans perdre le jour.
+
+**`MomentsDuJour.tsx`** pose le bloc dans `/magazine`, après le profil du jour :
+les six couvertures côte à côte, celle de l'heure marquée **« maintenant »**,
+chacune avec ses bornes, son nombre de pages, ce qui s'y passe, et **la page que
+l'édition lui consacre**. Et la règle éditoriale est écrite en haut, en trois
+questions : **QUI** ouvre le numéro (le personnage), **QUAND** on le regarde (le
+temps, l'heure), **QUOI** s'y passe (la page de cette heure).
+
+**Le bouton magique.** Sous les six temps : *« Créer ce mariage »* (`/creer`).
+Ce qu'on vient de regarder devient la première matière du projet — on ne repart
+pas de zéro.
+
+**La chaîne du monde** — `src/lib/chaineDuMonde.ts`. Elle n'ajoute rien : elle
+**enchaîne ce qui existait déjà**, et chaque maillon dit sa question, où il vit, et
+combien il y en a :
+
+```
+LA CARTE (54) → LA PERSONNE → LE RÔLE → LE MARIAGE
+→ LE JOUR (365) → LE MOMENT (6) → L’HEURE (24) → LE CONTENU
+```
+
+Les nombres sont **vérifiés contre la brique qui les porte** (le jeu de 54, les 365
+couvertures de l'année, les six temps, les vingt-quatre heures de l'édition) : si
+l'une bouge sans l'autre, le test casse. C'est ce qui permet à la timeline d'être
+la colonne vertébrale — elle remonte la chaîne dans l'autre sens, du contenu à la
+personne.
+
+**Ce qui est décidé, et ce qui reste ouvert.** Acquis : **six temps** (et non cinq)
+pour que les vingt-quatre heures soient toutes rangées ; **la couverture qui
+s'éclaire** plutôt que cinq couvertures différentes ; **la note en tête de liste**
+(une reprise se dit, elle ne se cache pas). Ouvert : les **1 825 scènes illustrées**
+(365 × 5 interprétations, une par temps) — c'est le chiffre de la matière visuelle,
+pas un plan de production ; les 349 fiches à documenter ; la page publique du
+personnage ; l'index du graphe. Les illustrations, elles, se produisent **hors du
+dépôt** (poids, stockage) : le dessin SVG est là pour les 365 jours, et
+l'illustration vient là où elle est décidée.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 1035**, `npm run
+build` OK. Les vérifications de la passe : les six temps et leurs bornes (sans trou
+ni recouvrement), les vingt-quatre heures rangées, le temps d'une heure (dont
+l'heure hors bornes), les trois questions de la règle, la couverture lue à un
+temps (vingt-quatre branches, seules celles du temps allumées, fond, titre et date
+inchangés, longueurs inchangées), les six lumières différentes, le bloc rendu
+(ses temps, ses bornes, le personnage, le bouton), et **la chaîne du monde**, avec
+ses nombres vérifiés contre les briques qui les portent.

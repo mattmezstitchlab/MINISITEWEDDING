@@ -19,6 +19,7 @@ import MiseEnLumiere from '../components/MiseEnLumiere';
 import LeChiffre from '../components/LeChiffre';
 import GalerieCouvertures from '../components/GalerieCouvertures';
 import ProfilEditorial from '../components/ProfilEditorial';
+import MomentsDuJour from '../components/MomentsDuJour';
 
 /**
  * LE MAGAZINE — UN JOUR, UNE COUVERTURE, ET ON GLISSE
@@ -462,6 +463,9 @@ export default function Magazine() {
 
       {/* ———————————————— LE PROFIL DU JOUR : LA PERSONNE QUI OUVRE LA PORTE ———————————————— */}
       <ProfilEditorial />
+
+      {/* ———————————————— LE JOUR EN SIX TEMPS : LE MÊME JOUR, SIX LUMIÈRES ———————————————— */}
+      <MomentsDuJour />
 
       {/* ———————————————— LE CHIFFRE : UN NOMBRE, SES MOTS, SA RÈGLE ———————————————— */}
       <section className="border-t border-black/8 bg-white pt-10">
