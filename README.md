@@ -16,6 +16,37 @@ visuel, et partageable par lien ou QR code.
 - **Création** `/creer` puis `/generer` — questionnaire en quatre étapes,
   amorçage d’un site complet (sections, programme, infos, FAQ, cagnottes).
 
+## AIME MAGAZINE — 54 magazines, 7 chapitres
+
+Le magazine du site n'est plus « 365 jours → 365 magazines ». Le modèle est
+**hebdomadaire** :
+
+```
+365 JOURS → 54 MAGAZINES → 7 CHAPITRES PAR MAGAZINE
+```
+
+- **Les 7 chapitres** — Les Amoureux, Le Style, Les Lieux, L'Art de recevoir, La
+  Fête, Le Monde, Les Souvenirs — sont **fixes** : c'est la structure éditoriale,
+  et chaque semaine les traite autrement.
+- **Les 54 magazines** — les 52 semaines de l'année, plus les deux jours de trop
+  (le 31 décembre est le magazine 53, le 29 février le 54).
+- **Les 365 dates** restent la navigation quotidienne : une date entre dans son
+  magazine **par l'un des sept chapitres** (sa position dans la semaine).
+- **La bibliothèque** attend 54 couvertures et 378 chapitres :
+  `public/images/magazine/semaine-38/cover.jpg` et `…/04-recevoir.jpg`. Une image
+  manquante n'emprunte **jamais** le visuel d'une autre semaine : le dessin tient,
+  et l'absence se dit.
+
+```bash
+npm run visuels                            # relever les images livrées, écrire l'inventaire et le manifeste
+npm run prompts:aime -- --liste            # l'état de la collection
+npm run prompts:aime -- --semaine=38       # les prompts des huit images du magazine 38
+npm run photos                             # l'ancien relevé par jour (repli de transition)
+```
+
+Tout le détail — calendrier réel, règle des chapitres, remappage des anciens
+visuels, cascade des replis — est dans **`docs/magazine-54-semaines.md`**.
+
 ## Stack
 
 | Couche | Choix |

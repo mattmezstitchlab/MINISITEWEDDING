@@ -377,7 +377,7 @@ export default function WeddingOS() {
                   className="rounded-[12px] p-3 text-left text-[12px] font-bold"
                   style={{ background: s.fond, color: s.encre }}
                 >
-                  {s.symbole} {s.nom}
+                  {s.nom}
                 </button>
               ))}
             </div>

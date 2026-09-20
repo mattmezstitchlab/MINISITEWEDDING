@@ -44,7 +44,7 @@ export default function PortraitStudio({
   date: Date;
   studio: StudioDuJour;
   /** La couleur de la saison : c'est elle qui teinte le fond du studio. */
-  saison: { nom: string; fond: string; encre: string; symbole: string };
+  saison: { nom: string; fond: string; encre: string };
   taille?: 'hero' | 'carte';
 }) {
   const noir = studio.fond === 'noir';
@@ -117,7 +117,7 @@ export default function PortraitStudio({
       >
         <div className="vp-title text-[19px] font-bold leading-tight">{nom}</div>
         <div className="mt-0.5 font-mono text-[9.5px] uppercase tracking-[0.14em] opacity-70">
-          {saison.symbole} {saison.nom} · {dateTexte}
+          {saison.nom} · {dateTexte}
         </div>
         <div className="mt-1 text-[10.5px] leading-snug opacity-70">
           {studio.pose} · {studio.attribut} · {studio.lumiere}

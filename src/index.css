@@ -666,3 +666,28 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
     animation: none;
   }
 }
+
+
+/* ————————————————— LE TICKET QUI SORT, ET LE TICKET QUI PART —————————————————
+ * Deux mouvements, deux `transform`, aucune mesure : le papier sort du haut de
+ * l'écran en glissant, et il repart vers les portefeuilles en rétrécissant.
+ */
+@keyframes presse-de-la-fente {
+  from { transform: translate3d(0, -130%, 0); opacity: 0; }
+  65%  { transform: translate3d(0, 3%, 0); opacity: 1; }
+  to   { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+.presse-de-la-fente {
+  display: block;
+  animation: presse-de-la-fente 700ms cubic-bezier(.2,.9,.25,1) both;
+}
+
+@keyframes vol-du-ticket {
+  from { transform: translate3d(-50%, 0, 0) scale(1); opacity: 0.9; }
+  to   { transform: translate3d(calc(-50% + (var(--vol) - 2) * 19vw), 62svh, 0) scale(0.14); opacity: 0; }
+}
+
+.vol-du-ticket {
+  animation: vol-du-ticket 900ms cubic-bezier(.4,.05,.6,.95) both;
+}
