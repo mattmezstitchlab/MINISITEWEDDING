@@ -2065,20 +2065,31 @@ const ticketSansRien = rendreLeTicket('/?demande=zzz');
 const ticketAvecDiner = rendreLeTicket('/?demande=diner');
 
 check('on arrive sur le ticket', ticketVide.includes('data-page="ticket"'), true);
+/* La machine occupe le premier écran ; le site commence au visuel du jour. */
+const zoneMachine = ticketVide.slice(0, ticketVide.indexOf('data-section="visuel"'));
+const zoneSite = ticketVide.slice(ticketVide.indexOf('data-section="visuel"'));
+
 check(
-  'et la page ne défile plus : elle tient dans un écran',
-  ticketVide.includes('h-svh') && ticketVide.includes('overflow-hidden') && !ticketVide.includes('min-h-svh'),
+  'la machine tient dans le premier écran',
+  zoneMachine.includes('min-h-svh') && zoneMachine.includes('grid') && zoneMachine.includes('place-items-center'),
   true,
 );
 check(
-  'autour de la machine, un fond blanc — aucun visuel, aucun texte',
-  ticketVide.includes('bg-white') && !ticketVide.includes('data-visuel') && !ticketVide.includes('<img'),
+  'autour d’elle, un fond blanc — aucun visuel, aucun texte',
+  // Attention : `<path>` des icônes commence aussi par `<p` — on vise la balise.
+  zoneMachine.includes('bg-white') && !zoneMachine.includes('<img') && !/<p[\s>]/.test(zoneMachine),
+  true,
+);
+check('et l’on descend par une flèche, pas par un paragraphe', zoneMachine.includes('data-action="descendre"'), true);
+check(
+  'sous la machine, le site est revenu en entier',
+  ['visuel', 'coche', 'ticket', 'portefeuilles'].every((t) => zoneSite.includes(`data-section="${t}"`)),
   true,
 );
 check(
-  'et plus rien à parcourir sous la machine',
-  /data-(section|hero|portefeuilles|catégorie)="?/.test(ticketVide),
-  false,
+  'dans l’ordre : le visuel du jour, puis on coche, puis le ticket, puis les portefeuilles',
+  ['visuel', 'coche', 'ticket', 'portefeuilles'].map((t) => zoneSite.indexOf(`data-section="${t}"`)),
+  [...['visuel', 'coche', 'ticket', 'portefeuilles'].map((t) => zoneSite.indexOf(`data-section="${t}"`))].sort((a, b) => a - b),
 );
 
 /* La machine de Ripple : l'écran, les deux touches, la fente, les ronds, le champ. */
@@ -2112,8 +2123,8 @@ check(
   true,
 );
 check(
-  '« votre site » n’est plus écrit deux fois',
-  (ticketVide.match(/VOTRE SITE/g) ?? []).length,
+  '« votre site » n’est plus écrit deux fois sur la machine',
+  (zoneMachine.match(/VOTRE SITE/g) ?? []).length,
   1,
 );
 check(
@@ -2152,10 +2163,13 @@ check(
   true,
 );
 check(
-  'rien à cocher en dehors de la machine : au repos, aucune ligne n’est offerte',
-  ticketVide.includes('data-ligne=') || ticketVide.includes('data-proposition='),
-  false,
+  'le site du dessous montre les 99 lignes, cochables d’un clic',
+  (ticketVide.match(/data-ligne=/g) ?? []).length,
+  LIGNES_DU_TICKET.length,
 );
+check('et chacune dit si elle est prise, où elle va, et son prix', /data-ligne="[^"]+" data-cochee="false" data-famille="[a-z]+" data-prix="\d+" data-vers="[a-z,]+"/.test(ticketVide), true);
+check('les 17 catégories ont leur section, et l’on peut tout prendre d’un rayon', [(ticketVide.match(/data-catégorie="/g) ?? []).length, ticketVide.includes('data-action="tout-le-rayon"')], [CATÉGORIES_DU_TICKET.length, true]);
+check('le visuel du jour porte les infos, dessus', ticketVide.includes('data-visuel="couverture"') && ['data-hero-noms', 'data-hero-heure', 'data-hero-compte', 'data-hero-total'].every((a) => ticketVide.includes(a)), true);
 check(
   'la machine propose toujours quelque chose : d’abord une famille',
   ticketVide.includes('data-écran-corps="famille"') &&
@@ -2182,7 +2196,23 @@ check(
   'le ticket entier s’ouvre sur l’écran',
   ticketDuReçu.includes('data-écran="ticket"') &&
     ticketDuReçu.includes('data-écran-corps="ticket"') &&
-    (ticketDuReçu.match(/data-ligne=/g) ?? []).length === cochesDessai.length,
+    ticketDuReçu.includes('data-écran-liste="vrai"'),
+  true,
+);
+check(
+  'et le papier entier est sur la page, sous les catégories',
+  ticketDuReçu.includes('data-section="ticket"') && ticketDuReçu.includes('Payé · merci') && /SM-\d\d-[A-Z0-9]{4}/.test(ticketDuReçu),
+  true,
+);
+check('vide, il est en cours', ticketVide.includes('Ticket en cours'), true);
+check(
+  'la marque des portefeuilles est sur chaque ligne, et le papier suit',
+  (ticketPlein.match(/data-portefeuille=/g) ?? []).length,
+  portefeuillesDesCoches(cochesDessai).length,
+);
+check(
+  'et les portefeuilles sont écrits en bas de page, comme avant',
+  ticketPlein.includes('data-portefeuilles="pleins"') && ticketPlein.includes('data-papier="metier"'),
   true,
 );
 check(

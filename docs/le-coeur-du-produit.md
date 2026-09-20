@@ -266,13 +266,32 @@ touches.**
 
 ---
 
-## 6. La machine, seule — l'agent passe, on valide
+## 6. La machine en haut, le site dessous — l'agent passe, on valide
 
-La page ne défile plus, et il n'y a plus rien autour : **un fond blanc, et la
-machine**. Tout ce qui se lit est sur son écran. C'est la correction demandée le
-20 septembre 2026 — « le problème c'est qu'on doit scroller », « met un fond
-blanc sans visuel et sans texte autour », « tout ce qui est cochable doit être
-dans la machine ».
+La page a **deux étages**, et ils ne se mélangent pas :
+
+```
+┌───────────────────────────────────────────────┐
+│  1. LA MACHINE — seule, sur un fond blanc,     │  elle tient dans
+│     et tout ce qui se coche peut venir par     │  un écran : on ne
+│     son écran : une famille, une demande,      │  scrolle pas ici
+│     ✓ on valide, ✗ on passe, le papier sort    │
+│                        ↓                       │  une flèche, pas un texte
+├───────────────────────────────────────────────┤
+│  2. LE SITE — le visuel du jour, les infos     │  on descend, et l'on
+│     dessus ; les 17 catégories et les 99       │  retrouve tout : rien
+│     lignes, cochables d'un clic ; le ticket    │  n'a été détruit
+│     entier, qui se remplit ; les portefeuilles │
+└───────────────────────────────────────────────┘
+```
+
+C'est la correction demandée le 20 septembre 2026, en deux temps. D'abord :
+« le problème c'est qu'on doit scroller », « met un fond blanc sans visuel et
+sans texte autour », « tout ce qui est cochable doit être dans la machine » —
+d'où la machine seule. Puis : « j'avais un site canon, je me demande si j'ai
+tout perdu » — d'où **le site remis dessous**, sans rien retirer de la machine.
+Les deux étages **partagent le même état** : cocher dans la machine ou dans la
+liste, c'est le même ticket, et **le papier sort de la même fente**.
 
 ### La machine, de haut en bas
 
@@ -358,14 +377,17 @@ jamais muet, et il n'est jamais bavard pour rien : les mots entendus s'écrivent
 
 ### Ce qui a été retiré de la page, et pourquoi
 
-| Retiré | Pourquoi |
+| Retiré, puis **remis** | Pourquoi |
 | --- | --- |
-| le visuel du jour et les infos dessus | « un fond blanc sans visuel et sans texte pour l'instant » |
-| les 99 lignes proposées d'un coup quand la demande ne répond à rien | « il répond bêtement » — maintenant, il propose les familles |
-| les sections à faire défiler (cocher, le ticket, les portefeuilles) | « on doit scroller » — tout ce qui se coche est **dans** la machine |
-| la rangée des catégories | c'était le doublon de « VOTRE SITE », et ça serrait le texte dans les cercles |
-| « tout prendre » d'un rayon | l'agent fait passer la famille entière : c'est la même chose, sans un bouton de plus |
-| emporter / imprimer / vider sous la page | **emporter** est dans l'écran du ticket, **vider** est la touche ✗ de ce même écran, **imprimer** n'était pas la machine |
+| le visuel du jour, les catégories, le ticket entier, les portefeuilles | « j'avais un site canon » — remis **sous** la machine le 20 septembre 2026, et rien de la machine n'a bougé |
+
+| Retiré du premier écran (la machine) | Où c'est parti |
+| --- | --- |
+| le visuel du jour et les infos dessus | **au deuxième étage**, en pleine largeur, avec le cadran du magazine |
+| les 99 lignes proposées d'un coup quand la demande ne répond à rien | l'agent **propose les familles** : « il répond bêtement » était le nom du problème |
+| la rangée des catégories dans la machine | c'était le doublon de « VOTRE SITE » — les catégories sont **dans la liste du dessous**, et dans l'écran quand l'agent fait passer |
+| « tout prendre » d'un rayon, dans la machine | **dans la liste du dessous**, où c'est un bouton de plus, pas un écran de plus |
+| emporter / imprimer / vider dans la machine | **dans la section du ticket** ; l'écran de la machine garde **emporter** et la touche ✗ qui vide |
 
 ### L'adresse
 
