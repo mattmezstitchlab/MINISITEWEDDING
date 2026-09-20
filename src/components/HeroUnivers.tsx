@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
-import { cartesDesUnivers } from '../lib/cartesVivantes';
+import { cartesDesUnivers, type CarteVivante } from '../lib/cartesVivantes';
 import { usePrefersReducedMotion } from '../lib/useReducedMotion';
 import { useControlesDeBande } from '../lib/personaCourant';
 import HeroCycle from './HeroCycle';
@@ -27,9 +27,15 @@ interface HeroUniversProps {
   onChoisir: (style: WeddingStyle) => void;
   /** Un média occupe le hero : la page retient ses autres défilés. */
   onLecture?: (enLecture: boolean) => void;
+  /**
+   * Une carte de la bande a été **cliquée** : la page la range dans la
+   * sélection de la personne. Le défilé automatique et les flèches du dock, eux,
+   * ne choisissent rien — ils montrent.
+   */
+  onCarteChoisie?: (carte: CarteVivante) => void;
 }
 
-export default function HeroUnivers({ styleId, onChoisir, onLecture }: HeroUniversProps) {
+export default function HeroUnivers({ styleId, onChoisir, onLecture, onCarteChoisie }: HeroUniversProps) {
   const [lectureEnCours, setLectureEnCours] = useState(false);
   const reduced = usePrefersReducedMotion();
 
@@ -97,6 +103,7 @@ export default function HeroUnivers({ styleId, onChoisir, onLecture }: HeroUnive
               onChoisir={(carte) => {
                 const choisi = WEDDING_STYLES.find((s) => s.id === carte.id);
                 if (choisi) onChoisir(choisi);
+                onCarteChoisie?.(carte);
               }}
               onLecture={(enLecture) => {
                 setLectureEnCours(enLecture);

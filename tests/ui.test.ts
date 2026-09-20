@@ -43,7 +43,9 @@ import CartePostale from '../src/components/CartePostale';
 import PageProfil from '../src/pages/PageProfil';
 import PlaylistCollaborative from '../src/components/PlaylistCollaborative';
 import { Timbre } from '../src/components/Timbre';
-import { idDeProfil, morceauxDeNom, slugDePersonne, chargerProfil } from '../src/lib/profil';
+import {
+  chargerProfil, idDeProfil, morceauxDeNom, personneDeLaCarte, slugDePersonne,
+} from '../src/lib/profil';
 import { metierParSlug, pageMetier, slugDeRole, tousLesMetiers } from '../src/lib/metierPage';
 import { pageMetier, slugDeRole, tousLesMetiers } from '../src/lib/metierPage';
 import { chargerLive, envoyerGeste } from '../src/lib/terminalLive';
@@ -85,6 +87,14 @@ import {
   PALIERS as PALIERS_LUMIERE, feteDuPrenom, joursDuPrenom, miseEnLumiere, profilDeBase,
 } from '../src/lib/miseEnLumiere';
 import MiseEnLumiere from '../src/components/MiseEnLumiere';
+import HeroEnchaine from '../src/components/HeroEnchaine';
+import ManifestePersonne from '../src/components/ManifestePersonne';
+import UniversDeLaPersonne from '../src/components/UniversDeLaPersonne';
+import {
+  CARTES_MAX, adresseDeLUnivers, carteVivanteDe, chargerSelection, choisirCarte, cleDeCarteChoisie,
+  deplacerCarte, enchainement, enchainementDeSecours, estChoisie, manifesteDeLaPersonne, retirerCarte,
+  rolesDeLaPersonne, universDeLaPersonne, viderSelection, visuelsDeLEnchainement,
+} from '../src/lib/selection';
 import {
   JOURS_DE_LA_SEMAINE, clesDuJour, editionDuJour, filRougeDuJour, jourDeLAnnee, jourDuMagazine,
   joursAutour, lesQuatrePortes, meteoDuJour, studioDuJour,
@@ -2279,6 +2289,158 @@ check(
   ['Survoler', 'Cliquer', 'Clic droit'].every((g) => GESTES_UNIVERSELS.some((x) => x.geste === g)),
   true,
 );
+
+/* ————————————— LE HERO ENCHAÎNÉ : LES CARTES CHOISIES, DANS L'ORDRE ————————————— */
+
+/** Deux cartes de l'accueil, prises à la source : un univers, et un rôle. */
+const universTest = WEDDING_STYLES[0]!;
+const roleTest = PERSONNAGES[1]!;
+
+viderSelection();
+check('la sélection part vide', chargerSelection().length, 0);
+
+const apresUn = choisirCarte({ id: universTest.id, sorte: 'univers', titre: universTest.name });
+check('un clic sur l’accueil entre dans la sélection', apresUn.length, 1);
+check('avec sa sorte, et son titre', [apresUn[0]!.sorte, apresUn[0]!.titre], ['univers', universTest.name]);
+
+const apresDeux = choisirCarte({ id: roleTest.id, sorte: 'persona', titre: roleTest.nom });
+check('et l’ordre est celui des clics', apresDeux.map((c) => c.id), [universTest.id, roleTest.id]);
+check(
+  'recliquer la même carte ne la déplace pas',
+  choisirCarte({ id: universTest.id, sorte: 'univers', titre: universTest.name }).map((c) => c.id),
+  [universTest.id, roleTest.id],
+);
+check('une carte choisie le dit', estChoisie({ id: roleTest.id, sorte: 'persona' }), true);
+check('une carte jamais cliquée aussi', estChoisie({ id: 'personne-ne-la-choisit', sorte: 'univers' }), false);
+check('la clé d’une carte dit sa sorte', cleDeCarteChoisie({ id: 'vegas', sorte: 'univers' }), 'univers|vegas');
+check(
+  'l’ordre se règle à la main',
+  deplacerCarte({ id: roleTest.id, sorte: 'persona' }, -1).map((c) => c.id),
+  [roleTest.id, universTest.id],
+);
+check(
+  'et une carte se retire',
+  retirerCarte({ id: roleTest.id, sorte: 'persona' }).map((c) => c.id),
+  [universTest.id],
+);
+
+/** Le paquet : la sélection est un jeu de cartes, et il s'arrête à 54. */
+viderSelection();
+for (let i = 0; i < 60; i += 1) choisirCarte({ id: `essai-${i}`, sorte: 'univers', titre: `Essai ${i}` });
+check('la sélection est un paquet : 54, pas plus', chargerSelection().length, CARTES_MAX);
+
+/* L'enchaînement : ce que le hero traverse, dans l'ordre. */
+viderSelection();
+choisirCarte({ id: universTest.id, sorte: 'univers', titre: universTest.name });
+choisirCarte({ id: roleTest.id, sorte: 'persona', titre: roleTest.nom });
+
+const chaine = enchainement(chargerSelection());
+check('l’enchaînement suit la sélection', chaine.map((c) => c.id), [universTest.id, roleTest.id]);
+check('chaque carte apporte son visuel', chaine.every((c) => c.media.image.length > 0), true);
+check('et son titre, tel qu’au clic', chaine.map((c) => c.titre), [universTest.name, roleTest.nom]);
+check(
+  'le hero traverse exactement ces visuels',
+  visuelsDeLEnchainement(chaine).map((v) => v.image),
+  chaine.map((c) => c.media.image),
+);
+check('une carte se retrouve seule, sans passer par la sélection', carteVivanteDe({ id: roleTest.id, sorte: 'persona' })?.titre, roleTest.nom);
+check('sans sélection, le hero a un repli', enchainementDeSecours(universTest.id).map((c) => c.id), [universTest.id]);
+check('et même sans univers connu, il y a un hero', enchainementDeSecours('inconnu').length, 1);
+check('l’adresse d’un univers est la même partout', adresseDeLUnivers('vegas'), '/le-mariage/vegas');
+
+const universRetenus = universDeLaPersonne(chargerSelection());
+check('les univers retenus se groupent, dans l’ordre', universRetenus.map((u) => u.style.id), [universTest.id]);
+check('chacun vient avec ses cartes associées', universRetenus[0]!.cartes.length >= 5, true);
+check(
+  'et sa carte est bien celle du milieu',
+  universRetenus[0]!.cartes.some((c) => c.id === universTest.id && c.actif),
+  true,
+);
+check('les rôles retenus reviennent en cartes', rolesDeLaPersonne(chargerSelection()).map((c) => c.id), [roleTest.id]);
+
+/* Le manifeste de la personne : le même texte, vu de sa place. */
+const manifestePersonne = manifesteDeLaPersonne(
+  { prenom: 'Clara', role: 'Fleuriste', ville: 'Paris' },
+  chargerSelection(),
+);
+check('le manifeste porte la porte de la personne', manifestePersonne.titre.includes('celle de Clara s’appelle Fleuriste'), true);
+check('il dit ce qu’elle a retenu de l’accueil', manifestePersonne.paragraphes.some((p) => p.includes('a retenu 2 cartes')), true);
+check('il garde les trois temps de l’accueil', manifestePersonne.paragraphes.length, 4);
+check(
+  'et il les reprend mot pour mot',
+  [MANIFESTE.paragraphes[0]!, MANIFESTE.paragraphes[1]!, MANIFESTE.paragraphes[2]!].every((p) =>
+    manifestePersonne.paragraphes.includes(p),
+  ),
+  true,
+);
+check('la signature porte son nom', manifestePersonne.signature.includes('SUPER MARIAGE — Clara · Fleuriste · Paris'), true);
+check('sans nom, c’est le manifeste de l’accueil', manifesteDeLaPersonne({ prenom: '' }).titre, MANIFESTE.titre);
+check(
+  'et sans sélection, elle le dit',
+  manifesteDeLaPersonne({ prenom: 'Clara' }, []).paragraphes.some((p) => p.includes('La sélection est encore vide')),
+  true,
+);
+
+/* Le hero enchaîné, et les sections qui le suivent, tels qu'ils se rendent. */
+const chaineTrois = [...chaine, ...enchainementDeSecours('vegas')];
+const heroEnchaine = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    null,
+    createElement(
+      HeroEnchaine,
+      { cartes: chaineTrois, eyebrow: 'Son hero' },
+      createElement('h1', null, 'Clara Mez'),
+    ),
+  ),
+);
+check('le hero enchaîné montre la personne', heroEnchaine.includes('Clara Mez'), true);
+check('il dit où l’on en est dans l’ordre', heroEnchaine.includes('1 / 3'), true);
+check('il montre la carte du moment', heroEnchaine.includes(universTest.name), true);
+check('et les cartes associées, juste dessous', heroEnchaine.includes(roleTest.nom), true);
+
+const manifesteRendu = renderToStaticMarkup(
+  createElement(ManifestePersonne, {
+    faits: { prenom: 'Clara', role: 'Fleuriste', ville: 'Paris' },
+    selection: chargerSelection(),
+  }),
+);
+check('le manifeste se pose sous le hero', manifesteRendu.includes('Son manifeste'), true);
+check('et nomme la personne', manifesteRendu.includes('celle de Clara'), true);
+
+const universRendus = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(UniversDeLaPersonne, { selection: chargerSelection() })),
+);
+check('la section des univers se rend', universRendus.includes('Ses univers'), true);
+check('elle compte ce qui a été retenu', universRendus.includes('dans l’ordre · 2'), true);
+check('elle nomme l’univers retenu', universRendus.includes(universTest.name), true);
+check(
+  'elle donne les gestes pour régler l’ordre',
+  universRendus.includes(`aria-label="Monter ${universTest.name}"`) &&
+    universRendus.includes(`aria-label="Descendre ${universTest.name}"`) &&
+    universRendus.includes(`aria-label="Retirer ${universTest.name}"`),
+  true,
+);
+check('et de quoi vider la sélection', universRendus.includes('Vider la sélection'), true);
+
+const universVides = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(UniversDeLaPersonne, { selection: [] })),
+);
+check('sans sélection, la section le dit', universVides.includes('Rien de retenu pour l’instant'), true);
+check('et renvoie vers l’accueil', universVides.includes('Choisir mes cartes sur l’accueil'), true);
+check('sans proposer de vider ce qui est vide', universVides.includes('Vider la sélection'), false);
+
+/* La carte locale fait une personne : la page existe avant d'être publiée. */
+const carteLocale = { ...EMPTY_CARD, firstName: 'Clara', lastName: 'Mez', trade: 'Fleuriste' } as CardData;
+const personneLocale = personneDeLaCarte(77, carteLocale);
+check(
+  'une carte locale fait une personne',
+  [personneLocale.id, personneLocale.first_name, personneLocale.last_name, personneLocale.trade],
+  [77, 'Clara', 'Mez', 'Fleuriste'],
+);
+check('et garde la visibilité de ses contacts', personneLocale.contact_visibility, carteLocale.contactVisibility);
+
+viderSelection();
 
 /* ------------------------------------------------------------------- bilan */
 

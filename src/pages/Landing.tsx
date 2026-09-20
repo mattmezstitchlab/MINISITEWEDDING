@@ -12,6 +12,7 @@ import PictoPersonnage from '../components/PictoPersonnage';
 import OuvertureSite from '../components/OuvertureSite';
 import BandeDuHero from '../components/BandeDuHero';
 import { cartesDesDomaines, cartesDesPersonas, type CarteVivante } from '../lib/cartesVivantes';
+import { choisirCarte } from '../lib/selection';
 import {
   definirPersonaCourant, definirPersonaSurvolee, useControlesDeBande,
 } from '../lib/personaCourant';
@@ -148,6 +149,13 @@ export default function Landing() {
   /** On entre avec un personnage : c'est la carte qu'on vient créer. */
   const entrer = (id: string) => navigate('/creer', { state: { roleId: id } });
 
+  /**
+   * **CE QU'ON RETIENT DE L'ACCUEIL** — chaque carte cliquée ici entre dans la
+   * sélection de la personne : c'est elle qui fait **son hero**, dans l'ordre.
+   * Le défilé automatique ne retient rien : seul un clic est un choix.
+   */
+  const retenir = (carte: { id: string; sorte: 'univers' | 'persona'; titre: string }) => choisirCarte(carte);
+
   /** Le domaine d'une carte de domaine : « domaine-image » → « image ». */
   const cleDeCarte = (carte: CarteVivante) =>
     carte.id.startsWith('domaine-') ? carte.id.slice('domaine-'.length) : null;
@@ -168,12 +176,18 @@ export default function Landing() {
       onChoisir={(carte) => {
         const cle = cleDeCarte(carte);
         if (cle) ouvrirDomaine(cle);
-        else setCarteIndex(Math.max(0, cartes.findIndex((c) => c.id === carte.id)));
+        else {
+          setCarteIndex(Math.max(0, cartes.findIndex((c) => c.id === carte.id)));
+          retenir({ id: carte.id, sorte: 'persona', titre: carte.titre });
+        }
       }}
       onAction={(carte) => {
         const cle = cleDeCarte(carte);
         if (cle) ouvrirDomaine(cle);
-        else entrer(carte.id);
+        else {
+          retenir({ id: carte.id, sorte: 'persona', titre: carte.titre });
+          entrer(carte.id);
+        }
       }}
       onSurvol={(carte) => {
         const cle = carte ? cleDeCarte(carte) : null;
@@ -252,6 +266,7 @@ export default function Landing() {
         styleId={activeStyleOrFallback.id}
         onChoisir={(style) => handleSelectStyle(style)}
         onLecture={setLectureEnCours}
+        onCarteChoisie={(carte) => retenir({ id: carte.id, sorte: 'univers', titre: carte.titre })}
       />
 
       {/* SUPER ÉDITEUR : la même page sur trois appareils. L'éditeur lui-même a

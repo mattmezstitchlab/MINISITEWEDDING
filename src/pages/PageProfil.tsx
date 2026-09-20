@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowRight, BadgeCheck, Loader2, MapPin, Music2, Sparkles, Ticket, Users } from 'lucide-react';
+import { ArrowRight, BadgeCheck, Loader2, MapPin, Music2, PenLine, Sparkles, Ticket, Users } from 'lucide-react';
+import HeroEnchaine from '../components/HeroEnchaine';
+import ManifestePersonne from '../components/ManifestePersonne';
+import UniversDeLaPersonne from '../components/UniversDeLaPersonne';
 import WeddingCard from '../components/WeddingCard';
 import { Timbre } from '../components/Timbre';
-import { chargerProfil, idDeProfil, nomDePersonne, slugDePersonne, type MariageDeProfil } from '../lib/profil';
-import { cardKindLabel, savedOrEmpty, type CardData } from '../lib/weddingCard';
+import {
+  chargerProfil, idDeProfil, nomDePersonne, personneDeLaCarte, slugDePersonne, type MariageDeProfil,
+} from '../lib/profil';
+import { cardKindLabel, cardName, readCard, savedOrEmpty, type CardData } from '../lib/weddingCard';
+import { chargerSelection, enchainement, enchainementDeSecours, useSelection } from '../lib/selection';
 import { personToCard } from '../lib/people';
 import { styleById } from '../lib/weddingStyles';
 import { roleTitle, isCoupleRole } from '../lib/spaceDraft';
@@ -16,9 +22,14 @@ import type { Person } from '../lib/types';
 /**
  * LA PAGE D'UNE PERSONNE
  *
- * La carte faite avec le formulaire ouvre une page : sa couverture — l'univers
- * du mariage qu'elle a rejoint —, son **timbre** en guise de photo de profil,
- * son rôle, ce qu'elle apporte, et sa carte en entier.
+ * **Son hero, c'est elle** : l'enchaînement de ses univers, avec les cartes
+ * associées aux cartes qu'elle a choisies sur l'accueil — chaque carte retenue y
+ * entre **dans l'ordre**. Sous le hero, **son manifeste** (le même texte que
+ * l'accueil, vu de sa place), puis **ses univers** : la suite de ses clics, où
+ * l'ordre se règle à la main.
+ *
+ * Viennent ensuite son **timbre** en guise de photo de profil, son rôle, ce
+ * qu'elle apporte, ses mariages, ses liens, et sa carte en entier.
  *
  * Tout le monde en a une : l'invité comme le marié, le photographe comme le DJ.
  * C'est la même page, dans la langue de chacun.
@@ -42,6 +53,10 @@ export default function PageProfil() {
   const [person, setPerson] = useState<Person | null>(null);
   const [mariages, setMariages] = useState<MariageDeProfil[]>([]);
   const [carte, setCarte] = useState<CardData | null>(null);
+  /** La carte n'est pas (encore) publiée : la page le dit, sans se cacher. */
+  const [brouillon, setBrouillon] = useState(false);
+  /** Les cartes choisies sur l'accueil : c'est la matière du hero. */
+  const selection = useSelection();
 
   useEffect(() => {
     let vivant = true;
@@ -50,6 +65,20 @@ export default function PageProfil() {
       const profil = await chargerProfil(id);
       if (!vivant) return;
       if (!profil) {
+        /**
+         * Rien en ligne : la **carte locale** prend le relais. La page d'une
+         * personne existe dès qu'elle a une carte ici — même non publiée —
+         * parce que son hero, lui, est déjà fait de ses clics d'accueil.
+         */
+        const locale = readCard();
+        const choix = chargerSelection();
+        if (locale && (cardName(locale).trim() !== '' || choix.length > 0)) {
+          setPerson(personneDeLaCarte(id, locale));
+          setCarte(locale);
+          setBrouillon(true);
+          setEtat('pret');
+          return;
+        }
         setEtat('absent');
         return;
       }
@@ -89,6 +118,14 @@ export default function PageProfil() {
   const domaine = role && estMetier ? domaineDuMetier(role) : null;
   const etatAffiche = id ? etat : 'absent';
 
+  /**
+   * **L'ENCHAÎNEMENT** : les cartes choisies sur l'accueil, dans l'ordre du
+   * clic. Sans un seul clic, le hero montre l'univers de son mariage — il y a
+   * toujours un hero, jamais un trou.
+   */
+  const choisies = enchainement(selection);
+  const chaine = choisies.length > 0 ? choisies : enchainementDeSecours(mariage?.site?.style || carte?.styleId || '');
+
   if (etatAffiche === 'chargement') {
     return (
       <div className="vp-env flex min-h-[60vh] items-center justify-center">
@@ -116,24 +153,22 @@ export default function PageProfil() {
 
   const dateMariage = mariage?.site?.wedding_date ?? '';
   const dateCarte = dateCourte(dateMariage || carte.date);
-  const visuel = style.image;
   const initiales = `${person.first_name[0] ?? ''}${person.last_name[0] ?? ''}`.toUpperCase();
 
   return (
     <div className="vp-env min-h-screen">
-      {/* ═════════════════ LA COUVERTURE : l'univers, et le timbre ═════════════════ */}
+      {/* ══════════ LE HERO ENCHAÎNÉ : ses univers, ses cartes, son ordre ══════════ */}
       <header className="relative">
-        <div className="relative min-h-[100svh] overflow-hidden bg-[#0B0C12]">
-          {visuel && <img src={visuel} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C12] via-[#0B0C12]/55 to-[#0B0C12]/25" />
-          <div className="vp-page relative flex h-full flex-col justify-end pb-5">
-            <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.24em] text-white/60">
-              {style.name} · {style.tagline}
-            </span>
-            <h1 className="vp-title mt-2 text-white" style={{ fontSize: 'clamp(1.9rem, 5vw, 3.2rem)' }}>
-              {nom || 'Votre nom'}
-            </h1>
-            <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-white/75">
+        <HeroEnchaine cartes={chaine} eyebrow={brouillon ? 'Son hero · brouillon' : 'Son hero'}>
+          {brouillon && (
+            <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/25 px-3 py-1 text-[11.5px] text-white/75">
+              <PenLine size={12} /> Brouillon — cette carte n’est pas encore publiée
+            </p>
+          )}
+          <h1 className="vp-title mt-2 text-white" style={{ fontSize: 'clamp(1.9rem, 5vw, 3.2rem)' }}>
+            {nom || 'Votre nom'}
+          </h1>
+          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px] text-white/75">
               {role && (
                 <span className="inline-flex items-center gap-1.5">
                   <BadgeCheck size={14} /> {role}
@@ -150,9 +185,8 @@ export default function PageProfil() {
                   {dateMariage ? ` · ${formatDateLong(dateMariage)}` : ''}
                 </span>
               )}
-            </p>
-          </div>
-        </div>
+          </p>
+        </HeroEnchaine>
 
         {/* LE TIMBRE : la photo de profil du réseau, posée sur la couverture */}
         <div className="vp-page flex flex-wrap items-end gap-4">
@@ -197,21 +231,35 @@ export default function PageProfil() {
         )}
       </header>
 
+      {/* SON MANIFESTE : le même texte que l'accueil, vu de sa place. */}
+      <ManifestePersonne
+        faits={{
+          prenom: person.first_name || nom,
+          role,
+          ville: person.home_city,
+          univers: style.name,
+          date: dateMariage ? formatDateLong(dateMariage) : '',
+        }}
+        selection={selection}
+      />
+
       <main className="vp-page py-12">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)] lg:items-start">
           <div className="space-y-10">
-            {/* — SON UNIVERS — */}
+            {/* — SES UNIVERS : la suite de ses clics d'accueil, dans l'ordre — */}
+            <UniversDeLaPersonne selection={selection} />
+
+            {/* — SON UNIVERS PRINCIPAL : celui de son mariage, avec sa page — */}
             <section>
               <div className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">
-                Son univers
+                L’univers de son mariage
               </div>
-              <h2 className="vp-title mt-3 text-[clamp(1.5rem,3.4vw,2.1rem)]">
+              <h2 className="vp-title mt-3 text-[clamp(1.4rem,3.2vw,2rem)]">
                 {style.name} — {style.tagline}
               </h2>
-              <p className="mt-3 max-w-[620px] text-[15.5px] leading-relaxed text-black/70">{style.manifesto}</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <Link
-                  to={mariage?.site?.style ? `/le-mariage/${mariage.site.style}` : '/le-mariage'}
+                  to={mariage?.site?.style ? `/mariage/${mariage.site.style}` : '/le-mariage'}
                   className="vp-btn vp-btn-glass vp-press"
                 >
                   La page de l’univers <ArrowRight size={14} />

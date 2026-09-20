@@ -1767,3 +1767,55 @@ chacune disant ce qu'elle contient ; les trois cibles de confidentialité et le
 défaut privé ; le rangement de Jumo — rêve, lien, disponibilité, mood, photo,
 notes — ; rien de public sans validation, et la publication quand la personne
 valide), `npm run build` OK.
+
+---
+
+## §44 — Le hero enchaîné : les cartes de la personne, dans son ordre
+
+**L'accueil ne demande pas qui on est : il pose des cartes, et on choisit.** Ce
+qui manquait, c'était **la mémoire de ce choix**. Elle est là (`src/lib/selection.ts`,
+clé `vows:selection`) : chaque carte **cliquée** sur l'accueil — un rôle du
+premier niveau, un univers du second — entre dans la sélection **à la fin**, une
+seule fois. L'ordre est **celui des clics**, et il ne bouge que si la personne le
+bouge (`deplacerCarte`, `retirerCarte`, `viderSelection`) ; la sélection est un
+**paquet de 54 cartes**, pas plus (`CARTES_MAX`). Le défilé automatique de
+l'accueil, lui, ne retient rien : **seul un clic est un choix** (d'où le
+`onCarteChoisie` posé sur l'hero des univers, à côté de son `onChoisir`).
+
+**Le hero de la personne, c'est l'enchaînement** (`src/components/HeroEnchaine.tsx`) :
+les visuels de ses cartes traversent l'écran comme partout sur le site
+(`HeroCycle`, une carte toutes les 5,6 s, en silence si l'appareil préfère les
+mouvements réduits, en pause dès qu'un morceau joue), le titre de la carte du
+moment s'écrit sous son nom, et **les cartes associées** sont posées dans le
+hero, en bande — un clic saute à la carte voulue, le play ouvre son morceau. Les
+**flèches du dock mènent l'enchaînement** (`bandeId = 'enchainement'`), comme
+elles mènent les rôles sur l'accueil et les univers sous le manifeste.
+
+**La page d'une personne se lit maintenant dans cet ordre** : son **hero
+enchaîné**, **son manifeste** (le même texte que l'accueil, vu de sa place : sa
+porte, ses cartes retenues, les trois temps — rien n'est réinventé,
+`manifesteDeLaPersonne`), **ses univers** (`UniversDeLaPersonne`) — la suite de
+ses clics, chaque univers avec ses cartes associées, ses deux flèches d'ordre,
+et ses rôles en bande — puis son **timbre**, ses mariages, sa carte en entier.
+
+**Deux garde-fous.** (1) **Il y a toujours un hero** : sans un seul clic,
+`enchainementDeSecours` montre l'univers de son mariage. (2) **La page existe
+avant d'être publiée** : si rien n'est en ligne mais qu'une **carte locale**
+existe sur cet appareil (ou seulement une sélection), la page s'ouvre quand
+même — personne montée par `personneDeLaCarte`, et un mot honnête sous le hero :
+« Brouillon — cette carte n'est pas encore publiée ».
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` **178 / 55 / 805**, `npm run
+build` OK. Les vérifications de la passe : la sélection dans l'ordre, le paquet
+de 54, le déplacement et le retrait, l'enchaînement et ses visuels, le repli,
+le groupement des univers avec leurs cartes, les rôles en cartes, le manifeste
+de la personne (porte, cartes retenues, trois temps repris mot pour mot,
+signature), le rendu du hero (le nom, « 1 / 3 », la carte du moment, les cartes
+associées) et celui des deux sections.
+
+**Ce qui reste, dans l'ordre annoncé** : le **SUPER JOURNAL** (la page qui se
+remplit et se valide), puis **l'agent Jumo** (le rangement, déjà écrit), quand
+la structure sera parfaite. Ensuite : les **appareils** (ordinateur, iPad,
+iPhone — ce que la personne possède, et sur quoi elle est connectée), la
+**proximité géographique**, les statistiques, et le branchement du profil réel
+sur la mise en lumière.

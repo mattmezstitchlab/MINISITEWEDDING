@@ -1,4 +1,5 @@
 import { apiGet } from './http';
+import type { CardData } from './weddingCard';
 import type { Person, WeddingSite } from './types';
 
 /**
@@ -58,6 +59,28 @@ export function idDeProfil(slug: string): number | null {
   if (!trouve) return null;
   const id = Number(trouve[1]);
   return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+/**
+ * **La personne que la carte locale décrit** — quand rien n'est encore publié.
+ * Les mêmes colonnes que le réseau : la page ne sait pas d'où vient la personne,
+ * et son hero, lui, est déjà fait de ses clics d'accueil.
+ */
+export function personneDeLaCarte(id: number, card: CardData): Person {
+  return {
+    id,
+    first_name: card.firstName.trim(),
+    last_name: card.lastName.trim(),
+    photo: card.photo,
+    home_city: card.homeCity.trim(),
+    trade: card.trade.trim(),
+    bio: card.bio.trim(),
+    email: card.email.trim(),
+    phone: card.phone.trim(),
+    website: card.website.trim(),
+    social: card.social.trim(),
+    contact_visibility: card.contactVisibility,
+  };
 }
 
 /** Charger une page de profil : la carte, et les mariages publiés où elle vit. */
