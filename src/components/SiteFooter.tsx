@@ -27,7 +27,7 @@ export default function SiteFooter() {
       <div className="vp-page grid gap-8 py-10 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] sm:items-start">
         <div>
           <Link to="/" className="flex items-center gap-2 no-underline">
-            <LogoSuperMariage taille={20} className="shrink-0 text-black/80" />
+            <LogoSuperMariage taille={28} className="shrink-0 text-black/80" />
             <span className="vp-title text-[17px] font-bold italic tracking-wider text-black/85">
               SUPER MARIAGE
             </span>

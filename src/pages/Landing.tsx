@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { WEDDING_STYLES, type WeddingStyle } from '../lib/weddingStyles';
 import {
@@ -25,6 +25,7 @@ import HeroUnivers from '../components/HeroUnivers';
 import Appareils from '../components/Appareils';
 import ParallaxSection from '../components/ParallaxSection';
 import DjPlaylistStudio from '../components/DjPlaylistStudio';
+import { PISTES_DE_LANNEE, playlistDeLAnnee } from '../lib/playlistDeLAnnee';
 import SuperMariageTeaser from '../components/SuperMariageTeaser';
 import ComplementaryThemes from '../components/ComplementaryThemes';
 
@@ -250,13 +251,10 @@ export default function Landing() {
               )}
             </div>
 
-            {/* LE CHAMP DU MAGAZINE : APRÈS L'INTRO, AVANT LES CARTES.
-                L'intro a posé la question (« Qui êtes-vous dans ce mariage ? ») et
-                le titre du moment ; le champ demande maintenant le strict
-                nécessaire — deux prénoms, une date — et le magazine se compose.
-                Sans réponse, c'est le magazine du jour : il y a toujours quelque
-                chose à ouvrir. Une fois composé, ce bloc devient la couverture. */}
-            <ChampDuMagazine className="mt-9 w-full sm:mt-11" />
+            {/* LE CHAMP DU MAGAZINE A QUITTÉ LE HERO : il vit maintenant sur la
+                page magazine, où le titre, le champ et les couvertures se
+                tiennent ensemble. Ici, le hero garde sa question, son titre, et
+                ses cartes — rien d'autre. */}
 
             {/* LES CARTES À CHOISIR : on les a sous les yeux dans le hero, sans
                 bande blanche et sans flèches — celles du dock mènent la bande. */}
@@ -336,40 +334,18 @@ export default function Landing() {
       </ParallaxSection>
       </div>
 
-      {/* PLAYLIST COLLABORATIVE : en bas de page, tout de suite avant la capsule */}
+      {/* PLAYLIST COLLABORATIVE : la playlist de l'année — un morceau par jour,
+          toutes les cartes déjà là. */}
       <section id="bande-son" className="bg-white py-16">
         <div className="vp-page">
-          <DjPlaylistStudio style={activeStyleOrFallback} />
+          <DjPlaylistStudio
+            style={activeStyleOrFallback}
+            pistes={playlistDeLAnnee(new Date().getFullYear())}
+            sousTitre={`La playlist de l’année — un morceau par jour, ${PISTES_DE_LANNEE} cartes.`}
+          />
         </div>
       </section>
 
-      <footer className="pb-24">
-        <div className="vp-page">
-        <div className="vp-glass vp-spec flex flex-col items-center justify-between gap-4 rounded-[26px] px-6 py-6 text-[13px] text-[var(--vp-muted)] sm:flex-row">
-          <div className="flex items-center gap-2">
-            <span className="vp-title text-[17px] font-bold italic tracking-wider text-[var(--vp-ink)]">SUPER MARIAGE</span>
-          </div>
-          <div className="text-center">Votre mariage. Votre histoire. Un seul endroit.</div>
-          <div className="flex flex-wrap items-center justify-center gap-5">
-            <Link to="/creer" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
-              Créer ma carte
-            </Link>
-            <Link to="/carte" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
-              J’ai déjà une carte
-            </Link>
-            <Link to="/prestataire" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
-              Espace prestataire
-            </Link>
-            <Link to="/le-mariage" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
-              Le mariage, en entier
-            </Link>
-            <Link to="/supermarriage" className="font-semibold text-[var(--vp-ink)] no-underline hover:underline">
-              SuperMariage
-            </Link>
-          </div>
-        </div>
-        </div>
-      </footer>
     </div>
   );
 }

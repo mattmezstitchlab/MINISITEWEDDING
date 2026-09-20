@@ -380,13 +380,13 @@ check('aucun IBAN, même tronqué, n’apparaît', masquee.includes('FR76'), fal
 const accueil = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(Landing as never)),
 );
-check('l’accueil met le bouton de création dans son hero', accueil.includes('Créer ma carte'), true);
+check('l’accueil ne met plus de bouton de création dans son hero', accueil.includes('Créer ma carte'), false);
 check('l’accueil ne pose plus la question du rôle', accueil.includes('Qui êtes-vous ?'), false);
 check('l’accueil ne fait plus choisir d’univers', accueil.includes('Quel univers ?'), false);
 check(
-  'l’accueil garde la porte de la carte',
+  'la bande-pied en doublon est partie, avec ses portes',
   accueil.includes('J’ai déjà une carte'),
-  true,
+  false,
 );
 check('la section de la carte est mise de côté', accueil.includes('La carte d’abord.'), false);
 check('l’accueil n’a plus de bouton « Découvrir »', accueil.includes('Découvrir'), false);
@@ -1830,7 +1830,7 @@ check('le jour du magazine est là', revue.includes('Le jour du magazine'), true
 check('avec ses huit rubriques', RUBRIQUES.every((r) => revue.includes(`>${r}<`)), true);
 check('et les treize semaines de la saison', revue.includes('les treize semaines'), true);
 check('on peut relire au passé et au futur', ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => revue.includes(t)), true);
-check('et le flux des jours, dedans', heroMagazine.includes('Le flux des jours'), true);
+check('le flux des trois cartes a quitté le hero', heroMagazine.includes('Le flux des jours'), false);
 check('le hero porte aussi la carte du moment', heroMagazine.includes(editionDuMoment().carte.nom), true);
 check('un joker ne dit pas de semaine', composerEdition({ numero: 53 }).carte.joker, true);
 check('et il a sa propre édition', composerEdition({ numero: 53 }).pages.length, PAGES_EDITION);
@@ -3361,9 +3361,9 @@ check('l’âge a sa place, vide au départ', composeur.includes('>âge<'), true
 check('le bouton dit ce qu’il fait', composeur.includes('Générer mon magazine'), true);
 check('aucune personne ajoutée au départ', composeur.includes('personne dans le magazine'), false);
 
-/* Sa place : dans le hero, après l'intro, avant les cartes. */
-check('le composeur vient après la question du hero', accueil.indexOf('Qui êtes-vous dans ce mariage') < accueil.indexOf('Ville de naissance'), true);
-check('et il est bien dans le hero', accueil.indexOf('id="hero"') < accueil.indexOf('Ville de naissance'), true);
+/* Sa place : plus dans le hero de l'accueil — il vit sur la page magazine,
+   et dans la section du bas de l'accueil. */
+check('le composeur n’est plus dans le hero de l’accueil', accueil.indexOf('Ville de naissance') > accueil.indexOf('</header>'), true);
 check('et le hero garde sa question à lui', accueil.includes('Qui êtes-vous dans ce mariage ?'), true);
 
 /* Le magazine existe : le bloc devient sa couverture. */
@@ -3641,7 +3641,7 @@ check('l’écran de composition laisse passer', superComposition.includes('Pass
 /* ——— LE COMPOSEUR EST AUSSI PLUS BAS DANS LA PAGE ——— */
 check('l’accueil a sa section de magazine', accueil.includes('id="votre-magazine"'), true);
 check('et elle porte son titre', accueil.includes('Votre magazine, maintenant'), true);
-check('le composeur y est aussi', (accueil.match(/Ville de naissance/g) ?? []).length, 2);
+check('le composeur y est, une seule fois sur l’accueil', (accueil.match(/Ville de naissance/g) ?? []).length, 1);
 
 /* ---------------------------------------------------------------------------
  * LA SIMPLIFICATION DU JOUR — LE MAGAZINE, LE LOGO, LE DOCK, LE MENU
@@ -3660,7 +3660,7 @@ check('le fond du hero est noir', heroMagazine.includes('bg-[#0B0C12]'), true);
 check('et ce n’est plus le visuel de la saison', heroMagazine.includes('object-cover blur'), false);
 check('le flux montre la couverture, pas le personnage', (flux.match(/AIME MAGAZINE/g) ?? []).length >= 2, true);
 check('le flux n’a plus de portrait de studio', flux.includes('Studio blanc') || flux.includes('Studio noir'), false);
-check('la couverture du flux garde sa marque', flux.includes('N°'), true);
+check('la couverture nettoyée ne montre plus son numéro', flux.includes('SEMAINE'), false);
 
 /* ——— LES TYPOS DES COUVERTURES SUIVENT LE DESIGN DU SITE ——— */
 check('la couverture prend la police du site', svgCouverture.includes('Inter'), true);
@@ -3687,6 +3687,21 @@ check('et son programme aussi', universBande.includes('id="programme"'), true);
 /* ——— LES ANCRES DE L’ARTICLE SONT BIEN DANS LA PAGE DE L’ARTICLE ——— */
 check('la page de l’article porte son ancre à elle', pageArticle.includes('id="article"'), true);
 check('et celle des moments aussi', pageArticle.includes('id="moments"'), true);
+
+
+/* ——— CE TOUR : UNE SEULE COUVERTURE AU HERO, LE COMPOSEUR SUR LA PAGE MAGAZINE ——— */
+check('le hero du magazine montre une seule couverture, au format du hero', heroMagazine.includes('h-full w-auto'), true);
+check('et plus trois magazines côte à côte', revue.includes('Le flux des jours'), false);
+check('le composeur vit sur la page magazine', revue.includes('Votre magazine, maintenant') && revue.includes('Ville de naissance'), true);
+check('la couverture a été nettoyée', svgCouverture.includes('SEMAINE'), false);
+check('elle garde la marque, le titre et la date',
+  svgCouverture.includes('AIME MAGAZINE') && svgCouverture.includes('Saint Matthieu') && svgCouverture.includes('21 SEPTEMBRE 2026'), true);
+
+/* ——— L'ACCUEIL : PLUS DE DOUBLON EN BAS, LA PLAYLIST DE L'ANNÉE ——— */
+check('l’accueil n’a plus sa bande-pied en doublon', accueil.includes('Votre mariage. Votre histoire. Un seul endroit.'), false);
+check('la playlist de l’accueil est celle de l’année', accueil.includes('La playlist de l’année'), true);
+check('et elle a déjà toutes les cartes', accueil.includes('/ 365'), true);
+check('le logo synthétisé est plus grand dans la barre', chromeMetier.includes('width="26"'), true);
 
 /* ——— LE « VOIR EN TANT QUE » EST RETIRÉ : ON SIMPLIFIE ——— */
 const menuFerme = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(MenuProfil as never)));

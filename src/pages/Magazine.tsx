@@ -6,15 +6,17 @@ import { COUVERTURES, MARQUE_MAGAZINE } from '../lib/aimeMagazine';
 import { JEU_DE_54, bornesDeLaSemaine, semaineDeLAnnee } from '../lib/jeuDeCartes';
 import { composerEdition, lesQuatreSaisons, numerosDeLaSaison } from '../lib/aimeMoteur';
 import { filRougeDuJour, jourDuMagazine, joursAutour, lesQuatrePortes } from '../lib/jourDuMagazine';
+import { couvertureDuJour } from '../lib/couvertureDuJour';
 import { HEURES, heureCourante } from '../lib/aimeMoteur';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
 import { useControlesDeBande, usePersonaCourante } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_MAGAZINE } from '../lib/navDesPages';
+import ChampDuMagazine from '../components/ChampDuMagazine';
+import CouvertureJour from '../components/CouvertureJour';
 import CouvertureMagazine from '../components/CouvertureMagazine';
 import CouvertureSemaine from '../components/CouvertureSemaine';
 import EditionSemaine from '../components/EditionSemaine';
-import FluxDuJour from '../components/FluxDuJour';
 import MiseEnLumiere from '../components/MiseEnLumiere';
 import LeChiffre from '../components/LeChiffre';
 import GalerieCouvertures from '../components/GalerieCouvertures';
@@ -130,23 +132,34 @@ export default function Magazine() {
             SUPER MAGAZINE
           </h1>
 
-          <div className="mt-6 w-full">
-            <FluxDuJour
-              jours={jours}
-              index={index}
-              onIndex={setIndex}
-              onOuvrir={(j) => {
-                const i = jours.findIndex((x) => x.date.getTime() === j.date.getTime());
-                if (i >= 0) setIndex(i);
-                setHeureOuverte(heureCourante());
-              }}
-              titreDuJour={(j) =>
-                `${j.nom} · ${j.carte.nom} · semaine ${j.semaine}${j.joker ? ' · joker' : ''}`
-              }
-            />
+          {/* UNE SEULE COUVERTURE, AU FORMAT DU HERO — pas trois magazines côte à
+              côte : celle du jour ouvert, en grand, adaptée à la hauteur du
+              hero. Les flèches du dock feuillettent les jours. */}
+          <div className="mt-6 flex w-full flex-col items-center">
+            <button
+              type="button"
+              onClick={() => setHeureOuverte(heureCourante())}
+              aria-label={`Ouvrir le magazine du jour — ${jour.nom}`}
+              className="h-[54svh] max-h-[560px] overflow-hidden rounded-[16px] transition hover:scale-[1.01] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+            >
+              <CouvertureJour couverture={couvertureDuJour(jour.date)} className="h-full w-auto" />
+            </button>
+            <p className="mt-4 text-center font-mono text-[10px] uppercase tracking-[0.18em] text-white/50">
+              {jour.nom} · {dateCourte(jour.date)} · jour {index + 1} sur {jours.length} ·
+              cliquer la couverture ouvre les 24 heures
+            </p>
           </div>
         </div>
       </header>
+
+      {/* LE COMPOSEUR, SUR LA PAGE MAGAZINE : le titre, le champ — c'est ici que
+          le magazine se compose, pas dans le hero de l'accueil. */}
+      <section id="composer" className="bg-[#0B0C12] pb-16 text-white">
+        <div className="vp-page flex flex-col items-center text-center">
+          <span className="vp-eyebrow !text-white/70">Votre magazine, maintenant</span>
+          <ChampDuMagazine className="mt-6 w-full" />
+        </div>
+      </section>
 
       {/* ————————————— LE MAGAZINE DU JOUR, OUVERT À L'HEURE QU'IL EST ————————————— */}
       {heureOuverte !== null && (

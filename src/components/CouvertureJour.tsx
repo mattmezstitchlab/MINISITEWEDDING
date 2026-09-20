@@ -4,9 +4,9 @@ import { photoDuPlan } from '../lib/photosDuMagazine';
 /**
  * LA COUVERTURE D'UN JOUR — LE MÊME DESSIN POUR LES 365
  *
- * Un fond uni, la marque en haut, **la création au centre** — un cadran de
- * vingt-quatre heures, une branche par heure de l'édition —, le nom du jour, et
- * la date en bas. Rien ne passe jamais sur la création.
+ * Un fond uni, la marque en haut, **la création au centre** — le cadran —, le nom
+ * du jour, et la date en bas. Rien d'autre : la couverture a été nettoyée, tout
+ * ce qui faisait bordél est parti. Rien ne passe jamais sur la création.
  *
  * Les typos sont **celles du site** : la police spatiale pour les titres, la
  * mono pour les petites capitales — jamais une police que le site ne connaît pas.
@@ -126,18 +126,6 @@ export default function CouvertureJour({
       >
         AIME MAGAZINE
       </text>
-      <text
-        x="50"
-        y="13.4"
-        textAnchor="middle"
-        fill={encre}
-        opacity="0.5"
-        fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-        fontSize="2.4"
-        letterSpacing="0.7"
-      >
-        N° {couverture.numero} · SEMAINE {couverture.semaine}
-      </text>
 
       {/* LA CRÉATION, AU CENTRE : le cadran des vingt-quatre heures. */}
       <g>
@@ -181,18 +169,6 @@ export default function CouvertureJour({
           en ce jour de {couverture.fete}
         </text>
       )}
-      <text
-        x="50"
-        y={couverture.fete ? '98.6' : '94'}
-        textAnchor="middle"
-        fill={encre}
-        opacity="0.7"
-        fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-        fontSize="2.6"
-        letterSpacing="0.6"
-      >
-        {couverture.saison.nom.toUpperCase()} {couverture.saison.symbole} · {couverture.figure.toUpperCase()}
-      </text>
 
       {/* LA DATE EN BAS — et ce que le jour porte, quand on la regarde de près. */}
       <line x1="14" y1="112" x2="86" y2="112" stroke={encre} strokeWidth="0.25" opacity="0.35" />
@@ -208,48 +184,6 @@ export default function CouvertureJour({
       >
         {couverture.dateLongue.toUpperCase()}
       </text>
-      {!vignette && (
-        <text
-          x="50"
-          y="125.5"
-          textAnchor="middle"
-          fill={encre}
-          opacity="0.55"
-          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-          fontSize="2.3"
-          letterSpacing="0.5"
-        >
-          {couverture.cles.slice(0, 3).map((c) => `${c.label.toUpperCase()} ${c.valeur}`.toUpperCase()).join(' · ')}
-        </text>
-      )}
-      {couverture.dense && !vignette && (
-        <text
-          x="50"
-          y="132"
-          textAnchor="middle"
-          fill={encre}
-          opacity="0.45"
-          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-          fontSize="2.2"
-          letterSpacing="0.5"
-        >
-          SAISON ASSOMBRIE — {couverture.raison.toUpperCase()}
-        </text>
-      )}
-      {couverture.pasCommeLesAutres && !vignette && (
-        <text
-          x="50"
-          y="132"
-          textAnchor="middle"
-          fill={encre}
-          opacity="0.45"
-          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
-          fontSize="2.2"
-          letterSpacing="0.5"
-        >
-          FOND NOIR — {couverture.raison.toUpperCase()}
-        </text>
-      )}
     </svg>
   );
 }

@@ -114,7 +114,7 @@ export default function SuperMariage() {
           </span>
 
           {/* LE SOLEIL-CADRAN : le logo, en grand, au-dessus du nom. */}
-          <LogoSuperMariage taille={46} className="mt-5 text-white" />
+          <LogoSuperMariage taille={84} className="mt-5 text-white" />
           <h1
             className="mt-4 max-w-[820px] font-black leading-[0.95] tracking-[-0.03em]"
             style={{ fontSize: 'clamp(2.6rem, 7vw, 5.2rem)' }}

@@ -2838,3 +2838,58 @@ et la page du magasin**, le bouton blanc stable (« Créer sa carte », et plus
 « Entrer comme »), **les sept routes des outils du dock**, les ancres de la
 playlist et du programme dans l'univers, les ancres de l'article dans la page de
 l'article, et le menu du profil sans « voir en tant que ».
+
+---
+
+## §59 — Le doublon du bas, la playlist de l'année, le logo synthétisé, et le hero qui respire
+
+**Le retour.** Deux captures d'écran : en bas de l'accueil, **un doublon** — une
+bande « SUPER MARIAGE · Créer ma carte · J'ai déjà une carte… » posée juste
+au-dessus du vrai pied, avec un grand vide entre les deux. Dans la playlist
+collaborative de l'accueil, **mettre toute la playlist de l'année** — les
+musiques trouvées dans les infos de chaque jour — **pour avoir déjà toutes les
+cartes**. Le cadran du logo **se voit en tache** : le synthétiser et l'agrandir.
+Dans le hero, « le titre, le champ et les cartes en dessous, c'est pas
+cohérent » : **ce bloc vit mieux sur la page magazine**. Et dans le hero du
+magazine, **pas trois magazines** : **la couverture adaptée au format complet du
+hero** — et **nettoyer la couverture encore**, trop d'infos, bordélique.
+
+**Le doublon est parti.** L'accueil n'a plus sa bande-pied à lui : le pied commun
+du site (logo, signature, portes) tient tout, et le vide avec. Une seule
+signature, une seule fois.
+
+**La playlist de l'année : 365 cartes, déjà toutes là.** Chaque jour de l'année
+porte son morceau — le même pour le même jour, choisi dans le catalogue qui
+nourrit déjà la page « La musique » des éditions. `playlistDeLAnnee(annee)` rend
+les 365 pistes dans l'ordre du calendrier, la **date du jour en guise
+d'horaire** sur chaque carte. La section de l'accueil les montre toutes, d'un
+glissement — le socle collaboratif reste, lui, sur les pages des univers.
+
+**Le logo, synthétisé et agrandi.** Le cadran des couvertures est ramené à son
+geste : **un cercle, douze rayons — un par mois —, quatre plus marqués aux quatre
+temps de la journée, un point au centre**. Plus de tache : des traits nets et
+épais. Et plus grand : 26 dans la barre, 28 dans le pied, 84 en tête de la page
+du magasin.
+
+**Le bloc du magazine a changé de maison.** Le hero de l'accueil garde sa
+question, son titre, ses cartes — **le champ du magazine n'y est plus** : il vit
+sur **la page magazine**, juste sous le hero noir, sous son titre à lui
+(« Votre magazine, maintenant »). La section du bas de l'accueil reste, pour qui
+descend.
+
+**Le hero du magazine : une seule couverture, au format du hero.** Plus trois
+magazines côte à côte : **la couverture du jour ouvert, en grand**, qui prend la
+hauteur du hero — on la clique, elle ouvre les 24 heures ; les flèches du dock
+feuillettent les jours. Et **la couverture est nettoyée encore** : le numéro et
+la semaine sous la marque, la ligne saison · figure, les clés du jour et les
+raisons du fond noir sont partis. Il reste **la marque, la création, le titre,
+la fête, la date** — rien d'autre. La même couverture tient le kiosque, le flux
+et le hero : nettoyée une fois, nettoyée partout.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0 sur les fichiers touchés, `npm test`
+**178 / 55 / 1369**. Vérifications ajoutées : l'accueil sans doublon ni bande
+doublée, la playlist de l'année annoncée et ses **365 cartes**, le logo
+synthétisé plus grand dans la barre, le hero du magazine à **une seule
+couverture** (et plus le flux des trois), le composeur sur la page magazine et
+**plus dans le hero de l'accueil**, la couverture sans numéro ni saison mais
+avec la marque, le titre et la date.

@@ -1,12 +1,10 @@
 /**
  * LE SOLEIL-CADRAN — LE LOGO DE SUPER MARIAGE
  *
- * C'est le même dessin que la création des couvertures : **un cadran de
- * vingt-quatre heures** — un disque au centre, deux cercles, et vingt-quatre
- * branches qui partent vers le bord, quatre d'entre elles plus marquées aux
- * quatre temps de la journée. Ici il ne raconte pas un jour : il est **la
- * marque**, et il se pose à côté du nom, dans la barre du site, dans le pied,
- * et en tête de la page du magasin.
+ * Synthétisé : **un cercle, douze rayons, un point au centre** — le cadran des
+ * couvertures, ramené à son geste. Douze rayons comme douze mois, quatre d'entre
+ * eux plus marqués aux quatre temps de la journée. Assez grand pour se lire,
+ * assez simple pour ne plus faire une tache.
  *
  * Il est en `currentColor` : blanc sur les fonds sombres, noir sur les fonds
  * clairs — comme le nom qu'il accompagne.
@@ -21,23 +19,23 @@ interface LogoSuperMariageProps {
 }
 
 export default function LogoSuperMariage({
-  taille = 20,
+  taille = 26,
   couleur = 'currentColor',
   className = '',
 }: LogoSuperMariageProps) {
-  /** Vingt-quatre branches, une par heure, posées comme sur la couverture. */
-  const branches = Array.from({ length: 24 }, (_, heure) => {
-    const angle = (heure / 24) * Math.PI * 2 - Math.PI / 2;
+  /** Douze rayons, un par mois, posés comme les heures du cadran. */
+  const rayons = Array.from({ length: 12 }, (_, mois) => {
+    const angle = (mois / 12) * Math.PI * 2 - Math.PI / 2;
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
     return {
-      cle: heure,
-      x1: 20 + cos * 8.6,
-      y1: 20 + sin * 8.6,
-      x2: 20 + cos * 13.4,
-      y2: 20 + sin * 13.4,
-      /** Les quatre temps de la journée : midi, dix-huit heures, minuit, six heures. */
-      pleine: heure % 6 === 0,
+      cle: mois,
+      x1: 20 + cos * 10,
+      y1: 20 + sin * 10,
+      x2: 20 + cos * 17,
+      y2: 20 + sin * 17,
+      /** Les quatre temps de la journée : plus marqués. */
+      pleine: mois % 3 === 0,
     };
   });
 
@@ -50,22 +48,20 @@ export default function LogoSuperMariage({
       aria-label="Le soleil-cadran, logo de SUPER MARIAGE"
       className={className}
     >
-      <circle cx="20" cy="20" r="15.4" fill="none" stroke={couleur} strokeWidth="0.8" opacity="0.45" />
-      <circle cx="20" cy="20" r="6.4" fill="none" stroke={couleur} strokeWidth="1" opacity="0.9" />
-      {branches.map((b) => (
+      <circle cx="20" cy="20" r="7" fill="none" stroke={couleur} strokeWidth="1.6" />
+      {rayons.map((r) => (
         <line
-          key={b.cle}
-          x1={b.x1}
-          y1={b.y1}
-          x2={b.x2}
-          y2={b.y2}
+          key={r.cle}
+          x1={r.x1}
+          y1={r.y1}
+          x2={r.x2}
+          y2={r.y2}
           stroke={couleur}
-          strokeWidth={b.pleine ? 1.6 : 0.9}
+          strokeWidth={r.pleine ? 2.6 : 1.6}
           strokeLinecap="round"
-          opacity={b.pleine ? 1 : 0.8}
         />
       ))}
-      <circle cx="20" cy="20" r="1.8" fill={couleur} />
+      <circle cx="20" cy="20" r="2.2" fill={couleur} />
     </svg>
   );
 }

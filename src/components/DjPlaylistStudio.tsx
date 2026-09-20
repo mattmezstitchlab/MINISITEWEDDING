@@ -8,10 +8,14 @@ import type { WeddingStyle } from '../lib/weddingStyles';
 
 interface DjPlaylistStudioProps {
   style: WeddingStyle;
+  /** La liste à montrer : par défaut le socle du DJ, ou la playlist de l'année. */
+  pistes?: WeddingDjTrack[];
+  /** Une ligne sous le titre, pour dire ce qu'on regarde. */
+  sousTitre?: string;
 }
 
-export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
-  const [playlist, setPlaylist] = useState<WeddingDjTrack[]>(GLOBAL_WEDDING_PLAYLIST_FULL);
+export default function DjPlaylistStudio({ style, pistes, sousTitre }: DjPlaylistStudioProps) {
+  const [playlist, setPlaylist] = useState<WeddingDjTrack[]>(pistes ?? GLOBAL_WEDDING_PLAYLIST_FULL);
   /**
    * La lecture est locale : chaque morceau a son extrait dans `public/audio/`.
    * Le lecteur Spotify intégré a été retiré — l'embed s'affichait mal, et un
@@ -155,6 +159,9 @@ export default function DjPlaylistStudio({ style }: DjPlaylistStudioProps) {
           <h3 className="vp-title text-[24px] sm:text-[32px] text-[#0B0C12] leading-tight">
             Playlist Collaborative
           </h3>
+          {sousTitre && (
+            <p className="mt-1 text-[12.5px] text-black/55">{sousTitre}</p>
+          )}
         </div>
 
         {/* Flèches de navigation dock */}

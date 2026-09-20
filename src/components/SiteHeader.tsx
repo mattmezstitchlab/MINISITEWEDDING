@@ -41,7 +41,7 @@ export default function SiteHeader({ mention }: SiteHeaderProps) {
       >
         <Link to="/" className="flex items-center gap-2">
           {/* LE SOLEIL-CADRAN : le logo de SUPER MARIAGE, à côté du nom. */}
-          <LogoSuperMariage taille={19} className="shrink-0 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]" />
+          <LogoSuperMariage taille={26} className="shrink-0 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]" />
           <span
             data-nom={nom}
             className="vp-title text-[14px] font-bold italic tracking-[0.1em] text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] transition-colors sm:text-[17px] sm:tracking-[0.14em]"
