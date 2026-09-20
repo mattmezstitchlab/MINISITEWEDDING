@@ -53,6 +53,8 @@ export const NAV_METIER: ActionNav[] = [
 ];
 
 export const NAV_MAGAZINE: ActionNav[] = [
+  { id: 'saisons', label: 'Les quatre saisons', icone: CalendarClock, ancre: 'saisons', aide: 'Quatre couvertures de base : un fond uni, une création sur l’amour de la saison.' },
+  { id: 'numero', label: 'Le numéro du moment', icone: BookOpen, ancre: 'numero', aide: 'L’édition de la semaine : huit rubriques, toujours les mêmes.' },
   { id: 'articles', label: 'Les articles', icone: ListOrdered, ancre: 'articles', aide: 'Les articles de l’édition ouverte, sous sa couverture.' },
   { id: 'shop', label: 'Faire ses courses', icone: ShoppingBag, to: '/shop', aide: 'Le catalogue, par catégories — et ce qui concerne un rôle.' },
 ];

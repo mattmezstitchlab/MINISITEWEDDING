@@ -65,6 +65,18 @@ import Appareils from '../src/components/Appareils';
 import EditeurMiniSite from '../src/pages/EditeurMiniSite';
 import { MANIFESTE } from '../src/lib/manifeste';
 import { COUVERTURES, MARQUE_MAGAZINE, couvertureDArticle, couvertureParId } from '../src/lib/aimeMagazine';
+import {
+  JEU_DE_54, PAS_DE_TEMPS, SAISONS, bornesDeLaSemaine, carteDuNumero, pasDeTempsDeLaSemaine,
+  phaseDeLune, saisonDeLaSemaine, semaineDeLAnnee,
+} from '../src/lib/jeuDeCartes';
+import {
+  PAGES_EDITION, RUBRIQUES, composerEdition, editionDuMoment, lesQuatreSaisons, numerosDeLaSaison,
+  troisTemps,
+} from '../src/lib/aimeMoteur';
+import CouvertureSemaine from '../src/components/CouvertureSemaine';
+import EditionSemaine from '../src/components/EditionSemaine';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import CouvertureMagazine from '../src/components/CouvertureMagazine';
 import SuperFooter from '../src/pages/SuperFooter';
 import FenteDocuments from '../src/components/FenteDocuments';
@@ -1603,6 +1615,134 @@ check('et les titres à la une', revue.includes(COUVERTURES[0]!.aLaUne[0]!), tru
 check('les autres éditions sont listées', revue.includes('Les autres éditions'), true);
 check('la couverture est une carte à part', typeof CouvertureMagazine, 'function');
 check('les couvertures ont leur état', revue.includes('aria-pressed'), true);
+
+/* ——————————— LE JEU DE 54 : LE CALENDRIER D'AIME MAGAZINE ——————————— */
+
+/* 52 semaines, 4 saisons, 13 semaines par saison : la symétrie du jeu. */
+check('il y a cinquante-quatre numéros', JEU_DE_54.length, 54);
+check('quatre saisons, comme quatre couleurs', SAISONS.length, 4);
+check(
+  'treize semaines par saison, comme treize cartes par couleur',
+  SAISONS.every((s) => numerosDeLaSaison(s.id).length === 13),
+  true,
+);
+check('chaque saison a sa couleur', SAISONS.map((s) => s.couleur), ['coeur', 'carreau', 'trefle', 'pique']);
+check(
+  'et son fond uni, avec son encre',
+  SAISONS.every((s) => /^#[0-9A-F]{6}$/i.test(s.fond) && /^#[0-9A-F]{6}$/i.test(s.encre)),
+  true,
+);
+check('les cinquante-deux semaines sont couvertes une fois', new Set(SAISONS.flatMap((s) => numerosDeLaSaison(s.id).flatMap((c) => (c.semaine ? [c.semaine] : [])))).size, 52);
+check('et il reste deux jokers', JEU_DE_54.filter((c) => c.joker).length, 2);
+check('le premier joker est le jour de trop', carteDuNumero(53).semaine, null);
+check('et le second, l’année bissextile', carteDuNumero(54).joker, true);
+check('chaque carte a sa figure et son sens', JEU_DE_54.every((c) => Boolean(c.figure && c.sens && c.ton)), true);
+check('et son fond vient de sa saison', carteDuNumero(38).fond, SAISONS[1]!.fond);
+check('la semaine 38 est en été', saisonDeLaSemaine(38).id, 'ete');
+check('la semaine 1 est en hiver', saisonDeLaSemaine(1).id, 'hiver');
+check('la semaine 52 aussi', saisonDeLaSemaine(52).id, 'hiver');
+
+/* Les quatre créations digitales existent vraiment : on les sert au centre. */
+const racine = process.cwd();
+check(
+  'les quatre créations de saison sont sur le disque',
+  SAISONS.every((s) => existsSync(join(racine, 'public', s.visuel))),
+  true,
+);
+
+/* ——————————— LES HABITUDES DE L’ANNÉE : LES PAS-DE-TEMPS ——————————— */
+
+check('l’année se lit en treize pas-de-temps', PAS_DE_TEMPS.length, 13);
+check(
+  'et chacun couvre des semaines, sans trou ni recouvrement',
+  Array.from({ length: 52 }, (_, i) => i + 1).every((n) => Boolean(pasDeTempsDeLaSemaine(n).dit)),
+  true,
+);
+check('le carême est un temps clos', PAS_DE_TEMPS.some((t) => /carême/i.test(t.nom) && /prohib/i.test(t.dit + t.sage)), true);
+check('mai est évité, et le dit reste', PAS_DE_TEMPS.some((t) => /mai/i.test(t.nom) && /noce de mai/i.test(t.dit.toLowerCase())), true);
+check('novembre est le mois des morts', PAS_DE_TEMPS.some((t) => /morts/i.test(t.nom)), true);
+check('et l’Avent ferme l’année', PAS_DE_TEMPS.some((t) => /avent/i.test(t.nom)), true);
+check('chaque pas-de-temps dit l’usage et le conseil', PAS_DE_TEMPS.every((t) => t.dit.length > 20 && t.sage.length > 20), true);
+
+/* La lune : on se mariait sur une lune qui monte. */
+check('on sait où est la lune', typeof phaseDeLune(new Date(2026, 8, 20)).nom, 'string');
+check('et une semaine a ses deux bornes', bornesDeLaSemaine(2026, 38)[1].getTime() > bornesDeLaSemaine(2026, 38)[0].getTime(), true);
+check('la semaine d’une date est entre 1 et 52', semaineDeLAnnee(new Date(2026, 8, 20)) >= 1 && semaineDeLAnnee(new Date(2026, 8, 20)) <= 52, true);
+
+/* ——————————— LE MOTEUR : MÊME SEMAINE, MÊME ÉDITION ——————————— */
+
+const edition38 = composerEdition({ numero: 38, annee: 2026, roleId: 'photographe', temps: 'present' });
+check('une édition a toujours huit pages', edition38.pages.length, PAGES_EDITION);
+check('et les mêmes rubriques, dans le même ordre', edition38.pages.map((p) => p.rubrique), [...RUBRIQUES]);
+check('les rubriques sont huit', RUBRIQUES.length, 8);
+check('le titre donne le numéro et la saison', edition38.titre, 'N° 38 · Été');
+check('elle sait de quelle carte elle parle', edition38.carte.nom, 'Roi de carreau');
+check('et chaque page dit ce qui l’a décidée', edition38.pages.every((p) => Boolean(p.source)), true);
+check(
+  'mêmes choix, même édition',
+  JSON.stringify(composerEdition({ numero: 38, annee: 2026, roleId: 'photographe' })),
+  JSON.stringify(composerEdition({ numero: 38, annee: 2026, roleId: 'photographe' })),
+);
+check(
+  'un autre rôle recompose le magazine',
+  JSON.stringify(composerEdition({ numero: 38, annee: 2026, roleId: 'fleuriste' })) !==
+    JSON.stringify(edition38),
+  true,
+);
+check(
+  'une coche de plus aussi',
+  JSON.stringify(composerEdition({ numero: 38, annee: 2026, roleId: 'photographe', options: ['assoc'] })) !==
+    JSON.stringify(edition38),
+  true,
+);
+check(
+  'un autre univers aussi',
+  JSON.stringify(composerEdition({ numero: 38, annee: 2026, roleId: 'photographe', styleId: 'vegas' })) !==
+    JSON.stringify(edition38),
+  true,
+);
+check('aucune page ne reste vide, quelle que soit la semaine', Array.from({ length: 54 }, (_, i) => composerEdition({ numero: i + 1 })).every((e) => e.pages.length === 8 && e.pages.every((p) => p.titre.length > 3 && p.texte.length > 40)), true);
+
+/* Passé, présent, futur : la même semaine, trois lectures. */
+const tempsLus = troisTemps({ numero: 38, roleId: 'photographe' });
+check('trois temps pour une semaine', tempsLus.length, 3);
+check('dans l’ordre passé, présent, futur', tempsLus.map((e) => e.temps), ['passe', 'present', 'futur']);
+check('la même carte pour les trois', new Set(tempsLus.map((e) => e.carte.numero)).size, 1);
+check('mais pas le même contenu', new Set(tempsLus.map((e) => JSON.stringify(e.pages))).size, 3);
+check('l’édition du moment est celle de cette semaine', editionDuMoment().numero, semaineDeLAnnee(new Date()));
+check('et les quatre saisons sont quatre numéros différents', new Set(lesQuatreSaisons().map((e) => e.numero)).size, 4);
+check('chacune prise dans sa saison', lesQuatreSaisons().every((e) => e.saison.id === e.carte.saison.id), true);
+
+/* ——————————— LA PAGE : LE VISUEL, LE TITRE, ET LES CARTES DESSOUS ——————————— */
+
+const heroMagazine = revue.slice(0, revue.indexOf('</header>'));
+check('le magazine a un hero', revue.indexOf('</header>') > 0, true);
+check('il porte un visuel', /<img[^>]+src="\/images\/aime\//.test(heroMagazine), true);
+check('et le titre, au centre', heroMagazine.includes('SUPER MAGAZINE') && heroMagazine.includes('text-center'), true);
+check('les cartes magazine sont en dessous du hero', revue.indexOf(COUVERTURES[0]!.theme) > revue.indexOf('</header>'), true);
+check('les quatre saisons s’affichent en premier', revue.indexOf('Les quatre saisons') < revue.indexOf(COUVERTURES[0]!.theme), true);
+check('chaque saison a sa couverture sur la page', SAISONS.every((s) => revue.includes(s.nom)), true);
+check('et son fond uni', SAISONS.every((s) => revue.includes(s.fond.toLowerCase()) || revue.includes(s.fond.toUpperCase())), true);
+check('le numéro du moment est là', revue.includes('Le numéro du moment'), true);
+check('avec ses huit rubriques', RUBRIQUES.every((r) => revue.includes(`>${r}<`)), true);
+check('et les treize semaines de la saison', revue.includes('les treize semaines'), true);
+check('on peut relire au passé et au futur', ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => revue.includes(t)), true);
+check('le hero montre la création de la saison, adoucie en fond', (/<img[^>]+src="\/images\/aime\/[^"]+"[^>]+blur/.test(heroMagazine)), true);
+check('et la même, nette, au centre', (heroMagazine.match(/\/images\/aime\//g) ?? []).length >= 2, true);
+check('le fond du hero est celui de la saison', heroMagazine.includes(saisonDeLaSemaine(editionDuMoment().numero).fond), true);
+check('le hero porte aussi la carte du moment', heroMagazine.includes(editionDuMoment().carte.nom), true);
+check('un joker ne dit pas de semaine', composerEdition({ numero: 53 }).carte.joker, true);
+check('et il a sa propre édition', composerEdition({ numero: 53 }).pages.length, PAGES_EDITION);
+
+check('la couverture de semaine est un composant', typeof CouvertureSemaine, 'function');
+check('et l’édition aussi', typeof EditionSemaine, 'function');
+
+const semainesRendues = renderToStaticMarkup(
+  createElement(CouvertureSemaine, { edition: edition38, onChoisir: () => {} }),
+);
+check('la couverture de semaine porte la marque et le numéro', semainesRendues.includes('AIME') && semainesRendues.includes('N° 38'), true);
+check('et le nom de la carte', semainesRendues.includes('Roi de carreau'), true);
+check('elle est cliquable et annoncée', semainesRendues.includes('aria-pressed') && semainesRendues.includes('aria-label'), true);
 
 /* ------------------- le nom se transforme, les deux portes suivent le rôle --- */
 

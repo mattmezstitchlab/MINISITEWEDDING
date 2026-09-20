@@ -1363,3 +1363,102 @@ moins une édition** ; la page sans son double titre, ses compteurs, ses filtres
 sa phrase ; la couverture, son numéro, son thème, ses titres ; les gestes écrits
 une fois et toutes les actions qui savent dire ce qu'elles font),
 `npm run build` OK.
+
+---
+
+## §39 — Le jeu de 54, et le magazine qui suit l'année
+
+**L'idée, dite simplement.** AIME MAGAZINE ne publie pas seulement ce qui existe :
+il publie **des magazines du passé, du présent et du futur**, et **ils changent
+selon nos actions, nos choix, et avec qui on travaille**. La même semaine donne
+deux magazines différents à deux personnes du même mariage — et c'est normal :
+elles ne vivent pas la même semaine.
+
+**Le secret du jeu de cartes.** Il y a une histoire que personne ne raconte deux
+fois de la même façon : le jeu serait un calendrier. **52 cartes comme les 52
+semaines** de l'année, **4 couleurs comme les 4 saisons**, **13 cartes par
+couleur comme les 13 semaines de chaque saison** (et les 13 lunaisons), **12
+figures comme les 12 mois**, et, en additionnant les points, **364 — plus les
+jokers, qui font les 365 ou 366 jours**. Ce n'est pas une preuve : c'est une
+**symétrie**, et elle est belle. C'est exactement pour ça qu'on s'en sert — et
+c'est pour ça qu'on le dit comme une histoire, pas comme un fait.
+
+**Les quatre couvertures de base.** Un **fond uni**, et au centre une **création
+digitale sur l'amour de la saison** — rien ne passe dessus. Le fond est la
+couleur de la saison, la couleur est celle du jeu : été « ce qui se montre ».
+
+| Saison | Couleur | Semaines | Fond | Sens | Visuel |
+|---|---|---|---|---|---|
+| Printemps | ♥ cœur | 13 → 25 | `#7FB77E` | la promesse, les fleurs, le oui | `public/images/aime/printemps.jpg` |
+| Été | ♦ carreau | 26 → 38 | `#E9B44C` | la lumière, la table, les longs jours | `…/ete.jpg` |
+| Automne | ♣ trèfle | 39 → 51 | `#B8574A` | la fin des travaux, la maison, le feu | `…/automne.jpg` |
+| Hiver | ♠ pique | 52 → 12 | `#16233F` | le creux de l'année, l'intime, l'attente | `…/hiver.jpg` |
+
+**Les treize figures, et leur sens pour un mariage** (`src/lib/jeuDeCartes.ts`) :
+As *le commencement* · 2 *le duo* · 3 *la famille* · 4 *le lieu* · 5 *les témoins* ·
+6 *le voyage* · 7 *l'épreuve* · 8 *le travail* · 9 *la table* · 10 *la fête* ·
+Valet *l'annonce* · Dame *la maison* · Roi *l'engagement*. La hauteur donne le
+**ton** de la semaine : le 1 « la plus haute — l'année entière tient dans cette
+semaine », le 7 « basse — la semaine des choses qu'on remet », le 13 « la plus
+haute de la saison — une saison se referme ».
+
+**Les cinquante-quatre numéros.** `JEU_DE_54` = les **52 semaines** (n° 1 à 52 :
+le numéro *est* le numéro de semaine) et **2 jokers** — **n° 53 le jour de trop**
+(le 365ᵉ jour) et **n° 54 le jour bissextile** — qui n'appartiennent à aucune
+semaine, et où tout peut arriver.
+
+**Les habitudes de l'année.** Un mariage ne se décide pas hors du temps : chaque
+semaine porte son **pas-de-temps** (`PAS_DE_TEMPS`, treize périodes qui couvrent
+1 → 52 sans trou), avec **l'usage d'autrefois** (`dit`) et **le conseil
+d'aujourd'hui** (`sage`) : *le creux de janvier* (le mois le plus délaissé, et
+pourtant le moins cher) · *le temps des annonces* · *avant le carême* · *le
+carême* (46 jours, temps clos : on ne célèbre pas) · *la saison s'ouvre* (avril
+fut longtemps le mois préféré, avant juin) · *le mois de mai* (« Noce de mai, noce
+de mort » — le mois de Marie) · *la haute saison* (juin → septembre) · *les
+grandes chaleurs* · *le plein été* · *les moissons finies* · *l'arrière-saison* ·
+*le mois des morts* (novembre) · *l'Avent* (du 4ᵉ dimanche avant Noël au 24
+décembre). Les noces duraient de **deux à huit jours**, on évitait les semailles
+et les moissons, et l'on se mariait sur une **lune qui monte** — jamais
+décroissante. `phaseDeLune()` donne la phase du jour (nouvelle lune de référence :
+6 janvier 2000, 18 h 14 UTC ; cycle de 29,530588 jours).
+
+**Le moteur** (`src/lib/aimeMoteur.ts`) : `composerEdition({ numero, annee,
+roleId, styleId, options, temps })` rend une **édition de huit pages, toujours** —
+`Le temps` · `La carte` · `L'amour` · `Le passage` · `Les gens` · `Vos papiers` ·
+`La musique` · `L'archive`. **Le nombre de pages ne change jamais** : c'est ce qui
+fait un magazine. Ce qui change, c'est **ce qu'il y a dedans**, et chaque page
+dit **ce qui l'a décidée** (`source`) : la semaine et la lune · la carte (couleur,
+figure, ton) · la saison (fond et création) · le rôle (les 27 personnages) ·
+l'univers (les 25 styles) · les coches de SUPER FOOTER (les 31 documents) · la
+playlist (le catalogue) · l'archive (un univers du passé).
+
+**Pas de hasard qui change à chaque affichage.** Une **signature stable**
+(FNV-1a) traverse la graine : *mêmes choix, même édition*. C'est ce qui permet de
+relire un numéro et de le retrouver identique — et c'est testé.
+
+**Passé, présent, futur.** `troisTemps()` rend **la même semaine, trois fois** :
+relue au passé (« la même semaine, l'an dernier »), au présent, au futur (« l'an
+prochain »). Même carte, même saison, même numéro — trois contenus différents.
+`editionDuMoment()` rend la semaine où l'on est ; `lesQuatreSaisons()` rend la
+couverture de chacune des quatre saisons, prise dans sa saison ; et pour la
+semaine 38, les quatre tombes sur 13, 38, 39 et 1 — chacune la bonne carte de sa
+couleur.
+
+**La page** (`src/pages/Magazine.tsx`) : **un hero avec le visuel et le titre au
+centre** — le fond de la saison, la création adoucie en fond, **SUPER MAGAZINE**
+en grand, et la création **nette** au centre comme un sceau : la saison, la carte
+et le numéro. **En dessous du hero, les cartes** : les **quatre saisons** d'abord
+(chacune avec les treize semaines de sa couleur en dessous), puis **le numéro du
+moment** et ses huit rubriques (avec les trois temps), puis **les éditions de
+thème** — les neuf couvertures AIME MAGAZINE. Les flèches du dock feuillettent
+les 54 numéros.
+
+**Contrôles.** `npx tsc -b` 0, eslint 0, `npm test` 178 / 55 / **660**
+(54 numéros, 4 saisons, 13 par saison, 2 jokers, les 52 semaines couvertes une
+fois, les treize pas-de-temps sans trou, le carême clos, mai évité, les quatre
+créations présentes sur le disque ; huit pages et huit rubriques dans l'ordre,
+mêmes choix → même édition, un autre rôle ou une coche de plus qui recomposent
+tout, aucun numéro vide de 1 à 54 ; trois temps, même carte, contenus différents ;
+le hero avec son visuel, son titre au centre et la création au milieu ; les
+cartes en dessous du hero, les quatre saisons avant les éditions de thème),
+`npm run build` OK.

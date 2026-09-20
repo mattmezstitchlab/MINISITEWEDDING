@@ -2,26 +2,34 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock } from 'lucide-react';
-import { COUVERTURES, MARQUE_MAGAZINE, couvertureParId } from '../lib/aimeMagazine';
+import { COUVERTURES, MARQUE_MAGAZINE } from '../lib/aimeMagazine';
+import { JEU_DE_54, carteDuNumero, semaineDeLAnnee } from '../lib/jeuDeCartes';
+import { composerEdition, lesQuatreSaisons, numerosDeLaSaison } from '../lib/aimeMoteur';
 import { articlesPourRole, roleDuneAdresse } from '../lib/personaSuites';
 import { useControlesDeBande } from '../lib/personaCourant';
+import { usePersonaCourante } from '../lib/personaCourant';
 import { enregistrerNavVerticale } from '../lib/navVerticale';
 import { NAV_MAGAZINE } from '../lib/navDesPages';
 import CouvertureMagazine from '../components/CouvertureMagazine';
+import CouvertureSemaine from '../components/CouvertureSemaine';
+import EditionSemaine from '../components/EditionSemaine';
 
 /**
- * LE MAGAZINE — LA REVUE, ÉDITION PAR ÉDITION
+ * LE MAGAZINE — UN VISUEL, UN TITRE, ET LES COUVERTURES
  *
- * Une seule porte, et pas d'étagère : **une couverture**, et le thème qu'elle
- * ouvre. On feuillette — les flèches du dock, ou un clic sur une couverture — et
- * les articles de l'édition se lisent en dessous.
+ * Le hero porte le visuel et **SUPER MAGAZINE**, au centre. En dessous, les
+ * couvertures, dans l'ordre :
  *
- * Tout ce qui se répétait a disparu : plus de double titre (la barre dit déjà où
- * l'on est), plus de compteurs, plus de boutons de filtres. **Les couvertures
- * sont le rangement.**
+ * 1. **les quatre saisons** — un fond uni, une création digitale sur l'amour de
+ *    la saison, et la carte de la semaine. C'est le fond du magazine ;
+ * 2. **les treize semaines** de la saison ouverte, en petites couvertures ;
+ * 3. **le numéro du moment** — huit rubriques, toujours les mêmes, dont le
+ *    contenu suit vos choix, votre rôle et votre univers ;
+ * 4. **les éditions de thème** — les neuf couvertures d'AIME MAGAZINE, qui
+ *    rassemblent les articles par sujet.
  *
- * « ?role=fleuriste » reste : la revue ne montre alors que ce qui concerne ce
- * rôle, et propose de tout reprendre.
+ * Les flèches du dock passent d'un numéro au suivant : le magazine se feuillette
+ * comme les rôles et les univers.
  */
 
 const fadeUp = {
@@ -33,13 +41,27 @@ const fadeUp = {
 export default function Magazine() {
   const [params] = useSearchParams();
   const role = roleDuneAdresse(params.get('role'));
+  const moi = usePersonaCourante();
 
-  /** L'édition ouverte : celle dont on lit les articles. */
-  const [editionId, setEditionId] = useState(COUVERTURES[0]!.id);
-  const index = Math.max(0, COUVERTURES.findIndex((c) => c.id === editionId));
-  const edition = COUVERTURES[index] ?? COUVERTURES[0]!;
+  /** Le numéro ouvert : la semaine où l'on est, ou celui qu'on a choisi. */
+  const [numero, setNumero] = useState(() => semaineDeLAnnee(new Date()));
+  /** Le temps de lecture : l'an dernier, cette semaine, l'an prochain. */
+  const [temps, setTemps] = useState<'passe' | 'present' | 'futur'>('present');
+  /** L'édition de thème ouverte, sous les couvertures. */
+  const [themeId, setThemeId] = useState<string | null>(null);
+
+  const carte = carteDuNumero(numero);
+  const saison = carte.saison;
+  const semaines = useMemo(() => numerosDeLaSaison(saison.id), [saison.id]);
+  const saisons = useMemo(() => lesQuatreSaisons({ roleId: role?.id, styleId: undefined }), [role?.id]);
+
+  const edition = useMemo(
+    () => composerEdition({ numero, roleId: role?.id ?? moi.id, temps }),
+    [numero, role?.id, moi.id, temps],
+  );
 
   const siens = useMemo(() => (role ? articlesPourRole(role.id) : null), [role]);
+  const theme = COUVERTURES.find((c) => c.id === themeId) ?? null;
 
   // La nav de droite : les articles, et de quoi faire ses courses.
   useEffect(() => {
@@ -47,121 +69,207 @@ export default function Magazine() {
     return () => enregistrerNavVerticale(null);
   }, []);
 
-  /**
-   * **Les flèches du dock feuillettent la revue** : quand ce hero est à l'écran,
-   * elles passent d'une édition à la suivante — comme les rôles et les univers.
-   */
+  /** Les flèches du dock feuillettent les 54 numéros. */
   const feuilleter = (pas: number) => {
-    const suivant = COUVERTURES[(index + pas + COUVERTURES.length) % COUVERTURES.length]!;
-    setEditionId(suivant.id);
+    const total = JEU_DE_54.length;
+    setNumero(((numero - 1 + pas + total) % total) + 1);
   };
   const surveiller = useControlesDeBande('magazine', {
     precedent: () => feuilleter(-1),
     suivant: () => feuilleter(1),
   });
 
-  /** Ce qui se lit : l'édition ouverte, ou les articles d'un rôle. */
-  const articles = role ? siens! : edition.articles;
-
   return (
     <div className="vp-env min-h-screen overflow-x-clip bg-white text-[#0B0C12]">
-      {/* ————————————————— LA COUVERTURE : LE TITRE, PUIS LES ÉDITIONS ————————————————— */}
+      {/* ———————————————— LE HERO : LE VISUEL, ET LE TITRE AU CENTRE ———————————————— */}
       <header
-        ref={surveiller}
-        className="relative overflow-hidden bg-[#0B0C12] pb-14 pt-28 text-white sm:pt-32"
+        className="relative flex min-h-[100svh] items-center justify-center overflow-hidden"
+        style={{ background: saison.fond }}
       >
-        <div className="vp-page">
-          <div className="flex flex-col items-center text-center">
-            <h1
-              className="vp-title text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
-              style={{ fontSize: 'clamp(2.2rem, 5.4vw, 4rem)', lineHeight: 1.04 }}
-            >
-              SUPER MAGAZINE
-            </h1>
-            <p className="mt-3 max-w-xl text-[14.5px] leading-relaxed text-white/70">
-              {role
-                ? `Choisi pour ${role.nom} : ce qui parle de son métier, et rien d’autre.`
-                : `${MARQUE_MAGAZINE} — ${COUVERTURES.length} éditions : un thème par couverture, et les articles dedans.`}
-            </p>
+        {/* La création de la saison : le fond de la couverture, adouci pour que
+            le titre passe devant sans jamais se battre avec elle. */}
+        <img
+          src={saison.visuel}
+          alt=""
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-[10px] brightness-[0.42] saturate-[0.9]"
+        />
+        <div className="absolute inset-0 bg-black/25" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/15 to-black/60" />
+
+        <div ref={surveiller} className="vp-page relative flex flex-col items-center text-center text-white">
+          <span className="vp-eyebrow !text-white/70">{MARQUE_MAGAZINE}</span>
+          <h1
+            className="vp-title mt-4 text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+            style={{ fontSize: 'clamp(2.3rem, 5.6vw, 4.2rem)', lineHeight: 1.04 }}
+          >
+            SUPER MAGAZINE
+          </h1>
+
+          {/* La création digitale, au centre : le sceau de la saison en cours. */}
+          <div
+            className="mt-7 overflow-hidden rounded-[20px] shadow-[0_30px_70px_-24px_rgba(0,0,0,0.8)] ring-1 ring-white/25"
+            style={{ width: 'clamp(150px, 20vw, 208px)' }}
+          >
+            <img
+              src={saison.visuel}
+              alt={`${saison.nom} — la création de la saison`}
+              className="block aspect-[3/4.2] w-full object-cover"
+            />
           </div>
 
-          {/* LES COUVERTURES : la précédente, l'ouverte, la suivante. */}
-          <div className="mt-12 flex items-center justify-center gap-5">
-            {COUVERTURES.length >= 3 && (
-              <div className="hidden lg:block">
-                <CouvertureMagazine
-                  couverture={COUVERTURES[(index - 1 + COUVERTURES.length) % COUVERTURES.length]!}
-                  facteur={0.2}
-                  onChoisir={() => feuilleter(-1)}
-                />
-              </div>
-            )}
-
-            <CouvertureMagazine couverture={edition} active onChoisir={() => setEditionId(edition.id)} />
-
-            {COUVERTURES.length >= 3 && (
-              <div className="hidden lg:block">
-                <CouvertureMagazine
-                  couverture={COUVERTURES[(index + 1) % COUVERTURES.length]!}
-                  facteur={0.2}
-                  onChoisir={() => feuilleter(1)}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Le sommaire des éditions : un mot par couverture, pour aller droit au but. */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            {COUVERTURES.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => setEditionId(c.id)}
-                aria-pressed={c.id === edition.id}
-                className={`rounded-full border px-3 py-1.5 text-[11.5px] transition ${
-                  c.id === edition.id
-                    ? 'border-white bg-white font-semibold text-[#0B0C12]'
-                    : 'border-white/20 text-white/70 hover:border-white/50 hover:text-white'
-                }`}
-              >
-                <span className="font-mono text-[9.5px] text-current opacity-60">{c.numero}</span>{' '}
-                {c.theme}
-              </button>
-            ))}
-          </div>
-
-          {role && (
-            <div className="mt-6 text-center">
-              <Link
-                to="/magazine"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-[12.5px] font-semibold text-white/85 no-underline transition hover:border-white hover:text-white"
-              >
-                Tout le magazine <ArrowRight size={13} />
-              </Link>
-            </div>
-          )}
+          <p className="mt-6 text-[13px] leading-relaxed text-white/80">
+            <span className="font-mono uppercase tracking-[0.18em]">
+              {saison.symbole} {saison.nom}
+            </span>
+            <span className="mx-2 opacity-40">·</span>
+            {edition.carte.nom}
+            <span className="mx-2 opacity-40">·</span>
+            {edition.carte.joker ? 'hors calendrier' : `semaine ${edition.carte.semaine}`} — le n°{' '}
+            {edition.carte.numero}
+          </p>
+          {role && <p className="mt-3 text-[13.5px] text-white/70">Choisi pour {role.nom}.</p>}
         </div>
       </header>
 
-      {/* ————————————————————— L'ÉDITION OUVERTE ————————————————————— */}
-      <section id="articles" className="pb-16 pt-12">
+      {/* ———————————————— LES QUATRE SAISONS, PUIS LES SEMAINES ———————————————— */}
+      <section id="saisons" className="pb-10 pt-14">
         <div className="vp-page">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black/10 pb-4">
-            <div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-black/45">
-                {MARQUE_MAGAZINE} · N° {edition.numero}
-              </span>
-              <h2 className="vp-title mt-2 text-[24px] sm:text-[30px]">
-                {role ? `Les articles de ${role.nom}` : edition.theme}
-              </h2>
-            </div>
-            <span className="text-[12.5px] text-black/50">
-              {articles.length} article{articles.length > 1 ? 's' : ''}
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-black/10 pb-4">
+            <h2 className="vp-title text-[22px] sm:text-[26px]">Les quatre saisons</h2>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-black/45">
+              {JEU_DE_54.length} numéros — {JEU_DE_54.filter((c) => c.joker).length} jokers
             </span>
           </div>
+          <p className="mt-3 max-w-[640px] text-[13.5px] leading-relaxed text-black/55">
+            Un fond uni, une création digitale sur l’amour de la saison : quatre couvertures de base,
+            et sous chacune les treize semaines qui la composent — comme les treize cartes d’une couleur.
+          </p>
 
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {articles.map((article) => (
+          <div className="mt-8 flex flex-wrap items-start justify-center gap-6 sm:gap-8">
+            {saisons.map((editionSaison) => (
+              <CouvertureSemaine
+                key={editionSaison.saison.id}
+                edition={editionSaison}
+                facteur={editionSaison.saison.id === saison.id ? 1 : 0.4}
+                active={editionSaison.saison.id === saison.id}
+                onChoisir={() => setNumero(editionSaison.numero)}
+              />
+            ))}
+          </div>
+
+          {/* Les treize semaines de la saison ouverte. */}
+          <div className="mt-10">
+            <div className="flex flex-wrap items-baseline gap-3">
+              <h3 className="text-[16px] font-bold tracking-tight">
+                {saison.symbole} {saison.nom} — les treize semaines
+              </h3>
+              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">
+                couleur {saison.couleur}
+              </span>
+            </div>
+            <div className="no-scrollbar mt-4 flex gap-3 overflow-x-auto pb-3">
+              {semaines.map((c) => (
+                <CouvertureSemaine
+                  key={c.numero}
+                  edition={composerEdition({ numero: c.numero, roleId: role?.id ?? moi.id, temps })}
+                  taille="petite"
+                  facteur={c.numero === numero ? 1 : 0.3}
+                  active={c.numero === numero}
+                  onChoisir={() => setNumero(c.numero)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ———————————————— LE NUMÉRO DU MOMENT ———————————————— */}
+      <section id="numero" className="bg-[#F7F6F3] py-14">
+        <div className="vp-page">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
+                Le numéro du moment
+              </span>
+              <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">{edition.titre}</h2>
+            </div>
+            {/* Les trois temps : le même numéro, relu au passé et au futur. */}
+            <div className="flex flex-wrap gap-2">
+              {([
+                ['passe', 'L’an dernier'],
+                ['present', 'Cette semaine'],
+                ['futur', 'L’an prochain'],
+              ] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setTemps(id)}
+                  aria-pressed={temps === id}
+                  className={`rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition ${
+                    temps === id
+                      ? 'border-black bg-black text-white'
+                      : 'border-black/12 text-black/60 hover:border-black/40 hover:text-black'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-7">
+            <EditionSemaine edition={edition} />
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3 text-[12.5px] text-black/50">
+            <span>
+              Numéro {carte.numero} sur {JEU_DE_54.length} · {carte.joker ? 'un joker' : `semaine ${carte.semaine}`} ·
+              les flèches du dock passent au suivant
+            </span>
+            {role && (
+              <Link
+                to="/magazine"
+                className="inline-flex items-center gap-1.5 rounded-full border border-black/12 px-3 py-1.5 font-semibold text-black/70 no-underline transition hover:border-black/40 hover:text-black"
+              >
+                Tout le magazine <ArrowRight size={12} />
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ———————————————— LES ÉDITIONS DE THÈME ———————————————— */}
+      <section id="editions" className="py-14">
+        <div className="vp-page">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/45">
+            Les autres éditions
+          </span>
+          <h2 className="vp-title mt-2 text-[22px] sm:text-[26px]">
+            {role ? `Choisi pour ${role.nom}` : 'Les éditions de thème'}
+          </h2>
+          <p className="mt-3 max-w-[680px] text-[13.5px] leading-relaxed text-black/55">
+            {role
+              ? 'Les articles qui parlent de ce métier, et rien d’autre.'
+              : 'Un thème par couverture, et les articles dedans — un article peut appartenir à plusieurs, quand le sujet le mérite.'}
+          </p>
+
+          {!role && (
+            <div className="mt-8 flex flex-wrap items-start justify-center gap-5 sm:gap-6">
+              {COUVERTURES.map((c) => (
+                <CouvertureMagazine
+                  key={c.id}
+                  couverture={c}
+                  facteur={c.id === themeId ? 1 : 0.35}
+                  active={c.id === themeId}
+                  onChoisir={() => setThemeId((id) => (id === c.id ? null : c.id))}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* L'édition ouverte : ses articles. */}
+          <div id="articles" className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {(role ? siens! : theme?.articles ?? []).map((article) => (
               <motion.div key={article.slug} {...fadeUp} transition={{ duration: 0.5 }}>
                 <Link
                   to={`/magazine/${article.slug}`}
@@ -194,62 +302,13 @@ export default function Magazine() {
         </div>
       </section>
 
-      {/* ————————————————————— LES AUTRES ÉDITIONS ————————————————————— */}
-      {!role && (
-        <section id="editions" className="border-t border-black/5 bg-[#FAFAFC] py-14">
-          <div className="vp-page">
-            <h2 className="vp-title text-[20px] sm:text-[24px]">Les autres éditions</h2>
-            <p className="mt-2 text-[13.5px] text-black/55">
-              Un thème par couverture — et un article peut appartenir à plusieurs, quand le sujet
-              le mérite.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-4">
-              {COUVERTURES.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => {
-                    setEditionId(c.id);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className={`group flex items-center gap-3 rounded-[16px] border p-3 text-left transition ${
-                    c.id === edition.id
-                      ? 'border-black/40 bg-white'
-                      : 'border-black/10 bg-white/60 hover:border-black/30 hover:bg-white'
-                  }`}
-                >
-                  <span
-                    className="block h-14 w-11 shrink-0 overflow-hidden rounded-[6px] bg-[#0B0C12]"
-                    style={{ boxShadow: `inset 0 3px 0 ${c.accent}` }}
-                  >
-                    <img src={c.visuel} alt="" className="h-full w-full object-cover opacity-85" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block font-mono text-[9.5px] uppercase tracking-[0.18em] text-black/40">
-                      N° {c.numero}
-                    </span>
-                    <span className="mt-0.5 block max-w-[190px] truncate text-[13.5px] font-semibold">
-                      {c.theme}
-                    </span>
-                    <span className="mt-0.5 block font-mono text-[10px] text-black/45">
-                      {c.articles.length} articles
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       <footer className="border-t border-black/5 py-10">
         <div className="vp-page flex flex-col items-center justify-between gap-3 text-[12.5px] text-black/50 sm:flex-row">
           <span className="vp-title text-[16px] font-bold italic tracking-wider text-black/80">
             {MARQUE_MAGAZINE}
           </span>
           <span>
-            {COUVERTURES.length} éditions · {couvertureParId(edition.id)?.articles.length ?? 0} articles
-            dans celle-ci
+            {COUVERTURES.length} éditions de thème · {JEU_DE_54.length} numéros dans l’année
           </span>
           <Link to="/" className="underline transition hover:text-black">
             Revenir au site
