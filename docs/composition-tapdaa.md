@@ -91,6 +91,8 @@ Rien de la page n'est inventé pour la page :
 barre                AIME · les portes · le compte et le total · le code · « Ouvrir le ticket »
 le ticket            plein écran — l'appli EST le papier : on le scrolle, on coche
                      (fluo), on tamponne (PAYÉ), et tout est imprimé dessus
+l'archive            le papier étalé sur du noir, sous un titre sérif — et, dans
+                     chaque pièce, ce qu'elle ouvre (voir `l-archive-du-mariage.md`)
 le visuel du jour    la bande d'image calme, les infos dessus
 titre                « Tout le mariage, sur un seul ticket. » + la couverture du jour
 les quatre héros     le jour J · le voyage · les objets · l'accès — une image, un titre, un chemin

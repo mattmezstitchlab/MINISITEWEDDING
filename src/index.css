@@ -1030,3 +1030,71 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   .vp-papier { box-shadow: none; }
   .vp-non-imprimable { display: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════ *
+ *  L'ARCHIVE — le noir, le papier étalé, les polaroïds
+ *
+ *  La composition de la référence du 21 septembre 2026 : un fond noir, du
+ *  papier posé en vrac, un titre sérif immense par-dessus le désordre, et des
+ *  bandes d'images légendées comme des pièces d'archive. La matière, elle, est
+ *  la nôtre : le ticket, la carte postale, le timbre, le sticker, la bande.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.vp-archive {
+  background: #0b0b0d;
+  color: #f6f6f3;
+}
+
+/* Le titre de la référence : un sérif de magazine, serré, posé sur le noir. */
+.vp-didone {
+  font-family: "Fraunces", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+}
+.vp-archive-titre {
+  font-size: clamp(3.1rem, 12vw, 8.5rem);
+}
+
+/* Le collage : en dessous de 640 px, le papier s'enroule ; au-dessus, il tombe. */
+.vp-collage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.9rem;
+}
+.vp-papier-étalé {
+  display: block;
+  transform: rotate(var(--r, 0deg));
+  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.25, 1);
+  text-decoration: none;
+}
+.vp-papier-étalé:hover {
+  transform: rotate(0deg) translateY(-3px) scale(1.02);
+  z-index: 5;
+}
+@media (min-width: 640px) {
+  .vp-collage { display: block; }
+  .vp-papier-étalé {
+    position: absolute;
+    left: var(--x, 0%);
+    top: var(--y, 0%);
+    width: var(--w, 20%);
+  }
+}
+
+/* Le polaroïd : un cadre blanc, l'image dedans, la légende dessous. */
+.vp-polaroïd {
+  background: #fffef7;
+  padding: 0.5em 0.5em 0;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.5);
+}
+
+/* Le timbre : le papier crème, et le filet dentelé à l'intérieur. */
+.vp-timbre {
+  background: #f2f0e6;
+  outline: 1px dashed rgba(11, 12, 18, 0.45);
+  outline-offset: -4px;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5);
+}

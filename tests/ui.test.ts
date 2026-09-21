@@ -185,6 +185,7 @@ import {
 } from '../src/lib/portefeuille';
 import LeTicketPleinEcran from '../src/components/LeTicketPleinEcran';
 import { GLOBAL_WEDDING_PLAYLIST_FULL } from '../src/lib/weddingDjPlaylist';
+import { MOMENTS_DE_LA_NUIT, papiersDeLaCouverture } from '../src/lib/archiveDuMariage';
 import MachineDeRipple from '../src/components/MachineDeRipple';
 import {
   BLOCS_DU_MINI_SITE,
@@ -2453,6 +2454,159 @@ check(
   true,
 );
 check('et l’on descend par une flèche, pas par un paragraphe', zoneTicket.includes('data-action="descendre"'), true);
+
+/* ═══════════════ L'ARCHIVE : LE PAPIER ÉTALÉ, ET LES POLAROÏDS ═══════════════
+
+   La référence du 21 septembre 2026 est une **archive de papier** : du noir, des
+   objets posés en vrac, un titre sérif immense par-dessus, et des images
+   légendées comme des pièces. On prend la composition — pas la marque, pas les
+   mots, pas les objets — et on la remplit avec **notre** papier. */
+
+const archive = ticketVide.slice(ticketVide.indexOf('data-bande="archive"'), ticketVide.indexOf('data-section="visuel"'));
+
+check(
+  'la couverture-archive vient juste après le ticket, et avant le visuel',
+  archive.length > 0 &&
+    ticketVide.indexOf('data-bande="archive"') > ticketVide.indexOf('id="le-ticket-plein"') &&
+    ticketVide.indexOf('data-bande="archive"') < ticketVide.indexOf('data-section="visuel"'),
+  true,
+);
+check(
+  'elle est sur du noir — c’est ça, l’archive',
+  archive.includes('vp-archive') && readFileSync('src/index.css', 'utf8').includes('.vp-archive'),
+  true,
+);
+check(
+  'le titre est un sérif immense, posé par-dessus le désordre',
+  archive.includes('data-archive-titre="vrai"') &&
+    archive.includes('vp-didone') &&
+    archive.includes('vp-archive-titre'),
+  true,
+);
+check(
+  'le code du mariage est écrit en haut de l’archive',
+  archive.includes(`data-archive-code="${CODE_DE_DÉMONSTRATION}"`),
+  true,
+);
+
+/* ——— LES HUIT PAPIERS, ET CE QUE CHACUN OUVRE ——— */
+
+const papiers = [...archive.matchAll(/data-papier-étalé="([^"]+)" data-papier-genre="([^"]+)"/g)].map((m) => ({
+  id: m[1]!,
+  genre: m[2]!,
+}));
+
+check(
+  'le papier est étalé : les pièces de l’archive sont toutes là, et ce sont celles du lib',
+  [papiers.length, papiers.map((p) => p.id).join(',')],
+  [
+    papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION).length,
+    papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION).map((p) => p.id).join(','),
+  ],
+);
+check(
+  'un reçu, un polaroïd, une carte postale, un timbre, un sticker, une note, une bande, le code',
+  [...new Set(papiers.map((p) => p.genre))].sort().join(','),
+  'bande,carte,code,note,photo,sticker,ticket,timbre',
+);
+check(
+  'chaque pièce tombe à sa place, de travers — comme un collage',
+  (() => {
+    const places = [...archive.matchAll(/data-papier-étalé="[^"]+" data-papier-genre="[^"]+" style="([^"]*)"/g)].map((m) => m[1]!);
+    return [places.length, places.every((p) => p.includes('--x:') && p.includes('--r:'))];
+  })(),
+  [papiers.length, true],
+);
+check(
+  'et le collage s’enroule sur un téléphone : il tombe en absolu sur un écran large',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return [css.includes('.vp-collage'), /@media \(min-width: 640px\)[\s\S]{0,200}\.vp-papier-étalé\s*\{[^}]*position:\s*absolute/.test(css)];
+  })(),
+  [true, true],
+);
+check(
+  'le reçu mène au ticket : la pièce ouvre ce qu’elle annonce',
+  archive.includes('data-papier-étalé="ticket-du-mariage" data-papier-genre="ticket"') &&
+    /data-papier-étalé="ticket-du-mariage"[^>]*href="#le-ticket-plein"/.test(archive),
+  true,
+);
+check(
+  'et le polaroïd du jour montre vraiment une image, dans son cadre blanc',
+  (() => {
+    const cadre = archive.slice(archive.indexOf('data-papier-étalé="polaroïd-du-jour"'));
+    return [
+      /^[\s\S]{0,320}?src="\/images\//.test(cadre),
+      cadre.slice(0, 900).includes('vp-polaroïd'),
+    ];
+  })(),
+  [true, true],
+);
+check(
+  'la bande de papier porte les neuf moments de la nuit',
+  (() => {
+    const moments = [...archive.matchAll(/data-papier-moment="([a-z_]+)"/g)].map((m) => m[1]);
+    return moments.length === MOMENTS_DE_LA_NUIT.length && moments[0] === 'prelude_ceremonie';
+  })(),
+  true,
+);
+check(
+  'et les neuf moments sont ceux du plan, horaires compris',
+  [MOMENTS_DE_LA_NUIT.length, MOMENTS_DE_LA_NUIT.every((m) => m.heure.length === 5), MOMENTS_DE_LA_NUIT.at(-1)!.id],
+  [9, true, 'closing'],
+);
+check('le sticker est fluo — c’est le seul accent de couleur', archive.includes('bg-[var(--vp-fluo)]'), true);
+check(
+  'toutes les images de l’archive existent dans le dépôt',
+  [archive.matchAll(/src="(\/images\/[^"]+)"/g)]
+    .flatMap((m) => [...m].map((x) => x[1]!))
+    .every((url) => existsSync(`public${url}`)),
+  true,
+);
+
+/* ——— LES QUATRE PORTES DEVIENNENT DES POLAROÏDS ——— */
+
+check(
+  'les quatre catégories sont posées en polaroïds, légendés dessous',
+  (() => {
+    const héros = ticketVide.slice(ticketVide.indexOf('data-bande="héros"'), ticketVide.indexOf('id="l-appareil"'));
+    return [
+      héros.includes('vp-polaroïd'),
+      (héros.match(/data-héros-de-la-landing=/g) ?? []).length,
+      LES_HÉROS.every((h) => héros.includes(`data-héros-chemin="${h.id}"`)),
+      héros.includes('vp-didone'),
+    ];
+  })(),
+  [true, 4, true, true],
+);
+check(
+  'et chaque polaroïd penche de son côté, jamais deux fois du même',
+  (() => {
+    const héros = ticketVide.slice(ticketVide.indexOf('data-bande="héros"'), ticketVide.indexOf('id="l-appareil"'));
+    const tours = [...héros.matchAll(/data-héros-de-la-landing="[^"]+"[^>]*style="([^"]*)"/g)].map((m) => m[1]!);
+    return [tours.length, tours.every((t) => t.includes('--r:'))];
+  })(),
+  [4, true],
+);
+
+/* ——— LA PASTILLE FLOTTANTE : ON PARTAGE D'OÙ L'ON VEUT ——— */
+
+check(
+  'une seule pastille, en bas à droite, et elle partage',
+  ticketVide.includes('data-action="partager-flottant"') &&
+    /data-action="partager-flottant"[\s\S]{0,220}fixed bottom-4 right-3/.test(ticketVide),
+  true,
+);
+check(
+  'elle dit combien de lignes partent avec le lien',
+  ticketVide.includes('data-flottant-compte="0"') && ticketPlein.includes(`data-flottant-compte="${cochesDessai.length}"`),
+  true,
+);
+check(
+  'et le mini-site des invités ne porte pas la pastille : il n’y a rien à partager là-bas',
+  !rendreLeTicket('/?site=1').includes('data-action="partager-flottant"'),
+  true,
+);
 
 /* ═══════════ LA MACHINE, GARDÉE : ELLE N'EST PLUS SUR LA PAGE ═══════════
 

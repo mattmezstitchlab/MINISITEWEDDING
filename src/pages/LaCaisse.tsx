@@ -35,6 +35,7 @@ import { visuelsDuJour } from '../lib/visuelsDuMagazine';
 import { formatDateLong } from '../lib/format';
 import CadranDuMagazine from '../components/CadranDuMagazine';
 import LeTicketPleinEcran from '../components/LeTicketPleinEcran';
+import LaCouvertureArchive from '../components/LaCouvertureArchive';
 import { marqueDuTampon } from '../lib/marquesDuTicket';
 import { type SortieDeLaFente } from '../components/MachineDeRipple';
 import TicketCaisse from '../components/TicketCaisse';
@@ -398,6 +399,22 @@ export default function LaCaisse() {
         surSite={ouvrirLeSiteDesInvités}
       />
 
+      {/* ═════════════════════════════════════════════════════════════════════
+          LA COUVERTURE-ARCHIVE — LE PAPIER DU MARIAGE, ÉTALÉ
+          Le ticket reste le premier écran ; juste après, **tout le papier est
+          sur la table** : le reçu, le polaroïd du jour, la carte postale du
+          voyage, le timbre, le sticker fluo, la note des sept objets, la bande
+          de la nuit en musique, et le code — sur du noir, sous un titre sérif.
+          ═════════════════════════════════════════════════════════════════════ */}
+      <LaCouvertureArchive
+        code={code}
+        dateLabel={formatDateLong(TICKET_COUPLE.date)}
+        visuelDuJour={visuel ?? couverture ?? null}
+        lignes={lignesCochées.length}
+        total={euros(totaux.total)}
+        surDescendre={() => document.getElementById('le-visuel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+      />
+
       {/* ═════════════════════ LE VISUEL DU JOUR, LES INFOS DESSUS ═════════════════════ */}
       <section
         id="le-visuel"
@@ -456,6 +473,22 @@ export default function LaCaisse() {
 
       {/* ═════════════════════ LES QUATRE CATÉGORIES : L'ARBORESCENCE ═════════════════════ */}
       <LesHeros cible={cible} surCible={setCible} />
+
+      {/* ═════════════════════ LA PASTILLE FLOTTANTE — ON PARTAGE, D'OÙ L'ON VEUT ═════════════════════
+          La référence pose une seule pastille, en bas à droite, et rien d'autre.
+          La nôtre : le lien du mini-site, copié d'un pouce, depuis n'importe où
+          dans la page. */}
+      <button
+        type="button"
+        data-action="partager-flottant"
+        onClick={partagerLeMiniSite}
+        className="fixed bottom-4 right-3 z-40 inline-flex items-center gap-2 rounded-full bg-[color:var(--vp-ink)] px-4 py-2.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-white shadow-[0_14px_34px_rgba(11,12,18,0.35)] transition hover:brightness-125 sm:right-5"
+      >
+        <span data-flottant-compte={coches.length} className="tabular-nums">
+          {coches.length}
+        </span>
+        partager le mini-site
+      </button>
 
       {/* ═════════════════════ L'APPAREIL : LE TICKET, LE BUDGET, LES STICKERS ═════════════════════ */}
       <AppareilDuMariage

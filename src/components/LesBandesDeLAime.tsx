@@ -149,8 +149,14 @@ export function BarreDeLAime({
  * ouvrent aussi l'écran de l'appareil sur la catégorie choisie.
  */
 export function LesHeros({ cible, surCible }: { cible: string; surCible: (id: string) => void }) {
+  /* **Les quatre portes, en polaroïds.** La référence (21 septembre 2026) pose
+     ses images en cadre blanc, légendées sur deux lignes, de travers ; le
+     bandeau est blanc, le titre est un sérif immense à gauche. On garde
+     exactement ça — et les quatre entrées du produit deviennent les quatre
+     pièces de l'archive. */
+  const dodo = ['-1.6deg', '1.1deg', '-0.9deg', '1.4deg'];
   return (
-    <section id="les-catégories" data-bande="héros" className="vp-bande">
+    <section id="les-catégories" data-bande="héros" data-section="héros" className="vp-bande">
       <div className="vp-page">
         <p className="vp-bande-nom">
           <b>AIME</b>
@@ -158,52 +164,66 @@ export function LesHeros({ cible, surCible }: { cible: string; surCible: (id: st
           <span>LES QUATRE CATÉGORIES</span>
         </p>
 
-        <div className="mt-8 max-w-[54ch]">
-          <h2 data-bande-titre="héros" className="vp-bande-titre">
-            Quatre entrées, et tout le produit dedans.
-          </h2>
-          <p className="vp-bande-sous mt-5">
-            Le jour J a un prix, le voyage a une cible, les objets sortent du ticket, et le code ouvre le reste.
-            Chaque image montre le chemin — et l’écran de l’appareil suit.
-          </p>
-        </div>
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:items-start lg:gap-12">
+          <div>
+            <h2 data-bande-titre="héros" className="vp-didone text-[clamp(2.6rem,6vw,4.4rem)]">
+              Quatre
+              <span className="block">entrées.</span>
+            </h2>
+            <p className="mt-5 max-w-[34ch] text-[13px] leading-relaxed text-[color:var(--vp-muted)]">
+              Le jour J a un prix, le voyage a une cible, les objets sortent du ticket, et le code ouvre le reste.
+              Chaque pièce porte ce qu’elle contient.
+            </p>
+          </div>
 
-        <div data-héros="vrai" className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-          {LES_HÉROS.map((héros) => (
-            <button
-              key={héros.id}
-              type="button"
-              data-héros-de-la-landing={héros.id}
-              data-actif={héros.id === cible ? 'true' : 'false'}
-              aria-pressed={héros.id === cible}
-              onClick={() => {
-                surCible(héros.id);
-                document.getElementById('l-appareil')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-              className={`vp-heros h-[420px] text-left transition sm:h-[460px] ${
-                héros.id === cible ? 'ring-2 ring-[color:var(--vp-ink)] ring-offset-2' : ''
-              }`}
-            >
-              <img src={héros.image} alt={héros.titre} data-héros-image={héros.id} />
-              <span aria-hidden="true" className="vp-heros-voile" />
-              <span className="absolute inset-x-0 bottom-0 block px-4 pb-4">
-                <span className="block font-mono text-[9.5px] uppercase tracking-[0.16em] text-white/65">
-                  {héros.mot}
+          <div data-héros="vrai" className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+            {LES_HÉROS.map((héros, rang) => (
+              <button
+                key={héros.id}
+                type="button"
+                data-héros-de-la-landing={héros.id}
+                data-actif={héros.id === cible ? 'true' : 'false'}
+                aria-pressed={héros.id === cible}
+                onClick={() => {
+                  surCible(héros.id);
+                  document.getElementById('l-appareil')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                style={{ ['--r' as string]: dodo[rang % dodo.length] }}
+                className={`vp-polaroïd vp-papier-étalé relative !w-[var(--w)] text-left transition hover:!rotate-0 ${
+                  héros.id === cible ? 'ring-2 ring-[color:var(--vp-ink)] ring-offset-2 ring-offset-white' : ''
+                }`}
+              >
+                <img
+                  src={héros.image}
+                  alt={héros.titre}
+                  data-héros-image={héros.id}
+                  className="aspect-[4/5] w-full object-cover"
+                />
+                <span className="mt-3 block px-[0.2em] pb-[0.9em]">
+                  <span className="block font-mono text-[9.5px] uppercase tracking-[0.16em] text-[color:var(--vp-muted)]">
+                    {héros.mot}
+                  </span>
+                  <span
+                    data-héros-titre={héros.id}
+                    className="mt-1 block text-[13.5px] leading-tight tracking-[-0.01em] text-[color:var(--vp-ink)]"
+                  >
+                    {héros.titre}
+                  </span>
+                  <span className="mt-1.5 block text-[11.5px] leading-snug text-[color:var(--vp-muted)]">{héros.sous}</span>
+                  <span data-héros-chemin={héros.id} className="mt-2.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                    {héros.chemin.map((étape) => (
+                      <span
+                        key={étape}
+                        className="font-mono text-[9px] uppercase tracking-[0.1em] text-[color:var(--vp-muted-2)]"
+                      >
+                        · {étape}
+                      </span>
+                    ))}
+                  </span>
                 </span>
-                <span data-héros-titre={héros.id} className="vp-hero-titre mt-1.5 block text-white">
-                  {héros.titre}
-                </span>
-                <span className="mt-2 block text-[12.5px] leading-snug text-white/70">{héros.sous}</span>
-                <span data-héros-chemin={héros.id} className="mt-3 flex flex-col gap-0.5">
-                  {héros.chemin.map((étape) => (
-                    <span key={étape} className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-white/55">
-                      · {étape}
-                    </span>
-                  ))}
-                </span>
-              </span>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </section>

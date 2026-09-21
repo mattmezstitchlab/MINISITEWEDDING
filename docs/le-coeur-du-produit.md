@@ -473,3 +473,17 @@ objet à imprimer**.
 | le papier, les dents, le fluo, le tampon, le trait du temps, le pupitre | `src/index.css` (`.vp-papier`, `.vp-dents`, `.vp-fluo`, `.vp-tampon`, `.vp-temps`, `.vp-pupitre`) |
 | l'état des marques, le partage, le lien du site | `src/pages/LaCaisse.tsx` |
 | les preuves | `tests/ui.test.ts` — « l'appli est le ticket » et « la machine, gardée » |
+
+## 8. L'archive — le papier étalé (21 septembre 2026)
+
+Le ticket reste le premier écran ; **juste après, tout le papier du mariage est
+étalé sur du noir**, comme une archive : le reçu, le polaroïd du jour, la carte
+postale du voyage, le timbre, le sticker fluo, la note des sept objets, la bande
+de la nuit en musique, et le code — sous un titre sérif immense, posé
+**par-dessus** le désordre. Les quatre catégories deviennent quatre polaroïds
+légendés, et une **pastille unique** est collée en bas à droite : elle partage le
+mini-site.
+
+Chaque papier **ouvre ce qu'il annonce** : le reçu mène au ticket, le polaroïd au
+visuel du jour, la carte postale au voyage. Le détail de la référence (et de ce
+qui n'a **pas** été copié) est dans **`docs/l-archive-du-mariage.md`**.
