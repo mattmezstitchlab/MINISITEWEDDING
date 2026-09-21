@@ -26,6 +26,9 @@
   --vp-muted: #6b6e7d;
   --vp-muted-2: #8b8e9c;
 
+  /* Le surligneur : le fluo du marqueur, jamais du pastel. */
+  --vp-fluo: #e6ff4d;
+
   /* Accent des contrôles : encre noire. Vert/rouge = sémantique uniquement. */
   --vp-accent: #16171a;
   --vp-green: #30d158;
@@ -665,4 +668,365 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   .vp-defile-page {
     animation: none;
   }
+}
+
+
+/* ————————————————— LE TICKET QUI SORT, ET LE TICKET QUI PART —————————————————
+ * Deux mouvements, deux `transform`, aucune mesure : le papier sort du haut de
+ * l'écran en glissant, et il repart vers les portefeuilles en rétrécissant.
+ */
+@keyframes presse-de-la-fente {
+  from { transform: translate3d(0, -130%, 0); opacity: 0; }
+  65%  { transform: translate3d(0, 3%, 0); opacity: 1; }
+  to   { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+.presse-de-la-fente {
+  display: block;
+  animation: presse-de-la-fente 700ms cubic-bezier(.2,.9,.25,1) both;
+}
+
+@keyframes vol-du-ticket {
+  from { transform: translate3d(-50%, 0, 0) scale(1); opacity: 0.9; }
+  to   { transform: translate3d(calc(-50% + (var(--vol) - 2) * 9vw), 34svh, 0) scale(0.2); opacity: 0; }
+}
+
+.vol-du-ticket {
+  animation: vol-du-ticket 900ms cubic-bezier(.4,.05,.6,.95) both;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Les bandes — la composition de la page d'entrée
+ *
+ *  Une bande = un nom à gauche, un contenu au centre, un filet entre les
+ *  deux. C'est le rythme de la référence étudiée le 20 septembre 2026,
+ *  écrit avec le matériel d'AIME : hairline, encre, chiffres tabulaires,
+ *  aucune couleur de marque, aucun fond coloré qui ne vienne du magazine.
+ * ------------------------------------------------------------------ */
+
+.vp-bande {
+  border-top: 1px solid var(--vp-line);
+  padding-block: clamp(3.5rem, 9vw, 7rem);
+}
+
+.vp-bande-fond {
+  background: var(--vp-env-light-c);
+}
+
+/* Le nom de la bande : la marque, un point, le sujet — à gauche, toujours. */
+.vp-bande-nom {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vp-muted);
+}
+
+.vp-bande-nom b {
+  color: var(--vp-ink);
+  font-weight: 700;
+}
+
+/* Le titre d'une bande : grand, centré, tout de suite suivi de sa ligne. */
+.vp-bande-titre {
+  font-family: var(--font-spatial);
+  font-weight: 640;
+  letter-spacing: -0.032em;
+  line-height: 1.05;
+  font-size: clamp(1.9rem, 5vw, 3.4rem);
+}
+
+.vp-bande-sous {
+  font-size: clamp(0.95rem, 1.6vw, 1.06rem);
+  line-height: 1.6;
+  color: var(--vp-muted);
+  letter-spacing: -0.008em;
+}
+
+/* Les pastilles : une pleine (l'encre), une au trait. Jamais de couleur. */
+.vp-pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--vp-r-pill);
+  border: 1px solid var(--vp-ink);
+  background: var(--vp-ink);
+  color: #fff;
+  padding: 0.62rem 1.1rem;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: transform 0.35s var(--vp-ease), opacity 0.35s var(--vp-ease);
+}
+
+.vp-pastille:hover { opacity: 0.88; }
+.vp-pastille:active { transform: scale(0.97); }
+
+.vp-pastille-trait {
+  background: transparent;
+  color: var(--vp-ink);
+  border-color: var(--vp-line);
+}
+
+.vp-pastille-trait:hover { border-color: rgba(15, 17, 28, 0.28); opacity: 1; }
+
+/* Trois colonnes égales, séparées par des filets — pas par des cartes. */
+.vp-colonnes {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--vp-line);
+}
+
+.vp-colonne {
+  padding: 1.6rem 0;
+  border-bottom: 1px solid var(--vp-line);
+}
+
+@media (min-width: 760px) {
+  .vp-colonnes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .vp-colonne {
+    padding: 1.8rem 1.6rem 1.8rem 0;
+    border-bottom: 0;
+    border-right: 1px solid var(--vp-line);
+  }
+  .vp-colonne:last-child { border-right: 0; padding-right: 0; }
+}
+
+/* Le numéro d'un geste : écrit grand, en chiffres tabulaires. */
+.vp-geste-numero {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--vp-ink);
+}
+
+/* La bande d'image : pleine largeur, calme, avec sa légende dessous. */
+.vp-bande-image {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--vp-env-light-c);
+}
+
+.vp-bande-image img {
+  width: 100%;
+  height: clamp(240px, 46vw, 520px);
+  object-fit: cover;
+  display: block;
+}
+
+/* Le filet de pied : la marque répétée, et les portes. */
+.vp-pied {
+  border-top: 1px solid var(--vp-line);
+  padding-block: 2.4rem 3rem;
+}
+
+/* ------------------------------------------------------------------ *
+ *  L'appareil — le papier sort par le dessous
+ *
+ *  Correction demandée le 20 septembre 2026 : « quand le ticket sort ça
+ *  fait une animation bizarre, peut-être le sortir par le dessous de la
+ *  machine ». Le papier naît donc **derrière la fente** (il est décalé de
+ *  la hauteur de la fente) et descend : on ne le voit jamais apparaître
+ *  par le haut. Un seul `transform`, aucune mesure.
+ * ------------------------------------------------------------------ */
+
+@keyframes presse-par-le-bas {
+  from { transform: translate3d(0, -128%, 0); opacity: 0.2; }
+  70%  { transform: translate3d(0, 2%, 0); opacity: 1; }
+  to   { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+.presse-par-le-bas {
+  display: block;
+  animation: presse-par-le-bas 760ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+/* Le sticker carré : un carré coloré, un mot dedans. Rien d'autre. */
+.vp-sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.05;
+  padding: 3px;
+  box-shadow: 0 6px 16px rgba(12, 14, 24, 0.12);
+}
+
+/* La barre de budget, dans l'écran de l'appareil. */
+.vp-jauge {
+  position: relative;
+  height: 5px;
+  border-radius: var(--vp-r-pill);
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.vp-jauge > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  background: #fff;
+  border-radius: var(--vp-r-pill);
+}
+
+/* Les héros de catégorie : une image, un titre dessus, et rien d'autre. */
+.vp-heros {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--vp-env-dark-a);
+  color: #fff;
+}
+
+.vp-heros img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s var(--vp-ease);
+}
+
+.vp-heros:hover img { transform: scale(1.03); }
+
+.vp-heros-voile {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(6, 7, 12, 0.86) 4%, rgba(6, 7, 12, 0.28) 55%, rgba(6, 7, 12, 0.1) 100%);
+}
+
+.vp-hero-titre {
+  font-family: var(--font-spatial);
+  font-weight: 640;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  font-size: clamp(1.35rem, 2.6vw, 2.1rem);
+}
+
+/* La barre flottante : la marque, les portes, la pastille. */
+.vp-barre-flottante {
+  border: 1px solid var(--vp-line);
+  border-radius: var(--vp-r-pill);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 30px rgba(12, 14, 24, 0.06);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════ *
+ *  LE TICKET PLEIN ÉCRAN — l'appli EST le ticket
+ *
+ *  Un seul objet, qui prend l'écran : le papier. On scrolle le ticket au
+ *  lieu de visiter un site, on coche les lignes à même le papier, on
+ *  surligne au fluo, on tamponne « PAYÉ ». Rien d'autre.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* Le comptoir : ce qu'il y a derrière le papier, et rien d'autre. */
+.vp-comptoir {
+  background:
+    radial-gradient(120% 62% at 50% 0, rgba(15, 17, 28, 0.075), transparent 60%),
+    #f1f1ee;
+}
+
+/* Le papier : ivoire, chasse fixe, et la taille de tout suit l'écran. */
+.vp-papier {
+  background: #fffef7;
+  color: var(--vp-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Roboto Mono", monospace;
+  font-size: clamp(10.5px, 0.42vw + 9.4px, 13px);
+  line-height: 1.52;
+  box-shadow: 0 1px 0 rgba(15, 17, 28, 0.1), 0 30px 70px rgba(15, 17, 28, 0.22);
+  scrollbar-width: none;
+}
+.vp-papier::-webkit-scrollbar { display: none; }
+
+/* Les dents : le papier est déchiré, pas coupé au couteau. */
+.vp-dents { height: 9px; background-repeat: repeat-x; background-size: 18px 9px; }
+.vp-dents-haut {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='9'%3E%3Cpath d='M0 9 L9 0 L18 9 Z' fill='%23fffef7'/%3E%3C/svg%3E");
+}
+.vp-dents-bas {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='9'%3E%3Cpath d='M0 0 L9 9 L18 0 Z' fill='%23fffef7'/%3E%3C/svg%3E");
+}
+
+/* Le fluo : ce qui est pris est surligné au marqueur, pas colorié. */
+.vp-fluo {
+  background-image: linear-gradient(
+    180deg,
+    transparent 11%,
+    color-mix(in srgb, var(--vp-fluo) 78%, transparent) 11%,
+    color-mix(in srgb, var(--vp-fluo) 78%, transparent) 89%,
+    transparent 89%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 76%;
+  background-position: 0 64%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Le tampon : il tombe de travers, et il reste sur le papier. */
+@keyframes tamponner {
+  0% { transform: scale(2.4) rotate(-22deg); opacity: 0; }
+  55% { transform: scale(0.94) rotate(-7deg); opacity: 0.95; }
+  100% { transform: scale(1) rotate(-9deg); opacity: 0.88; }
+}
+.vp-tampon {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vp-ink);
+  border: 2px solid currentColor;
+  box-shadow: inset 0 0 0 2px #fffef7, inset 0 0 0 3px currentColor;
+  animation: tamponner 300ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+/* Le temps : une ligne descend sur le papier, et chaque heure s'y accroche. */
+.vp-temps { position: relative; }
+.vp-temps::before {
+  content: '';
+  position: absolute;
+  top: 0.35em;
+  bottom: 0.35em;
+  left: 3.35em;
+  width: 1px;
+  background: rgba(15, 17, 28, 0.16);
+}
+
+/* Le code-barres du pied : il est fait du code du mariage. */
+.vp-codebarres { display: flex; align-items: flex-end; gap: 1px; height: 2.6em; }
+.vp-codebarres i { display: block; background: currentColor; }
+
+/* Le pupitre : les outils du ticket, toujours à portée de pouce. */
+.vp-pupitre {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  background: color-mix(in srgb, #fffef7 90%, transparent);
+  backdrop-filter: saturate(160%) blur(12px);
+  -webkit-backdrop-filter: saturate(160%) blur(12px);
+  border-top: 1px solid rgba(15, 17, 28, 0.12);
+}
+
+/* À l'impression : le papier, et rien d'autre. */
+@media print {
+  .vp-comptoir { background: #fff; }
+  .vp-papier { box-shadow: none; }
+  .vp-non-imprimable { display: none !important; }
 }

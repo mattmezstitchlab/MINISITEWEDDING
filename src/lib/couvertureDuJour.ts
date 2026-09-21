@@ -164,7 +164,11 @@ export function couvertureDuJour(date: Date): CouvertureJour {
     fete,
     nom: nom || titre,
     saison: carte.saison,
-    figure: carte.nom,
+    // **La légende de la couverture** : la saison, et le rang de la semaine.
+    // On ne dit plus de quelle « carte » il s'agit — la métaphore a quitté
+    // l'interface. Le champ garde son nom pour ne rien casser, il ne contient
+    // plus qu'une indication de temps.
+    figure: carte.joker ? 'Hors calendrier' : `${carte.saison.nom} · semaine ${carte.semaine}`,
     semaine,
     /* Le fond : la couleur de la saison — assombrie quand le temps est clos, et
        noire seulement les trois jours rares (joker, dimanche, porte). */
