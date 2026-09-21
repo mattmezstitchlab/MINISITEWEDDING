@@ -43,3 +43,17 @@ export function estAdministrative(id: string): boolean {
 export const COMBIEN_DE_LIGNES_DU_MARIAGE = CATÉGORIES_DU_TICKET.filter(
   (c) => c.id !== 'documents',
 ).reduce((somme, c) => somme + c.lignes.length, 0);
+
+/**
+ * **Les lignes du site** : elles ne s'impriment plus non plus.
+ *
+ * « Et même le mini-site, on reste sur le ticket. » La catégorie `site` (20
+ * lignes : la photo, la date, le lieu, l'itinéraire, le RSVP, l'hébergement, la
+ * galerie, le portfolio du prestataire…) était le **contenu du mini-site**. Il n'y
+ * a plus de mini-site : ces lignes restent au catalogue, mais le papier du
+ * mariage ne les imprime pas — il n'y a rien à aller voir.
+ */
+export const LIGNES_DU_SITE: string[] = CATÉGORIES_DU_TICKET.find((c) => c.id === 'site')!.lignes.map((l) => l.id);
+
+/** **Ce que le ticket imprime** : tout le magasin, moins l'administratif, moins le site. */
+export const COMBIEN_DE_LIGNES_IMPRIMÉES = COMBIEN_DE_LIGNES_DU_MARIAGE - LIGNES_DU_SITE.length;

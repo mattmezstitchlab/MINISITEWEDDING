@@ -104,7 +104,18 @@ discipline : le papier ne se raconte pas, il **montre** — le code est écrit
 dessus, la date est écrite dessus, et la seule phrase de la bande dit ce qu'il y
 a sur la table. Les écrans (le ticket) ne récitent toujours rien.
 
-## 6. Aller voir
+## 6. L'archive n'est plus montée (21 septembre 2026)
+
+> « Garde que le ticket du haut, c'est suffisant. […] Supprime le visuel pour
+> garder l'esprit ticket. »
+
+Le collage, ses trois gestes, ses huit papiers et son ouverture en grand **ne
+sont plus sur la page** : l'appli n'a qu'un ticket. Le composant, la lib et leurs
+vérifications sont intacts (`LaCouvertureArchive.tsx`, `archiveDuMariage.ts`) —
+l'archive se remonte d'une ligne, le jour où on la veut. Voir
+`docs/l-appli-n-est-plus-qu-un-ticket.md`.
+
+## 7. Aller voir
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |

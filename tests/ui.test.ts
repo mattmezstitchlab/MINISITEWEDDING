@@ -151,10 +151,10 @@ import {
   ligneImprimée,
   stickerDe,
 } from '../src/lib/codeDuMariage';
-import { LA_BARRE, LE_PIED, LES_HÉROS, LE_SPÉCIALISTE } from '../src/lib/bandesDeLAime';
+import { LA_BARRE, LE_PIED, LES_HÉROS } from '../src/lib/bandesDeLAime';
 /* La machine du ticket : ses gestes portent des noms uniques dans ce fichier —
    `valider` est déjà pris par le journal, `passer` traîne partout. */
-import { PACKAGES, TICKET_COUPLE } from '../src/lib/superMariage';
+import { TICKET_COUPLE } from '../src/lib/superMariage';
 import { PORTEFEUILLES } from '../src/lib/portefeuille';
 import {
   basculerLeSite as basculerLeSiteDeLaMachine,
@@ -186,7 +186,20 @@ import {
 import LeTicketPleinEcran from '../src/components/LeTicketPleinEcran';
 import { GLOBAL_WEDDING_PLAYLIST_FULL } from '../src/lib/weddingDjPlaylist';
 import { MOMENTS_DE_LA_NUIT, papiersDeLaCouverture } from '../src/lib/archiveDuMariage';
-import { COMBIEN_DE_LIGNES_DU_MARIAGE, LIGNES_ADMINISTRATIVES, estAdministrative } from '../src/lib/triDuTicket';
+import {
+  COMBIEN_DE_LIGNES_DU_MARIAGE,
+  COMBIEN_DE_LIGNES_IMPRIMÉES,
+  LIGNES_ADMINISTRATIVES,
+  LIGNES_DU_SITE,
+  estAdministrative,
+} from '../src/lib/triDuTicket';
+import {
+  LES_MARKERS,
+  MARKER_PAR_DÉFAUT,
+  adresseAvecMarker,
+  estUnMarker,
+  markerParId,
+} from '../src/lib/lesMarkers';
 import LeTelephoneAuTicket from '../src/components/LeTelephoneAuTicket';
 import {
   QUI_PEUT_VOIR,
@@ -2123,11 +2136,6 @@ check(
   true,
 );
 check(
-  'sous la machine, le site est revenu en entier',
-  ['visuel', 'coche', 'ticket', 'portefeuilles'].every((t) => zoneSite.includes(`data-section="${t}"`)),
-  true,
-);
-check(
   'dans l’ordre : le visuel du jour, puis on coche, puis le ticket, puis les portefeuilles',
   ['visuel', 'coche', 'ticket', 'portefeuilles'].map((t) => zoneSite.indexOf(`data-section="${t}"`)),
   [...['visuel', 'coche', 'ticket', 'portefeuilles'].map((t) => zoneSite.indexOf(`data-section="${t}"`))].sort((a, b) => a - b),
@@ -2153,18 +2161,6 @@ check(
   true,
 );
 check(
-  // « Et le header, supprime-le. » Le ticket est la première chose de la page :
-  // aucun en-tête ne le surplombe, rien à passer pour arriver au papier.
-  'et rien ne s’affiche avant lui : le ticket est le premier objet de la page',
-  [
-    ticketVide.indexOf('id="le-ticket-plein"') > 0 &&
-      ticketVide.indexOf('id="le-ticket-plein"') < ticketVide.indexOf('data-bande="archive"'),
-    ticketVide.includes('data-bande="barre"'),
-    ticketVide.includes('data-action="ouvrir-le-ticket"'),
-  ],
-  [true, false, false],
-);
-check(
   'le haut du ticket, c’est l’impression SUPER MARIAGE',
   (() => {
     const papier = ticketVide.slice(ticketVide.indexOf('data-ticket-papier'));
@@ -2187,12 +2183,6 @@ check(
     new RegExp(`${CODE_DE_DÉMONSTRATION} · CAISSE 3 · \\d\\d:00`).test(zoneTicket),
   true,
 );
-check(
-  'et le visuel du jour est imprimé dessus, comme un coupon',
-  zoneTicket.includes('data-ticket-coupon="jour"') && /<img[^>]*src="\/images\//.test(zoneTicket),
-  true,
-);
-
 /* ——— LES QUATRE CHIFFRES, ET LE FLUO ——— */
 
 check(
@@ -2281,19 +2271,46 @@ check(
   true,
 );
 check(
-  // Le pied du ticket ne cache rien : il **dit** ce qui est parti, combien, et
-  // où — et il emmène au ticket des papiers.
-  'le pied du grand ticket mène au ticket des papiers',
+  // Le papier imprime ses lignes : 99 au magasin, moins 31 administratives,
+  // moins 20 du mini-site — il en reste 48, et c'est le mariage.
+  'et le papier imprime ses lignes, une fois chacune, dans l’ordre',
   (() => {
-    const pied = zoneTicket.slice(zoneTicket.indexOf('data-ticket-administratif='));
+    const ids = [...zoneTicket.matchAll(/data-ticket-ligne="([^"]+)"/g)].map((m) => m[1]!);
     return [
-      /data-ticket-administratif="31"/.test(zoneTicket),
-      /data-action="administratif"[^>]*>/.test(zoneTicket),
-      zoneTicket.includes('L’ADMINISTRATIF'),
-      pied.length > 0,
+      ids.length,
+      new Set(ids).size,
+      ids.length === COMBIEN_DE_LIGNES_IMPRIMÉES,
+      ids.every((id) => !estAdministrative(id) && !LIGNES_DU_SITE.includes(id)),
     ];
   })(),
-  [true, true, true, true],
+  [48, 48, true, true],
+);
+check(
+  'chaque section dit ce qu’on y a pris, sur ce qu’on peut y prendre',
+  (() => {
+    const titres = [...ticketVide.matchAll(/data-ticket-section="([a-z-]+)"/g)].map((m) => m[1]);
+    // Le site n’est plus une section : il n’y a plus rien à visiter.
+    return titres.join(',') === 'temps,musique,table,gens,petits-prix';
+  })(),
+  true,
+);
+check(
+  'et une ligne, c’est un bouton : on coche à même le papier',
+  (zoneTicket.match(/<button[^>]*data-ticket-ligne=/g) ?? []).length,
+  COMBIEN_DE_LIGNES_IMPRIMÉES,
+);
+check(
+  'ce qui est coché passe au marker — et le compte suit',
+  (() => {
+    const vides = [...ticketVide.matchAll(/data-ticket-ligne="[^"]+" data-cochee="(true|false)"[^>]*class="([^"]*)"/g)];
+    const fluoVides = vides.filter((m) => m[2]!.includes('vp-fluo')).length;
+    const prises = [...ticketPlein.matchAll(/data-ticket-ligne="[^"]+" data-cochee="(true|false)"/g)];
+    return [
+      vides.length === COMBIEN_DE_LIGNES_IMPRIMÉES && fluoVides === 0,
+      prises.filter((m) => m[1] === 'true').length === cochesDessai.filter((id) => !estAdministrative(id) && !LIGNES_DU_SITE.includes(id)).length,
+    ];
+  })(),
+  [true, true],
 );
 check(
   'et le ticket des papiers, c’est les trente et une pièces, à part',
@@ -2336,55 +2353,13 @@ check(
 /* ——— TOUT LE MAGASIN EST IMPRIMÉ : UN LONG TICKET, LIGNE À LIGNE ——— */
 
 check(
-  'les lignes du mariage sont imprimées sur le ticket, chacune une fois — l’administratif est ailleurs',
-  (() => {
-    const ids = [...zoneTicket.matchAll(/data-ticket-ligne="([^"]+)"/g)].map((m) => m[1]!);
-    return [ids.length, new Set(ids).size, ids.length === COMBIEN_DE_LIGNES_DU_MARIAGE];
-  })(),
-  [COMBIEN_DE_LIGNES_DU_MARIAGE, COMBIEN_DE_LIGNES_DU_MARIAGE, true],
-);
-check(
   'chaque ligne dit son prix, et si elle est prise',
   /data-ticket-ligne="[^"]+" data-cochee="false" data-prix="\d+"/.test(ticketVide),
   true,
 );
 check(
-  'et une ligne, c’est un bouton : on coche à même le papier',
-  (zoneTicket.match(/<button[^>]*data-ticket-ligne=/g) ?? []).length,
-  COMBIEN_DE_LIGNES_DU_MARIAGE,
-);
-check(
-  'ce qui est coché passe au fluo — et le compte suit',
-  (() => {
-    const vides = [...ticketVide.matchAll(/data-ticket-ligne="[^"]+" data-cochee="(true|false)"[^>]*class="([^"]*)"/g)];
-    const fluoVides = vides.filter((m) => m[2]!.includes('vp-fluo')).length;
-    const prises = [...ticketPlein.matchAll(/data-ticket-ligne="[^"]+" data-cochee="(true|false)"/g)];
-    return [
-      vides.length === COMBIEN_DE_LIGNES_DU_MARIAGE && fluoVides === 0,
-      prises.filter((m) => m[1] === 'true').length === cochesDessai.filter((id) => !estAdministrative(id)).length,
-    ];
-  })(),
-  [true, true],
-);
-check(
   'et les lignes prises portent le fluo du surligneur',
   (ticketPlein.match(/vp-fluo/g) ?? []).length >= cochesDessai.length,
-  true,
-);
-check(
-  'chaque section dit ce qu’on y a pris, sur ce qu’on peut y prendre',
-  (() => {
-    const titres = [...ticketPlein.matchAll(/data-ticket-section="([a-z-]+)"/g)].map((m) => m[1]);
-    // « L’administratif ou juridique n’a pas sa place ici » : la section
-    // `documents` n’est plus imprimée — les papiers ont leur ticket.
-    return titres.join(',') === 'temps,musique,table,gens,petits-prix,site';
-  })(),
-  true,
-);
-check(
-  'le site des invités a son adresse imprimée, et son lien',
-  zoneTicket.includes(`data-ticket-adresse="?code=${CODE_DE_DÉMONSTRATION}&site=1"`) &&
-    zoneTicket.includes('data-action="voir-le-site"'),
   true,
 );
 check(
@@ -2420,42 +2395,19 @@ check(
   [true, true, true],
 );
 
-/* ——— LE PUPITRE : LES PICTOs QUI TAMPONNENT LE PAPIER ——— */
+/* ——— LE PUPITRE A ÉTÉ RETIRÉ : PLUS DE RANGÉE DE PICTOs ———
+   « Supprime les boutons, y'a pas trop d'effet. » Il n'y a plus qu'un geste :
+   le total, qui pose la marque PAYÉ. C'est vérifié plus bas. */
 
-const pupitre = zoneTicket.slice(zoneTicket.indexOf('data-ticket-pupitre'));
-
 check(
-  'les sept pictos sont sous le pouce, dans le pupitre',
-  (zoneTicket.match(/data-tampon="/g) ?? []).length,
-  OBJETS_DE_LA_FABRIQUE.length,
-);
-check(
-  'et chacun sait ce qu’il tamponne',
-  (() => {
-    const marques = Object.fromEntries(
-      [...pupitre.matchAll(/data-tampon="([a-z-]+)" data-tampon-marque="([^"]*)"/g)].map((m) => [m[1]!, m[2]!]),
-    );
-    return [
-      Object.keys(marques).length,
-      marques.tampon,
-      marques['billet-avion'],
-    ];
-  })(),
-  [7, 'PAYÉ', 'DÉPART'],
-);
-check(
-  'le tampon, lui, écrit PAYÉ',
-  new RegExp('data-tampon="tampon"[^>]*data-tampon-marque="PAYÉ"').test(pupitre),
+  'il n’y a plus de pupitre : aucun picto à tamponner sur le papier',
+  !zoneTicket.includes('data-ticket-pupitre') && !zoneTicket.includes('data-tampon="'),
   true,
 );
+
 check(
   'rien n’est tamponné au départ — le papier est vierge',
   ticketVide.includes('data-ticket-paye="false"') && !ticketVide.includes('data-tampon-pose='),
-  true,
-);
-check(
-  'le pupitre porte aussi le partage, et la porte du site',
-  pupitre.includes('data-action="partager-le-ticket"') && pupitre.includes('data-action="voir-le-site"'),
   true,
 );
 check(
@@ -2471,8 +2423,13 @@ check(
   true,
 );
 
-/* Le papier **tamponné** : on rend le ticket avec les marques posées. */
-const rendreLeTicketTamponné = (tampons: string[]) => {
+/* LE PAPIER PAYÉ : on clique le total, et la marque se pose dessus.
+
+   « Supprime les boutons, y'a pas trop d'effet » : le pupitre de pictos est
+   parti. Ce qui reste, c'est **un papier qu'on remplit** — on coche une ligne
+   (elle passe au marker), on clique le total (le papier dit PAYÉ). */
+
+const rendreLeTicketPayé = (payé: boolean, marker = 'jaune') => {
   const papiers = lignesCochées(cochesDessai);
   const totauxIci = totauxDuTicket(papiers);
   const comptes = compteDesPortefeuilles(cochesDessai);
@@ -2482,7 +2439,6 @@ const rendreLeTicketTamponné = (tampons: string[]) => {
       numero: 'SM-23-0007',
       dateLabel: 'le 12 juin 2027',
       heure: 23,
-      visuel: '/images/semaine-38/cover.jpg',
       couple: { noms: TICKET_COUPLE.noms, lieu: TICKET_COUPLE.venue, convives: TICKET_COUPLE.convives },
       coches: cochesDessai,
       surCocher: () => {},
@@ -2490,50 +2446,157 @@ const rendreLeTicketTamponné = (tampons: string[]) => {
       portefeuilles: PORTEFEUILLES.map((p) => ({ id: p.id, mot: p.mot, marque: p.marque, ...comptes[p.id] })),
       rêve: rêveDécrit(''),
       budget: budgetDuRêve(cochesDessai),
-      tampons,
-      surTamponner: () => {},
-      mot: tampons.length > 0 ? 'le tampon — « PAYÉ »' : null,
-      adresseDuSite: `?code=${CODE_DE_DÉMONSTRATION}&site=1`,
-      surPartager: () => {},
-      surSite: () => {},
+      payé,
+      surPayer: () => {},
+      marker: markerParId(marker),
+      surMarker: () => {},
     }),
   ).replace(/&amp;/g, '&');
 };
 
-const ticketTamponné = rendreLeTicketTamponné(['tampon']);
-const ticketEncoreTamponné = rendreLeTicketTamponné(['tampon', 'carte-postale']);
+const ticketPayé = rendreLeTicketPayé(true);
+const ticketÀPayer = rendreLeTicketPayé(false);
 
 check(
-  'un clic sur le tampon : « PAYÉ » apparaît sur le papier, de travers',
-  ticketTamponné.includes('data-tampon-pose="tampon"') &&
-    /data-tampon-mot="PAYÉ"[^>]*class="vp-tampon/.test(ticketTamponné),
+  'on clique le total : « PAYÉ » apparaît sur le papier, de travers',
+  ticketPayé.includes('data-tampon-pose="tampon"') &&
+    /data-tampon-mot="PAYÉ"[^>]*class="vp-tampon/.test(ticketPayé) &&
+    !ticketÀPayer.includes('data-tampon-pose='),
   true,
 );
 check(
   'et le ticket passe à payé, en haut comme en bas',
-  ticketTamponné.includes('data-ticket-paye="true"') && ticketTamponné.includes('✓ PAYÉ · MERCI'),
+  ticketPayé.includes('data-ticket-paye="true"') &&
+    ticketPayé.includes('✓ PAYÉ · MERCI') &&
+    ticketÀPayer.includes('data-ticket-paye="false"'),
   true,
 );
 check(
-  'le picto tamponné se marque, et deux marques peuvent tenir ensemble',
-  [
-    new RegExp('data-tampon="tampon" data-tampon-marque="PAYÉ" data-tampon-posee="true"').test(ticketTamponné),
-    (ticketEncoreTamponné.match(/data-tampon-pose=/g) ?? []).length === 2,
-  ],
-  [true, true],
-);
-check(
-  'et le mot du geste est écrit sous le pouce',
-  ticketTamponné.includes('data-mot-du-geste='),
+  'le geste est un état : le bouton du total dit où l’on en est',
+  ticketPayé.includes('data-action="payer-le-ticket"') &&
+    ticketPayé.includes('data-ticket-paye-bouton="true"') &&
+    ticketÀPayer.includes('data-ticket-paye-bouton="false"'),
   true,
 );
 check(
   'le ticket s’imprime : ce qui n’est pas le papier disparaît',
-  readFileSync('src/index.css', 'utf8').includes('@media print') &&
-    ticketVide.includes('vp-non-imprimable'),
+  readFileSync('src/index.css', 'utf8').includes('@media print') && ticketVide.includes('vp-non-imprimable'),
   true,
 );
-check('et l’on descend par une flèche, pas par un paragraphe', zoneTicket.includes('data-action="descendre"'), true);
+
+/* ——— LE MARKER : SA COULEUR DE FLUO, ET C'EST TOUT LE RÉGLAGE ———
+
+   « Et pourquoi pas choisir sa couleur de marker ? » Six couleurs, sous le
+   papier ; celle qu'on choisit devient l'encre du surlignage — et elle part
+   dans le lien (`?marker=vert`). */
+
+check(
+  'six markers proposés sous le papier, et celui qui est actif',
+  (() => {
+    const marques = [...ticketVide.matchAll(/data-marker="([a-z]+)" data-marker-actif="(true|false)"/g)];
+    return [marques.length, marques.filter((m) => m[2] === 'true').map((m) => m[1])];
+  })(),
+  [LES_MARKERS.length, ['jaune']],
+);
+check(
+  'la couleur choisie devient l’encre du fluo, sur toute la page',
+  (() => {
+    const html = rendreLeTicket('/?marker=vert');
+    return [html.includes('data-marker="vert"'), html.includes(`--vp-fluo:${markerParId('vert').couleur}`)];
+  })(),
+  [true, true],
+);
+check(
+  'un marker inconnu ne casse rien : on retombe sur le jaune de la caisse',
+  (() => {
+    const html = rendreLeTicket('/?marker=zzz');
+    return [html.includes('data-marker="jaune"'), html.includes(markerParId('jaune').couleur)];
+  })(),
+  [true, true],
+);
+check(
+  'le marker s’écrit dans le lien — et le lien se relit',
+  (() => {
+    const html = rendreLeTicket('/?marker=rose&coches=site-rsvp');
+    return [html.includes('data-marker="rose"'), html.includes('data-cochees="1"'), adresseAvecMarker('?code=X&coches=a', 'rose')];
+  })(),
+  [true, true, '?code=X&coches=a&marker=rose'],
+);
+check(
+  'et le marker par défaut ne s’écrit pas : le lien reste court',
+  [adresseAvecMarker('?code=X', MARKER_PAR_DÉFAUT), estUnMarker('bleu'), estUnMarker('chartreuse')],
+  ['?code=X', true, false],
+);
+check(
+  'le marker est nommé, et les six teintes sont distinctes',
+  (() => {
+    const couleurs = new Set(LES_MARKERS.map((m) => m.couleur));
+    return [couleurs.size, LES_MARKERS.every((m) => m.mot.length >= 3 && m.sous.length >= 3)];
+  })(),
+  [6, true],
+);
+
+/* ——— L'APPLI A ÉTÉ NETTOYÉE : UN SEUL OBJET À L'ÉCRAN ———
+
+   « Garde que le ticket du haut, c'est suffisant », « supprime le visuel pour
+   garder l'esprit ticket », « supprime les boutons », « et même le mini-site, on
+   reste sur le ticket ». Les autres morceaux **restent dans le dépôt** — on
+   démonte, on ne détruit pas — et leurs fichiers sont vérifiés ici, un par un. */
+
+check(
+  'la page ne monte que le ticket : un seul objet, et pas une bande de plus',
+  [
+    ticketVide.includes('data-ticket-plein="vrai"'),
+    !ticketVide.includes('data-bande='),
+    !ticketVide.includes('data-machine='),
+    !ticketVide.includes('data-atelier='),
+    !ticketVide.includes('data-archive-feuille'),
+  ],
+  [true, true, true, true, true],
+);
+check(
+  'ce qui a été retiré n’est nulle part : ni grille, ni polaroïds, ni pastille, ni pupitre',
+  [
+    !ticketVide.includes('data-grille'),
+    !ticketVide.includes('data-héros-de-la-landing'),
+    !ticketVide.includes('data-action="partager-flottant"'),
+    !ticketVide.includes('data-ticket-pupitre'),
+    !ticketVide.includes('data-tampon="'),
+  ],
+  [true, true, true, true, true],
+);
+check(
+  'le mini-site n’est plus servi : `?site=1` rend le ticket, et rien d’autre',
+  (() => {
+    const html = rendreLeTicket('/?site=1');
+    return [html.includes('data-ticket-plein="vrai"'), !html.includes('data-site='), !html.includes('data-action="voir-le-site"')];
+  })(),
+  [true, true, true],
+);
+check(
+  'rien n’est détruit : les morceaux retirés sont toujours dans le dépôt',
+  [
+    'src/components/LaCouvertureArchive.tsx',
+    'src/components/LAtelierDuTicket.tsx',
+    'src/components/LeTelephoneAuTicket.tsx',
+    'src/components/MiniSiteDuMariage.tsx',
+    'src/components/MachineDeRipple.tsx',
+    'src/components/LesBandesDeLAime.tsx',
+    'src/components/AppareilDuMariage.tsx',
+    'src/components/AppGrille.tsx',
+    'src/pages/Landing.tsx',
+  ].every((f) => existsSync(f)),
+  true,
+);
+check(
+  'et l’adresse ne sert plus qu’une chose : `?code=`, `?coches=`, `?marker=`, `?reve=`',
+  (() => {
+    const html = rendreLeTicket('/?reve=Las%20Vegas%20en%20janvier&coches=horaire-22:17');
+    const autre = rendreLeTicket('/?code=XK9-318');
+    return [html.includes('data-cochees="1"'), autre.includes('data-code="XK9-318"'), !autre.includes(CODE_DE_DÉMONSTRATION)];
+  })(),
+  [true, true, true],
+);
 
 /* ═══════════════ L'ARCHIVE : LE PAPIER ÉTALÉ, ET LES POLAROÏDS ═══════════════
 
@@ -2544,31 +2607,6 @@ check('et l’on descend par une flèche, pas par un paragraphe', zoneTicket.inc
 
 const archive = ticketVide.slice(ticketVide.indexOf('data-bande="archive"'), ticketVide.indexOf('data-section="visuel"'));
 
-check(
-  'la couverture-archive vient juste après le ticket, et avant le visuel',
-  archive.length > 0 &&
-    ticketVide.indexOf('data-bande="archive"') > ticketVide.indexOf('id="le-ticket-plein"') &&
-    ticketVide.indexOf('data-bande="archive"') < ticketVide.indexOf('data-section="visuel"'),
-  true,
-);
-check(
-  'elle est sur du noir — c’est ça, l’archive',
-  archive.includes('vp-archive') && readFileSync('src/index.css', 'utf8').includes('.vp-archive'),
-  true,
-);
-check(
-  'le titre est un sérif immense, posé par-dessus le désordre',
-  archive.includes('data-archive-titre="vrai"') &&
-    archive.includes('vp-didone') &&
-    archive.includes('vp-archive-titre'),
-  true,
-);
-check(
-  'le code du mariage est écrit en haut de l’archive',
-  archive.includes(`data-archive-code="${CODE_DE_DÉMONSTRATION}"`),
-  true,
-);
-
 /* ——— LES HUIT PAPIERS, ET CE QUE CHACUN OUVRE ——— */
 
 const papiers = [...archive.matchAll(/data-papier-étalé="([^"]+)" data-papier-genre="([^"]+)"/g)].map((m) => ({
@@ -2576,19 +2614,6 @@ const papiers = [...archive.matchAll(/data-papier-étalé="([^"]+)" data-papier-
   genre: m[2]!,
 }));
 
-check(
-  'le papier est étalé : les pièces de l’archive sont toutes là, et ce sont celles du lib',
-  [papiers.length, papiers.map((p) => p.id).join(',')],
-  [
-    papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION).length,
-    papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION).map((p) => p.id).join(','),
-  ],
-);
-check(
-  'un reçu, un polaroïd, une carte postale, un timbre, un sticker, une note, une bande, le code',
-  [...new Set(papiers.map((p) => p.genre))].sort().join(','),
-  'bande,carte,code,note,photo,sticker,ticket,timbre',
-);
 check(
   'chaque pièce tombe à sa place, de travers — comme un collage',
   (() => {
@@ -2633,45 +2658,16 @@ check(
   [true, true],
 );
 check(
-  'et le polaroïd du jour montre vraiment une image, dans son cadre blanc',
-  (() => {
-    const cadre = archive.slice(archive.indexOf('data-papier-étalé="polaroïd-du-jour"'), archive.indexOf('data-papier-étalé="carte-postale"'));
-    return [
-      /^[\s\S]*?src="\/images\//.test(cadre),
-      cadre.includes('vp-polaroïd'),
-    ];
-  })(),
-  [true, true],
-);
-check(
-  'la bande de papier porte les neuf moments de la nuit',
-  (() => {
-    const moments = [...archive.matchAll(/data-papier-moment="([a-z_]+)"/g)].map((m) => m[1]);
-    return moments.length === MOMENTS_DE_LA_NUIT.length && moments[0] === 'prelude_ceremonie';
-  })(),
-  true,
-);
-check(
   'et les neuf moments sont ceux du plan, horaires compris',
   [MOMENTS_DE_LA_NUIT.length, MOMENTS_DE_LA_NUIT.every((m) => m.heure.length === 5), MOMENTS_DE_LA_NUIT.at(-1)!.id],
   [9, true, 'closing'],
 );
-check('le sticker est fluo — c’est le seul accent de couleur', archive.includes('bg-[var(--vp-fluo)]'), true);
-
 /* ——— LES TROIS GESTES : DÉPLACER, RETOURNER, ÉCRIRE ———
 
    « Les papiers plus petits, en haut, déplaçables, retournables, et on écrit. »
    Chaque pièce est prise par le doigt (ou la souris), se retourne pour montrer
    son dos — et ce dos porte un champ, avec l'invite de ce qu'on y écrit. */
 
-check(
-  'chaque pièce est déplaçable : elle porte sa place, et le geste',
-  (() => {
-    const déplaçables = [...archive.matchAll(/data-papier-étalé="([^"]+)" data-papier-genre="[^"]+"[^>]*data-piece-deplacable="(vrai|non)"/g)];
-    return [déplaçables.length, déplaçables.every((m) => m[2] === 'vrai')];
-  })(),
-  [8, true],
-);
 check(
   'et les pièces sont petites, en haut de la page : aucune ne prend la moitié de la table',
   (() => {
@@ -2687,15 +2683,6 @@ check(
     return [lib.every((p) => p.dos.length > 2 && p.invite.length > 8), lib.map((p) => p.dos).join(' · ')];
   })(),
   [true, 'LE TIMBRE · LA LISTE · AU DOS · AU DOS DE LA CARTE · LE REÇU · CE QU’ON VEUT ENTENDRE · LE STICKER · LE CODE'],
-);
-check(
-  'et l’on retourne la pièce : le dos est rendu, et l’on y écrit vraiment',
-  (() => {
-    const dos = [...archive.matchAll(/data-piece-dos="([^"]+)"/g)].map((m) => m[1]);
-    const champs = [...archive.matchAll(/<textarea[^>]*data-piece-champ="([^"]+)"/g)].map((m) => m[1]);
-    return [dos.length, dos.length === 8, champs.length === 8, dos.join(',') === champs.join(',')];
-  })(),
-  [8, true, true, true],
 );
 check(
   'le retournement est un vrai retournement : deux faces, et le dos derrière',
@@ -2714,26 +2701,6 @@ check(
     ];
   })(),
   [true, true, true],
-);
-check(
-  // « Au clic sur les papiers ça s’ouvre petit, donc y’a bug » : la pièce
-  // s’ouvre **en grand**, à la largeur de la feuille — et c’est là seulement
-  // qu’elle propose d’aller voir ce qu’elle annonce.
-  'et au clic, la pièce s’ouvre en grand — pas en petit',
-  (() => {
-    const source = readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8');
-    return [
-      archive.includes('data-action="ouvrir-la-piece"'),
-      source.includes('data-archive-feuille-grand="vrai"'),
-      source.includes('lesProps(ouverte, true)'),
-      /\.vp-piece-grand\s*\{[^}]*width:\s*100%/.test(readFileSync('src/index.css', 'utf8')),
-      // La feuille ouverte est large, et la table, elle, est bornée : la pièce
-      // posée reste petite, la pièce ouverte est deux fois plus grande.
-      source.includes('max-w-[620px]'),
-      source.includes('sm:max-w-[1100px]'),
-    ];
-  })(),
-  [true, true, true, true, true, true],
 );
 check(
   // Ce qu'on écrit reste : c'est un brouillon gardé sur place, et quand on
@@ -2768,42 +2735,8 @@ check(
 
 /* ——— LES QUATRE PORTES DEVIENNENT DES POLAROÏDS ——— */
 
-check(
-  'les quatre catégories sont posées en polaroïds, légendés dessous',
-  (() => {
-    const héros = ticketVide.slice(ticketVide.indexOf('data-bande="héros"'), ticketVide.indexOf('id="l-appareil"'));
-    return [
-      héros.includes('vp-polaroïd'),
-      (héros.match(/data-héros-de-la-landing=/g) ?? []).length,
-      LES_HÉROS.every((h) => héros.includes(`data-héros-chemin="${h.id}"`)),
-      héros.includes('vp-didone'),
-    ];
-  })(),
-  [true, 4, true, true],
-);
-check(
-  'et chaque polaroïd penche de son côté, jamais deux fois du même',
-  (() => {
-    const héros = ticketVide.slice(ticketVide.indexOf('data-bande="héros"'), ticketVide.indexOf('id="l-appareil"'));
-    const tours = [...héros.matchAll(/data-héros-de-la-landing="[^"]+"[^>]*style="([^"]*)"/g)].map((m) => m[1]!);
-    return [tours.length, tours.every((t) => t.includes('--r:'))];
-  })(),
-  [4, true],
-);
-
 /* ——— LA PASTILLE FLOTTANTE : ON PARTAGE D'OÙ L'ON VEUT ——— */
 
-check(
-  'une seule pastille, en bas à droite, et elle partage',
-  ticketVide.includes('data-action="partager-flottant"') &&
-    /data-action="partager-flottant"[\s\S]{0,220}fixed bottom-4 right-3/.test(ticketVide),
-  true,
-);
-check(
-  'elle dit combien de lignes partent avec le lien',
-  ticketVide.includes('data-flottant-compte="0"') && ticketPlein.includes(`data-flottant-compte="${cochesDessai.length}"`),
-  true,
-);
 check(
   'et le mini-site des invités ne porte pas la pastille : il n’y a rien à partager là-bas',
   !rendreLeTicket('/?site=1').includes('data-action="partager-flottant"'),
@@ -2925,53 +2858,16 @@ check(
   ['photo-01'],
 );
 
-/* ——— L'ATELIER, SUR LA PAGE : TROIS RÉGLAGES, ET LE TÉLÉPHONE ——— */
+/* ——— L'ATELIER N'EST PLUS MONTÉ ———
 
-const atelier = ticketVide.slice(ticketVide.indexOf('data-atelier="vrai"'), ticketVide.indexOf('id="l-appareil"'));
+   Les onze univers et leurs trois réglages restent dans le dépôt
+   (`LAtelierDuTicket`, `universDuTicket`) — leurs vérifications de lib sont plus
+   haut — mais l'appli n'a plus qu'un ticket : celui du mariage. */
 
 check(
-  'l’atelier est sur la page, après l’archive',
-  atelier.length > 0 && ticketVide.indexOf('data-atelier="vrai"') > ticketVide.indexOf('data-bande="archive"'),
+  'l’atelier des univers n’est plus monté : un seul ticket suffit',
+  !ticketVide.includes('data-atelier') && !ticketVide.includes('data-univers='),
   true,
-);
-check(
-  'on y choisit l’univers — les onze, et celui qui est actif',
-  (() => {
-    const choisis = [...atelier.matchAll(/data-univers="([a-z-]+)" data-univers-actif="(true|false)"/g)];
-    return [choisis.length, choisis.filter((m) => m[2] === 'true').map((m) => m[1])];
-  })(),
-  [UNIVERS_DU_TICKET.length, ['mini-site']],
-);
-check(
-  'les lignes de l’univers sont là, à cocher une par une',
-  (ticketVide.match(/data-atelier-ligne="/g) ?? []).length,
-  UNIVERS_DU_TICKET[0]!.lignes.length,
-);
-check(
-  'et l’on dit qui le voit — huit paires d’yeux, dont celle de l’univers',
-  (() => {
-    const yeux = [...ticketVide.matchAll(/data-atelier-qui="([^"]+)" data-atelier-qui-actif="(true|false)"/g)];
-    return [yeux.length, yeux.filter((m) => m[2] === 'true').map((m) => m[1])];
-  })(),
-  [QUI_PEUT_VOIR.length, ['les invités']],
-);
-check(
-  'le lien du ticket s’écrit tout seul, sous les réglages',
-  ticketVide.includes('data-atelier-nom="vrai"') &&
-    /data-atelier-adresse="\?ticket=mini-site(&amp;|&)/.test(ticketVide),
-  true,
-);
-check(
-  'et l’adresse retient l’univers choisi : `?ticket=photos`',
-  (() => {
-    const html = rendreLeTicket('/?ticket=photos&lignes=photo-01,photo-02');
-    return [
-      html.includes('data-atelier-univers="photos"'),
-      /data-atelier-compte="2"/.test(html),
-      html.includes('data-atelier-ligne="photo-01" data-atelier-ligne-cochee="true"'),
-    ];
-  })(),
-  [true, true, true],
 );
 
 /* ——— LE TICKET DANS LE TÉLÉPHONE : IL DÉFILE, ET LE SITE APPARAÎT ——— */
@@ -3269,22 +3165,6 @@ check(
 const portefeuillesDuReçu = portefeuillesDesCoches(cochesDessai);
 check('l’adresse porte le caddie : le lien est le reçu', ticketPlein.includes('data-cochees="5"'), true);
 check(
-  'et le papier entier est sur la page, sous les catégories',
-  ticketPlein.includes('data-section="ticket"') && ticketPlein.includes('Payé · merci') && /SM-\d\d-[A-Z0-9]{4}/.test(ticketPlein),
-  true,
-);
-check('vide, il est en cours', ticketVide.includes('Ticket en cours'), true);
-check(
-  'la marque des portefeuilles est sur chaque ligne, et le papier suit',
-  (ticketPlein.match(/data-portefeuille=/g) ?? []).length,
-  portefeuillesDesCoches(cochesDessai).length,
-);
-check(
-  'et les portefeuilles sont écrits en bas de page, comme avant',
-  ticketPlein.includes('data-portefeuilles="pleins"') && ticketPlein.includes('data-papier="metier"'),
-  true,
-);
-check(
   'chaque portefeuille dit ses lignes et son total, dans l’écran de la machine',
   portefeuillesDuReçu.every((t) =>
     machineAuReçu.includes(`data-portefeuille="${t.portefeuille}" data-lignes="${t.lignes.length}" data-total="${t.total}"`),
@@ -3347,109 +3227,6 @@ check('les familles portent les mots de l’écran', [motDeLaFamille('jour'), mo
    repris. Ces vérifications tiennent les deux bouts : la composition est là,
    et la copie n'y est pas. */
 
-check(
-  // La composition de la référence gardait une barre en tête ; ici, le premier
-  // objet est **le papier**, et la marque est imprimée dessus.
-  'il n’y a plus de barre : la page commence par le ticket, la marque est sur le papier',
-  !ticketVide.includes('data-bande="barre"') &&
-    ticketVide.includes('data-ticket-marque="vrai"') &&
-    ticketVide.includes('data-action="partager-flottant"'),
-  true,
-);
-check(
-  'un titre, une phrase, et deux pastilles',
-  ticketVide.includes('data-titre-de-la-page="vrai"') &&
-    ticketVide.includes('Tout le mariage, sur un seul ticket.') &&
-    (ticketVide.match(/data-pastille=/g) ?? []).length,
-  2,
-);
-check(
-  'la couverture du jour est là, en portrait, avec sa légende',
-  ticketVide.includes('data-cover="jour"') && /MAGAZINE \d+ · [A-ZÀ-Ÿ]/i.test(ticketVide),
-  true,
-);
-check(
-  'et la bande d’image du jour est en pleine largeur, légendée',
-  ticketVide.includes('data-section="visuel"') && ticketVide.includes('data-visuel="jour"'),
-  true,
-);
-check(
-  'quatre gestes, numérotés de 01 à 04',
-  [...ticketVide.matchAll(/data-geste="(\d\d)"/g)].map((m) => m[1]),
-  ['01', '02', '03', '04'],
-);
-check(
-  'et les cinq papiers qui en sortent, avec leurs exemplaires',
-  (ticketVide.match(/data-papier="[a-z]+" data-exemplaires="\d+"/g) ?? []).length,
-  PORTEFEUILLES.length,
-);
-check(
-  'trois familles, trois colonnes égales, chacune avec sa porte',
-  (() => {
-    const familles = [...ticketVide.matchAll(/data-famille-de-la-landing="([a-z]+)" data-compte="(\d+)"/g)];
-    return familles.length === 3 && familles.map((m) => m[1]).join(',') === 'jour,site,documents';
-  })(),
-  true,
-);
-check(
-  'et chaque porte mène à une section qui existe vraiment',
-  ['jour', 'site', 'documents'].every(
-    (id) => ticketVide.includes(`href="#groupe-${id}"`) && ticketVide.includes(`id="groupe-${id}"`),
-  ),
-  true,
-);
-check(
-  'l’addition montre les trois formules du magasin, au même poids',
-  (() => {
-    const formules = [...ticketVide.matchAll(/data-formule="([a-z-]+)"/g)].map((m) => m[1]);
-    return formules.length === 3 && formules.every((id) => ticketVide.includes(`data-menu="${id}"`));
-  })(),
-  true,
-);
-check(
-  'et leurs prix sont ceux des menus, pas d’autres',
-  PACKAGES.every((m) => ticketVide.includes(`data-formule="${m.id}"`)),
-  true,
-);
-check(
-  'les questions sont là, et l’on ne paie rien',
-  (ticketVide.match(/data-question=/g) ?? []).length >= 5 &&
-    ticketVide.includes('Tarifs indicatifs') &&
-    ticketVide.includes('aucun paiement'),
-  true,
-);
-check('et le pied répète la marque', ticketVide.includes('data-bande="pied"'), true);
-check(
-  'l’ordre des bandes est celui d’une page, pas d’un inventaire',
-  (() => {
-    const ordre = [
-      'le-ticket-plein', 'archive', 'visuel', 'titre', 'héros', 'l-appareil',
-      'LE PROGRAMME', 'familles', 'on-coche', 'le-ticket',
-    ];
-    const positions = ordre.map((cle) =>
-      cle === 'le-ticket-plein'
-        ? ticketVide.indexOf('id="le-ticket-plein"')
-        : cle === 'l-appareil'
-          ? ticketVide.indexOf('id="l-appareil"')
-          : cle === 'on-coche'
-          ? ticketVide.indexOf('id="on-coche"')
-          : cle === 'le-ticket'
-            ? ticketVide.indexOf('id="le-ticket"')
-            : cle === 'visuel'
-              ? ticketVide.indexOf('data-section="visuel"')
-              : ticketVide.indexOf(`data-bande="${cle}"`),
-    );
-    return positions.every((p) => p >= 0) && positions.every((p, i) => i === 0 || p > positions[i - 1]!);
-  })(),
-  true,
-);
-check(
-  'le programme vient après la bande d’image, et les familles après le programme',
-  ticketVide.indexOf('data-bande="familles"') > ticketVide.indexOf('data-bande="LE PROGRAMME"') &&
-    ticketVide.indexOf('data-bande="LE PROGRAMME"') > ticketVide.indexOf('data-section="visuel"'),
-  true,
-);
-
 /* Ce qu'on n'a pas copié : ni la marque, ni son métier, ni ses mots. */
 check(
   'aucune trace de la référence dans la page',
@@ -3501,16 +3278,6 @@ check(
 check('le code s’écrit proprement, même tapé n’importe comment', codeDepuis(' a7k 241 '), 'A7K-241');
 check('et le même mariage redonne toujours le même code', codeDuMariage(TICKET_COUPLE), CODE_DE_DÉMONSTRATION);
 check(
-  'un lien avec un autre code imprime cet autre code, et rien d’autre',
-  (() => {
-    const autre = rendreLAdresse('/?code=XK9-318');
-    const papier = autre.slice(autre.indexOf('data-ticket-de-lappareil'));
-    return autre.includes('data-code="XK9-318"') && papier.includes('XK9-318') && papier.includes('SUPER MARIAGE');
-  })(),
-  true,
-);
-
-check(
   'le budget du rêve, à zéro : rien de coché, rien de mis de côté, tout à financer',
   (() => {
     const vide = budgetDuRêve([]);
@@ -3547,62 +3314,9 @@ check('les stickers ont huit couleurs, toutes prises dans la collection', new Se
 check('même mot, même couleur — et les couleurs tournent', [stickerDe('mariage', 3).couleur, stickerDe('x', 8).couleur], [COULEURS_DES_STICKERS[3], COULEURS_DES_STICKERS[0]]);
 
 check(
-  'l’appareil est sur la page, avec sa fente en bas',
-  ticketVide.includes('data-appareil="mariage"') && ticketVide.includes('data-fente-bas="vrai"'),
-  true,
-);
-check(
-  'les sept objets du Ripple ont leur bouton rond, plus le sticker',
-  [(ticketVide.match(/data-objet-de-lappareil=/g) ?? []).length, ticketVide.includes('data-action="tirer-un-sticker"')],
-  [OBJETS_DE_LA_FABRIQUE.length, true],
-);
-check(
-  'l’écran montre le rêve, son titre dessus, et où en est le budget',
-  ['data-appareil-écran', 'data-appareil-titre', 'data-appareil-jauge-mot', 'data-budget-mot'].every((a) => ticketVide.includes(a)) &&
-    ticketVide.includes(LE_RÊVE.mot) &&
-    LE_RÊVE.comprend.every((morceau) => ticketVide.includes(morceau)),
-  true,
-);
-check(
-  'et les quatre catégories changent ce que l’écran affiche',
-  [...ticketVide.matchAll(/data-cible="([a-z]+)"/g)].map((m) => m[1]).join(','),
-  LES_HÉROS.map((h) => h.id).join(','),
-);
-check(
-  'le ticket s’imprime, et il se met à jour : le mariage, puis le voyage',
-  ticketVide.includes('data-ticket-de-lappareil="vrai"') &&
-    ticketVide.includes('data-ticket-ligne="mariage"') &&
-    ticketVide.includes('data-ticket-ligne="voyage"'),
-  true,
-);
-check(
   'et l’on voit ce qu’il reste à financer, sur le papier',
   [ticketVide.includes(`data-ticket-reste="${LE_RÊVE.prix}"`), Number(ticketPlein.match(/data-ticket-reste="(\d+)"/)?.[1]) < LE_RÊVE.prix],
   [true, true],
-);
-check(
-  'le ticket commence par SUPER MARIAGE, écrit au début',
-  (() => {
-    const début = ticketVide.indexOf('data-ticket-de-lappareil="vrai"');
-    const papier = ticketVide
-      .slice(ticketVide.indexOf('>', début) + 1)
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return papier.startsWith('SUPER MARIAGE') && papier.slice(0, 90).includes(LE_SPÉCIALISTE.metier);
-  })(),
-  true,
-);
-check('quatre héros, un par catégorie, dans l’ordre du produit', [...ticketVide.matchAll(/data-héros-de-la-landing="([a-z]+)"/g)].map((m) => m[1]), LES_HÉROS.map((h) => h.id));
-check(
-  'chaque héros porte son image, son titre dessus, et le chemin de ce qu’il contient',
-  LES_HÉROS.every(
-    (h) =>
-      ticketVide.includes(`data-héros-image="${h.id}"`) &&
-      ticketVide.includes(`data-héros-titre="${h.id}"`) &&
-      ticketVide.includes(`data-héros-chemin="${h.id}"`),
-  ),
-  true,
 );
 check(
   'et leurs images sont toutes différentes — pas de visuel de remplissage',
@@ -3622,21 +3336,6 @@ check(
     .map((m) => m[1]!)
     .filter((h) => !h.startsWith('#') && !h.startsWith('/images/') && !h.startsWith('?code=')),
   [],
-);
-check(
-  'et le site n’a plus qu’une page : les autres adresses ramènent ici',
-  (() => {
-    const app = readFileSync('src/App.tsx', 'utf8');
-    const routes = [...app.matchAll(/<Route path="([^"]+)"/g)].map((m) => m[1]!);
-    const pages = [...app.matchAll(/from '\.\/pages\/([A-Za-z]+)'/g)].map((m) => m[1]!);
-    return [
-      routes.join(','),
-      pages.sort().join(','),
-      // Les anciennes pages restent dans le dépôt : rien n'a été détruit.
-      readFileSync('src/pages/Magazine.tsx', 'utf8').includes('export default'),
-    ];
-  })(),
-  ['/,/ticket,/caisse,/supermarriage,*', 'LaCaisse,Landing', true],
 );
 check(
   'et chaque ancre descend sur une bande qui existe vraiment',
@@ -3690,16 +3389,14 @@ check(
   [rêveDécrit('Vegas en janvier').prix, rêveDécrit('Vegas en janvier').id],
   [LE_RÊVE.prix, LE_RÊVE.id],
 );
+const ticketDuRêve = rendreLeTicket('/?reve=Vegas%20en%20janvier');
 check(
-  'l’appareil laisse écrire le rêve, et partager le lien aux invités',
-  ticketVide.includes('data-appareil-reve-champ="vrai"') &&
-    ticketVide.includes('data-appareil-reve-envoyer="vrai"') &&
-    ticketVide.includes('data-action="partager-aux-invités"') &&
-    !ticketVide.includes('data-action="changer-de-code"'),
+  // Le rêve, dans les mots du couple, s'imprime sur le papier — il vient de
+  // l'adresse, et il n'y a plus de champ pour l'écrire.
+  'le rêve des mariés, écrit dans les mots du couple, est sur le papier',
+  ticketDuRêve.includes('VEGAS EN JANVIER') && ticketDuRêve.includes('LE VOYAGE'),
   true,
 );
-const ticketDuRêve = rendreLeTicket('/?reve=Vegas%20en%20janvier');
-check('et le ticket du voyage porte les mots du couple', ticketDuRêve.includes('VEGAS EN JANVIER · LE VOYAGE'), true);
 /* « Trop de texte sur l'écran, ça répète trop, et il n'y a rien sur l'écran. »
    Les deux écrans sont donc pesés : des chiffres, pas des phrases — et aucune
    phrase qui parle de l'écran lui-même. */
@@ -3711,11 +3408,6 @@ check(
   [false, true],
 );
 check(
-  'l’écran de l’appareil porte le rêve et les chiffres du mariage',
-  [/%/.test(écranDeLAppareil), écranDeLAppareil.includes('reste'), écranDeLAppareil.includes('mariage')],
-  [true, true, true],
-);
-check(
   'et il ne parle plus de lui-même — aucune phrase sur l’écran',
   [/affiché sur l’écran/.test(écranDeLAppareil), /SUPER MARIAGE/.test(écranDeLAppareil)],
   [false, false],
@@ -3724,18 +3416,6 @@ check(
   'la marque ne se répète pas partout : le ticket, le téléphone, et quelques bandes',
   (ticketVide.match(/SUPER MARIAGE/g) ?? []).length <= 14,
   true,
-);
-check(
-  // Sans header, le compte est porté par la pastille flottante — et le papier
-  // dit le total : on sait où en est le ticket en le lisant, pas en levant les
-  // yeux vers une barre.
-  'le compte du ticket est dit, sans barre pour le dire',
-  [
-    ticketVide.includes('data-flottant-compte="0"'),
-    ticketPlein.includes(`data-flottant-compte="${cochesDessai.length}"`),
-    ticketVide.includes('0 LIGNE'),
-  ],
-  [true, true, true],
 );
 check(
   'et la cible reste sur la page : la part du rêve déjà financée',
@@ -3759,12 +3439,6 @@ check(
   })(),
   true,
 );
-check(
-  'et sous l’appareil, la planche de stickers attend d’être remplie',
-  ticketVide.includes('data-stickers="vrai"') && ticketVide.includes('aucun sticker'),
-  true,
-);
-
 /* ——— LA MACHINE À MINI-SITES : CE QU'ELLE FABRIQUE PART AUX INVITÉS ———
 
    « La machine avec le visuel est mieux : tu saurais en faire une machine à
@@ -3850,85 +3524,12 @@ check(
 /* ——— La page que l'invité ouvre : le mini-site, et rien d'autre ——— */
 
 const siteDesInvités = rendreLeTicket(`/?site=1&coches=${encodeURIComponent(cochesDessai.join(','))}`);
-const siteDesInvitésÀVide = rendreLeTicket('/?site=1');
 
-check(
-  'le lien ouvre le mini-site, et la machine n’y est plus',
-  [siteDesInvités.includes('data-site="invités"'), siteDesInvités.includes('data-machine="ripple"')],
-  [true, false],
-);
-check('il porte son code, écrit en haut', siteDesInvités.includes(`data-site-code="${CODE_DE_DÉMONSTRATION}"`), true);
-check(
-  'la couverture, c’est le visuel du jour, avec les noms dessus',
-  siteDesInvités.includes('data-site-visuel="jour"') &&
-    siteDesInvités.includes('data-site-noms="vrai"') &&
-    siteDesInvités.includes(TICKET_COUPLE.noms),
-  true,
-);
 check(
   'et les quatre chiffres du mariage sont dessous',
   ['LIGNES', 'LE MARIAGE', 'MIS DE CÔTÉ', 'RESTE À FINANCER'].every((mot) => siteDesInvités.includes(mot)),
   true,
 );
-check(
-  'le programme ne s’affiche que si des horaires sont cochés',
-  [
-    siteDesInvités.includes('data-site-programme="vrai"'),
-    siteDesInvitésÀVide.includes('data-site-programme'),
-    siteDesInvités.includes('data-site-horaire="horaire-22:17"'),
-  ],
-  [true, false, true],
-);
-check(
-  'un bloc, une carte : celles qui sont allumées, et pas une de plus',
-  [
-    (siteDesInvités.match(/data-site-bloc-carte=/g) ?? []).length,
-    siteDesInvités.includes('data-site-bloc-carte="diner"'),
-  ],
-  [siteDesCoches.allumés, false],
-);
-check(
-  'le voyage est toujours là, avec le rêve écrit dessus',
-  siteDesInvités.includes('data-site-voyage="vrai"') && siteDesInvités.includes(LE_RÊVE.mot),
-  true,
-);
-check(
-  'et le ticket est sur le site, tel qu’il sort de la fente',
-  siteDesInvités.includes('data-site-ticket="vrai"') && /SM-\d\d-[A-Z0-9]{4}/.test(siteDesInvités),
-  true,
-);
-check('on peut revenir à la machine depuis le site', siteDesInvités.includes('data-action="quitter-le-site"'), true);
-check(
-  'et l’on peut voir le site avant de l’envoyer : le lien est écrit sur la page',
-  [
-    ticketVide.includes('data-action="voir-le-site"'),
-    ticketVide.includes(`href="?code=${CODE_DE_DÉMONSTRATION}&site=1"`),
-    ticketVide.includes('voir le site des invités'),
-  ],
-  [true, true, true],
-);
-check(
-  'ce lien-là porte aussi ce qui est coché — c’est le site, pas la page',
-  (() => {
-    const lien = ticketPlein.match(/data-action="voir-le-site" href="([^"]*)"/)?.[1] ?? '';
-    return lien.includes('&site=1&coches=') && decodeURIComponent(lien.replace(/\+/g, '%20')).includes('sup-caddie');
-  })(),
-  true,
-);
-check(
-  'et le partage aux invités envoie le mini-site, pas autre chose',
-  readFileSync('src/pages/LaCaisse.tsx', 'utf8').includes('${site.lien}'),
-  true,
-);
-check(
-  'le site a son pied, et rien qui mène ailleurs',
-  siteDesInvités.includes('data-site-pied="vrai"') &&
-    [...siteDesInvités.matchAll(/href="([^"]*)"/g)].every(
-      (m) => m[1]!.startsWith('#') || m[1]!.startsWith('/images/'),
-    ),
-  true,
-);
-
 /* ——————— LA MACHINE, EN FONCTIONS PURES : UNE TOUCHE FAIT TOUJOURS ——————— */
 
 const départ = étatDeLaMachine();

@@ -1,4 +1,3 @@
-import { OBJETS_DE_LA_FABRIQUE, pictoDuRipple } from '../lib/ripple';
 import { CATÉGORIES_DU_TICKET, type LigneDuTicket } from '../lib/categoriesDuTicket';
 import type { BudgetDuRêve, Rêve } from '../lib/codeDuMariage';
 import type { TotauxDuTicket } from '../lib/portefeuille';
@@ -6,13 +5,15 @@ import { DJ_CHRONOLOGICAL_PHASES, GLOBAL_WEDDING_PLAYLIST_FULL } from '../lib/we
 import { euros } from '../lib/superMariage';
 import { marqueDuTampon } from '../lib/marquesDuTicket';
 import { LIGNES_ADMINISTRATIVES } from '../lib/triDuTicket';
+import { LES_MARKERS, type Marker } from '../lib/lesMarkers';
 
-/* LE TICKET PLEIN ÉCRAN — L'APPLI EST LE TICKET
+/* LE TICKET PLEIN ÉCRAN — L'APPLI EST LE TICKET, ET RIEN D'AUTRE
  *
- * « L'appli, c'est le ticket plein écran. » Il n'y a plus de machine, plus de
- * page : il y a **un papier**, qui prend l'écran, et que l'on scrolle. Tout est
- * dessus — les heures, la musique, les métiers, la table, les documents, le
- * site, le voyage, la totale — exactement comme un ticket de caisse imprimé :
+ * « Garde que le ticket du haut, c'est suffisant. » Il n'y a plus de machine,
+ * plus de bandes, plus de site : il y a **un papier**, qui prend l'écran, et
+ * que l'on scrolle. Tout est dessus — les heures, la musique, la table, les
+ * gens, les petits prix, le voyage — exactement comme un ticket de caisse
+ * imprimé :
  *
  * ```
  *   ┌──────────────────────────────┐
@@ -24,20 +25,20 @@ import { LIGNES_ADMINISTRATIVES } from '../lib/triDuTicket';
  *   │  LA JOURNÉE   ●─── 22:00     │  la timeline descend sur le papier
  *   │               ●─── 22:17     │  …et chaque heure s'y accroche
  *   │  LA MUSIQUE   1. Cérémonie   │  le plan du DJ, morceau par morceau
- *   │  LES 99 LIGNES               │  tout le magasin, imprimé
+ *   │  LES LIGNES DU MARIAGE       │  tout le magasin du mariage, imprimé
  *   │  LE VOYAGE    ▬▬▬▬▬▬░░░     │  le rêve, et ce qu'il reste
- *   │  TOTAL          41 320 €     │
+ *   │  TOTAL          41 320 €     │  on clique : le papier dit PAYÉ
  *   │  ▮▮▯▮▯▯▮▮▯  NUB-139          │  le code-barres
  *   ├──────────────────────────────┤
- *   │ (✉)(★)(✈)(◉)(▤)(⧉)(◎)      │  le pupitre : on tamponne le papier
+ *   │ ● ● ● ● ● ●  LE MARKER       │  sa couleur de marker
  *   └──────────────────────────────┘
  * ```
  *
  * **Trois gestes, et rien d'autre :**
- * 1. **on coche une ligne** — elle passe au **fluo**, et le total se refait ;
- * 2. **on tamponne** — le picto pose sa marque sur le papier (`PAYÉ`, `MERCI`,
- *    `DÉPART`…), de travers, à l'encre ;
- * 3. **on partage** — le lien du mini-site part tel quel.
+ * 1. **on coche une ligne** — elle passe au **marker**, et le total se refait ;
+ * 2. **on clique le total** — le papier dit `PAYÉ · MERCI`, d'encre et de
+ *    travers ;
+ * 3. **on choisit son marker** — six couleurs, et le papier prend la sienne.
  *
  * Le papier est en chasse fixe, ivoire, avec ses dents en haut et en bas : c'est
  * un objet, pas une page. Il s'imprime (`@media print`) — et sur un ordinateur,
@@ -56,7 +57,11 @@ const MENUS = CATÉGORIES_DU_TICKET.filter((c) => c.id.startsWith('menu-')).map(
 
 /**
  * **Les sections du ticket**, dans l'ordre où l'on imprime : le jour, ce qu'on
- * entend, ce qu'on mange, qui travaille, les petits prix, le site, le voyage.
+ * entend, ce qu'on mange, qui travaille, les petits prix.
+ *
+ * **Le site n'y est plus.** « Et même le mini-site, on reste sur le ticket » :
+ * le ticket n'annonce plus un site à aller voir, il n'y a rien d'autre à voir
+ * que lui. Ses lignes restent au magasin, elles ne sont plus imprimées.
  *
  * **L'administratif n'y est pas.** « Dans le grand ticket, y'a encore des choses
  * pas besoin — administratif ou juridique. Donc faut trier. » Les 31 pièces
@@ -70,7 +75,6 @@ const SECTIONS: Array<{ id: string; mot: string; sous: string; catégories: stri
   { id: 'table', mot: 'LA TABLE', sous: 'ce qui se sert', catégories: MENUS },
   { id: 'gens', mot: 'LES GENS', sous: 'les métiers du jour', catégories: RAYONS_DE_MÉTIERS },
   { id: 'petits-prix', mot: 'LES PETITS PRIX', sous: 'ce qui ne change pas le mariage', catégories: ['rayon-supplements'] },
-  { id: 'site', mot: 'LE SITE', sous: 'ce que les invités voient', catégories: ['site'] },
 ];
 
 /** Les lignes d'une section, dans l'ordre du catalogue. */
@@ -110,15 +114,8 @@ const MOMENTS_DE_LA_MUSIQUE = DJ_CHRONOLOGICAL_PHASES.filter((p) => p.id !== 'al
   };
 });
 
-/** Où les marques tombent : six places, puis on recommence. */
-const PLACES: Array<{ top: string; left: string; tour: number }> = [
-  { top: '6%', left: '7%', tour: -11 },
-  { top: '21%', left: '46%', tour: 8 },
-  { top: '38%', left: '11%', tour: -7 },
-  { top: '55%', left: '42%', tour: 10 },
-  { top: '72%', left: '8%', tour: -9 },
-  { top: '88%', left: '48%', tour: 6 },
-];
+/** Où la marque tombe : sur le papier, de travers, à l'encre. */
+const PLACE_DU_TAMPON = { top: '6%', left: '7%', tour: -11 };
 
 /** Le code-barres : il est fait du code du mariage, et de rien d'autre. */
 const barresDe = (code: string) =>
@@ -137,8 +134,6 @@ export interface LeTicketPleinEcranProps {
   dateLabel: string;
   /** L'heure du ticket : c'est elle qui dit « maintenant » sur la journée. */
   heure: number;
-  /** Le visuel du jour, imprimé comme un coupon. */
-  visuel: string | null;
   couple: { noms: string; lieu: string; convives: number };
   /** **Ce qui est coché** : les lignes prises passent au fluo, et comptent. */
   coches: string[];
@@ -148,17 +143,12 @@ export interface LeTicketPleinEcranProps {
   portefeuilles: Array<{ id: string; mot: string; marque: string; lignes: number; total: number }>;
   rêve: Rêve;
   budget: BudgetDuRêve;
-  /** **Les marques posées sur le papier** : les objets tamponnés, dans l'ordre. */
-  tampons: string[];
-  surTamponner: (id: string) => void;
-  /** **Le mot du dernier geste** : ce qui vient de se passer sur le papier. */
-  mot: string | null;
-  /** **Aller à l'administratif** : ses pièces ont leur ticket, pas ce papier-ci. */
-  surAdministratif: () => void;
-  /** Le lien du mini-site, et les deux gestes qui vont avec. */
-  adresseDuSite: string;
-  surPartager: () => void;
-  surSite: () => void;
+  /** **Le papier est payé** : le geste du total pose la marque `PAYÉ`. */
+  payé: boolean;
+  surPayer: () => void;
+  /** **Sa couleur de marker** : celle qui surligne tout le papier. */
+  marker: Marker;
+  surMarker: (id: string) => void;
 }
 
 export default function LeTicketPleinEcran({
@@ -166,7 +156,6 @@ export default function LeTicketPleinEcran({
   numero,
   dateLabel,
   heure,
-  visuel,
   couple,
   coches,
   surCocher,
@@ -174,16 +163,12 @@ export default function LeTicketPleinEcran({
   portefeuilles,
   rêve,
   budget,
-  tampons,
-  surTamponner,
-  mot,
-  surAdministratif,
-  adresseDuSite,
-  surPartager,
-  surSite,
+  payé,
+  surPayer,
+  marker,
+  surMarker,
 }: LeTicketPleinEcranProps) {
   const prises = new Set(coches);
-  const payé = tampons.includes('tampon');
   const lignesDesSections = lignesParSection();
 
   /** **L'heure où l'on est** : la dernière heure du jour passée. C'est elle qui
@@ -251,25 +236,23 @@ export default function LeTicketPleinEcran({
         <div aria-hidden="true" data-ticket-dents="haut" className="vp-dents vp-dents-haut" />
 
         <div className="vp-papier relative px-[1.5em] pb-[1.1em] pt-[1.4em]">
-          {/* ——————————————— LES MARQUES : LES TAMPONS POSÉS SUR LE PAPIER ——————————————— */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-30">
-            {tampons.map((id, rang) => {
-              const place = PLACES[rang % PLACES.length]!;
-              const objet = OBJETS_DE_LA_FABRIQUE.find((o) => o.id === id);
-              return (
-                <span
-                  key={`${id}-${rang}`}
-                  data-tampon-pose={id}
-                  data-tampon-mot={marqueDuTampon(id)}
-                  className="vp-tampon absolute px-[0.9em] py-[0.4em] text-[1.15em]"
-                  style={{ top: place.top, left: place.left, transform: `rotate(${place.tour}deg)` }}
-                  title={objet?.nom ?? ''}
-                >
-                  {marqueDuTampon(id)}
-                </span>
-              );
-            })}
-          </div>
+          {/* ——————————————— LA MARQUE : LE PAPIER EST PAYÉ, C'EST ÉCRIT DESSUS ——————————————— */}
+          {payé && (
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-30">
+              <span
+                data-tampon-pose="tampon"
+                data-tampon-mot={marqueDuTampon('tampon')}
+                className="vp-tampon absolute px-[0.9em] py-[0.4em] text-[1.15em]"
+                style={{
+                  top: PLACE_DU_TAMPON.top,
+                  left: PLACE_DU_TAMPON.left,
+                  transform: `rotate(${PLACE_DU_TAMPON.tour}deg)`,
+                }}
+              >
+                {marqueDuTampon('tampon')}
+              </span>
+            </div>
+          )}
 
           {/* ——————————————— L'IMPRESSION : SUPER MARIAGE, EN HAUT ——————————————— */}
           <header data-ticket-entete="vrai" className="text-center">
@@ -294,17 +277,6 @@ export default function LeTicketPleinEcran({
               </p>
             )}
           </header>
-
-          {/* ——————————————— LE COUPON : LE VISUEL DU JOUR, IMPRIMÉ ——————————————— */}
-          {visuel && (
-            <figure data-ticket-coupon="jour" className="relative mt-[1em] overflow-hidden">
-              <img src={visuel} alt="" className="h-[6.4em] w-full object-cover" style={{ filter: 'saturate(0.85) contrast(1.06)' }} />
-              <figcaption className="absolute inset-x-0 bottom-0 flex items-baseline justify-between gap-2 bg-gradient-to-t from-black/80 to-transparent px-[0.7em] pb-[0.35em] pt-[1.6em] text-[0.85em] uppercase tracking-[0.16em] text-white">
-                <span>LE JOUR</span>
-                <span className="tabular-nums">{dateLabel}</span>
-              </figcaption>
-            </figure>
-          )}
 
           {/* ——————————————— LES CHIFFRES DU MARIAGE ——————————————— */}
           <section data-ticket-chiffres="vrai" className="mt-[1.1em] grid grid-cols-2 gap-x-[0.8em] gap-y-[0.7em]">
@@ -371,15 +343,6 @@ export default function LeTicketPleinEcran({
                   </ol>
                 )}
 
-                {/* ——————— LE SITE : CE QUE LES INVITÉS VOIENT ——————— */}
-                {section.id === 'site' && (
-                  <p className="mt-[0.7em] flex flex-col gap-[0.25em] text-[0.9em]">
-                    <span className="uppercase tracking-[0.1em] text-black/55">LE LIEN QUI PART</span>
-                    <span data-ticket-adresse={adresseDuSite} className="break-all">
-                      {adresseDuSite}
-                    </span>
-                  </p>
-                )}
               </section>
             );
           })}
@@ -419,28 +382,35 @@ export default function LeTicketPleinEcran({
               <span>TVA INCLUSE</span>
               <span className="tabular-nums">{euros(totaux.tva)}</span>
             </p>
-            <p className="mt-[0.4em] flex items-baseline justify-between gap-2 border-y-2 border-black/70 py-[0.35em] text-[1.5em] font-bold uppercase tracking-[0.06em]">
+            {/* **Le seul geste du papier : on clique le total, il est payé.**
+                Pas de rangée de boutons — une ligne, et un état qui change. */}
+            <button
+              type="button"
+              data-action="payer-le-ticket"
+              data-ticket-paye-bouton={payé}
+              onClick={surPayer}
+              aria-label={payé ? 'le ticket est payé' : 'marquer le ticket comme payé'}
+              className="mt-[0.4em] flex w-full items-baseline justify-between gap-2 border-y-2 border-black/70 py-[0.35em] text-left text-[1.5em] font-bold uppercase tracking-[0.06em] transition hover:bg-black/[0.04]"
+            >
               <span>TOTAL</span>
               <span data-ticket-total-mot="vrai" className="tabular-nums">
                 {euros(totaux.total)}
               </span>
-            </p>
+            </button>
             <p className="mt-[0.35em] flex items-baseline justify-between gap-2 text-[0.9em]">
               <span className="uppercase tracking-[0.1em] text-black/55">{payé ? 'PAYÉ' : 'À PAYER'}</span>
               <span className="tabular-nums">{payé ? euros(totaux.total) : 'en cours'}</span>
             </p>
 
-            {/* **L'administratif est trié, et il est écrit là où il est.** */}
-            <button
-              type="button"
+            {/* **L'administratif est trié, et il est écrit où il est** — en clair,
+                sur une ligne, sans bouton : ça s'imprime, ça ne se visite pas. */}
+            <p
               data-ticket-administratif={LIGNES_ADMINISTRATIVES.length}
-              data-action="administratif"
-              onClick={surAdministratif}
-              className="mt-[0.8em] flex w-full items-baseline justify-between gap-2 border-t border-dashed border-black/20 pt-[0.4em] text-left text-[0.85em] uppercase tracking-[0.1em] text-black/50 transition hover:text-[color:var(--vp-ink)]"
+              className="mt-[0.8em] flex items-baseline justify-between gap-2 border-t border-dashed border-black/20 pt-[0.4em] text-[0.85em] uppercase tracking-[0.1em] text-black/50"
             >
               <span>L’ADMINISTRATIF — {LIGNES_ADMINISTRATIVES.length} PIÈCES, À PART</span>
-              <span className="shrink-0 tabular-nums">le ticket PAPIERS →</span>
-            </button>
+              <span className="shrink-0 tabular-nums">HORS TICKET</span>
+            </p>
 
             <p data-ticket-portefeuilles="vrai" className="mt-[0.9em] text-[0.85em] uppercase tracking-[0.12em] text-black/55">
               LES CINQ PAPIERS
@@ -476,77 +446,43 @@ export default function LeTicketPleinEcran({
               Merci · et bon voyage
             </p>
             <p className="mt-[0.3em] text-center text-[0.8em] uppercase tracking-[0.14em] text-black/40">
-              AIME · magazine 54 semaines · ouvert quand tout est fermé
+              LE MARIAGE ENTIER, SUR UN SEUL TICKET · AIME
             </p>
           </footer>
 
-          {/* ——————————————— LE PUPITRE : LES TAMPONS, TOUJOURS SOUS LE POUCE ——————————————— */}
-          <div
-            data-ticket-pupitre="vrai"
-            className="vp-pupitre vp-non-imprimable -mx-[1.5em] mt-[1.2em] px-[1.2em] py-[0.7em]"
-          >
-            {mot && (
-              <p data-mot-du-geste={mot} className="mb-[0.45em] truncate text-[0.85em] uppercase tracking-[0.14em] text-black/55">
-                {mot}
-              </p>
-            )}
-            <div className="flex items-center justify-between gap-[0.5em]">
-              {OBJETS_DE_LA_FABRIQUE.map((objet) => {
-                const Icone = pictoDuRipple(objet.pictoParDefaut).Icone;
-                const posée = tampons.includes(objet.id);
-                return (
-                  <button
-                    key={objet.id}
-                    type="button"
-                    data-tampon={objet.id}
-                    data-tampon-marque={marqueDuTampon(objet.id)}
-                    data-tampon-posee={posée}
-                    title={`${objet.nom} — ${objet.sens}`}
-                    aria-label={`${objet.nom} : tamponner « ${marqueDuTampon(objet.id)} »`}
-                    onClick={() => surTamponner(objet.id)}
-                    className={`flex h-[2.6em] w-[2.6em] shrink-0 items-center justify-center rounded-full border transition ${
-                      posée
-                        ? 'border-[color:var(--vp-ink)] bg-[color:var(--vp-ink)] text-[#fffef7]'
-                        : 'border-black/20 text-black/60 hover:border-[color:var(--vp-ink)] hover:text-[color:var(--vp-ink)]'
-                    }`}
-                  >
-                    <Icone size={14} />
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                data-action="partager-le-ticket"
-                onClick={surPartager}
-                className="shrink-0 font-mono text-[0.85em] uppercase tracking-[0.12em] underline decoration-black/25 underline-offset-[0.25em] hover:decoration-black"
-              >
-                partager
-              </button>
-              <button
-                type="button"
-                data-action="voir-le-site"
-                onClick={surSite}
-                className="shrink-0 font-mono text-[0.85em] uppercase tracking-[0.12em] text-black/55 underline decoration-black/20 underline-offset-[0.25em] hover:text-black"
-              >
-                le site
-              </button>
+          {/* ——————————————— LE MARKER : SA COULEUR, ET C'EST TOUT ———————————————
+              « Et pourquoi pas choisir sa couleur de marker ? » Six couleurs,
+              sous le papier — c'est le seul réglage de l'appli, et il change
+              vraiment le papier : ce qui est coché prend cette encre-là. */}
+          <div data-ticket-marker="vrai" className="vp-non-imprimable -mx-[1.5em] mt-[1.1em] px-[1.5em] py-[0.6em]">
+            <p className="flex items-baseline justify-between gap-2 text-[0.8em] uppercase tracking-[0.16em] text-black/45">
+              <span>LE MARKER</span>
+              <span data-ticket-marker-mot={marker.mot} className="tabular-nums text-black/60">
+                {marker.mot} · {marker.sous}
+              </span>
+            </p>
+            <div className="mt-[0.55em] flex items-center gap-[0.6em]">
+              {LES_MARKERS.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  data-marker={m.id}
+                  data-marker-actif={m.id === marker.id}
+                  title={`${m.mot} — ${m.sous}`}
+                  aria-label={`écrire au marker ${m.mot.toLowerCase()}`}
+                  onClick={() => surMarker(m.id)}
+                  className={`h-[1.5em] w-[1.5em] shrink-0 rounded-full border transition ${
+                    m.id === marker.id ? 'border-[color:var(--vp-ink)] scale-110' : 'border-black/25 hover:scale-105'
+                  }`}
+                  style={{ background: m.couleur }}
+                />
+              ))}
             </div>
           </div>
         </div>
 
         <div aria-hidden="true" data-ticket-dents="bas" className="vp-dents vp-dents-bas" />
       </div>
-
-      <p className="pb-[1.5em] pt-[1.2em] text-center">
-        <a
-          href="#le-visuel"
-          data-action="descendre"
-          aria-label="descendre : le site, en dessous"
-          className="font-mono text-[13px] text-black/35 transition hover:text-black"
-        >
-          ↓
-        </a>
-      </p>
     </section>
   );
 }

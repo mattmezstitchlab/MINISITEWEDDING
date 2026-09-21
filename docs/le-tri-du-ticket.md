@@ -18,15 +18,22 @@ les cocher, elles comptent toujours dans le total. Elles ne sont simplement plus
 
 ```
   99 lignes au magasin
-− 31 pièces administratives et juridiques
+− 31 pièces administratives et juridiques   →  hors du ticket, à part
+− 20 lignes du mini-site                    →  le mini-site n'existe plus
 ──────────────────────────────────────────
-= 68 lignes du mariage
+= 48 lignes du mariage, imprimées
 ```
+
+*(Le 21 septembre, les 20 lignes du mini-site sont sorties à leur tour : « et
+même le mini-site, on reste sur le ticket ». Voir
+`docs/l-appli-n-est-plus-qu-un-ticket.md`.)*
 
 | Le morceau | Le fichier |
 | --- | --- |
 | les 31 identifiants (`doc-…`), les mots qui les repèrent, `estAdministrative(id)` | `src/lib/triDuTicket.ts` |
-| `COMBIEN_DE_LIGNES_DU_MARIAGE` — 68, et jamais écrit en dur ailleurs | `src/lib/triDuTicket.ts` |
+| `COMBIEN_DE_LIGNES_DU_MARIAGE` — 68 (le mariage, hors administratif) | `src/lib/triDuTicket.ts` |
+| `LIGNES_DU_SITE` — les 20 lignes du mini-site, retirées elles aussi | `src/lib/triDuTicket.ts` |
+| `COMBIEN_DE_LIGNES_IMPRIMÉES` — **48**, ce que le papier imprime vraiment | `src/lib/triDuTicket.ts` |
 | la 11ᵉ univers, `papiers`, avec ses 31 lignes | `src/lib/universDuTicket.ts` |
 | la section `documents` retirée des sections imprimées | `src/components/LeTicketPleinEcran.tsx` |
 

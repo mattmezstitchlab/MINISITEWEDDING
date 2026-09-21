@@ -127,7 +127,19 @@ Deux corrections, et elles tiennent la même règle : **un clic fait ce qu'il di
 | la coque, l'encoche, l'écran | `src/index.css` (`.vp-tel`, `.vp-tel-coque`, `.vp-tel-écran`, `.vp-tel-barre`) |
 | les preuves | `tests/ui.test.ts` — « les univers de ticket, et l'atelier » |
 
-## 7. Le header supprimé
+## 7. L'atelier n'est plus monté (21 septembre 2026)
+
+> « Garde que le ticket du haut, c'est suffisant. […] On va même décider
+> nous-même d'un ticket unique qui suffira à lui-même. »
+
+Les onze univers, leurs lignes, leurs yeux et le téléphone qui les montre **ne
+sont plus montés sur la page** : l'appli n'a qu'un ticket, celui du mariage, et
+un seul réglage, **sa couleur de marker**. Tout ce qui est décrit dans ce
+document reste vrai — c'est du code vivant, testé, dans le dépôt
+(`universDuTicket.ts`, `LAtelierDuTicket.tsx`, `LeTelephoneAuTicket.tsx`) — mais
+l'écran, lui, montre le papier. Voir `docs/l-appli-n-est-plus-qu-un-ticket.md`.
+
+## 8. Le header supprimé
 
 > « Et le header, supprime-le. »
 
@@ -142,7 +154,7 @@ le papier lui-même.
 Le composant `BarreDeLAime` reste dans le dépôt : on ne détruit pas, on
 **démonte**.
 
-## 8. Ce qui reste (et qui est maintenant possible)
+## 9. Ce qui reste (et qui est maintenant possible)
 
 - **la pellicule** : la ligne PHOTOS prise ouvre l'appareil photo du téléphone,
   et la mission rendue remplit la galerie du ticket ;
