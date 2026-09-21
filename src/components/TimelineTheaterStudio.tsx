@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Clock,
   Calendar,
@@ -8,20 +8,11 @@ import {
   ZoomOut,
   Play,
   Pause,
-  RotateCcw,
-  Volume2,
-  Sparkles,
   Sun,
-  Shield,
   Layers,
   FileText,
   Music,
   User,
-  ChevronRight,
-  Maximize2,
-  AlignLeft,
-  CheckCircle2,
-  Info,
 } from 'lucide-react';
 import {
   type TimelineTrackItem,
@@ -37,28 +28,67 @@ interface TimelineTheaterStudioProps {
   initialMode?: TimelineMode;
   onSelectMoment?: (item: TimelineTrackItem) => void;
   standalone?: boolean;
+  /**
+   * **Les blocs à monter.** Par défaut, les moments du jour J (l'atelier
+   * d'origine). Quand on les donne — les 54 magazines de la collection —, la
+   * bande devient **l'année** : chaque bloc est un magazine, et son contenu est
+   * ses sept chapitres. Le sélecteur de mode disparaît alors : il n'a plus lieu
+   * d'être, la source est donnée.
+   */
+  items?: TimelineTrackItem[];
+  /** **Les graduations de la règle**, à la place des heures (une par magazine). */
+  graduations?: Array<{ label: string; sous?: string }>;
+  /** Ce qui s'écrit au-dessus de la bande. */
+  titreDeLAxe?: string;
+  /** Le pas de zoom au départ. */
+  zoomInitial?: number;
+  /** Où poser la tête de lecture au départ, en minutes depuis le début. */
+  teteInitiale?: number;
 }
 
 export default function TimelineTheaterStudio({
   initialMode = 'jour-j',
   onSelectMoment,
   standalone = false,
+  items: blocsDonnes,
+  graduations,
+  titreDeLAxe,
+  zoomInitial = 1,
+  teteInitiale,
 }: TimelineTheaterStudioProps) {
+  /** La source est donnée : c'est la collection qui parle, pas les moments du jour J. */
+  const surMesure = blocsDonnes !== undefined;
   const [mode, setMode] = useState<TimelineMode>(initialMode);
-  const [items, setItems] = useState<TimelineTrackItem[]>(INITIAL_TIMELINE_ITEMS);
-  const [selectedId, setSelectedId] = useState<string>('jj-3');
-  const [zoomLevel, setZoomLevel] = useState<number>(1); // 1x, 2x, 4x
+  const [items, setItems] = useState<TimelineTrackItem[]>(blocsDonnes ?? INITIAL_TIMELINE_ITEMS);
+  const [selectedId, setSelectedId] = useState<string>(blocsDonnes?.[0]?.id ?? 'jj-3');
+  /**
+   * **Quand la source change** (une autre année, une autre collection), on
+   * repose les blocs — mais pendant le rendu, pas dans un effet : React le
+   * recommande pour ajuster un état à une prop, et l'on évite ainsi un rendu en
+   * cascade. La référence ne bouge que si l'appelant a vraiment changé de
+   * collection (`useMemo`).
+   */
+  const [sourceConnue, setSourceConnue] = useState(blocsDonnes);
+  if (blocsDonnes !== sourceConnue) {
+    setSourceConnue(blocsDonnes);
+    if (blocsDonnes) {
+      setItems(blocsDonnes);
+      setSelectedId((actuel) => (blocsDonnes.some((b) => b.id === actuel) ? actuel : (blocsDonnes[0]?.id ?? actuel)));
+    }
+  }
+  const [zoomLevel, setZoomLevel] = useState<number>(zoomInitial); // 1x, 2x, 4x
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [currentPlayheadMin, setCurrentPlayheadMin] = useState<number>(720); // 18:00 par défaut (720 min après 06h00)
+  const [currentPlayheadMin, setCurrentPlayheadMin] = useState<number>(teteInitiale ?? 720); // 18:00 par défaut (720 min après 06h00)
   const [audioPlaying, setAudioPlaying] = useState<string | null>(null);
 
   const rulerContainerRef = useRef<HTMLDivElement>(null);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Filtrage selon le mode actif
+  // Filtrage selon le mode actif — ou la source donnée, telle quelle.
   const currentItems = useMemo(() => {
+    if (surMesure) return items;
     return items.filter((it) => it.mode === mode);
-  }, [items, mode]);
+  }, [items, mode, surMesure]);
 
   const selectedItem = useMemo(() => {
     return items.find((it) => it.id === selectedId) || currentItems[0] || items[0];
@@ -68,6 +98,8 @@ export default function TimelineTheaterStudio({
   const pxPerHour = 130 * zoomLevel;
   const totalRulerWidth = TIMELINE_TOTAL_HOURS * pxPerHour;
   const pxPerMinute = pxPerHour / 60;
+  /** Le pas d'une graduation : une par magazine, ou une par heure. */
+  const pasPx = graduations ? totalRulerWidth / graduations.length : pxPerHour;
 
   // Animation de la tête de lecture si Play
   useEffect(() => {
@@ -138,8 +170,12 @@ export default function TimelineTheaterStudio({
       {/* BARRE DE CONTRÔLE SUPÉRIEURE DU STUDIO (Style Apple VisionOS / Pro Audio) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-black/8">
         
-        {/* Modes de travail commutables */}
-        <div className="flex items-center gap-1.5 p-1 rounded-full bg-neutral-100/90 border border-black/5 self-start">
+        {/* Modes de travail commutables — masqués quand la source est la collection :
+            il n'y a plus trois modes, il y a une année. */}
+        <div
+          data-modes={surMesure ? 'masques' : 'visibles'}
+          className={`flex items-center gap-1.5 p-1 rounded-full bg-neutral-100/90 border border-black/5 self-start ${surMesure ? 'hidden' : ''}`}
+        >
           <button
             type="button"
             onClick={() => setMode('jour-j')}
@@ -234,7 +270,7 @@ export default function TimelineTheaterStudio({
           <div className="flex items-center justify-between text-[12px]">
             <div className="font-semibold text-black/70 flex items-center gap-2">
               <Layers size={14} className="text-black" />
-              <span>Bande de Montage Temporel (06:00 → 04:00 J+1)</span>
+              <span>{titreDeLAxe ?? 'Bande de Montage Temporel (06:00 → 04:00 J+1)'}</span>
               <span className="text-[10px] font-mono bg-black/5 px-2 py-0.5 rounded-full text-black/50">
                 Aimantation 5 min
               </span>
@@ -256,42 +292,53 @@ export default function TimelineTheaterStudio({
               style={{ width: `${totalRulerWidth}px` }}
             >
               
-              {/* HEURES ET GRADUATIONS DE FOND */}
+              {/* HEURES ET GRADUATIONS DE FOND — ou les semaines de la collection */}
               <div className="absolute inset-x-0 top-0 h-9 border-b border-black/10 flex">
-                {Array.from({ length: TIMELINE_TOTAL_HOURS }).map((_, hIdx) => {
-                  const hour = (TIMELINE_START_HOUR + hIdx) % 24;
-                  const isDaylight = hour >= 8 && hour < 20;
-                  const isGolden = hour === 18 || hour === 19;
-
-                  return (
-                    <div
-                      key={hIdx}
-                      className="relative h-full border-r border-black/10 font-mono text-[11px] text-black/40 pl-2 pt-1 flex flex-col justify-between"
-                      style={{ width: `${pxPerHour}px` }}
-                    >
-                      <div className="flex items-center gap-1 font-bold">
-                        <span>{hour.toString().padStart(2, '0')}:00</span>
-                        {isGolden && <Sun size={10} className="text-amber-500" />}
+                {graduations
+                  ? graduations.map((g) => (
+                      <div
+                        key={g.label}
+                        data-graduation={g.label}
+                        className="relative h-full border-r border-black/10 font-mono text-[11px] text-black/45 pl-2 flex flex-col justify-center"
+                        style={{ width: `${pasPx}px` }}
+                      >
+                        <span className="font-bold whitespace-nowrap">{g.label}</span>
+                        {g.sous && <span className="text-[9.5px] text-black/35 whitespace-nowrap">{g.sous}</span>}
                       </div>
+                    ))
+                  : Array.from({ length: TIMELINE_TOTAL_HOURS }).map((_, hIdx) => {
+                      const hour = (TIMELINE_START_HOUR + hIdx) % 24;
+                      const isGolden = hour === 18 || hour === 19;
 
-                      {/* Sous-graduations 15, 30, 45 min */}
-                      <div className="flex justify-between px-1 pb-0.5">
-                        <span className="h-1.5 w-[1px] bg-black/15" />
-                        <span className="h-2.5 w-[1px] bg-black/30" />
-                        <span className="h-1.5 w-[1px] bg-black/15" />
-                      </div>
-                    </div>
-                  );
-                })}
+                      return (
+                        <div
+                          key={hIdx}
+                          className="relative h-full border-r border-black/10 font-mono text-[11px] text-black/40 pl-2 pt-1 flex flex-col justify-between"
+                          style={{ width: `${pxPerHour}px` }}
+                        >
+                          <div className="flex items-center gap-1 font-bold">
+                            <span>{hour.toString().padStart(2, '0')}:00</span>
+                            {isGolden && <Sun size={10} className="text-amber-500" />}
+                          </div>
+
+                          {/* Sous-graduations 15, 30, 45 min */}
+                          <div className="flex justify-between px-1 pb-0.5">
+                            <span className="h-1.5 w-[1px] bg-black/15" />
+                            <span className="h-2.5 w-[1px] bg-black/30" />
+                            <span className="h-1.5 w-[1px] bg-black/15" />
+                          </div>
+                        </div>
+                      );
+                    })}
               </div>
 
               {/* LIGNES DE GUIDAGE VERTICALES */}
               <div className="absolute inset-0 top-9 pointer-events-none flex">
-                {Array.from({ length: TIMELINE_TOTAL_HOURS }).map((_, hIdx) => (
+                {Array.from({ length: graduations ? graduations.length : TIMELINE_TOTAL_HOURS }).map((_, hIdx) => (
                   <div
                     key={hIdx}
                     className="h-full border-r border-black/[0.04]"
-                    style={{ width: `${pxPerHour}px` }}
+                    style={{ width: `${graduations ? pasPx : pxPerHour}px` }}
                   />
                 ))}
               </div>
@@ -309,7 +356,7 @@ export default function TimelineTheaterStudio({
 
               {/* BLOCS TEMPORELS MANIPULABLES */}
               <div className="absolute inset-x-0 top-14 bottom-4">
-                {currentItems.map((item, idx) => {
+                {currentItems.map((item) => {
                   const isSelected = selectedItem?.id === item.id;
                   const leftPx = item.startMinuteOfDay * pxPerMinute;
                   const widthPx = Math.max(90, item.durationMinutes * pxPerMinute);
@@ -317,6 +364,8 @@ export default function TimelineTheaterStudio({
                   return (
                     <motion.div
                       key={item.id}
+                      data-bloc={item.id}
+                      data-mesure={item.mesure ?? ''}
                       onClick={() => {
                         setSelectedId(item.id);
                         onSelectMoment?.(item);
@@ -339,7 +388,7 @@ export default function TimelineTheaterStudio({
                           <span className="font-mono text-[10px] font-bold">{item.startTime}</span>
                         </div>
                         <span className="font-mono text-[9.5px] opacity-70">
-                          {item.durationMinutes}m
+                          {item.mesure ?? `${item.durationMinutes}m`}
                         </span>
                       </div>
 
@@ -352,6 +401,20 @@ export default function TimelineTheaterStudio({
                           {item.alignedRole || item.subtitle}
                         </div>
                       </div>
+
+                      {/* Les sept chapitres du magazine, quand c'en est un. */}
+                      {item.sousTitres && (
+                        <div className="mt-2 flex items-center gap-[3px]" aria-hidden="true">
+                          {item.sousTitres.map((titre, i) => (
+                            <span
+                              key={titre}
+                              title={titre}
+                              className={`h-[5px] flex-1 rounded-full ${isSelected ? 'bg-white/45' : 'bg-black/25'}`}
+                              data-chapitre={i + 1}
+                            />
+                          ))}
+                        </div>
+                      )}
 
                       {/* Badge spécifique */}
                       <div className="mt-2.5 flex items-center gap-1.5">

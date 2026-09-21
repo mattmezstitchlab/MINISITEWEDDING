@@ -19,7 +19,7 @@ import {
   type Proposition,
 } from '../lib/composerPersonnes';
 import { dateDuJourNomme, lectureDuPrenom, type GenrePrenom } from '../lib/genreDesPrenoms';
-import { effacerMagazine, magazineCompose, phraseDuMagazine, reponseEnregistree } from '../lib/composition';
+import { effacerMagazine, etagesDuMagazine, magazineCompose, phraseDuMagazine, reponseEnregistree } from '../lib/composition';
 import CouvertureJour from './CouvertureJour';
 
 /**
@@ -146,6 +146,11 @@ export default function ChampDuMagazine({ className = '' }: { className?: string
           <div className="min-w-0 flex-1">
             <span className="vp-eyebrow">Votre magazine</span>
             <div className="vp-title mt-1 text-[17px]">{phraseDuMagazine(compose)}</div>
+            {/* La date n'ouvre plus un magazine à elle seule : elle entre dans un
+                numéro hebdomadaire, par un chapitre. On le dit ici aussi. */}
+            <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-black/45">
+              {etagesDuMagazine(compose)}
+            </div>
             <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--vp-muted)]">
               {compose.edition.titre} · {compose.edition.pages.length} pages · une par heure
             </div>

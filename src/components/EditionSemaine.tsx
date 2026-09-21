@@ -43,7 +43,7 @@ export default function EditionSemaine({ edition }: { edition: Edition }) {
           <div>
             {edition.du.toLocaleDateString('fr-FR')} — {edition.fin.toLocaleDateString('fr-FR')}
           </div>
-          <div className="font-mono">{saison.symbole} {saison.nom}</div>
+          <div className="font-mono">{saison.nom}</div>
         </div>
       </header>
 
