@@ -385,3 +385,59 @@ export function laGénération(demande: string, prises: string[] = []): FileDeLA
   const lignes = file.lignes.filter((l) => estImprimable(l.id)).slice(0, COMBIEN_PAR_GÉNÉRATION);
   return { lignes, mots: file.mots, àVide: lignes.length === 0 };
 }
+
+/* ——————————————————— LES ORDRES DE L'AGENT ———————————————————
+ *
+ * « Je dirais d'implémenter tout ce qui existe et possible pour juste le
+ * demander à l'agent. » Un seul champ, et l'agent fait le reste : il écrit des
+ * lignes du magasin, il **ouvre une opération** (devis, facture, note, import)
+ * ou il **tourne le papier** (la face du client, celle de l'émetteur).
+ *
+ * Ce qu'il reconnaît, dans l'ordre — le plus précis d'abord :
+ *
+ *   1. « vue client » / « côté client »   → on regarde le papier de l'autre côté ;
+ *   2. « devis 300 € pour Jean »          → une opération, avec son prix ;
+ *   3. « des photos », « un dîner »       → les lignes du magasin (48 lignes).
+ */
+
+import { lOpération, type LOpération } from './lesOpérations';
+
+export type LOrdreDeLAgent =
+  | { genre: 'lignes'; lignes: LigneDuTicket[]; mots: string[] }
+  | { genre: 'opération'; opération: LOpération }
+  | { genre: 'face'; face: 'emetteur' | 'client' }
+  | { genre: 'rien' };
+
+/** Ce que l'agent entend quand on lui parle du papier lui-même. */
+const LA_VUE = /\b(?:vue|cote|face|regarde|montre|tourne)\b[^a-z]{0,4}\b(client|emetteur)\b/;
+const VERS_LE_CLIENT = /\b(?:au|pour le|chez le)\s+client\b/;
+/** Les mots qui disent « ce n'est pas une ligne du magasin, c'est une pièce ». */
+const UNE_PIÈCE = /\b(devis|estimation|facture|facturation|note de frais|memoire|note|import|importer|document|doc|piece jointe|recu|justificatif|pdf|capture|scan)\b/;
+/** Sauf que « des photos » ou « un document » restent des lignes du magasin. */
+const DU_MAGASIN = /\b(?:des|du|de la|un|une)\s+(?:photos?|documents?|pdf|videos?|musique|repas|enfants?|temoins?|dj|rsvp|decorations?|fleurs?|menus?)\b/;
+
+/**
+ * **Ce que l'agent fait d'une phrase.** Il rend **un** ordre — celui qui compte —
+ * et le champ n'a plus qu'à l'exécuter.
+ */
+export function lesOrdresDeLAgent(demande: string, prises: string[] = [], combienDOpérations = 0): LOrdreDeLAgent {
+  const doux = sansAccent(demande.toLowerCase()).trim();
+  if (doux.length < 3) return { genre: 'rien' };
+
+  // 1. On tourne le papier : la face du client, ou la nôtre.
+  const vue = doux.match(LA_VUE);
+  if (vue) return { genre: 'face', face: vue[1] === 'client' ? 'client' : 'emetteur' };
+  if (VERS_LE_CLIENT.test(doux)) return { genre: 'face', face: 'client' };
+
+  // 2. Une opération — quand la phrase dit de quel genre, et que ce n'est pas
+  //    une ligne du magasin qu'on demande.
+  if (UNE_PIÈCE.test(doux) && !DU_MAGASIN.test(doux)) {
+    const opération = lOpération(demande, `op-${combienDOpérations + 1}`);
+    if (opération) return { genre: 'opération', opération };
+  }
+
+  // 3. Les lignes du magasin.
+  const file = laGénération(demande, prises);
+  if (file.lignes.length) return { genre: 'lignes', lignes: file.lignes, mots: file.mots };
+  return { genre: 'rien' };
+}

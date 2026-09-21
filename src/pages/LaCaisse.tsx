@@ -8,6 +8,14 @@ import { heureDeLaCapsule } from '../lib/capsuleCommande';
 import { formatDateLong } from '../lib/format';
 import { estUnMarker, markerParId } from '../lib/lesMarkers';
 import { PAS_DE_LA_FRAPPE, mettreEnFile, unPasDeLaFrappe, type LigneDeLaFile } from '../lib/laFrappe';
+import {
+  lApportDesOpérations,
+  lesOpérationsDuCode,
+  lesOpérationsEnCode,
+  type LOpération,
+} from '../lib/lesOpérations';
+import { leCodeDuTicket } from '../lib/leCodeDuTicket';
+import { estUneFace, type FaceDuTicket } from '../lib/lesFacesDuTicket';
 import LeChampDuTicket from '../components/LeChampDuTicket';
 import LeTicketPleinEcran from '../components/LeTicketPleinEcran';
 
@@ -40,9 +48,19 @@ import LeTicketPleinEcran from '../components/LeTicketPleinEcran';
  * mini-site, la machine, les bandes éditoriales) restent dans le dépôt, leurs
  * fichiers intacts.
  *
- * L'adresse porte tout : `?code=` le mariage, `?coches=` ce qui est coché,
- * `?marker=` la couleur du fluo, `?reve=` le rêve dans les mots des mariés.
- * Le lien, c'est le ticket.
+ * **Un champ, un +, deux gestes, un réglage, et deux faces.** On écrit ce qu'on
+ * veut (« un dîner pour vingt », « devis 300 € pour Jean », « vue client ») et
+ * l'agent exécute : il écrit les lignes sur le papier, lettre par lettre, il
+ * ouvre une opération, il tourne le papier. On coche une ligne ; on clique le
+ * total ; on choisit sa couleur de marker. Le même objet se lit donc de notre
+ * côté — le ticket — et du côté de celui qui paie : **sa facture, puis son
+ * reçu**, sans rien préparer.
+ *
+ * L'adresse porte **tout** : `?code=` le mariage, `?coches=` ce qui est coché,
+ * `?marker=` la couleur du fluo, `?reve=` le rêve dans les mots des mariés,
+ * `?op=` les opérations (leur genre, leur prix, pour qui, si c'est privé),
+ * `?vue=client`. Le lien, c'est le ticket — et le code-barres l'imprime en
+ * entier (`leCodeDuTicket`).
  */
 
 /** Le caddie de l'adresse : ce qui est coché, dans l'ordre du catalogue. */
@@ -82,6 +100,13 @@ export default function LaCaisse() {
   const [file, setFile] = useState<LigneDeLaFile[]>([]);
   /** **La lettre en cours**, sur la ligne de tête : c'est la frappe. */
   const [pas, setPas] = useState(0);
+  /** **De quel côté on lit le papier** : le nôtre, ou celui du client. */
+  const [face, setFace] = useState<FaceDuTicket>(() => {
+    const vue = params.get('vue') ?? '';
+    return estUneFace(vue) && vue === 'client' ? 'client' : 'emetteur';
+  });
+  /** **Les opérations** : ce qui est arrivé après coup, et qui se pose sur le papier. */
+  const [opérations, setOpérations] = useState<LOpération[]>(() => lesOpérationsDuCode(params.get('op') ?? ''));
 
   const rêve = useMemo(() => rêveDécrit(description), [description]);
   const lignesCochées = useMemo(() => LIGNES_DU_TICKET.filter((l) => coches.includes(l.id)), [coches]);
@@ -108,9 +133,13 @@ export default function LaCaisse() {
     else suite.delete('paye');
     if (description.trim()) suite.set('reve', description);
     else suite.delete('reve');
+    if (face === 'client') suite.set('vue', 'client');
+    else suite.delete('vue');
+    if (opérations.length) suite.set('op', lesOpérationsEnCode(opérations));
+    else suite.delete('op');
     setParams(suite, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coches, marker, payé, description]);
+  }, [coches, marker, payé, description, face, opérations]);
 
   /* ————————————————— LA GÉNÉRATION : LE PAPIER ÉCRIT LETTRE PAR LETTRE —————————————————
      « Tout se saisit lettre par lettre pendant la génération. » La ligne de tête
@@ -136,6 +165,10 @@ export default function LaCaisse() {
     setFile((suite) => mettreEnFile(suite, coches, lignes.map((l) => ({ id: l.id, mot: l.label }))));
   };
 
+  /** **Une opération arrive sur le ticket** : elle s'y ajoute, et y reste. */
+  const recevoirLOpération = (opération: LOpération) =>
+    setOpérations((liste) => [...liste, { ...opération, id: `op-${liste.length + 1}` }]);
+
   /** **On coche une ligne** : elle passe au marker, et le total se refait. */
   const cocher = (id: string) => setCoches((liste) => (liste.includes(id) ? liste.filter((x) => x !== id) : [...liste, id]));
 
@@ -147,14 +180,20 @@ export default function LaCaisse() {
       data-page="ticket"
       data-code={code}
       data-cochees={coches.length}
-      data-total={totaux.total}
+      data-total={totaux.total + lApportDesOpérations(opérations)}
       data-marker={laCouleur.id}
       style={{ ['--vp-fluo' as string]: laCouleur.couleur }}
       className="min-h-svh bg-white text-[color:var(--vp-ink)]"
     >
       {/* **AU DÉBUT, UN CHAMP.** « Au début juste un champ de saisie avec un
           agent agentic » : on écrit ce qu'on veut, et l'agent écrit le reste. */}
-      <LeChampDuTicket prises={coches} surGénération={recevoirLaGénération} />
+      <LeChampDuTicket
+        prises={coches}
+        combienDOpérations={opérations.length}
+        surGénération={recevoirLaGénération}
+        surOpération={recevoirLOpération}
+        surFace={setFace}
+      />
 
       {/* **ET LE TICKET.** « Garde que le ticket du haut, c'est suffisant » :
           le papier est la page, et l'on scrolle dedans. */}
@@ -175,6 +214,10 @@ export default function LaCaisse() {
         marker={laCouleur}
         surMarker={setMarker}
         frappe={ligneEnCours ? { mot: ligneEnCours.mot, pas } : null}
+        face={face}
+        surFace={setFace}
+        opérations={opérations}
+        signature={leCodeDuTicket({ code, coches, marker: laCouleur.id, face, payé, opérations })}
       />
     </main>
   );

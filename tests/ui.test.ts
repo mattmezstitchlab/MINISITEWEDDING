@@ -213,8 +213,18 @@ import {
   COMBIEN_PAR_GÉNÉRATION,
   estImprimable,
   laGénération,
+  lesOrdresDeLAgent,
   lignesImprimables,
 } from '../src/lib/agentDuTicket';
+import { LES_OPÉRATIONS, lOpération, lesOpérationsDuCode, lesOpérationsEnCode } from '../src/lib/lesOpérations';
+import { leCodeDuTicket, lÉtatDuCode } from '../src/lib/leCodeDuTicket';
+import {
+  laFace,
+  laFaceMontre,
+  laNoteSeMontre,
+  leTitreDuPapier,
+  lAutreFace,
+} from '../src/lib/lesFacesDuTicket';
 import LeTelephoneAuTicket from '../src/components/LeTelephoneAuTicket';
 import {
   QUI_PEUT_VOIR,
@@ -2559,18 +2569,21 @@ check(
    après lettre, et chaque ligne écrite entre au marker dans le ticket. */
 
 check(
-  'au début, un champ — et rien à presser',
+  'au début, un champ et un + — et rien d’autre à presser',
   (() => {
     const champ = ticketVide.slice(ticketVide.indexOf('data-champ="vrai"'), ticketVide.indexOf('data-ticket-plein'));
+    const boutons = [...champ.matchAll(/<button/g)].length;
     return [
       champ.includes('data-champ-saisie="vrai"'),
       champ.includes('dites ce qu’il vous faut'),
       champ.includes('data-champ-attente="vrai"'),
-      // Aucun bouton : on écrit, et ça part tout seul.
-      !/<button/.test(champ),
+      // **Un seul contrôle** : le + des opérations. Le reste s'écrit tout seul.
+      boutons === 1 && champ.includes('data-champ-plus="vrai"'),
+      // Et les options ne sont pas ouvertes d'elles-mêmes : on les demande.
+      !champ.includes('data-champ-options="vrai"'),
     ];
   })(),
-  [true, true, true, true],
+  [true, true, true, true, true],
 );
 check(
   'l’agent lit la phrase, et il dit ce qu’il a entendu',
@@ -2761,6 +2774,306 @@ check(
   'et sans génération en cours, le papier n’affiche aucune ligne à moitié écrite',
   !rendreLeTicketPayé(false).includes('data-ticket-frappe='),
   true,
+);
+
+/* ——— LE TICKET ÉVOLUTIF : LES OPÉRATIONS, LES DEUX FACES, LE CODE ———
+
+   « Faudrait un champ avec option et un + pour créer une opération ou autre. »
+   « Ça pourrait être un ticket évolutif : quelqu'un te paye, ça arrive sur le
+   ticket, et de son côté c'est rangé en facture et en reçu. » « Ou alors
+   implémenter un code puissant, tout ce qu'on peut mettre. » */
+
+check(
+  'le + propose cinq opérations, et chacune écrit son début dans le champ',
+  [
+    LES_OPÉRATIONS.length,
+    LES_OPÉRATIONS.map((o) => o.id).join(','),
+    LES_OPÉRATIONS.every((o) => o.début.length > 2 && o.indication.length > 10),
+  ],
+  [5, 'ligne,devis,facture,note,import', true],
+);
+check(
+  'l’agent lit une opération : le genre, le prix, et pour qui',
+  (() => {
+    const o = lOpération('devis 300 € pour Jean', 'op-1')!;
+    const r = lOpération('facture 1200 euros pour le traiteur', 'op-2')!;
+    return [o.genre, o.prix, o.qui, r.genre, r.prix, r.qui];
+  })(),
+  ['devis', 300, 'Jean', 'facture', 1200, 'traiteur'],
+);
+check(
+  // « un dîner pour vingt » ne doit pas faire vingt euros : l'argent ne se lit
+  // que quand la monnaie est écrite.
+  'sans monnaie, il n’y a pas de prix — et l’opération dit « à convenir »',
+  (() => {
+    const sans = lOpération('devis pour le traiteur, à convenir', 'op-1')!;
+    return [sans.prix, sans.genre, lOpération('un dîner pour vingt personnes', 'op-2')];
+  })(),
+  [0, 'devis', null],
+);
+check(
+  'et une note est privée par défaut — elle ne se partage que si on le dit',
+  (() => {
+    const privée = lOpération('note penser aux alliances', 'op-1')!;
+    const partagée = lOpération('note partagée pour tous : les alliances sont chez Léa', 'op-2')!;
+    return [privée.genre, privée.privée, partagée.privée];
+  })(),
+  ['note', true, false],
+);
+check(
+  'l’agent ouvre l’opération tout seul, sans passer par le +',
+  (() => {
+    const ordre = lesOrdresDeLAgent('devis 300 € pour Jean', [], 2);
+    const sien = lesOrdresDeLAgent('vue client');
+    const emetteur = lesOrdresDeLAgent('montre-moi la vue émetteur');
+    return [
+      ordre.genre,
+      ordre.genre === 'opération' ? ordre.opération.id : '',
+      ordre.genre === 'opération' ? ordre.opération.prix : 0,
+      sien.genre === 'face' ? sien.face : '',
+      emetteur.genre === 'face' ? emetteur.face : '',
+    ];
+  })(),
+  ['opération', 'op-3', 300, 'client', 'emetteur'],
+);
+check(
+  // « des photos » reste une ligne du magasin : ce n'est pas une pièce à nous.
+  'et il ne confond pas une ligne du magasin avec une pièce',
+  [
+    lesOrdresDeLAgent('des photos').genre,
+    lesOrdresDeLAgent('un dîner pour vingt').genre,
+    lesOrdresDeLAgent('importe le pdf du traiteur').genre,
+    lesOrdresDeLAgent('zzzz').genre,
+  ],
+  ['lignes', 'lignes', 'opération', 'rien'],
+);
+
+/* **Les deux faces du même objet.** */
+check(
+  'le même papier se lit des deux côtés : le ticket, et la facture devenue reçu',
+  [
+    leTitreDuPapier('emetteur', false),
+    leTitreDuPapier('client', false),
+    leTitreDuPapier('client', true),
+    laFace('client').àRégler,
+    lAutreFace('emetteur'),
+    lAutreFace('client'),
+  ],
+  ['SUPER MARIAGE', 'FACTURE', 'REÇU', 'À RÉGLER', 'client', 'emetteur'],
+);
+check(
+  'et ce qui est à nous reste à nous : la cagnotte, l’administratif, les notes privées',
+  [
+    laFaceMontre('emetteur', 'voyage'),
+    laFaceMontre('client', 'voyage'),
+    laFaceMontre('client', 'administratif'),
+    laNoteSeMontre('client', true),
+    laNoteSeMontre('client', false),
+    laNoteSeMontre('emetteur', true),
+  ],
+  [true, false, false, false, true, true],
+);
+
+/* **Le code porte tout.** */
+check(
+  'le code du ticket : on l’écrit, on le relit — c’est le même papier',
+  (() => {
+    const état = {
+      code: 'NUB-139',
+      coches: ['horaire-22:17', 'menu-super-caddie'],
+      marker: 'vert',
+      face: 'client' as const,
+      payé: true,
+      opérations: [
+        { id: 'op-1', genre: 'devis' as const, mot: 'le traiteur', prix: 300, qui: 'Jean', privée: false },
+        { id: 'op-2', genre: 'note' as const, mot: 'les alliances, chez la mère de Léa', prix: 0, qui: '', privée: true },
+      ],
+    };
+    const code = leCodeDuTicket(état);
+    const relu = lÉtatDuCode(code)!;
+    return [
+      relu.code,
+      relu.coches.join(','),
+      relu.marker,
+      relu.face,
+      relu.payé,
+      relu.opérations.map((o) => `${o.genre}:${o.prix}:${o.qui}:${o.privée ? 'privé' : 'partagé'}:${o.mot}`).join(' | '),
+      lÉtatDuCode('ZZZ.nimporte'),
+      code.includes('.'),
+    ];
+  })(),
+  [
+    'NUB-139',
+    'horaire-22:17,menu-super-caddie',
+    'vert',
+    'client',
+    true,
+    'devis:300:Jean:partagé:le traiteur | note:0::privé:les alliances, chez la mère de Léa',
+    null,
+    true,
+  ],
+);
+check(
+  'et un code sans rien ne s’écrit pas : il reste le mariage, et c’est tout',
+  leCodeDuTicket({ code: 'NUB-139', coches: [], marker: '', face: 'emetteur', payé: false, opérations: [] }),
+  'SM1.NUB-139',
+);
+check(
+  'les opérations tiennent dans l’adresse : on les écrit, on les relit',
+  (() => {
+    const liste = [
+      { id: 'op-1', genre: 'devis' as const, mot: 'le traiteur', prix: 300, qui: 'Jean', privée: false },
+      { id: 'op-2', genre: 'import' as const, mot: 'le pdf du traiteur', prix: 0, qui: '', privée: true },
+    ];
+    const relu = lesOpérationsDuCode(lesOpérationsEnCode(liste));
+    return [
+      relu.length,
+      relu.map((o) => `${o.genre}/${o.prix}/${o.qui}/${o.privée}`).join(' '),
+      lesOpérationsDuCode('').length,
+      lesOpérationsDuCode('zzz:1::0:rien').length,
+    ];
+  })(),
+  [2, 'devis/300/Jean/false import/0//true', 0, 0],
+);
+
+/* **Ce qui se voit sur le papier, des deux côtés.** */
+const rendreLeTicketDeCeCôté = (
+  face: 'emetteur' | 'client',
+  payé: boolean,
+  opérations: Array<{ id: string; genre: 'devis'; mot: string; prix: number; qui: string; privée: boolean }>,
+  coches: string[] = cochesDessai,
+) => {
+  const papiers = lignesCochées(coches);
+  const totauxIci = totauxDuTicket(papiers);
+  const comptes = compteDesPortefeuilles(coches);
+  return renderToStaticMarkup(
+    createElement(LeTicketPleinEcran as never, {
+      code: CODE_DE_DÉMONSTRATION,
+      numero: 'SM-23-0007',
+      dateLabel: 'le 12 juin 2027',
+      heure: 23,
+      couple: { noms: TICKET_COUPLE.noms, lieu: TICKET_COUPLE.venue, convives: TICKET_COUPLE.convives },
+      coches,
+      surCocher: () => {},
+      totaux: totauxIci,
+      portefeuilles: PORTEFEUILLES.map((p) => ({ id: p.id, mot: p.mot, marque: p.marque, ...comptes[p.id] })),
+      rêve: rêveDécrit(''),
+      budget: budgetDuRêve(coches),
+      payé,
+      surPayer: () => {},
+      marker: markerParId('jaune'),
+      surMarker: () => {},
+      face,
+      opérations,
+      signature: 'SM1.NUB-139.c=demo.m=jaune',
+    }),
+  ).replace(/&amp;/g, '&');
+};
+const unDevis = [{ id: 'op-1', genre: 'devis' as const, mot: 'le traiteur', prix: 300, qui: 'Jean', privée: true }];
+
+check(
+  'les opérations s’impriment sur le papier — avec leur prix, et pour qui',
+  (() => {
+    const nôtre = rendreLeTicketDeCeCôté('emetteur', false, unDevis);
+    return [
+      nôtre.includes('data-ticket-opérations="1"'),
+      nôtre.includes('data-ticket-opération="op-1"'),
+      nôtre.includes('le traiteur') && nôtre.includes('300') && nôtre.includes('Jean'),
+      nôtre.includes('DEVIS'),
+      // Chez nous, la note privée se montre.
+      !nôtre.includes('data-opération-cachée="vrai"'),
+    ];
+  })(),
+  [true, true, true, true, true],
+);
+check(
+  // « Quelqu’un te paye, ça arrive sur le ticket » : ce qui arrive compte.
+  'ce qui arrive après coup entre dans le total — le devis, la facture, la ligne',
+  (() => {
+    const sans = rendreLeTicketDeCeCôté('client', false, []);
+    const avec = rendreLeTicketDeCeCôté('client', false, unDevis);
+    const lire = (html: string) => Number(html.match(/data-ticket-total="(\d+)"/)?.[1] ?? 0);
+    return [
+      lire(avec) - lire(sans),
+      avec.includes('data-ticket-apport="300"'),
+      avec.includes('LES OPÉRATIONS (1)'),
+      // Une note ne change rien au total : elle ne fait que s’écrire.
+      lire(rendreLeTicketDeCeCôté('client', false, [{ id: 'op-9', genre: 'devis', mot: 'un mot', prix: 0, qui: '', privée: true }])) - lire(sans),
+    ];
+  })(),
+  [300, true, true, 0],
+);
+check(
+  'et du côté du client, la note privée ne sort pas du papier',
+  (() => {
+    const sien = rendreLeTicketDeCeCôté('client', false, unDevis);
+    return [
+      sien.includes('data-ticket-opérations="1"'),
+      sien.includes('data-opération-cachée="vrai"'),
+      sien.includes('data-opération-privée="true"'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  'du côté du client, le papier dit FACTURE — puis REÇU : le même objet',
+  (() => {
+    const avant = rendreLeTicketDeCeCôté('client', false, []);
+    const après = rendreLeTicketDeCeCôté('client', true, []);
+    return [
+      avant.includes('data-ticket-titre="FACTURE"'),
+      après.includes('data-ticket-titre="REÇU"'),
+      avant.includes('data-face-emis="vrai"'),
+      avant.includes('data-face-bascule="client"') && avant.includes('relire de notre côté'),
+      avant.includes('data-ticket-à-régler="À RÉGLER"'),
+    ];
+  })(),
+  [true, true, true, true, true],
+);
+check(
+  // Ce qui appartient au couple ne part pas chez le client : ni la cagnotte, ni
+  // les papiers — et si rien n'est pris, le papier le dit, il ne reste pas vide.
+  'et le papier du client garde pour nous la cagnotte et l’administratif',
+  (() => {
+    const sien = rendreLeTicketDeCeCôté('client', false, []);
+    const nôtre = rendreLeTicketDeCeCôté('emetteur', false, []);
+    return [
+      !sien.includes('data-ticket-voyage="vrai"'),
+      nôtre.includes('data-ticket-voyage="vrai"'),
+      !sien.includes('data-ticket-administratif='),
+      nôtre.includes('data-ticket-administratif='),
+      // Il y a déjà des lignes prises : le papier ne dit donc pas « rien à régler ».
+      !sien.includes('data-ticket-rien-à-régler="vrai"'),
+      // Le code-barres aussi porte tout : il est fait de la signature.
+      sien.includes('data-ticket-signature="SM1.NUB-139.c=demo.m=jaune"'),
+    ];
+  })(),
+  [true, true, true, true, true, true],
+);
+check(
+  'et le client ne voit que ce qui est pris : c’est son addition',
+  (() => {
+    const sien = rendreLeTicketDeCeCôté('client', false, []);
+    const lignes = [...sien.matchAll(/data-ticket-ligne="[^"]+" data-cochee="true"/g)].length;
+    const total = [...sien.matchAll(/data-ticket-ligne="[^"]+" data-cochee="false"/g)].length;
+    // Ce qui est pris **et imprimé** : ni l'administratif, ni les lignes du site.
+    const imprimées = cochesDessai.filter((id) => !estAdministrative(id) && !LIGNES_DU_SITE.includes(id));
+    return [lignes, total, imprimées.length];
+  })(),
+  [3, 0, 3],
+);
+check(
+  // « Ça ne répond pas bêtement » : un papier du client sans rien à régler le dit.
+  'et sans rien de pris, le papier du client le dit — il ne reste pas vide',
+  (() => {
+    const vide = rendreLeTicketDeCeCôté('client', false, [], []);
+    return [
+      vide.includes('data-ticket-rien-à-régler="vrai"'),
+      !vide.includes('data-ticket-ligne='),
+      vide.includes('rien à régler pour l’instant'),
+    ];
+  })(),
+  [true, true, true],
 );
 
 /* ——— L'APPLI A ÉTÉ NETTOYÉE : UN SEUL OBJET À L'ÉCRAN ———

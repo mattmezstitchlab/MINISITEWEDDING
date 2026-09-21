@@ -58,8 +58,16 @@ La première chose de la page n'est plus le papier : **c'est un champ**. On écr
 le ticket, cochée, au marker. Cinq lignes par génération, et l'agent n'écrit que
 ce que ce papier imprime (48 lignes : ni l'administratif, ni le site).
 
-`LeChampDuTicket`, `laGénération` (`agentDuTicket.ts`), `laFrappe.ts` — et la
-vision complète (paiement, preuve, imports, billetterie, Shopify) dans
+Le champ a **un seul contrôle, le +**, qui ouvre les cinq opérations (opération,
+devis, facture, note, import) ; quand on écrit, l'agent rend **un ordre** —
+`lesOrdresDeLAgent` — et l'exécute : des lignes, une opération, ou **la face du
+papier** (« vue client » : sa facture, puis son reçu). Ce qui arrive **compte
+dans le total**. Le code-barres est fait du **code complet** du ticket, qui porte
+tout (`leCodeDuTicket`).
+
+`LeChampDuTicket`, `laGénération` et `lesOrdresDeLAgent` (`agentDuTicket.ts`),
+`laFrappe.ts`, `lesOpérations.ts`, `lesFacesDuTicket.ts`, `leCodeDuTicket.ts` —
+et la vision complète (paiement, preuve, imports, billetterie, Shopify) dans
 `docs/le-ticket-comme-objet-digital.md`.
 
 ## 4. Le ticket, et ses deux gestes

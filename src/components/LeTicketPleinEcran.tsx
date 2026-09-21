@@ -4,9 +4,18 @@ import type { TotauxDuTicket } from '../lib/portefeuille';
 import { DJ_CHRONOLOGICAL_PHASES, GLOBAL_WEDDING_PLAYLIST_FULL } from '../lib/weddingDjPlaylist';
 import { euros } from '../lib/superMariage';
 import { marqueDuTampon } from '../lib/marquesDuTicket';
-import { LIGNES_ADMINISTRATIVES } from '../lib/triDuTicket';
+import { LIGNES_ADMINISTRATIVES, estAdministrative } from '../lib/triDuTicket';
 import { LES_MARKERS, type Marker } from '../lib/lesMarkers';
 import { CURSEUR, ceQuiEstÉcrit } from '../lib/laFrappe';
+import { lApportDesOpérations, leMotDeLOpération, type LOpération } from '../lib/lesOpérations';
+import {
+  laFace,
+  laFaceMontre,
+  laNoteSeMontre,
+  leTitreDuPapier,
+  lAutreFace,
+  type FaceDuTicket,
+} from '../lib/lesFacesDuTicket';
 
 /* LE TICKET PLEIN ÉCRAN — L'APPLI EST LE TICKET, ET RIEN D'AUTRE
  *
@@ -34,6 +43,11 @@ import { CURSEUR, ceQuiEstÉcrit } from '../lib/laFrappe';
  *   │ ● ● ● ● ● ●  LE MARKER       │  sa couleur de marker
  *   └──────────────────────────────┘
  * ```
+ *
+ * **Il a deux faces.** Le même papier se lit de notre côté — c'est le ticket —
+ * et du côté de celui qui paie : c'est **sa** facture, puis **son** reçu dès
+ * que c'est réglé. Ce qui change, ce sont les mots, et ce qu'on cache : les
+ * notes privées, la cagnotte et les papiers restent de notre côté.
  *
  * **Trois gestes, et rien d'autre :**
  * 1. **on coche une ligne** — elle passe au **marker**, et le total se refait ;
@@ -152,6 +166,13 @@ export interface LeTicketPleinEcranProps {
   surMarker: (id: string) => void;
   /** **Ce que la caisse est en train d'écrire** : la ligne et sa lettre. */
   frappe?: { mot: string; pas: number } | null;
+  /** **De quel côté on lit le papier** : le nôtre, ou celui du client. */
+  face?: FaceDuTicket;
+  surFace?: (face: FaceDuTicket) => void;
+  /** **Les opérations** : ce qui est arrivé après coup (devis, facture, notes). */
+  opérations?: LOpération[];
+  /** **Le code complet** — tout le ticket, pour le code-barres. */
+  signature?: string;
 }
 
 export default function LeTicketPleinEcran({
@@ -171,7 +192,19 @@ export default function LeTicketPleinEcran({
   marker,
   surMarker,
   frappe,
+  // Sans rien dire, le papier se lit de notre côté : c'est le ticket.
+  face = 'emetteur',
+  surFace = () => {},
+  opérations = [],
+  signature,
 }: LeTicketPleinEcranProps) {
+  const mots = laFace(face);
+  const titre = leTitreDuPapier(face, payé);
+  /** Le papier du client ne montre **que ce qui est pris** : c'est son addition. */
+  const lesPrises = coches.filter((id) => !estAdministrative(id));
+  /** **Ce que les opérations ajoutent** : ça arrive sur le ticket, et ça compte. */
+  const apport = lApportDesOpérations(opérations);
+  const total = totaux.total + apport;
   const prises = new Set(coches);
   const lignesDesSections = lignesParSection();
 
@@ -232,7 +265,7 @@ export default function LeTicketPleinEcran({
       data-ticket-plein="vrai"
       data-ticket-code={code}
       data-ticket-cochees={coches.length}
-      data-ticket-total={totaux.total}
+      data-ticket-total={total}
       data-ticket-paye={payé}
       className="vp-comptoir relative min-h-svh w-full"
     >
@@ -245,7 +278,7 @@ export default function LeTicketPleinEcran({
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-30">
               <span
                 data-tampon-pose="tampon"
-                data-tampon-mot={marqueDuTampon('tampon')}
+                data-tampon-mot={face === 'client' ? 'RÉGLÉ' : marqueDuTampon('tampon')}
                 className="vp-tampon absolute px-[0.9em] py-[0.4em] text-[1.15em]"
                 style={{
                   top: PLACE_DU_TAMPON.top,
@@ -253,19 +286,29 @@ export default function LeTicketPleinEcran({
                   transform: `rotate(${PLACE_DU_TAMPON.tour}deg)`,
                 }}
               >
-                {marqueDuTampon('tampon')}
+                {face === 'client' ? 'RÉGLÉ' : marqueDuTampon('tampon')}
               </span>
             </div>
           )}
 
           {/* ——————————————— L'IMPRESSION : SUPER MARIAGE, EN HAUT ——————————————— */}
           <header data-ticket-entete="vrai" className="text-center">
-            <h1 data-ticket-marque="vrai" className="text-[1.9em] font-bold uppercase leading-none tracking-[0.16em]">
-              SUPER MARIAGE
+            <h1
+              data-ticket-marque="vrai"
+              data-ticket-titre={titre}
+              className="text-[1.9em] font-bold uppercase leading-none tracking-[0.16em]"
+            >
+              {titre}
             </h1>
-            <p className="mt-[0.5em] text-[0.95em] uppercase tracking-[0.22em] text-black/60">
-              Le spécialiste du ticket de caisse
-            </p>
+            {mots.émis ? (
+              <p data-face-emis="vrai" className="mt-[0.5em] text-[0.85em] uppercase tracking-[0.14em] text-black/60">
+                {mots.émis}
+              </p>
+            ) : (
+              <p className="mt-[0.5em] text-[0.95em] uppercase tracking-[0.22em] text-black/60">
+                Le spécialiste du ticket de caisse
+              </p>
+            )}
             <p className="mt-[0.9em] text-[0.95em] uppercase tracking-[0.1em]">
               {code} · CAISSE 3 · {heureDuJour}
             </p>
@@ -277,7 +320,7 @@ export default function LeTicketPleinEcran({
             </p>
             {payé && (
               <p data-ticket-paye-mot="vrai" className="mt-[0.7em] text-[1.05em] font-bold uppercase tracking-[0.2em]">
-                ✓ PAYÉ · MERCI
+                {mots.réglé}
               </p>
             )}
           </header>
@@ -307,9 +350,13 @@ export default function LeTicketPleinEcran({
           <section data-ticket-chiffres="vrai" className="mt-[1.1em] grid grid-cols-2 gap-x-[0.8em] gap-y-[0.7em]">
             {[
               { mot: 'LIGNES', valeur: String(totaux.articles), fluo: false },
-              { mot: 'LE MARIAGE', valeur: euros(totaux.total), fluo: false },
-              { mot: 'MIS DE CÔTÉ', valeur: euros(budget.misDeCôté), fluo: true },
-              { mot: 'RESTE À FINANCER', valeur: euros(budget.reste), fluo: true },
+              { mot: face === 'client' ? 'LE TOTAL' : 'LE MARIAGE', valeur: euros(total), fluo: false },
+              ...(laFaceMontre(face, 'voyage')
+                ? [
+                    { mot: 'MIS DE CÔTÉ', valeur: euros(budget.misDeCôté), fluo: true },
+                    { mot: 'RESTE À FINANCER', valeur: euros(budget.reste), fluo: true },
+                  ]
+                : []),
             ].map((chiffre) => (
               <p key={chiffre.mot} className="flex flex-col gap-[0.15em]">
                 <span className="text-[0.85em] uppercase tracking-[0.16em] text-black/55">{chiffre.mot}</span>
@@ -322,8 +369,12 @@ export default function LeTicketPleinEcran({
 
           {/* ——————————————— LES SECTIONS : TOUT LE MAGASIN, IMPRIMÉ ——————————————— */}
           {SECTIONS.map((section) => {
-            const àMoi = lignesDesSections.get(section.id) ?? [];
+            const toutes = lignesDesSections.get(section.id) ?? [];
+            // **Le papier du client ne liste que ce qui est pris** : c'est son
+            // addition. Le nôtre montre tout le magasin, comme un catalogue.
+            const àMoi = face === 'client' ? toutes.filter((l) => prises.has(l.id)) : toutes;
             const prisesIci = àMoi.filter((l) => prises.has(l.id)).length;
+            if (!àMoi.length) return null;
             return (
               <section key={section.id} data-ticket-section={section.id} className="mt-[1.3em]">
                 <p className="flex items-baseline justify-between gap-2 border-b border-black/60 pb-[0.25em] text-[0.95em] uppercase tracking-[0.14em]">
@@ -372,7 +423,22 @@ export default function LeTicketPleinEcran({
             );
           })}
 
-          {/* ——————————————— LE VOYAGE : LA CIBLE ——————————————— */}
+          {/* **Jamais un papier vide.** Du côté du client, tant que rien n'est
+              pris, le papier le dit — au lieu de ne rien montrer du tout. */}
+          {face === 'client' && lesPrises.length === 0 && (
+            <section
+              data-ticket-rien-à-régler="vrai"
+              className="mt-[1.3em] border-y border-dashed border-black/20 py-[0.5em]"
+            >
+              <p className="text-[0.9em] uppercase tracking-[0.12em] text-black/55">
+                rien à régler pour l’instant — le ticket se remplit au fur et à mesure
+              </p>
+            </section>
+          )}
+
+          {/* ——————————————— LE VOYAGE : LA CIBLE ———————————————
+              C'est la cagnotte du couple : elle reste de notre côté. */}
+          {laFaceMontre(face, 'voyage') && (
           <section data-ticket-voyage="vrai" data-ticket-reste={budget.reste} className="mt-[1.3em]">
             <p className="flex items-baseline justify-between gap-2 border-b border-black/60 pb-[0.25em] text-[0.95em] uppercase tracking-[0.14em]">
               <span className="font-bold">LE VOYAGE</span>
@@ -392,6 +458,51 @@ export default function LeTicketPleinEcran({
               <span className="vp-fluo tabular-nums">{euros(budget.reste)}</span>
             </p>
           </section>
+          )}
+
+          {/* ——————————————— LES OPÉRATIONS : CE QUI EST ARRIVÉ APRÈS COUP ———————————————
+              Un devis, une facture, un mot, un papier importé : ça se pose sur le
+              ticket comme une ligne de plus — et la note ne se montre qu'à ceux
+              qui doivent la voir. S'il n'y en a pas, la section n'existe pas. */}
+          {opérations.length > 0 && (
+            <section data-ticket-opérations={opérations.length} className="mt-[1.3em]">
+              <p className="flex items-baseline justify-between gap-2 border-b border-black/60 pb-[0.25em] text-[0.95em] uppercase tracking-[0.14em]">
+                <span className="font-bold">LES OPÉRATIONS</span>
+                <span className="tabular-nums text-black/55">{opérations.length}</span>
+              </p>
+              <p className="mt-[0.3em] text-[0.85em] text-black/45">
+                ce qui est arrivé après coup — devis, facture, mots, papiers
+              </p>
+              <div className="mt-[0.5em]">
+                {opérations.map((o) => (
+                  <div
+                    key={o.id}
+                    data-ticket-opération={o.id}
+                    data-opération-genre={o.genre}
+                    data-opération-prix={o.prix}
+                    data-opération-privée={o.privée}
+                    className="border-b border-dashed border-black/[0.14] py-[0.34em]"
+                  >
+                    <p className="flex items-baseline gap-[0.6em]">
+                      <span className="w-[6.2em] shrink-0 text-[0.85em] uppercase tracking-[0.1em] text-black/45">
+                        {leMotDeLOpération(o)}
+                      </span>
+                      <span className="min-w-0 flex-1">{o.mot}</span>
+                      {o.qui && <span className="shrink-0 text-[0.9em] text-black/55">{o.qui}</span>}
+                      <span className="shrink-0 tabular-nums">
+                        {o.prix ? euros(o.prix) : 'à convenir'}
+                      </span>
+                    </p>
+                    {!laNoteSeMontre(face, o.privée) && (
+                      <p data-opération-cachée="vrai" className="pl-[6.2em] text-[0.8em] uppercase tracking-[0.1em] text-black/35">
+                        note privée — de notre côté
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* ——————————————— LE PIED : LES TOTAUX, LES PAPIERS, LE CODE ——————————————— */}
           <footer data-ticket-pied="vrai" className="mt-[1.3em]">
@@ -399,6 +510,19 @@ export default function LeTicketPleinEcran({
               <span>SOUS-TOTAL ({totaux.articles} LIGNES DU MARIAGE)</span>
               <span className="tabular-nums">{euros(totaux.sousTotal)}</span>
             </p>
+            {/* **Ce qui est arrivé après coup compte aussi** : le devis, la
+                facture — c'est ce qui fait du ticket un objet qui évolue. */}
+            {apport > 0 && (
+              <p
+                data-ticket-apport={apport}
+                className="flex items-baseline justify-between gap-2 text-[0.9em]"
+              >
+                <span className="uppercase tracking-[0.1em]">
+                  LES OPÉRATIONS ({opérations.length})
+                </span>
+                <span className="tabular-nums">+ {euros(apport)}</span>
+              </p>
+            )}
             <p className="flex items-baseline justify-between gap-2 text-[0.9em] text-black/55">
               <span>REMISE FIDÉLITÉ</span>
               <span className="tabular-nums">−{euros(totaux.remise)}</span>
@@ -419,16 +543,19 @@ export default function LeTicketPleinEcran({
             >
               <span>TOTAL</span>
               <span data-ticket-total-mot="vrai" className="tabular-nums">
-                {euros(totaux.total)}
+                {euros(total)}
               </span>
             </button>
             <p className="mt-[0.35em] flex items-baseline justify-between gap-2 text-[0.9em]">
-              <span className="uppercase tracking-[0.1em] text-black/55">{payé ? 'PAYÉ' : 'À PAYER'}</span>
-              <span className="tabular-nums">{payé ? euros(totaux.total) : 'en cours'}</span>
+              <span data-ticket-à-régler={payé ? mots.réglé : mots.àRégler} className="uppercase tracking-[0.1em] text-black/55">
+                {payé ? mots.réglé : mots.àRégler}
+              </span>
+              <span className="tabular-nums">{payé ? euros(total) : 'en cours'}</span>
             </p>
 
             {/* **L'administratif est trié, et il est écrit où il est** — en clair,
                 sur une ligne, sans bouton : ça s'imprime, ça ne se visite pas. */}
+            {laFaceMontre(face, 'administratif') && (
             <p
               data-ticket-administratif={LIGNES_ADMINISTRATIVES.length}
               className="mt-[0.8em] flex items-baseline justify-between gap-2 border-t border-dashed border-black/20 pt-[0.4em] text-[0.85em] uppercase tracking-[0.1em] text-black/50"
@@ -436,6 +563,7 @@ export default function LeTicketPleinEcran({
               <span>L’ADMINISTRATIF — {LIGNES_ADMINISTRATIVES.length} PIÈCES, À PART</span>
               <span className="shrink-0 tabular-nums">HORS TICKET</span>
             </p>
+            )}
 
             <p data-ticket-portefeuilles="vrai" className="mt-[0.9em] text-[0.85em] uppercase tracking-[0.12em] text-black/55">
               LES CINQ PAPIERS
@@ -457,18 +585,35 @@ export default function LeTicketPleinEcran({
 
             <div className="mt-[0.9em] flex items-end justify-between gap-[1em]">
               <span aria-hidden="true" data-ticket-codebarres="vrai" className="vp-codebarres shrink-0">
-                {barresDe(code).map((largeur, rang) => (
+                {barresDe(signature ?? code).map((largeur, rang) => (
                   <i key={rang} style={{ width: `${largeur}px`, height: rang % 3 === 0 ? '100%' : '78%' }} />
                 ))}
               </span>
-              <span className="text-right text-[0.85em] uppercase tracking-[0.12em] text-black/55">
+              <span
+                data-ticket-signature={signature ?? code}
+                className="text-right text-[0.85em] uppercase tracking-[0.12em] text-black/55"
+              >
                 <span className="block">{code}</span>
                 <span className="block">{couple.noms}</span>
               </span>
             </div>
 
+            {/* **On tourne le papier.** Une ligne, pas un bouton de plus : le
+                même objet vu de l'autre côté — sa facture, puis son reçu. */}
+            <button
+              type="button"
+              data-action="tourner-le-papier"
+              data-face-bascule={face}
+              data-face-vers={lAutreFace(face)}
+              onClick={() => surFace(lAutreFace(face))}
+              aria-label={face === 'client' ? 'relire le papier de notre côté' : 'montrer le papier au client'}
+              className="mt-[0.9em] w-full border-t border-dashed border-black/25 pt-[0.4em] text-center text-[0.85em] uppercase tracking-[0.14em] text-black/50 transition hover:text-black/80"
+            >
+              {face === 'client' ? '← relire de notre côté' : 'vu par le client →'}
+            </button>
+
             <p className="mt-[1em] text-center text-[1.05em] uppercase tracking-[0.18em]">
-              Merci · et bon voyage
+              {mots.pied}
             </p>
             <p className="mt-[0.3em] text-center text-[0.8em] uppercase tracking-[0.14em] text-black/40">
               LE MARIAGE ENTIER, SUR UN SEUL TICKET · AIME
