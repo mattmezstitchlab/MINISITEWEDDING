@@ -186,6 +186,7 @@ import {
 import LeTicketPleinEcran from '../src/components/LeTicketPleinEcran';
 import { GLOBAL_WEDDING_PLAYLIST_FULL } from '../src/lib/weddingDjPlaylist';
 import { MOMENTS_DE_LA_NUIT, papiersDeLaCouverture } from '../src/lib/archiveDuMariage';
+import { COMBIEN_DE_LIGNES_DU_MARIAGE, LIGNES_ADMINISTRATIVES, estAdministrative } from '../src/lib/triDuTicket';
 import LeTelephoneAuTicket from '../src/components/LeTelephoneAuTicket';
 import {
   QUI_PEUT_VOIR,
@@ -2152,9 +2153,16 @@ check(
   true,
 );
 check(
-  'et rien ne s’affiche avant lui, sinon la barre',
-  ticketVide.indexOf('data-bande="barre"') < ticketVide.indexOf('id="le-ticket-plein"'),
-  true,
+  // « Et le header, supprime-le. » Le ticket est la première chose de la page :
+  // aucun en-tête ne le surplombe, rien à passer pour arriver au papier.
+  'et rien ne s’affiche avant lui : le ticket est le premier objet de la page',
+  [
+    ticketVide.indexOf('id="le-ticket-plein"') > 0 &&
+      ticketVide.indexOf('id="le-ticket-plein"') < ticketVide.indexOf('data-bande="archive"'),
+    ticketVide.includes('data-bande="barre"'),
+    ticketVide.includes('data-action="ouvrir-le-ticket"'),
+  ],
+  [true, false, false],
 );
 check(
   'le haut du ticket, c’est l’impression SUPER MARIAGE',
@@ -2241,6 +2249,66 @@ check(
   [CATÉGORIES_DU_TICKET.find((c) => c.id === 'rayon-horaires')!.lignes.length, CATÉGORIES_DU_TICKET.find((c) => c.id === 'rayon-horaires')!.lignes.length, true],
 );
 
+/* ——— LE TRI : L'ADMINISTRATIF ET LE JURIDIQUE SORTENT DU TICKET ———
+
+   « Dans le grand ticket, y'a encore des choses pas besoin — administratif ou
+   juridique, donc faut trier. » Les 31 pièces administratives (le contrat, les
+   actes, les assurances…) ne sont plus des lignes du mariage : elles ont leur
+   **propre ticket**, dans l'univers `papiers`, et le pied du grand ticket y
+   mène. Le mariage garde ses lignes à lui. */
+
+check(
+  'l’administratif est trié : trente et une pièces sorties du ticket',
+  [
+    LIGNES_ADMINISTRATIVES.length,
+    LIGNES_ADMINISTRATIVES.every((id) => LIGNES_DU_TICKET.some((l) => l.id === id)),
+    LIGNES_ADMINISTRATIVES.every(estAdministrative),
+  ],
+  [31, true, true],
+);
+check(
+  'et le mariage n’imprime que ses lignes : quatre-vingt-dix-neuf moins trente et une',
+  [
+    COMBIEN_DE_LIGNES_DU_MARIAGE,
+    LIGNES_DU_TICKET.length - LIGNES_ADMINISTRATIVES.length,
+    LIGNES_ADMINISTRATIVES.every((id) => LIGNES_DU_TICKET.some((l) => l.id === id)),
+  ],
+  [68, 68, true],
+);
+check(
+  'aucune ligne administrative n’est imprimée dans le grand ticket',
+  [...zoneTicket.matchAll(/data-ticket-ligne="([^"]+)"/g)].every((m) => !estAdministrative(m[1]!)),
+  true,
+);
+check(
+  // Le pied du ticket ne cache rien : il **dit** ce qui est parti, combien, et
+  // où — et il emmène au ticket des papiers.
+  'le pied du grand ticket mène au ticket des papiers',
+  (() => {
+    const pied = zoneTicket.slice(zoneTicket.indexOf('data-ticket-administratif='));
+    return [
+      /data-ticket-administratif="31"/.test(zoneTicket),
+      /data-action="administratif"[^>]*>/.test(zoneTicket),
+      zoneTicket.includes('L’ADMINISTRATIF'),
+      pied.length > 0,
+    ];
+  })(),
+  [true, true, true, true],
+);
+check(
+  'et le ticket des papiers, c’est les trente et une pièces, à part',
+  (() => {
+    const papiersUnivers = UNIVERS_DU_TICKET.find((u) => u.id === 'papiers')!;
+    return [papiersUnivers.lignes.length, papiersUnivers.lignes.every((l) => estAdministrative(l.id))];
+  })(),
+  [31, true],
+);
+check(
+  'le sous-total du ticket dit d’où il vient : les lignes du mariage',
+  /SOUS-TOTAL \(\d+ LIGNES DU MARIAGE\)/.test(zoneTicket),
+  true,
+);
+
 /* ——— LA MUSIQUE : LE PLAN DE LA NUIT, MOMENT PAR MOMENT ——— */
 
 check(
@@ -2268,12 +2336,12 @@ check(
 /* ——— TOUT LE MAGASIN EST IMPRIMÉ : UN LONG TICKET, LIGNE À LIGNE ——— */
 
 check(
-  'les 99 lignes du magasin sont imprimées sur le ticket, chacune une fois',
+  'les lignes du mariage sont imprimées sur le ticket, chacune une fois — l’administratif est ailleurs',
   (() => {
     const ids = [...zoneTicket.matchAll(/data-ticket-ligne="([^"]+)"/g)].map((m) => m[1]!);
-    return [ids.length, new Set(ids).size, ids.length === LIGNES_DU_TICKET.length];
+    return [ids.length, new Set(ids).size, ids.length === COMBIEN_DE_LIGNES_DU_MARIAGE];
   })(),
-  [LIGNES_DU_TICKET.length, LIGNES_DU_TICKET.length, true],
+  [COMBIEN_DE_LIGNES_DU_MARIAGE, COMBIEN_DE_LIGNES_DU_MARIAGE, true],
 );
 check(
   'chaque ligne dit son prix, et si elle est prise',
@@ -2283,7 +2351,7 @@ check(
 check(
   'et une ligne, c’est un bouton : on coche à même le papier',
   (zoneTicket.match(/<button[^>]*data-ticket-ligne=/g) ?? []).length,
-  LIGNES_DU_TICKET.length,
+  COMBIEN_DE_LIGNES_DU_MARIAGE,
 );
 check(
   'ce qui est coché passe au fluo — et le compte suit',
@@ -2292,8 +2360,8 @@ check(
     const fluoVides = vides.filter((m) => m[2]!.includes('vp-fluo')).length;
     const prises = [...ticketPlein.matchAll(/data-ticket-ligne="[^"]+" data-cochee="(true|false)"/g)];
     return [
-      vides.length === LIGNES_DU_TICKET.length && fluoVides === 0,
-      prises.filter((m) => m[1] === 'true').length === cochesDessai.length,
+      vides.length === COMBIEN_DE_LIGNES_DU_MARIAGE && fluoVides === 0,
+      prises.filter((m) => m[1] === 'true').length === cochesDessai.filter((id) => !estAdministrative(id)).length,
     ];
   })(),
   [true, true],
@@ -2307,7 +2375,9 @@ check(
   'chaque section dit ce qu’on y a pris, sur ce qu’on peut y prendre',
   (() => {
     const titres = [...ticketPlein.matchAll(/data-ticket-section="([a-z-]+)"/g)].map((m) => m[1]);
-    return titres.join(',') === 'temps,musique,table,gens,petits-prix,documents,site';
+    // « L’administratif ou juridique n’a pas sa place ici » : la section
+    // `documents` n’est plus imprimée — les papiers ont leur ticket.
+    return titres.join(',') === 'temps,musique,table,gens,petits-prix,site';
   })(),
   true,
 );
@@ -2522,8 +2592,8 @@ check(
 check(
   'chaque pièce tombe à sa place, de travers — comme un collage',
   (() => {
-    const places = [...archive.matchAll(/data-papier-étalé="[^"]+" data-papier-genre="[^"]+" style="([^"]*)"/g)].map((m) => m[1]!);
-    return [places.length, places.every((p) => p.includes('--x:') && p.includes('--r:'))];
+    const places = [...archive.matchAll(/data-papier-étalé="[^"]+" data-papier-genre="[^"]+"[^>]*style="([^"]*)"/g)].map((m) => m[1]!);
+    return [places.length, places.every((p) => p.includes('--x:') && p.includes('--r:') && p.includes('--w:'))];
   })(),
   [papiers.length, true],
 );
@@ -2531,7 +2601,7 @@ check(
   'et le collage s’enroule sur un téléphone : il tombe en absolu sur un écran large',
   (() => {
     const css = readFileSync('src/index.css', 'utf8');
-    return [css.includes('.vp-collage'), /@media \(min-width: 640px\)[\s\S]{0,200}\.vp-papier-étalé\s*\{[^}]*position:\s*absolute/.test(css)];
+    return [css.includes('.vp-collage'), /@media \(min-width: 640px\)[\s\S]{0,200}\.vp-posé\s*\{[^}]*position:\s*absolute/.test(css)];
   })(),
   [true, true],
 );
@@ -2565,10 +2635,10 @@ check(
 check(
   'et le polaroïd du jour montre vraiment une image, dans son cadre blanc',
   (() => {
-    const cadre = archive.slice(archive.indexOf('data-papier-étalé="polaroïd-du-jour"'));
+    const cadre = archive.slice(archive.indexOf('data-papier-étalé="polaroïd-du-jour"'), archive.indexOf('data-papier-étalé="carte-postale"'));
     return [
-      /^[\s\S]{0,320}?src="\/images\//.test(cadre),
-      cadre.slice(0, 900).includes('vp-polaroïd'),
+      /^[\s\S]*?src="\/images\//.test(cadre),
+      cadre.includes('vp-polaroïd'),
     ];
   })(),
   [true, true],
@@ -2587,6 +2657,107 @@ check(
   [9, true, 'closing'],
 );
 check('le sticker est fluo — c’est le seul accent de couleur', archive.includes('bg-[var(--vp-fluo)]'), true);
+
+/* ——— LES TROIS GESTES : DÉPLACER, RETOURNER, ÉCRIRE ———
+
+   « Les papiers plus petits, en haut, déplaçables, retournables, et on écrit. »
+   Chaque pièce est prise par le doigt (ou la souris), se retourne pour montrer
+   son dos — et ce dos porte un champ, avec l'invite de ce qu'on y écrit. */
+
+check(
+  'chaque pièce est déplaçable : elle porte sa place, et le geste',
+  (() => {
+    const déplaçables = [...archive.matchAll(/data-papier-étalé="([^"]+)" data-papier-genre="[^"]+"[^>]*data-piece-deplacable="(vrai|non)"/g)];
+    return [déplaçables.length, déplaçables.every((m) => m[2] === 'vrai')];
+  })(),
+  [8, true],
+);
+check(
+  'et les pièces sont petites, en haut de la page : aucune ne prend la moitié de la table',
+  (() => {
+    const lib = papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION);
+    return [lib.every((p) => p.largeur <= 34), lib.every((p) => p.y <= 50), Math.max(...lib.map((p) => p.largeur))];
+  })(),
+  [true, true, 32],
+);
+check(
+  'chaque pièce a un dos, écrit à la main — avec son invite',
+  (() => {
+    const lib = papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION);
+    return [lib.every((p) => p.dos.length > 2 && p.invite.length > 8), lib.map((p) => p.dos).join(' · ')];
+  })(),
+  [true, 'LE TIMBRE · LA LISTE · AU DOS · AU DOS DE LA CARTE · LE REÇU · CE QU’ON VEUT ENTENDRE · LE STICKER · LE CODE'],
+);
+check(
+  'et l’on retourne la pièce : le dos est rendu, et l’on y écrit vraiment',
+  (() => {
+    const dos = [...archive.matchAll(/data-piece-dos="([^"]+)"/g)].map((m) => m[1]);
+    const champs = [...archive.matchAll(/<textarea[^>]*data-piece-champ="([^"]+)"/g)].map((m) => m[1]);
+    return [dos.length, dos.length === 8, champs.length === 8, dos.join(',') === champs.join(',')];
+  })(),
+  [8, true, true, true],
+);
+check(
+  'le retournement est un vrai retournement : deux faces, et le dos derrière',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      /\.vp-piece\[data-piece-retournee='true'\]\s*\.vp-piece-boîte\s*\{[^}]*rotateY\(180deg\)/.test(css),
+      // Le nom de la classe est écrit **sans accent** — dans la feuille de
+      // style comme dans le composant. C'est ce qui manquait : la classe du dos
+      // était écrite avec un accent d'un côté, sans de l'autre, et la pièce ne
+      // se retournait pas.
+      /\.vp-piece-derriere\s*\{[^}]*rotateY\(180deg\)/.test(css) &&
+        readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8').includes('vp-piece-derriere') &&
+        !css.includes('vp-piece-derrière'),
+      css.includes('backface-visibility: hidden'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  // « Au clic sur les papiers ça s’ouvre petit, donc y’a bug » : la pièce
+  // s’ouvre **en grand**, à la largeur de la feuille — et c’est là seulement
+  // qu’elle propose d’aller voir ce qu’elle annonce.
+  'et au clic, la pièce s’ouvre en grand — pas en petit',
+  (() => {
+    const source = readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8');
+    return [
+      archive.includes('data-action="ouvrir-la-piece"'),
+      source.includes('data-archive-feuille-grand="vrai"'),
+      source.includes('lesProps(ouverte, true)'),
+      /\.vp-piece-grand\s*\{[^}]*width:\s*100%/.test(readFileSync('src/index.css', 'utf8')),
+      // La feuille ouverte est large, et la table, elle, est bornée : la pièce
+      // posée reste petite, la pièce ouverte est deux fois plus grande.
+      source.includes('max-w-[620px]'),
+      source.includes('sm:max-w-[1100px]'),
+    ];
+  })(),
+  [true, true, true, true, true, true],
+);
+check(
+  // Ce qu'on écrit reste : c'est un brouillon gardé sur place, et quand on
+  // rouvre une pièce où l'on a écrit, on la rouvre **du côté écrit**.
+  'ce qu’on écrit reste sur la table, et l’on rouvre du bon côté',
+  (() => {
+    const source = readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8');
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      source.includes("'supermariage:pieces'") && source.includes('localStorage.setItem'),
+      /data-piece-retournee='true'\]\s*\.vp-piece-face:not\(\.vp-piece-derriere\)\s*\{[^}]*pointer-events:\s*none/.test(css),
+      source.includes('surOuvrir: () => {'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  'un clic n’ouvre pas quand on vient de déplacer la pièce',
+  (() => {
+    const source = readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8');
+    return source.includes('glissé.current') && source.includes('> 3');
+  })(),
+  true,
+);
 check(
   'toutes les images de l’archive existent dans le dépôt',
   [archive.matchAll(/src="(\/images\/[^"]+)"/g)]
@@ -2647,9 +2818,11 @@ check(
    sien, et décide qui le voit**. */
 
 check(
-  'dix univers de ticket, et chacun a ses lignes',
+  // « On pourrait avoir une page ticket pour plein d’autres univers » — et
+  // l’administratif, qui n’a rien à faire sur le ticket du mariage, a le sien.
+  'onze univers de ticket, et chacun a ses lignes',
   UNIVERS_DU_TICKET.map((u) => u.id),
-  ['mini-site', 'photos', 'videos', 'repas', 'enfants', 'dj', 'rsvp', 'temoins', 'delires', 'devis'],
+  ['mini-site', 'photos', 'videos', 'repas', 'enfants', 'dj', 'rsvp', 'temoins', 'delires', 'devis', 'papiers'],
 );
 check(
   'chaque univers dit son mot, sa phrase, son geste et ses yeux',
@@ -2659,9 +2832,19 @@ check(
   true,
 );
 check(
-  'les tickets proposent entre huit et douze lignes, jamais un ticket vide',
-  UNIVERS_DU_TICKET.map((u) => u.lignes.length >= 6 && u.lignes.length <= 12),
-  UNIVERS_DU_TICKET.map(() => true),
+  // Les dix tickets de métier tiennent en une poignée de lignes ; le ticket des
+  // papiers, lui, est long : c’est la paperasse du mariage, toute entière.
+  'les tickets de métier proposent entre huit et douze lignes, jamais un ticket vide',
+  UNIVERS_DU_TICKET.filter((u) => u.id !== 'papiers').map((u) => u.lignes.length >= 6 && u.lignes.length <= 12),
+  UNIVERS_DU_TICKET.filter((u) => u.id !== 'papiers').map(() => true),
+);
+check(
+  'et le ticket des papiers est long comme la paperasse : il ne se cache pas',
+  [
+    UNIVERS_DU_TICKET.find((u) => u.id === 'papiers')!.lignes.length,
+    UNIVERS_DU_TICKET.find((u) => u.id === 'papiers')!.geste.length > 3,
+  ],
+  [31, true],
 );
 check(
   'aucune ligne n’a deux fois le même identifiant',
@@ -2752,12 +2935,12 @@ check(
   true,
 );
 check(
-  'on y choisit l’univers — les dix, et celui qui est actif',
+  'on y choisit l’univers — les onze, et celui qui est actif',
   (() => {
     const choisis = [...atelier.matchAll(/data-univers="([a-z-]+)" data-univers-actif="(true|false)"/g)];
     return [choisis.length, choisis.filter((m) => m[2] === 'true').map((m) => m[1])];
   })(),
-  [10, ['mini-site']],
+  [UNIVERS_DU_TICKET.length, ['mini-site']],
 );
 check(
   'les lignes de l’univers sont là, à cocher une par une',
@@ -3165,8 +3348,12 @@ check('les familles portent les mots de l’écran', [motDeLaFamille('jour'), mo
    et la copie n'y est pas. */
 
 check(
-  'la page a une barre, et elle porte la marque',
-  ticketVide.includes('data-bande="barre"') && ticketVide.includes('data-action="ouvrir-le-ticket"'),
+  // La composition de la référence gardait une barre en tête ; ici, le premier
+  // objet est **le papier**, et la marque est imprimée dessus.
+  'il n’y a plus de barre : la page commence par le ticket, la marque est sur le papier',
+  !ticketVide.includes('data-bande="barre"') &&
+    ticketVide.includes('data-ticket-marque="vrai"') &&
+    ticketVide.includes('data-action="partager-flottant"'),
   true,
 );
 check(
@@ -3236,7 +3423,7 @@ check(
   'l’ordre des bandes est celui d’une page, pas d’un inventaire',
   (() => {
     const ordre = [
-      'barre', 'le-ticket-plein', 'visuel', 'titre', 'héros', 'l-appareil',
+      'le-ticket-plein', 'archive', 'visuel', 'titre', 'héros', 'l-appareil',
       'LE PROGRAMME', 'familles', 'on-coche', 'le-ticket',
     ];
     const positions = ordre.map((cle) =>
@@ -3463,17 +3650,14 @@ check(
   [...LA_BARRE.liens, ...LE_PIED.liens].every((l) => l.vers.startsWith('#')),
   true,
 );
+/* Le header est parti : ce qu'il portait — la marque, le compte des lignes, la
+   part du rêve, les portes — est dit là où c'est utile, et **rien ne se colle
+   en haut de la page** : le papier passe sous le doigt, pas sous une barre. */
 check(
-  'la barre est flottante : la marque, les portes, la cible',
-  ticketVide.includes('data-bande="barre"') &&
-    ticketVide.includes('vp-barre-flottante') &&
-    !ticketVide.includes('data-barre-code'),
-  true,
-);
-check(
-  'elle se colle en haut, et elle est translucide — c’est ça, plus moderne',
-  /data-bande="barre"[^>]*class="sticky top-0[^"]*"/.test(ticketVide) &&
-    /backdrop-filter: saturate\(180%\) blur\(20px\)/.test(readFileSync('src/index.css', 'utf8')),
+  'rien ne se colle en haut de la page : plus de header, donc plus rien à survoler',
+  !ticketVide.includes('data-bande="barre"') &&
+    !ticketVide.includes('data-barre-') &&
+    !ticketVide.includes('vp-barre-flottante'),
   true,
 );
 /* « Plein de texte en blanc on voit rien » : la page est blanche, donc **aucun
@@ -3542,21 +3726,29 @@ check(
   true,
 );
 check(
-  'la barre dit où en est le ticket, sans qu’on descende',
-  [ticketVide.includes('data-barre-compte="0"'), ticketPlein.includes(`data-barre-compte="${cochesDessai.length}"`)],
-  [true, true],
-);
-check(
-  'et la barre porte la cible : la part du rêve déjà financée',
+  // Sans header, le compte est porté par la pastille flottante — et le papier
+  // dit le total : on sait où en est le ticket en le lisant, pas en levant les
+  // yeux vers une barre.
+  'le compte du ticket est dit, sans barre pour le dire',
   [
-    ticketVide.includes('data-barre-part="0"'),
-    ticketPlein.includes('data-barre-part="' + String(Math.min(100, Math.round((budgetDuRêve(cochesDessai).misDeCôté / LE_RÊVE.prix) * 100))) + '"'),
+    ticketVide.includes('data-flottant-compte="0"'),
+    ticketPlein.includes(`data-flottant-compte="${cochesDessai.length}"`),
+    ticketVide.includes('0 LIGNE'),
   ],
-  [true, true],
+  [true, true, true],
 );
 check(
-  'et sur un téléphone, les portes glissent sous la marque — pas de menu à ouvrir',
-  ticketVide.includes('data-barre-portes="vrai"') && !/aria-label="[^"]*menu/i.test(ticketVide),
+  'et la cible reste sur la page : la part du rêve déjà financée',
+  [
+    ticketPlein.includes(`${Math.round(budgetDuRêve(cochesDessai).part * 100)} %`),
+    ticketVide.includes('0 %'),
+    !ticketVide.includes('data-barre-part'),
+  ],
+  [true, true, true],
+);
+check(
+  'et sur un téléphone, les portes glissent sous le papier — pas de menu à ouvrir',
+  !ticketVide.includes('data-barre-portes') && !/aria-label="[^"]*menu/i.test(ticketVide),
   true,
 );
 check(

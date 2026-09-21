@@ -43,8 +43,9 @@ import { type SortieDeLaFente } from '../components/MachineDeRipple';
 import TicketCaisse from '../components/TicketCaisse';
 import AppareilDuMariage from '../components/AppareilDuMariage';
 import MiniSiteDuMariage from '../components/MiniSiteDuMariage';
+/* `BarreDeLAime` **existe toujours** dans `LesBandesDeLAime` — elle n'est plus
+   montée sur la page : « et le header, supprime-le ». */
 import {
-  BarreDeLAime,
   LePied,
   LeTitre,
   LesFormules,
@@ -408,11 +409,10 @@ export default function LaCaisse() {
       data-demande={état.demande}
       className="min-h-svh bg-white text-[color:var(--vp-ink)]"
     >
-      <BarreDeLAime
-        lignes={coches.length}
-        total={totaux.total}
-        part={budget.part}
-      />
+      {/* **Plus de header.** « Et le header, supprime-le. » Le premier écran est
+          le papier : rien ne le précède, rien ne le surplombe, et l'on scrolle
+          le ticket du haut de la page jusqu'en bas. La barre de marque reste
+          dans le dépôt (`BarreDeLAime`) — elle n'est simplement plus montée. */}
 
       {/* ═════════════════════════════════════════════════════════════════════
           LE TICKET, PLEIN ÉCRAN — L'APPLI EST LE TICKET
@@ -434,6 +434,11 @@ export default function LaCaisse() {
         budget={budget}
         tampons={tampons}
         surTamponner={tamponner}
+        surAdministratif={() => {
+          choisirLUnivers('papiers');
+          document.getElementById('l-atelier')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          unMot(`l’administratif — ${universParId('papiers').lignes.length} pièces, sur son ticket`);
+        }}
         mot={marche}
         adresseDuSite={site.adresse}
         surPartager={partagerLeMiniSite}

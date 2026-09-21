@@ -5,6 +5,7 @@ import type { TotauxDuTicket } from '../lib/portefeuille';
 import { DJ_CHRONOLOGICAL_PHASES, GLOBAL_WEDDING_PLAYLIST_FULL } from '../lib/weddingDjPlaylist';
 import { euros } from '../lib/superMariage';
 import { marqueDuTampon } from '../lib/marquesDuTicket';
+import { LIGNES_ADMINISTRATIVES } from '../lib/triDuTicket';
 
 /* LE TICKET PLEIN ÉCRAN — L'APPLI EST LE TICKET
  *
@@ -53,15 +54,22 @@ const RAYONS_DE_MÉTIERS = CATÉGORIES_DU_TICKET.filter(
 /** Les trois menus du magasin. */
 const MENUS = CATÉGORIES_DU_TICKET.filter((c) => c.id.startsWith('menu-')).map((c) => c.id);
 
-/** **Les sections du ticket**, dans l'ordre où l'on imprime : le jour, ce qu'on
- *  entend, ce qu'on mange, qui travaille, les petits prix, les papiers, le site. */
+/**
+ * **Les sections du ticket**, dans l'ordre où l'on imprime : le jour, ce qu'on
+ * entend, ce qu'on mange, qui travaille, les petits prix, le site, le voyage.
+ *
+ * **L'administratif n'y est pas.** « Dans le grand ticket, y'a encore des choses
+ * pas besoin — administratif ou juridique. Donc faut trier. » Les 31 pièces
+ * (attestations, contrats, actes, procurations) ont leur propre ticket — le
+ * ticket `PAPIERS` — et le mariage reste un mariage : le foot du papier les
+ * compte sur une seule ligne, avec la porte pour aller les voir.
+ */
 const SECTIONS: Array<{ id: string; mot: string; sous: string; catégories: string[]; temps?: boolean }> = [
   { id: 'temps', mot: 'LA JOURNÉE', sous: 'les heures, dans l’ordre', catégories: ['rayon-horaires'], temps: true },
   { id: 'musique', mot: 'LA MUSIQUE', sous: 'le plan de la nuit, moment par moment', catégories: ['rayon-musicien', 'rayon-dj'] },
   { id: 'table', mot: 'LA TABLE', sous: 'ce qui se sert', catégories: MENUS },
   { id: 'gens', mot: 'LES GENS', sous: 'les métiers du jour', catégories: RAYONS_DE_MÉTIERS },
   { id: 'petits-prix', mot: 'LES PETITS PRIX', sous: 'ce qui ne change pas le mariage', catégories: ['rayon-supplements'] },
-  { id: 'documents', mot: 'LES DOCUMENTS', sous: 'ce qu’on demande, ce qu’on emporte', catégories: ['documents'] },
   { id: 'site', mot: 'LE SITE', sous: 'ce que les invités voient', catégories: ['site'] },
 ];
 
@@ -145,6 +153,8 @@ export interface LeTicketPleinEcranProps {
   surTamponner: (id: string) => void;
   /** **Le mot du dernier geste** : ce qui vient de se passer sur le papier. */
   mot: string | null;
+  /** **Aller à l'administratif** : ses pièces ont leur ticket, pas ce papier-ci. */
+  surAdministratif: () => void;
   /** Le lien du mini-site, et les deux gestes qui vont avec. */
   adresseDuSite: string;
   surPartager: () => void;
@@ -167,6 +177,7 @@ export default function LeTicketPleinEcran({
   tampons,
   surTamponner,
   mot,
+  surAdministratif,
   adresseDuSite,
   surPartager,
   surSite,
@@ -397,7 +408,7 @@ export default function LeTicketPleinEcran({
           {/* ——————————————— LE PIED : LES TOTAUX, LES PAPIERS, LE CODE ——————————————— */}
           <footer data-ticket-pied="vrai" className="mt-[1.3em]">
             <p className="flex items-baseline justify-between gap-2 text-[0.9em] text-black/55">
-              <span>SOUS-TOTAL ({totaux.articles} LIGNES)</span>
+              <span>SOUS-TOTAL ({totaux.articles} LIGNES DU MARIAGE)</span>
               <span className="tabular-nums">{euros(totaux.sousTotal)}</span>
             </p>
             <p className="flex items-baseline justify-between gap-2 text-[0.9em] text-black/55">
@@ -418,6 +429,18 @@ export default function LeTicketPleinEcran({
               <span className="uppercase tracking-[0.1em] text-black/55">{payé ? 'PAYÉ' : 'À PAYER'}</span>
               <span className="tabular-nums">{payé ? euros(totaux.total) : 'en cours'}</span>
             </p>
+
+            {/* **L'administratif est trié, et il est écrit là où il est.** */}
+            <button
+              type="button"
+              data-ticket-administratif={LIGNES_ADMINISTRATIVES.length}
+              data-action="administratif"
+              onClick={surAdministratif}
+              className="mt-[0.8em] flex w-full items-baseline justify-between gap-2 border-t border-dashed border-black/20 pt-[0.4em] text-left text-[0.85em] uppercase tracking-[0.1em] text-black/50 transition hover:text-[color:var(--vp-ink)]"
+            >
+              <span>L’ADMINISTRATIF — {LIGNES_ADMINISTRATIVES.length} PIÈCES, À PART</span>
+              <span className="shrink-0 tabular-nums">le ticket PAPIERS →</span>
+            </button>
 
             <p data-ticket-portefeuilles="vrai" className="mt-[0.9em] text-[0.85em] uppercase tracking-[0.12em] text-black/55">
               LES CINQ PAPIERS

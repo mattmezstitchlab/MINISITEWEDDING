@@ -19,10 +19,13 @@
  *   TÉMOINS       le ticket des témoins : le mot, la bague, le timing
  *   DÉLIRES       le ticket des conneries — pour rire, et ça compte
  *   DEVIS         les devis, les factures, les acomptes, les soldes
+ *   PAPIERS       l'administratif et le juridique, à part : les 31 pièces
  *
  * Rien n'est stocké : un ticket est **une adresse** — `?ticket=photos&lignes=…`
  * — comme le caddie du mariage l'est déjà.
  */
+
+import { MOTS_ADMINISTRATIFS } from './triDuTicket';
 
 export interface LigneDUnivers {
   id: string;
@@ -81,7 +84,7 @@ const MOMENTS_PHOTO = [
 ];
 
 /**
- * **Les tickets du monde** — dix univers, chacun avec ses lignes. Un ticket
+ * **Les tickets du monde** — onze univers, chacun avec ses lignes. Un ticket
  * *est* un métier : on n'y met pas les mêmes lignes si l'on demande des photos,
  * un dîner ou un devis.
  */
@@ -269,6 +272,18 @@ export const UNIVERS_DU_TICKET: UniversDeTicket[] = [
       { id: 'devis-solde', mot: 'Le solde, à 30 jours', sous: 'avant le 12 juin', inclus: true },
       { id: 'devis-extra', mot: 'Ce qui n’était pas prévu', sous: 'la ligne qu’on assume', prix: 412 },
     ],
+  },
+  {
+    id: 'papiers',
+    mot: 'PAPIERS',
+    /* **L'administratif a son ticket.** Rien n'est supprimé : les pièces
+       quittent le ticket du mariage et viennent ici — prêtes le jour où l'on
+       demande l'attestation, la procuration, ou le visa du voyage. */
+    sous: 'l’administratif et le juridique, à part — prêt quand on le demande',
+    image: '/images/punk-papier.jpg',
+    qui: 'les mariés',
+    geste: 'RÉUNIR',
+    lignes: MOTS_ADMINISTRATIFS.map((p) => ({ id: p.id, mot: p.mot, sous: p.sous, inclus: true })),
   },
 ];
 

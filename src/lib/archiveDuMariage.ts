@@ -69,8 +69,15 @@ export interface PapierÉtalé {
   x: number;
   y: number;
   tour: number;
-  /** Sa largeur, en pour cent de la bande. */
+  /**
+   * Sa largeur, en pour cent de la bande — **petite**, pour qu'il y ait de la
+   * place autour : c'est une table, pas une planche de contact.
+   */
   largeur: number;
+  /** Ce qu'on écrit au dos : c'est le titre du dos du papier. */
+  dos: string;
+  /** Ce que le dos propose d'écrire, en clair — la ligne grise du champ. */
+  invite: string;
 }
 
 /**
@@ -92,21 +99,25 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
       genre: 'timbre',
       mot: 'TIMBRE',
       sous: 'ce qui affranchit',
-      x: 6,
-      y: 5,
+      x: 3,
+      y: 4,
       tour: -9,
-      largeur: 17,
+      largeur: 11,
+      dos: 'LE TIMBRE',
+      invite: 'à coller, ou à garder',
     },
     {
       id: 'note-objets',
       genre: 'note',
-      mot: 'TAMPON · TIMBRE · CARTE',
-      sous: 'sept objets, sept marques',
+      mot: 'LISTE · 01',
+      sous: 'tampon · timbre · carte · sticker',
       ouvre: { mot: 'voir les sept objets', cible: 'l-appareil' },
-      x: 27,
-      y: 2,
+      x: 18,
+      y: 3,
       tour: 5,
-      largeur: 26,
+      largeur: 21,
+      dos: 'LA LISTE',
+      invite: 'ce qu’il ne faut pas oublier',
     },
     ...(visuelDuJour
       ? [
@@ -117,10 +128,12 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
             sous: 'le mariage, tel qu’il est',
             image: visuelDuJour,
             ouvre: { mot: 'voir le visuel du jour', cible: 'le-visuel' },
-            x: 60,
-            y: 2,
+            x: 45,
+            y: 3,
             tour: 3,
-            largeur: 27,
+            largeur: 17,
+            dos: 'AU DOS',
+            invite: 'ce qu’on voit, ce qu’on dit',
           },
         ]
       : []),
@@ -131,10 +144,12 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
       sous: 'le voyage, écrit le jour même',
       image: '/images/desert-star-dance.jpg',
       ouvre: { mot: 'voir le voyage', cible: 'l-appareil' },
-      x: 84,
-      y: 8,
+      x: 68,
+      y: 5,
       tour: -7,
-      largeur: 23,
+      largeur: 16,
+      dos: 'AU DOS DE LA CARTE',
+      invite: 'trois lignes, et une adresse',
     },
     {
       id: 'ticket-du-mariage',
@@ -142,60 +157,49 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
       mot: 'LE TICKET',
       sous: code,
       ouvre: { mot: 'voir le site des invités', cible: 'site' },
-      x: 5,
-      y: 55,
+      x: 3,
+      y: 38,
       tour: -4,
-      largeur: 25,
+      largeur: 19,
+      dos: 'LE REÇU',
+      invite: 'ce qu’on a payé, ce qui reste',
     },
     {
       id: 'bande-musique',
       genre: 'bande',
-      mot: 'LA NUIT, EN MUSIQUE',
+      mot: 'LA NUIT',
       sous: 'neuf moments, seize morceaux',
       ouvre: { mot: 'voir la musique, sur le ticket', cible: 'le-ticket-plein' },
-      x: 36,
-      y: 68,
+      x: 27,
+      y: 46,
       tour: 2.5,
-      largeur: 40,
+      largeur: 32,
+      dos: 'CE QU’ON VEUT ENTENDRE',
+      invite: 'un morceau, une fois',
     },
     {
       id: 'sticker-fluo',
       genre: 'sticker',
       mot: 'PAYÉ',
       sous: 'et bon voyage',
-      x: 84,
-      y: 52,
+      x: 65,
+      y: 33,
       tour: 11,
-      largeur: 14,
+      largeur: 10,
+      dos: 'LE STICKER',
+      invite: 'un mot, trois lettres',
     },
     {
       id: 'code-du-mariage',
       genre: 'code',
       mot: code,
       sous: 'le code du mariage',
-      x: 78,
-      y: 80,
+      x: 79,
+      y: 44,
       tour: -6,
-      largeur: 25,
+      largeur: 18,
+      dos: 'LE CODE',
+      invite: 'qui l’a, entre',
     },
   ];
-}
-
-/* —————————————————— LES POLAROÏDS : LES DÉCORS DE LA SEMAINE —————————————————— */
-
-export interface Polaroïd {
-  id: string;
-  /** L'image, ou `null` quand la bibliothèque n'a pas encore livré la pièce. */
-  image: string | null;
-  /** La première ligne de la légende, comme un nom de lieu. */
-  lieu: string;
-  /** La seconde : l'année, la semaine, le repère. */
-  repere: string;
-  /** L'inclinaison du polaroïd : deux voisins ne penchent jamais du même côté. */
-  tour: number;
-}
-
-/** Les légendes des polaroïds tiennent en deux lignes, comme une archive. */
-export function legendeDuPolaroïd(lieu: string, repere: string): string {
-  return `${lieu} / ${repere}`;
 }

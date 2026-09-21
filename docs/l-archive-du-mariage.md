@@ -30,7 +30,8 @@ est posé), et **le titre passe par-dessus** (c'est lui qui tient le désordre).
 | une barre minuscule, très espacée | la ligne du haut de l'archive : `NUB-139 · 12 JUIN 2027` à gauche, `AIME · LE SPÉCIALISTE DU TICKET` à droite | `data-archive-code` |
 
 **Et une chose que la référence ne peut pas faire, et que nous faisons : chaque
-papier ouvre ce qu'il annonce.** C'est du collage *cliquable* —
+papier s'ouvre en grand, et propose ce qu'il annonce.** C'est du collage
+*vivant* —
 
 | Le papier | Où il mène |
 | --- | --- |
@@ -42,6 +43,37 @@ papier ouvre ce qu'il annonce.** C'est du collage *cliquable* —
 
 Les autres pièces — le timbre, le sticker, le code — ne mènent nulle part : elles
 **sont** l'archive.
+
+## 2 bis. Les trois gestes, sur chaque pièce
+
+> « Les cartes postales plus petites, en haut, pour pouvoir les déplacer, les
+> retourner, et écrire. » — et : « au clic sur les papiers ça s'ouvre petit,
+> donc y'a bug. »
+
+Le collage ne se regarde plus : il se **touche**. Trois gestes, et rien d'autre.
+
+```
+   ①  ON LA DÉPLACE      le doigt (ou la souris) la prend, on la pose ailleurs
+                         — les pièces sont petites exprès, il y a de la place
+   ②  ON LA RETOURNE     le petit bouton du coin ↺ : au dos, un vrai dos de
+                         papier, et un champ où l'on écrit à la main
+   ③  ON L'OUVRE         un clic : la pièce s'ouvre EN GRAND, à la largeur de
+                         la feuille — et c'est là qu'elle propose d'aller voir
+                         ce qu'elle annonce
+```
+
+Ce qu'on écrit au dos est **gardé sur place** (`localStorage`,
+`supermariage:pieces`) avec la place de chaque pièce : on retrouve sa table
+comme on l'a laissée. Rien ne part nulle part — un brouillon sur la table.
+
+Deux détails qui font que ça marche :
+
+- **déplacer n'est pas ouvrir** : si la pièce a bougé de plus de trois pixels,
+  le clic n'ouvre pas — on vient de la poser ;
+- **en grand, c'est grand** : la feuille ouverte fait toute la largeur
+  (`data-archive-feuille-grand="vrai"`, `.vp-piece-grand`), elle porte son dos,
+  son champ et sa porte. C'était ça, le bug : la pièce s'ouvrait à sa taille de
+  collage, donc « petit ».
 
 ## 3. Ce qui n'a pas été copié
 
@@ -58,11 +90,11 @@ Les autres pièces — le timbre, le sticker, le code — ne mènent nulle part 
 
 | Le morceau | Le fichier |
 | --- | --- |
-| le papier étalé (genre, mot, place, inclinaison, ce qu'il ouvre) | `src/lib/archiveDuMariage.ts` |
+| le papier étalé (genre, mot, place, inclinaison, **dos et invite**, ce qu'il ouvre) | `src/lib/archiveDuMariage.ts` |
 | la couverture-archive | `src/components/LaCouvertureArchive.tsx` |
 | les quatre polaroïds | `src/components/LesBandesDeLAime.tsx` (`LesHeros`) |
 | la pastille flottante | `src/pages/LaCaisse.tsx` (`partagerLeMiniSite`) |
-| le noir, le sérif, le collage, le polaroïd, le timbre | `src/index.css` (`.vp-archive`, `.vp-didone`, `.vp-collage`, `.vp-papier-étalé`, `.vp-polaroïd`, `.vp-timbre`) |
+| le noir, le sérif, le collage, le polaroïd, le timbre | `src/index.css` (`.vp-archive`, `.vp-didone`, `.vp-collage`, `.vp-posé`, `.vp-piece`, `.vp-piece-grand`, `.vp-polaroïd`, `.vp-timbre`) |
 | les preuves | `tests/ui.test.ts` — « l'archive : le papier étalé, et les polaroïds » |
 
 ## 5. La règle d'écran, tenue
@@ -76,7 +108,7 @@ a sur la table. Les écrans (le ticket) ne récitent toujours rien.
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |
-| `/` | le ticket plein écran, puis **l'archive** : le papier étalé et les quatre polaroïds |
+| `/` | le ticket plein écran — **sans header** —, puis **l'archive** : le papier étalé, vivant, et les quatre polaroïds |
 | `/#l-archive` | la couverture-archive (la barre et le pied y mènent) |
 | `/#les-catégories` | les quatre polaroïds |
 | `/?site=1` | le mini-site des invités — sans la pastille : là-bas, il n'y a rien à partager |
