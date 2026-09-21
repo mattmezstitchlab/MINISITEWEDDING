@@ -53,6 +53,14 @@ export interface TimelineTrackItem {
   attachedDocs: TimelineDocument[];
   docBadge?: string; // Rétrocompatibilité d'affichage studio
 
+  /**
+   * **Ce que le bloc annonce à la place des minutes** — sur la collection, un
+   * magazine ne dure pas « 24 m » : il porte **7 chapitres**.
+   */
+  mesure?: string;
+  /** Les sept chapitres du magazine, quand le bloc en est un. */
+  sousTitres?: string[];
+
   // Métriques studio
   targetBpm?: number;
   solarConstraint?: 'golden_hour' | 'sunset' | 'night';

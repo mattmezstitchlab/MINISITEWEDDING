@@ -1,0 +1,26 @@
+{
+  "name": "AIME MAGAZINE — 54 magazines, 7 chapitres",
+  "short_name": "AIME",
+  "description": "Une année, 54 magazines, 7 chapitres chacun, 365 jours pour les explorer.",
+  "start_url": "/magazine",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0C12",
+  "theme_color": "#0B0C12",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

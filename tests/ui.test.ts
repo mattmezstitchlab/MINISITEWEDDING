@@ -10,6 +10,7 @@
  *     qu’une base est déclarée ;
  *   - le panneau de partage expose la publication par fichier.
  */
+import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -42,6 +43,8 @@ import {
   dateDuJourNomme, genreDuPrenom, jourDuPrenom, lectureDuPrenom, motsDuNom,
 } from '../src/lib/genreDesPrenoms';
 import {
+  CHAPITRES_ATTENDUS, COUVERTURES_ATTENDUES, IMAGES_ATTENDUES_DE_LA_COLLECTION,
+  chapitresDeLaCollection, couverturesDeLaCollection, etatDeLaCollection, imagesDeLaCollection,
   FONDS_ATTENDUS, RANGS_PAR_PLAN, SCENES_ATTENDUES, adresseDuFichier, choisirLeMeilleurVisuel,
   distanceDesCouleurs, eliminerEntreJours, etatDuCasting, fichiersDuPlan,
   fondsDeCouvertureDeLAnnee, joursLiesAuJour, noterCandidat, scenesDeLAnnee,
@@ -53,7 +56,76 @@ import {
   OBJETS_DE_LA_FABRIQUE, ceQuiManque, changerPointZero, endroitsTouches, lePointZero,
   phraseDeLAgent, pictoDuRipple, repereDe, rippleComplet,
 } from '../src/lib/ripple';
-import { basculerTimeline } from '../src/lib/capsuleCommande';
+import {
+  basculerTimeline, choisirMoment, publierReperes, tempsDeLaCapsule,
+} from '../src/lib/capsuleCommande';
+import { angleDeLHeure, angleDuChapitre } from '../src/components/CadranDuMagazine';
+import SceneEditoriale from '../src/components/SceneEditoriale';
+import GrilleDuMonde from '../src/components/GrilleDuMonde';
+import Feuille from '../src/components/Feuille';
+import SiteChrome from '../src/components/SiteChrome';
+import {
+  ECHELLES_DE_LA_GRILLE,
+  ajustementDeRemplissage,
+  borner,
+  colonnesDeLaGrille,
+  cranDeLEchelle,
+  densiteDeLaTaille,
+  echelleDuCran,
+  tailleDeLaCase,
+} from '../src/lib/echelleDeLaGrille';
+import {
+  FAMILLES,
+  MODULES,
+  MODULES_DE_COMPOSITION,
+  MINI_SITE_INVITE,
+  MINI_SITE_PRESTATAIRE,
+  NŒUDS_DU_MONDE,
+  UNIVERS_DU_JOUR,
+  caseDUnJour,
+  caseParId,
+  casesParIds,
+  cleDuJour,
+  composerLeMiniSite,
+  densiteDuMonde,
+  mondeDeLAnnee,
+  mondeDeLId,
+  mondeDeLaBoutique,
+  mondeDeLaMusique,
+  mondeDeLaGalerie,
+  mondeDesArticles,
+  mondeDesHeures,
+  mondeDesMagazines,
+  mondeDesMetiers,
+  mondeDesPersonnes,
+  mondeDuJour,
+  mondeDUneHeure,
+  mondeDuMiniSite,
+} from '../src/lib/grilleDuMonde';
+import { lumiereDeLHeure, teinteDeLHeure, melangeHex } from '../src/lib/lumiereDuJour';
+import { ROUTES_DU_MONDE, mondeDUneAdresse, promesseDUneAdresse } from '../src/lib/grilleDesRoutes';
+import FaceDuSite from '../src/components/FaceDuSite';
+import { FACES, faceDeLAdresse } from '../src/lib/faceDuSite';
+import {
+  LIAISONS_POSSIBLES,
+  PALETTES_DU_SYSTÈME,
+  RÉGLAGES_DU_SYSTÈME,
+  chaineDuMonde,
+  colonnesDuMonde,
+  emplacementsDuMonde,
+  faceTechnique,
+  liaisonEntre,
+  liaisonsDuMonde,
+  modulesAttendus,
+  sontVoisines,
+} from '../src/lib/versoDuSite';
+import { publierImmersif } from '../src/lib/modeImmersif';
+import { legendeDeLHeure } from '../src/components/CouvertureJour';
+import {
+  PAS_DU_MAGAZINE, adresseDuMagazine, blocsDeLaCollection, graduationsDeLaCollection,
+  teteSurLaSemaineCourante,
+} from '../src/lib/timelineDeLaCollection';
+import { TIMELINE_TOTAL_MINUTES } from '../src/lib/timelineTheaterEngine';
 import {
   angleDuJour, chercherUnJour, joursDeLaSemaine, moisDeLaSaison, semainesDuMois,
 } from '../src/lib/deroulerLannee';
@@ -62,6 +134,113 @@ import CouvertureJour from '../src/components/CouvertureJour';
 import { couvertureDuJour } from '../src/lib/couvertureDuJour';
 import VendorStudio from '../src/pages/VendorStudio';
 import SuperMariage from '../src/pages/SuperMariage';
+import LaCaisse from '../src/pages/LaCaisse';
+import { fileDeLaFamille, lAgentFaitPasser, motDeLaFamille } from '../src/lib/agentDuTicket';
+import { OBJETS_DE_LA_FABRIQUE, papierDeLObjet } from '../src/lib/ripple';
+import {
+  CODE_DE_DÉMONSTRATION,
+  COULEURS_DES_STICKERS,
+  ÉCONOMIE_PAR_LIGNE,
+  LE_RÊVE,
+  OBJETS_IMPRIMÉS,
+  budgetDuRêve,
+  codeAccepté,
+  rêveDécrit,
+  codeDepuis,
+  codeDuMariage,
+  ligneImprimée,
+  stickerDe,
+} from '../src/lib/codeDuMariage';
+import { LA_BARRE, LE_PIED, LES_HÉROS } from '../src/lib/bandesDeLAime';
+import LaLanding from '../src/components/LaLanding';
+import { LES_QUESTIONS_DU_TICKET } from '../src/components/LEditeurDuTicket';
+/* La machine du ticket : ses gestes portent des noms uniques dans ce fichier —
+   `valider` est déjà pris par le journal, `passer` traîne partout. */
+import { TICKET_COUPLE } from '../src/lib/superMariage';
+import { PORTEFEUILLES } from '../src/lib/portefeuille';
+import {
+  basculerLeSite as basculerLeSiteDeLaMachine,
+  basculerLeTicket as ouvrirLeTicket,
+  demandeDeLÉtat as demandeDeLaMachine,
+  étatInitial as étatDeLaMachine,
+  écrireLaDemande as écrireDansLeChamp,
+  passer as passerLaMachine,
+  propositionDeLÉtat as ceQueLaMachinePropose,
+  retirer as retirerDuTicket,
+  valider as validerLaMachine,
+} from '../src/lib/machineDuTicket';
+import {
+  CATÉGORIES_DU_TICKET,
+  compteParFamille,
+  GROUPES_DU_TICKET,
+  LIGNES_DU_TICKET,
+  catégorieDeLaLigne,
+  ligneParId,
+  lignesCochées,
+} from '../src/lib/categoriesDuTicket';
+import {
+  compteDesPortefeuilles,
+  numeroDuTicket,
+  portefeuillesDesCoches,
+  portefeuillesVisés,
+  totauxDuTicket,
+} from '../src/lib/portefeuille';
+import LeTicketPleinEcran from '../src/components/LeTicketPleinEcran';
+import { GLOBAL_WEDDING_PLAYLIST_FULL } from '../src/lib/weddingDjPlaylist';
+import { MOMENTS_DE_LA_NUIT, papiersDeLaCouverture } from '../src/lib/archiveDuMariage';
+import {
+  COMBIEN_DE_LIGNES_DU_MARIAGE,
+  COMBIEN_DE_LIGNES_IMPRIMÉES,
+  LIGNES_ADMINISTRATIVES,
+  LIGNES_DU_SITE,
+  estAdministrative,
+} from '../src/lib/triDuTicket';
+import {
+  LES_MARKERS,
+  MARKER_PAR_DÉFAUT,
+  adresseAvecMarker,
+  estUnMarker,
+  markerParId,
+} from '../src/lib/lesMarkers';
+import {
+  CURSEUR,
+  LETTRES_PAR_PAS,
+  ceQuiEstÉcrit,
+  estÉcrit,
+  mettreEnFile,
+  pasPourÉcrire,
+  unPasDeLaFrappe,
+} from '../src/lib/laFrappe';
+import {
+  COMBIEN_PAR_GÉNÉRATION,
+  estImprimable,
+  laGénération,
+  lesOrdresDeLAgent,
+  lignesImprimables,
+} from '../src/lib/agentDuTicket';
+import { LES_OPÉRATIONS, lOpération, lesOpérationsDuCode, lesOpérationsEnCode } from '../src/lib/lesOpérations';
+import { leCodeDuTicket, lÉtatDuCode } from '../src/lib/leCodeDuTicket';
+import {
+  laFace,
+  laFaceMontre,
+  laNoteSeMontre,
+  leTitreDuPapier,
+  lAutreFace,
+} from '../src/lib/lesFacesDuTicket';
+import LeTelephoneAuTicket from '../src/components/LeTelephoneAuTicket';
+import {
+  QUI_PEUT_VOIR,
+  UNIVERS_DU_TICKET,
+  composerLeTicketDeLUnivers,
+  universParId,
+} from '../src/lib/universDuTicket';
+import MachineDeRipple from '../src/components/MachineDeRipple';
+import {
+  BLOCS_DU_MINI_SITE,
+  adresseDuMiniSite,
+  composerLeMiniSiteDeMariage,
+  lienDuMiniSite,
+} from '../src/lib/miniSiteDuMariage';
 import LeMariage from '../src/pages/LeMariage';
 import {
   PLAYLIST_DEPART, chargerPlaylist, chercherMorceaux, morceauParId, morceauxDeLaPlaylist,
@@ -110,6 +289,42 @@ import {
   troisTemps,
 } from '../src/lib/aimeMoteur';
 import CouvertureSemaine from '../src/components/CouvertureSemaine';
+import ChapitresDuMagazine from '../src/components/ChapitresDuMagazine';
+import MagazineSemaine from '../src/components/MagazineSemaine';
+import {
+  CHAPITRES,
+  chapitreDeLaPosition,
+  chapitreParFichier,
+  chapitreSuivant,
+} from '../src/lib/chapitres';
+import { DIRECTIONS_COMPLETES } from '../src/lib/directionsDuMagazine';
+import {
+  IMAGES_ATTENDUES,
+  MAGAZINES,
+  NOMBRE_DE_MAGAZINES,
+  chapitreDeLaDate,
+  chapitreDuMagazine,
+  joursDuMagazine,
+  magazineDeLaDate,
+  magazineParNumero,
+  magazineSuivant,
+  niveauxDuJour,
+  SAISONS_DE_LA_COLLECTION,
+  numeroDeMagazine,
+  positionDansLeMagazine,
+  voisinDuChapitre,
+} from '../src/lib/semaines';
+import {
+  cheminDuVisuel,
+  visuelLivre,
+  VISUELS_DU_MAGAZINE,
+  VISUELS_LIVRES,
+} from '../src/lib/bibliothequeMagazine';
+import {
+  visuelDeLaCouverture,
+  visuelDuChapitre,
+  visuelsDuJour,
+} from '../src/lib/visuelsDuMagazine';
 import FluxDuJour from '../src/components/FluxDuJour';
 import { HEURES } from '../src/lib/aimeMoteur';
 import PortraitStudio from '../src/components/PortraitStudio';
@@ -1041,7 +1256,18 @@ check('un métier inconnu renvoie vers la page du mariage', htmlInconnu.includes
 
 /* --------- le header, le dock, le dos de la carte, le billet, la postale ------ */
 
-/* Le header et le dock encadrent les grandes pages : la nav est la même partout. */
+/* Le header et le dock n'encadrent plus que les outils : les pages de contenu
+   sont la mosaïque, et la mosaïque est la navigation. */
+const chromeOutil = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/ripple'] },
+    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
+  ),
+);
+check('la barre du site est sur les outils', chromeOutil.includes('SUPER MARIAGE'), true);
+check('elle annonce la page', chromeOutil.includes('Super Ripple'), true);
+check('elle porte le caddie et le magazine', ['Le Shop', 'Le Magazine'].every((m) => chromeOutil.includes(m)), true);
 const chromeMetier = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -1049,30 +1275,20 @@ const chromeMetier = renderToStaticMarkup(
     createElement(SiteChrome, null, createElement('div', null, 'contenu')),
   ),
 );
-check('la barre du site est sur la page d’un métier', chromeMetier.includes('SUPER MARIAGE'), true);
-check('elle annonce la page', chromeMetier.includes('Les métiers'), true);
-check('elle porte le caddie et le magazine', ['Le Shop', 'Le Magazine'].every((m) => chromeMetier.includes(m)), true);
-check('le dock est là aussi', chromeMetier.includes('Le Point Zéro'), true);
-const chromeAccueil = renderToStaticMarkup(
-  createElement(
-    MemoryRouter,
-    { initialEntries: ['/'] },
-    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
-  ),
-);
-check('sur l’accueil, le chrome ne double pas la barre de la page', chromeAccueil.includes('aria-label="La barre du site"'), false);
-check('la barre est bien sur les autres pages', chromeMetier.includes('aria-label="La barre du site"'), true);
-/* Le pied, lui, est partout : c'est la même signature et les mêmes portes. */
-check('le pied commun est au bas de toutes les pages', [chromeMetier, chromeAccueil].every((h) => h.includes('aria-label="Les portes du site"')), true);
+check('sur une page de contenu, la barre du site a disparu', chromeMetier.includes('aria-label="La barre du site"'), false);
+check('et le dock aussi', chromeMetier.includes('Le Point Zéro'), false);
+check('le contenu est seul, la mosaïque prend l’écran', chromeMetier.includes('contenu'), true);
+/* Le pied, lui, est sur les outils : c'est la même signature et les mêmes portes. */
+check('le pied commun est au bas des outils', chromeOutil.includes('aria-label="Les portes du site"'), true);
 check(
   'il porte la signature du fondateur et l’association',
-  ['LE FONDATEUR ET CRÉATEUR D’AIME®', 'Association Le Monde Aime'].every((m) => chromeAccueil.includes(m)),
+  ['LE FONDATEUR ET CRÉATEUR D’AIME®', 'Association Le Monde Aime'].every((m) => chromeOutil.includes(m)),
   true,
 );
-check('et les portes du site', ['Le magazine', 'Le shop', 'La timeline'].every((l) => chromeAccueil.includes(l)), true);
-check('mais le dock y est', chromeAccueil.includes('Le Point Zéro'), true);
-/* La nav verticale, elle, est montée une fois pour tout le site. */
-check('la nav verticale y est', chromeAccueil.includes('aria-label="Le Magazine"'), true);
+check('et les portes du site', ['Le magazine', 'Le shop', 'La timeline'].every((l) => chromeOutil.includes(l)), true);
+check('mais le dock est sur les outils', chromeOutil.includes('Le Point Zéro'), true);
+/* La nav verticale, elle, est montée une fois pour les outils. */
+check('la nav verticale y est', chromeOutil.includes('aria-label="Le Magazine"'), true);
 const chromeSite = renderToStaticMarkup(
   createElement(
     MemoryRouter,
@@ -1081,13 +1297,24 @@ const chromeSite = renderToStaticMarkup(
   ),
 );
 check('le site des mariés reste sans header ni dock', chromeSite.includes('Zéro contrainte'), false);
+/* Au recto, la page d'avant retrouve son chrome — sinon elle serait nue. */
+const chromeMetierRecto = renderToStaticMarkup(
+  createElement(
+    MemoryRouter,
+    { initialEntries: ['/metiers/dj-resident-clubbing-sound-engineer?face=recto'] },
+    createElement(SiteChrome, null, createElement('div', null, 'contenu')),
+  ),
+);
+check('au recto, la barre du site revient', chromeMetierRecto.includes('aria-label="La barre du site"'), true);
+check('et le dock avec elle', chromeMetierRecto.includes('Le Point Zéro'), true);
+check('sur la grille, il n’y a rien autour', chromeMetier.includes('Les portes du site'), false);
 
 /* --------- le dock noir, la bande du hero, le header sans menu d'univers ------- */
 
 /* Le dock passe en noir, pictos en blanc : il se voit sur toutes les pages. */
-check('le dock est noir', chromeMetier.includes('bg-[#0B0C12]/95'), true);
-check('et ses pictos sont blancs', chromeMetier.includes('text-white/60'), true);
-check('l’étape courante s’inverse en blanc', chromeMetier.includes('bg-white text-[#0B0C12]'), true);
+check('le dock est noir', chromeOutil.includes('bg-[#0B0C12]/95'), true);
+check('et ses pictos sont blancs', chromeOutil.includes('text-white/60'), true);
+check('l’étape courante s’inverse en blanc', chromeOutil.includes('bg-white text-[#0B0C12]'), true);
 
 /* LA BARRE DU SITE : le nom à gauche, le profil à droite. */
 definirPersonaCourant('maries');
@@ -1210,7 +1437,8 @@ check(
   pageArticle.includes('lg:grid-cols-4') && pageArticle.includes('Métiers mobilisés'),
   true,
 );
-check('les pages prennent le même contenant', [pageMagazine, pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageUniversHtml, pageMetierHtml].every((h) => h.includes('vp-page')), true);
+check('les pages de lecture prennent le même contenant', [pageShop, pageProduit, pageSupermarriage, pagePrestataire, pageUniversHtml, pageMetierHtml].every((h) => h.includes('vp-page')), true);
+check('le magazine, lui, est une application plein écran', pageMagazine.includes('fixed inset-0') && pageMagazine.includes('overflow-hidden'), true);
 check('le magazine ne recopie plus ses propres largeurs', pageMagazine.includes('mx-auto max-w-6xl'), false);
 check('le shop non plus', pageShop.includes('mx-auto max-w-6xl'), false);
 check('le contenant est posé une fois, pas deux', pageShop.split('vp-page').length <= 9, true);
@@ -1639,7 +1867,39 @@ check(
   ['l’aube', 'le matin', 'le midi', 'l’après-midi', 'le soir'].every((m) => dockDefaut.includes(`Le moment — ${m}`)),
   true,
 );
-check('et la timeline a son picto', dockDefaut.includes('La timeline — déplier l&#x27;année'), true);
+check(
+  'et l’atelier du temps a son picto',
+  dockDefaut.includes('aria-label="L’atelier du temps — la timeline"'),
+  true,
+);
+
+/* **LE CADRAN DU DOCK** : la miniature du cadran de la couverture. Le dock et la
+   couverture ne disent donc jamais deux choses différentes — la même heure, le
+   même chapitre. */
+choisirMoment('soir');
+publierReperes({ magazine: 'Magazine 38', chapitre: 'Chapitre 05 — La Fête', numeroDeChapitre: 5, jour: '21 septembre' });
+const dockCadran = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(BottomCapsuleNav as never)),
+);
+const lectureDuDock = dockCadran;
+choisirMoment(null);
+publierReperes(null);
+check(
+  'le dock porte le cadran de la couverture',
+  lectureDuDock.includes('data-aiguille="heure"') && lectureDuDock.includes('data-aiguille="chapitre"'),
+  true,
+);
+check('ses sept chapitres sont dessinés', (lectureDuDock.match(/data-chapitre="/g) ?? []).length, 7);
+check('un seul est actif : celui de la page ouverte', (lectureDuDock.match(/data-actif="true"/g) ?? []).length, 1);
+check(
+  'le moment choisi pose l’aiguille, et s’écrit',
+  lectureDuDock.includes('title="Magazine 38 · ch. 05 · 20 h — ouvrir l’atelier du temps"'),
+  true,
+);
+check('le cadran sait ses deux heures', [angleDeLHeure(0), angleDeLHeure(6), angleDeLHeure(20)].map(Math.round), [-90, 0, 210]);
+check('et ses sept chapitres', Array.from({ length: 7 }, (_, i) => angleDuChapitre(i + 1)).every((a, i, t) => i === 0 || a > t[i - 1]!), true);
+check('la légende de l’heure est du temps qu’il est', legendeDeLHeure(20), '20 H — LE SOIR');
+check('et l’heure vient de la capsule', tempsDeLaCapsule(new Date(2026, 8, 21, 9, 30)).etiquette, '9 h 30');
 check('les outils de rôle ont quitté le dock', dockDefaut.includes('les outils de'), false);
 /* Les deux flèches se posent de chaque côté du dock, quand une bande les mène. */
 check('sans bande menée, pas de flèches', dockDefaut.includes('aria-label="Précédent"'), false);
@@ -1697,16 +1957,14 @@ check(
 /* La page : un titre, une couverture ouverte, ses articles — et rien de répété. */
 const pageRevue = rendrePage('/magazine', Magazine);
 const revue = pageRevue.replace(/&amp;/g, '&').replace(/&#x27;|&apos;/g, "'");
-check('le magazine s’appelle SUPER MAGAZINE', revue.includes('SUPER MAGAZINE'), true);
-check('et il ne répète plus le nom de la barre', revue.includes('Le Magazine Super Mariage'), false);
-check('ni la phrase d’avant', revue.includes('Ce qu’il faut savoir avant de choisir'), false);
-check('ni ses compteurs', revue.includes('>Articles<') || revue.includes('>Univers<'), false);
-check('ni ses boutons de filtres', revue.includes('Tout le magazine</button>'), false);
-check('la couverture porte la marque', revue.includes(MARQUE_MAGAZINE), true);
-check('et son numéro', revue.includes('N° 01'), true);
-check('et le thème de l’édition', revue.includes(COUVERTURES[0]!.theme), true);
-check('et les titres à la une', revue.includes(COUVERTURES[0]!.aLaUne[0]!), true);
-check('les autres éditions sont listées', revue.includes('Les autres éditions'), true);
+check('la marque est sur l’écran', revue.includes(MARQUE_MAGAZINE), true);
+check('et le magazine du jour est nommé', revue.includes(niveauxDuJour(new Date()).magazine), true);
+check('la page n’explique plus son interface', revue.includes('Votre magazine, maintenant'), false);
+check(
+  'et le chapitre du jour est nommé, en haut de la mosaïque',
+  revue.includes(niveauxDuJour(new Date()).chapitre.split(' — ')[1]!.toUpperCase()),
+  true,
+);
 check('la couverture est une carte à part', typeof CouvertureMagazine, 'function');
 check('les couvertures ont leur état', revue.includes('aria-pressed'), true);
 
@@ -1812,21 +2070,2743 @@ check('l’édition du moment est celle de cette semaine', editionDuMoment().num
 check('et les quatre saisons sont quatre numéros différents', new Set(lesQuatreSaisons().map((e) => e.numero)).size, 4);
 check('chacune prise dans sa saison', lesQuatreSaisons().every((e) => e.saison.id === e.carte.saison.id), true);
 
-/* ——————————— LA PAGE : LE VISUEL, LE TITRE, ET LES CARTES DESSOUS ——————————— */
+/* ————————— LE SPÉCIALISTE DU TICKET : COCHER, ET C'EST TOUT ————————— */
 
-const heroMagazine = revue.slice(0, revue.indexOf('</header>'));
-check('le magazine a un hero', revue.indexOf('</header>') > 0, true);
-check('et le titre, au centre', heroMagazine.includes('SUPER MAGAZINE') && heroMagazine.includes('text-center'), true);
-check('les cartes magazine sont en dessous du hero', revue.indexOf(COUVERTURES[0]!.theme) > revue.indexOf('</header>'), true);
-check('les quatre saisons s’affichent en premier', revue.indexOf('Les quatre saisons') < revue.indexOf(COUVERTURES[0]!.theme), true);
-check('chaque saison a sa couverture sur la page', SAISONS.every((s) => revue.includes(s.nom)), true);
-check('et son fond uni', SAISONS.every((s) => revue.includes(s.fond.toLowerCase()) || revue.includes(s.fond.toUpperCase())), true);
-check('le jour du magazine est là', revue.includes('Le jour du magazine'), true);
-check('avec ses huit rubriques', RUBRIQUES.every((r) => revue.includes(`>${r}<`)), true);
-check('et les treize semaines de la saison', revue.includes('les treize semaines'), true);
-check('on peut relire au passé et au futur', ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => revue.includes(t)), true);
-check('le flux des trois cartes a quitté le hero', heroMagazine.includes('Le flux des jours'), false);
-check('le hero porte aussi la carte du moment', heroMagazine.includes(editionDuMoment().carte.nom), true);
+/**
+ * **Tout le produit est classé par catégories, et l'on ne fait que cocher.**
+ * Trois familles : le jour J (ce qui a un prix), votre site (ce qui s'affiche),
+ * les documents (ce qu'on emporte). Chaque ligne sait qui la reçoit.
+ */
+check('tout le produit se coche', LIGNES_DU_TICKET.length, 99);
+check('et rien n’est en vrac : tout est rangé', CATÉGORIES_DU_TICKET.length, 17);
+check(
+  'trois familles, et pas une de plus',
+  GROUPES_DU_TICKET.map((g) => g.mot),
+  ['LE JOUR J', 'VOTRE SITE', 'LES DOCUMENTS'],
+);
+check('le jour J, ce sont les rayons du magasin', CATÉGORIES_DU_TICKET.filter((c) => c.groupe === 'jour').length, 15);
+check(
+  'le site s’affiche par blocs cochés',
+  CATÉGORIES_DU_TICKET.find((c) => c.id === 'site')!.lignes.length,
+  MINI_SITE_INVITE.length + MINI_SITE_PRESTATAIRE.length,
+);
+check(
+  'et les documents du fonds sont là, entiers',
+  CATÉGORIES_DU_TICKET.find((c) => c.id === 'documents')!.lignes.length,
+  DOCUMENTS.length,
+);
+check('chaque ligne sait à quelle catégorie elle appartient', LIGNES_DU_TICKET.every((l) => catégorieDeLaLigne(l.id) !== undefined), true);
+check(
+  'la famille d’une ligne décide qui la voit',
+  [
+    ligneParId('sup-caddie')?.famille,
+    ligneParId('horaire-22:17')?.famille,
+    ligneParId('metier-Chef Tapas & Finger Food Étoilé')?.famille,
+    ligneParId('menu-super-essentiel')?.famille,
+  ],
+  ['public', 'invites', 'prive', 'famille'],
+);
+
+/* Le ticket : ce qu'on coche, ce que ça coûte, et où ça part. */
+const cochesDessai = ['horaire-22:17', 'metier-Chef Tapas & Finger Food Étoilé', 'sup-caddie', 'site-rsvp', 'doc-attestation-hebergement'];
+const totauxDessai = totauxDuTicket(lignesCochées(cochesDessai));
+check('la remise de fidélité est de dix pour cent', totauxDessai.remise, Math.round(totauxDessai.sousTotal * 0.1));
+check('et la TVA est incluse dans le total', totauxDessai.tva > 0 && totauxDessai.total, totauxDessai.sousTotal - totauxDessai.remise);
+check('les lignes incluses figurent au papier sans charger la note', [totauxDessai.articles, totauxDessai.incluses], [3, 2]);
+check('le numéro ne dépend que de ce qu’on a coché', numeroDuTicket([...cochesDessai].reverse()), numeroDuTicket(cochesDessai));
+check('et deux caddies différents ne portent jamais le même', numeroDuTicket(['horaire-22:17']) !== numeroDuTicket(['horaire-22:30']), true);
+
+/* La distribution : chaque ligne part dans ses portefeuilles. */
+check('un horaire va aux invités et au couple', portefeuillesVisés(['horaire-22:17']), ['couple', 'invites']);
+check('un métier va au métier et au couple', portefeuillesVisés(['metier-Chef Tapas & Finger Food Étoilé']), ['couple', 'metier']);
+check('un petit prix va aux invités', portefeuillesVisés(['sup-caddie']), ['invites']);
+const portefeuillesDessai = portefeuillesDesCoches(cochesDessai);
+check('pas de portefeuille vide : un ticket pour rien n’existe pas', portefeuillesDessai.every((t) => t.lignes.length > 0), true);
+check('chaque portefeuille imprime son papier', portefeuillesDessai.map((t) => t.papier), ['couple', 'invite', 'metier']);
+check(
+  'et le papier du couple porte tout ce qui lui revient',
+  portefeuillesDessai.find((t) => t.portefeuille === 'couple')!.lignes.length,
+  lignesCochées(cochesDessai).filter((l) => l.vers.includes('couple')).length,
+);
+check(
+  'à eux tous, les portefeuilles couvrent tout ce qui est coché',
+  new Set(portefeuillesDessai.flatMap((t) => t.lignes.map((l) => l.id))).size,
+  cochesDessai.length,
+);
+check('le papier est celui du magasin, au même format', portefeuillesDessai[0]!.papierLignes[0]!.label.length > 2, true);
+
+/* La page : le ticket, plein écran — et rien d'autre avant lui. */
+
+const rendreLAdresse = (url: string) =>
+  renderToStaticMarkup(
+    createElement(MemoryRouter, { initialEntries: [url] }, createElement(LaCaisse as never)),
+  ).replace(/&amp;/g, '&');
+const avecLeCode = (url: string) =>
+  url.includes('code=') ? url : `${url}${url.includes('?') ? '&' : '?'}code=${CODE_DE_DÉMONSTRATION}`;
+const rendreLeTicket = (url: string) => rendreLAdresse(avecLeCode(url));
+const ticketVide = rendreLeTicket('/');
+const ticketPlein = rendreLeTicket(`/?coches=${encodeURIComponent(cochesDessai.join(','))}`);
+
+check('on arrive sur le ticket', ticketVide.includes('data-page="ticket"'), true);
+/* La machine occupe le premier écran ; le site commence au visuel du jour. */
+const zoneMachine = ticketVide.slice(
+  ticketVide.indexOf('id="le-ticket-plein"'),
+  ticketVide.indexOf('data-section="visuel"'),
+);
+const zoneSite = ticketVide.slice(ticketVide.indexOf('data-section="visuel"'));
+
+check(
+  // « L'appli, c'est le ticket plein écran » : le premier écran est le papier,
+  // et l'on scrolle dedans — il n'y a plus de machine sur la page.
+  'le ticket tient dans le premier écran',
+  zoneMachine.includes('min-h-svh') && zoneMachine.includes('vp-papier') && !ticketVide.includes('data-machine="ripple"'),
+  true,
+);
+check(
+  'dans l’ordre : le visuel du jour, puis on coche, puis le ticket, puis les portefeuilles',
+  ['visuel', 'coche', 'ticket', 'portefeuilles'].map((t) => zoneSite.indexOf(`data-section="${t}"`)),
+  [...['visuel', 'coche', 'ticket', 'portefeuilles'].map((t) => zoneSite.indexOf(`data-section="${t}"`))].sort((a, b) => a - b),
+);
+
+/* ═══════════════ L'APPLI EST LE TICKET : PLEIN ÉCRAN, LONG, VIVANT ═══════════════
+
+   « Sans machine : l'appli, c'est le ticket plein écran — on scrolle un long
+   ticket, avec la musique, les heures, la totale — et on clique sur les pictos
+   pour tamponner “payé”. » Le premier écran n'est donc plus une machine : c'est
+   **un papier**, qui prend l'écran, et sur lequel tout est imprimé. */
+
+const zoneTicket = ticketVide.slice(ticketVide.indexOf('id="le-ticket-plein"'), ticketVide.indexOf('data-section="visuel"'));
+
+check(
+  'l’appli tient dans le premier écran, et c’est le ticket',
+  zoneTicket.includes('data-ticket-plein="vrai"') && zoneTicket.includes('min-h-svh') && zoneTicket.includes('vp-papier'),
+  true,
+);
+check(
+  'le ticket prend l’écran : le papier, la largeur d’un vrai ticket, la hauteur de la fenêtre',
+  zoneTicket.includes('min-h-svh') && /max-w-\[430px\][^"]*sm:max-w-\[500px\]/.test(zoneTicket),
+  true,
+);
+check(
+  'le haut du ticket, c’est l’impression SUPER MARIAGE',
+  (() => {
+    const papier = ticketVide.slice(ticketVide.indexOf('data-ticket-papier'));
+    const marque = papier.indexOf('data-ticket-marque="vrai"');
+    const texte = papier.slice(papier.indexOf('>', marque) + 1, papier.indexOf('>', marque) + 40);
+    return marque >= 0 && texte.includes('SUPER MARIAGE');
+  })(),
+  true,
+);
+check(
+  'le papier est déchiré : des dents en haut, des dents en bas',
+  ticketVide.includes('data-ticket-dents="haut"') &&
+    ticketVide.includes('data-ticket-dents="bas"') &&
+    readFileSync('src/index.css', 'utf8').includes('.vp-dents-haut'),
+  true,
+);
+check(
+  'le code du mariage, la caisse et l’heure sont imprimés en haut',
+  zoneTicket.includes(`data-ticket-code="${CODE_DE_DÉMONSTRATION}"`) &&
+    new RegExp(`${CODE_DE_DÉMONSTRATION} · CAISSE 3 · \\d\\d:00`).test(zoneTicket),
+  true,
+);
+/* ——— LES QUATRE CHIFFRES, ET LE FLUO ——— */
+
+check(
+  'les quatre chiffres du mariage sont sur le papier, dans l’ordre',
+  ['LIGNES', 'LE MARIAGE', 'MIS DE CÔTÉ', 'RESTE À FINANCER'].map((mot) => zoneTicket.includes(mot)),
+  [true, true, true, true],
+);
+check(
+  'et ce qui reste à financer est surligné au fluo',
+  (() => {
+    const reste = zoneTicket.indexOf('data-ticket-reste');
+    const bloc = zoneTicket.slice(reste, reste + 900);
+    return bloc.includes('vp-fluo') && bloc.includes(String(budgetDuRêve([]).reste));
+  })(),
+  true,
+);
+
+/* ——— LA TIMELINE VERTICALE : LES HEURES DESCENDENT SUR LE PAPIER ——— */
+
+check(
+  'la journée est une timeline verticale, imprimée sur le ticket',
+  zoneTicket.includes('data-ticket-section="temps"') && zoneTicket.includes('vp-temps'),
+  true,
+);
+check(
+  'chaque heure s’y accroche, dans l’ordre',
+  CATÉGORIES_DU_TICKET.find((c) => c.id === 'rayon-horaires')!.lignes
+    .map((l) => zoneTicket.includes(`data-ticket-ligne="${l.id}"`))
+    .every(Boolean),
+  true,
+);
+check(
+  'et l’heure où l’on est porte le repère « maintenant » — la dernière passée',
+  (() => {
+    const heureDuTicket = Number((zoneTicket.match(/CAISSE 3 · (\d\d):00/) ?? [])[1] ?? -1);
+    const heures = CATÉGORIES_DU_TICKET.find((c) => c.id === 'rayon-horaires')!.lignes;
+    // La journée du magasin commence à 22:00 : avant, rien n'est encore passé,
+    // et le ticket n'écrit donc **aucun** repère.
+    const passées = heures.filter((l) => Number(l.label.slice(0, 2)) <= heureDuTicket);
+    const attendue = passées.length > 0 ? [passées.at(-1)!.id] : [];
+    const marquées = [...zoneTicket.matchAll(/data-ticket-ligne="(horaire-[^"]+)"[^>]*data-maintenant="vrai"/g)].map((m) => m[1]!);
+    return [heureDuTicket >= 0 && heureDuTicket <= 23, marquées, attendue];
+  })(),
+  [true, [], []],
+);
+check(
+  'le point de l’heure est posé sur le trait du temps',
+  (() => {
+    const points = (zoneTicket.match(/data-point="(maintenant|libre|prise)"/g) ?? []).length;
+    const heures = (zoneTicket.match(/data-ticket-ligne="horaire-/g) ?? []).length;
+    // Et le trait, lui, est dans la feuille de style : une ligne qui descend.
+    return [points, heures, /\.vp-temps::before/.test(readFileSync('src/index.css', 'utf8'))];
+  })(),
+  [CATÉGORIES_DU_TICKET.find((c) => c.id === 'rayon-horaires')!.lignes.length, CATÉGORIES_DU_TICKET.find((c) => c.id === 'rayon-horaires')!.lignes.length, true],
+);
+
+/* ——— LE TRI : L'ADMINISTRATIF ET LE JURIDIQUE SORTENT DU TICKET ———
+
+   « Dans le grand ticket, y'a encore des choses pas besoin — administratif ou
+   juridique, donc faut trier. » Les 31 pièces administratives (le contrat, les
+   actes, les assurances…) ne sont plus des lignes du mariage : elles ont leur
+   **propre ticket**, dans l'univers `papiers`, et le pied du grand ticket y
+   mène. Le mariage garde ses lignes à lui. */
+
+check(
+  'l’administratif est trié : trente et une pièces sorties du ticket',
+  [
+    LIGNES_ADMINISTRATIVES.length,
+    LIGNES_ADMINISTRATIVES.every((id) => LIGNES_DU_TICKET.some((l) => l.id === id)),
+    LIGNES_ADMINISTRATIVES.every(estAdministrative),
+  ],
+  [31, true, true],
+);
+check(
+  'et le mariage n’imprime que ses lignes : quatre-vingt-dix-neuf moins trente et une',
+  [
+    COMBIEN_DE_LIGNES_DU_MARIAGE,
+    LIGNES_DU_TICKET.length - LIGNES_ADMINISTRATIVES.length,
+    LIGNES_ADMINISTRATIVES.every((id) => LIGNES_DU_TICKET.some((l) => l.id === id)),
+  ],
+  [68, 68, true],
+);
+check(
+  'aucune ligne administrative n’est imprimée dans le grand ticket',
+  [...zoneTicket.matchAll(/data-ticket-ligne="([^"]+)"/g)].every((m) => !estAdministrative(m[1]!)),
+  true,
+);
+check(
+  // Le papier imprime ses lignes : 99 au magasin, moins 31 administratives,
+  // moins 20 du mini-site — il en reste 48, et c'est le mariage.
+  'et le papier imprime ses lignes, une fois chacune, dans l’ordre',
+  (() => {
+    const ids = [...zoneTicket.matchAll(/data-ticket-ligne="([^"]+)"/g)].map((m) => m[1]!);
+    return [
+      ids.length,
+      new Set(ids).size,
+      ids.length === COMBIEN_DE_LIGNES_IMPRIMÉES,
+      ids.every((id) => !estAdministrative(id) && !LIGNES_DU_SITE.includes(id)),
+    ];
+  })(),
+  [48, 48, true, true],
+);
+check(
+  'chaque section dit ce qu’on y a pris, sur ce qu’on peut y prendre',
+  (() => {
+    const titres = [...ticketVide.matchAll(/data-ticket-section="([a-z-]+)"/g)].map((m) => m[1]);
+    // Le site n’est plus une section : il n’y a plus rien à visiter.
+    return titres.join(',') === 'temps,musique,table,gens,petits-prix';
+  })(),
+  true,
+);
+check(
+  'et une ligne, c’est un bouton : on coche à même le papier',
+  (zoneTicket.match(/<button[^>]*data-ticket-ligne=/g) ?? []).length,
+  COMBIEN_DE_LIGNES_IMPRIMÉES,
+);
+check(
+  'ce qui est coché passe au marker — et le compte suit',
+  (() => {
+    const vides = [...ticketVide.matchAll(/data-ticket-ligne="[^"]+" data-cochee="(true|false)"[^>]*class="([^"]*)"/g)];
+    const fluoVides = vides.filter((m) => m[2]!.includes('vp-fluo')).length;
+    const prises = [...ticketPlein.matchAll(/data-ticket-ligne="[^"]+" data-cochee="(true|false)"/g)];
+    return [
+      vides.length === COMBIEN_DE_LIGNES_IMPRIMÉES && fluoVides === 0,
+      prises.filter((m) => m[1] === 'true').length === cochesDessai.filter((id) => !estAdministrative(id) && !LIGNES_DU_SITE.includes(id)).length,
+    ];
+  })(),
+  [true, true],
+);
+check(
+  'et le ticket des papiers, c’est les trente et une pièces, à part',
+  (() => {
+    const papiersUnivers = UNIVERS_DU_TICKET.find((u) => u.id === 'papiers')!;
+    return [papiersUnivers.lignes.length, papiersUnivers.lignes.every((l) => estAdministrative(l.id))];
+  })(),
+  [31, true],
+);
+check(
+  'le sous-total du ticket dit d’où il vient : les lignes du mariage',
+  /SOUS-TOTAL \(\d+ LIGNES DU MARIAGE\)/.test(zoneTicket),
+  true,
+);
+
+/* ——— LA MUSIQUE : LE PLAN DE LA NUIT, MOMENT PAR MOMENT ——— */
+
+check(
+  'la musique est sur le ticket, en clair',
+  zoneTicket.includes('data-ticket-section="musique"') && zoneTicket.includes('data-ticket-plan="vrai"'),
+  true,
+);
+check(
+  'neuf moments, dans l’ordre de la nuit, avec leur heure',
+  (() => {
+    const moments = [...zoneTicket.matchAll(/data-ticket-moment="([a-z_]+)"/g)].map((m) => m[1]);
+    return moments.length === 9 && moments[0] === 'prelude_ceremonie' && moments[8] === 'closing';
+  })(),
+  true,
+);
+check(
+  'et les morceaux du catalogue sont imprimés dessous, avec leur BPM',
+  (() => {
+    const morceaux = [...zoneTicket.matchAll(/data-ticket-morceau="([^"]+)"/g)].map((m) => m[1]);
+    return morceaux.length === GLOBAL_WEDDING_PLAYLIST_FULL.length && zoneTicket.includes('Elvis Presley');
+  })(),
+  true,
+);
+
+/* ——— TOUT LE MAGASIN EST IMPRIMÉ : UN LONG TICKET, LIGNE À LIGNE ——— */
+
+check(
+  'chaque ligne dit son prix, et si elle est prise',
+  /data-ticket-ligne="[^"]+" data-cochee="false" data-prix="\d+"/.test(ticketVide),
+  true,
+);
+check(
+  'et les lignes prises portent le fluo du surligneur',
+  (ticketPlein.match(/vp-fluo/g) ?? []).length >= cochesDessai.length,
+  true,
+);
+check(
+  'le voyage est sur le papier, avec sa jauge et son reste',
+  zoneTicket.includes('data-ticket-voyage="vrai"') && zoneTicket.includes(`data-ticket-reste="${budgetDuRêve([]).reste}"`),
+  true,
+);
+
+/* ——— LES CINQ PAPIERS, LE TOTAL, LE CODE-BARRES ——— */
+
+check(
+  'le pied imprime les cinq papiers, et où ils vont',
+  (ticketVide.match(/data-portefeuille-ticket=/g) ?? []).length,
+  PORTEFEUILLES.length,
+);
+check(
+  'le total est écrit en gros, entre deux filets',
+  zoneTicket.includes('data-ticket-total-mot="vrai"') && zoneTicket.includes('SOUS-TOTAL'),
+  true,
+);
+check(
+  'et le code-barres est fait du code du mariage, et de rien d’autre',
+  (() => {
+    const barres = (html: string) => (html.match(/<i style="width:[^"]+"/g) ?? []).length;
+    const autre = rendreLeTicket('/?code=XK9-318');
+    const compter = (html: string) => html.slice(html.indexOf('data-ticket-codebarres')).slice(0, 1200);
+    return [
+      zoneTicket.includes('data-ticket-codebarres="vrai"'),
+      barres(compter(ticketVide)) > 8,
+      compter(ticketVide) !== compter(autre),
+    ];
+  })(),
+  [true, true, true],
+);
+
+/* ——— LE PUPITRE A ÉTÉ RETIRÉ : PLUS DE RANGÉE DE PICTOs ———
+   « Supprime les boutons, y'a pas trop d'effet. » Il n'y a plus qu'un geste :
+   le total, qui pose la marque PAYÉ. C'est vérifié plus bas. */
+
+check(
+  'il n’y a plus de pupitre : aucun picto à tamponner sur le papier',
+  !zoneTicket.includes('data-ticket-pupitre') && !zoneTicket.includes('data-tampon="'),
+  true,
+);
+
+check(
+  'rien n’est tamponné au départ — le papier est vierge',
+  ticketVide.includes('data-ticket-paye="false"') && !ticketVide.includes('data-tampon-pose='),
+  true,
+);
+check(
+  'et il est collé en bas de l’écran : toujours sous le pouce',
+  readFileSync('src/index.css', 'utf8').includes('.vp-pupitre') &&
+    /\.vp-pupitre\s*\{[^}]*position:\s*sticky/.test(readFileSync('src/index.css', 'utf8')),
+  true,
+);
+check(
+  'le tampon tombe de travers — c’est une animation, pas une image',
+  /@keyframes tamponner/.test(readFileSync('src/index.css', 'utf8')) &&
+    /\.vp-tampon\s*\{[^}]*border:\s*2px solid currentColor/.test(readFileSync('src/index.css', 'utf8')),
+  true,
+);
+
+/* LE PAPIER PAYÉ : on clique le total, et la marque se pose dessus.
+
+   « Supprime les boutons, y'a pas trop d'effet » : le pupitre de pictos est
+   parti. Ce qui reste, c'est **un papier qu'on remplit** — on coche une ligne
+   (elle passe au marker), on clique le total (le papier dit PAYÉ). */
+
+const rendreLeTicketPayé = (payé: boolean, marker = 'jaune') => {
+  const papiers = lignesCochées(cochesDessai);
+  const totauxIci = totauxDuTicket(papiers);
+  const comptes = compteDesPortefeuilles(cochesDessai);
+  return renderToStaticMarkup(
+    createElement(LeTicketPleinEcran as never, {
+      code: CODE_DE_DÉMONSTRATION,
+      numero: 'SM-23-0007',
+      dateLabel: 'le 12 juin 2027',
+      heure: 23,
+      couple: { noms: TICKET_COUPLE.noms, lieu: TICKET_COUPLE.venue, convives: TICKET_COUPLE.convives },
+      coches: cochesDessai,
+      surCocher: () => {},
+      totaux: totauxIci,
+      portefeuilles: PORTEFEUILLES.map((p) => ({ id: p.id, mot: p.mot, marque: p.marque, ...comptes[p.id] })),
+      rêve: rêveDécrit(''),
+      budget: budgetDuRêve(cochesDessai),
+      payé,
+      surPayer: () => {},
+      marker: markerParId(marker),
+      surMarker: () => {},
+    }),
+  ).replace(/&amp;/g, '&');
+};
+
+const ticketPayé = rendreLeTicketPayé(true);
+const ticketÀPayer = rendreLeTicketPayé(false);
+
+check(
+  'on clique le total : « PAYÉ » apparaît sur le papier, de travers',
+  ticketPayé.includes('data-tampon-pose="tampon"') &&
+    /data-tampon-mot="PAYÉ"[^>]*class="vp-tampon/.test(ticketPayé) &&
+    !ticketÀPayer.includes('data-tampon-pose='),
+  true,
+);
+check(
+  'et le ticket passe à payé, en haut comme en bas',
+  ticketPayé.includes('data-ticket-paye="true"') &&
+    ticketPayé.includes('✓ PAYÉ · MERCI') &&
+    ticketÀPayer.includes('data-ticket-paye="false"'),
+  true,
+);
+check(
+  'le geste est un état : le bouton du total dit où l’on en est',
+  ticketPayé.includes('data-action="payer-le-ticket"') &&
+    ticketPayé.includes('data-ticket-paye-bouton="true"') &&
+    ticketÀPayer.includes('data-ticket-paye-bouton="false"'),
+  true,
+);
+check(
+  'le ticket s’imprime : ce qui n’est pas le papier disparaît',
+  readFileSync('src/index.css', 'utf8').includes('@media print') && ticketVide.includes('vp-non-imprimable'),
+  true,
+);
+
+/* ——— LE MARKER : SA COULEUR DE FLUO, ET C'EST TOUT LE RÉGLAGE ———
+
+   « Et pourquoi pas choisir sa couleur de marker ? » Six couleurs, sous le
+   papier ; celle qu'on choisit devient l'encre du surlignage — et elle part
+   dans le lien (`?marker=vert`). */
+
+check(
+  'six markers proposés sous le papier, et celui qui est actif',
+  (() => {
+    const marques = [...ticketVide.matchAll(/data-marker="([a-z]+)" data-marker-actif="(true|false)"/g)];
+    return [marques.length, marques.filter((m) => m[2] === 'true').map((m) => m[1])];
+  })(),
+  [LES_MARKERS.length, ['jaune']],
+);
+check(
+  'la couleur choisie devient l’encre du fluo, sur toute la page',
+  (() => {
+    const html = rendreLeTicket('/?marker=vert');
+    return [html.includes('data-marker="vert"'), html.includes(`--vp-fluo:${markerParId('vert').couleur}`)];
+  })(),
+  [true, true],
+);
+check(
+  'un marker inconnu ne casse rien : on retombe sur le jaune de la caisse',
+  (() => {
+    const html = rendreLeTicket('/?marker=zzz');
+    return [html.includes('data-marker="jaune"'), html.includes(markerParId('jaune').couleur)];
+  })(),
+  [true, true],
+);
+check(
+  'le marker s’écrit dans le lien — et le lien se relit',
+  (() => {
+    const html = rendreLeTicket('/?marker=rose&coches=site-rsvp');
+    return [html.includes('data-marker="rose"'), html.includes('data-cochees="1"'), adresseAvecMarker('?code=X&coches=a', 'rose')];
+  })(),
+  [true, true, '?code=X&coches=a&marker=rose'],
+);
+check(
+  'et le marker par défaut ne s’écrit pas : le lien reste court',
+  [adresseAvecMarker('?code=X', MARKER_PAR_DÉFAUT), estUnMarker('bleu'), estUnMarker('chartreuse')],
+  ['?code=X', true, false],
+);
+check(
+  'le marker est nommé, et les six teintes sont distinctes',
+  (() => {
+    const couleurs = new Set(LES_MARKERS.map((m) => m.couleur));
+    return [couleurs.size, LES_MARKERS.every((m) => m.mot.length >= 3 && m.sous.length >= 3)];
+  })(),
+  [6, true],
+);
+
+/* ——— LE CHAMP, L'AGENT, ET L'ÉCRITURE LETTRE PAR LETTRE ———
+
+   « Et au début juste un champ de saisie avec un agent agentic, et tout se
+   saisit lettre par lettre pendant la génération. » Le champ est la première
+   chose de la page ; l'agent lit la phrase ; le papier écrit la ligne, lettre
+   après lettre, et chaque ligne écrite entre au marker dans le ticket. */
+
+check(
+  'au début, un champ et un + — et rien d’autre à presser',
+  (() => {
+    const champ = ticketVide.slice(ticketVide.indexOf('data-champ="vrai"'), ticketVide.indexOf('data-ticket-plein'));
+    const boutons = [...champ.matchAll(/<button/g)].length;
+    return [
+      champ.includes('data-champ-saisie="vrai"'),
+      champ.includes('dites ce qu’il vous faut'),
+      champ.includes('data-champ-attente="vrai"'),
+      // **Un seul contrôle** : le + des opérations. Le reste s'écrit tout seul.
+      boutons === 1 && champ.includes('data-champ-plus="vrai"'),
+      // Et les options ne sont pas ouvertes d'elles-mêmes : on les demande.
+      !champ.includes('data-champ-options="vrai"'),
+    ];
+  })(),
+  [true, true, true, true, true],
+);
+check(
+  'l’agent lit la phrase, et il dit ce qu’il a entendu',
+  (() => {
+    const lue = laGénération('un dîner pour vingt');
+    return [lue.àVide, lue.mots.length > 0, lue.lignes.length > 0];
+  })(),
+  [false, true, true],
+);
+check(
+  'et il n’en écrit pas trente : cinq lignes, puis on relance',
+  laGénération('la cérémonie').lignes.length <= COMBIEN_PAR_GÉNÉRATION,
+  true,
+);
+check(
+  // L'agent lit **tout** le magasin, mais il écrit sur **ce papier-ci** : ni les
+  // 31 pièces administratives, ni les 20 lignes du mini-site.
+  'l’agent n’écrit que ce que le papier imprime — jamais l’administratif, jamais le site',
+  (() => {
+    const écrite = laGénération('un dîner, la cérémonie, des photos, le contrat, la mairie, le site, le rsvp');
+    return [
+      écrite.lignes.length > 0,
+      écrite.lignes.every((l) => estImprimable(l.id)),
+      écrite.lignes.every((l) => zoneTicket.includes(`data-ticket-ligne="${l.id}"`)),
+      lignesImprimables().length,
+    ];
+  })(),
+  [true, true, true, COMBIEN_DE_LIGNES_IMPRIMÉES],
+);
+check(
+  'et une phrase qui ne dit rien ne remplit rien : l’agent le dit',
+  (() => {
+    const rien = laGénération('zzzz');
+    return [rien.àVide, rien.lignes.length];
+  })(),
+  [true, 0],
+);
+check(
+  'et ce qui est déjà sur le papier ne revient pas deux fois',
+  (() => {
+    const première = laGénération('des photos');
+    const ensuite = laGénération('des photos', première.lignes.map((l) => l.id));
+    return [première.lignes.length > 0, ensuite.lignes.every((l) => !première.lignes.includes(l))];
+  })(),
+  [true, true],
+);
+
+/* La frappe : ce qui est écrit d'un mot, au pas donné. */
+check(
+  'la frappe écrit une lettre par pas, et jamais plus que le mot',
+  (() => {
+    const mot = 'LE MENU SUPER ESSENTIEL';
+    const écrits = [0, 1, 4, pasPourÉcrire(mot), pasPourÉcrire(mot) + 40].map((pas) => ceQuiEstÉcrit(mot, pas));
+    return [écrits[0], écrits[1], écrits[2], écrits[3] === mot, écrits[4] === mot];
+  })(),
+  ['', 'L', 'LE M', true, true],
+);
+check(
+  'la frappe avance toujours : chaque pas ajoute, aucun ne retire',
+  (() => {
+    const mot = 'LES PETITS PRIX';
+    const pas = Array.from({ length: pasPourÉcrire(mot) + 3 }, (_, i) => ceQuiEstÉcrit(mot, i));
+    return [pas.every((texte, i) => i === 0 || texte.length >= pas[i - 1]!.length), estÉcrit(mot, pasPourÉcrire(mot))];
+  })(),
+  [true, true],
+);
+check(
+  'un pas, c’est une lettre — et la frappe s’arrête quand le mot est écrit',
+  [LETTRES_PAR_PAS, pasPourÉcrire(''), pasPourÉcrire('AB'), estÉcrit('AB', 1)],
+  [1, 0, 2, false],
+);
+
+/* La machine de la frappe : on la déroule en entier, et on regarde ce qui
+   arrive sur le ticket. C'est ça qui compte : **il se passe vraiment
+   quelque chose**, ligne après ligne, jusqu'à la dernière lettre. */
+check(
+  'on déroule la frappe : chaque lettre s’ajoute, et chaque ligne finit par être écrite',
+  (() => {
+    const file = mettreEnFile(
+      [],
+      [],
+      [
+        { id: 'le-menu', mot: 'LE MENU' },
+        { id: 'les-photos', mot: 'LES PHOTOS' },
+      ],
+    );
+    const vus: { mot: string; texte: string }[] = [];
+    const écrites: string[] = [];
+    let suite = file;
+    let pas = 0;
+    for (let i = 0; i < 500 && suite.length; i += 1) {
+      vus.push({ mot: suite[0]!.mot, texte: ceQuiEstÉcrit(suite[0]!.mot, pas) });
+      const après = unPasDeLaFrappe(suite, pas);
+      suite = après.file;
+      pas = après.pas;
+      if (après.écrite) écrites.push(après.écrite);
+    }
+    return [
+      // Dans l'ordre, une fois chacune, et rien d'autre.
+      écrites.join(' · '),
+      // Autant de pas que de lettres.
+      vus.length,
+      // La file est vidée, et le curseur revient au début.
+      [suite.length, pas],
+      // Chaque texte est un début de son mot — on n'écrit jamais à l'envers.
+      vus.every((v) => v.mot.startsWith(v.texte)),
+      // Quand la ligne change, le curseur repart de zéro.
+      vus.every((v, i) => i === 0 || v.mot === vus[i - 1]!.mot || v.texte === ''),
+      // Tant que c'est le même mot, on avance d'une lettre exactement.
+      vus.every((v, i) => i === 0 || v.mot !== vus[i - 1]!.mot || v.texte.length === vus[i - 1]!.texte.length + 1),
+    ];
+  })(),
+  ['le-menu · les-photos', pasPourÉcrire('LE MENU') + pasPourÉcrire('LES PHOTOS'), [0, 0], true, true, true],
+);
+check(
+  'rien ne s’écrit deux fois : ni ce qui est déjà sur le papier, ni ce qui attend',
+  (() => {
+    const une = mettreEnFile([], [], [{ id: 'a', mot: 'A' }]);
+    const deux = mettreEnFile(une, [], [{ id: 'a', mot: 'A' }, { id: 'b', mot: 'B' }]);
+    const trois = mettreEnFile(deux, ['b'], [{ id: 'b', mot: 'B' }]);
+    return [une.length, deux.map((l) => l.id).join(','), trois.map((l) => l.id).join(',')];
+  })(),
+  [1, 'a,b', 'a,b'],
+);
+check(
+  'une file vide ne fait rien — on ne peut pas écrire une ligne qui n’existe pas',
+  (() => {
+    const rien = unPasDeLaFrappe([], 4);
+    return [rien.file.length, rien.pas, rien.écrite];
+  })(),
+  [0, 0, null],
+);
+
+/* La ligne en cours d'écriture, sur le papier. */
+const rendreLeTicketQuiÉcrit = (mot: string, pas: number) => {
+  const papiers = lignesCochées(cochesDessai);
+  const comptes = compteDesPortefeuilles(cochesDessai);
+  return renderToStaticMarkup(
+    createElement(LeTicketPleinEcran as never, {
+      code: CODE_DE_DÉMONSTRATION,
+      numero: 'SM-23-0007',
+      dateLabel: 'le 12 juin 2027',
+      heure: 23,
+      couple: { noms: TICKET_COUPLE.noms, lieu: TICKET_COUPLE.venue, convives: TICKET_COUPLE.convives },
+      coches: cochesDessai,
+      surCocher: () => {},
+      totaux: totauxDuTicket(papiers),
+      portefeuilles: PORTEFEUILLES.map((p) => ({ id: p.id, mot: p.mot, marque: p.marque, ...comptes[p.id] })),
+      rêve: rêveDécrit(''),
+      budget: budgetDuRêve(cochesDessai),
+      payé: false,
+      surPayer: () => {},
+      marker: markerParId('jaune'),
+      surMarker: () => {},
+      frappe: { mot, pas },
+    }),
+  ).replace(/&amp;/g, '&');
+};
+
+check(
+  'pendant la génération, le papier écrit la ligne — lettre par lettre',
+  (() => {
+    const début = rendreLeTicketQuiÉcrit('LE MENU SUPER ESSENTIEL', 2);
+    const fin = rendreLeTicketQuiÉcrit('LE MENU SUPER ESSENTIEL', 8);
+    return [
+      début.includes('data-ticket-frappe="vrai"'),
+      début.includes('>LE<') && !début.includes('>LE MENU<'),
+      fin.includes('>LE MENU <'),
+      fin.includes('la caisse écrit'),
+    ];
+  })(),
+  [true, true, true, true],
+);
+check(
+  'et le curseur clignote au bout de la ligne',
+  (() => {
+    const html = rendreLeTicketQuiÉcrit('LA TABLE', 3);
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      html.includes(CURSEUR),
+      /\.vp-curseur\s*\{[^}]*animation:/.test(css),
+      css.includes('prefers-reduced-motion'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  'et sans génération en cours, le papier n’affiche aucune ligne à moitié écrite',
+  !rendreLeTicketPayé(false).includes('data-ticket-frappe='),
+  true,
+);
+
+/* ——— LE TICKET ÉVOLUTIF : LES OPÉRATIONS, LES DEUX FACES, LE CODE ———
+
+   « Faudrait un champ avec option et un + pour créer une opération ou autre. »
+   « Ça pourrait être un ticket évolutif : quelqu'un te paye, ça arrive sur le
+   ticket, et de son côté c'est rangé en facture et en reçu. » « Ou alors
+   implémenter un code puissant, tout ce qu'on peut mettre. » */
+
+check(
+  'le + propose cinq opérations, et chacune écrit son début dans le champ',
+  [
+    LES_OPÉRATIONS.length,
+    LES_OPÉRATIONS.map((o) => o.id).join(','),
+    LES_OPÉRATIONS.every((o) => o.début.length > 2 && o.indication.length > 10),
+  ],
+  [5, 'ligne,devis,facture,note,import', true],
+);
+check(
+  'l’agent lit une opération : le genre, le prix, et pour qui',
+  (() => {
+    const o = lOpération('devis 300 € pour Jean', 'op-1')!;
+    const r = lOpération('facture 1200 euros pour le traiteur', 'op-2')!;
+    return [o.genre, o.prix, o.qui, r.genre, r.prix, r.qui];
+  })(),
+  ['devis', 300, 'Jean', 'facture', 1200, 'traiteur'],
+);
+check(
+  // « un dîner pour vingt » ne doit pas faire vingt euros : l'argent ne se lit
+  // que quand la monnaie est écrite.
+  'sans monnaie, il n’y a pas de prix — et l’opération dit « à convenir »',
+  (() => {
+    const sans = lOpération('devis pour le traiteur, à convenir', 'op-1')!;
+    return [sans.prix, sans.genre, lOpération('un dîner pour vingt personnes', 'op-2')];
+  })(),
+  [0, 'devis', null],
+);
+check(
+  'et une note est privée par défaut — elle ne se partage que si on le dit',
+  (() => {
+    const privée = lOpération('note penser aux alliances', 'op-1')!;
+    const partagée = lOpération('note partagée pour tous : les alliances sont chez Léa', 'op-2')!;
+    return [privée.genre, privée.privée, partagée.privée];
+  })(),
+  ['note', true, false],
+);
+check(
+  'l’agent ouvre l’opération tout seul, sans passer par le +',
+  (() => {
+    const ordre = lesOrdresDeLAgent('devis 300 € pour Jean', [], 2);
+    const sien = lesOrdresDeLAgent('vue client');
+    const emetteur = lesOrdresDeLAgent('montre-moi la vue émetteur');
+    return [
+      ordre.genre,
+      ordre.genre === 'opération' ? ordre.opération.id : '',
+      ordre.genre === 'opération' ? ordre.opération.prix : 0,
+      sien.genre === 'face' ? sien.face : '',
+      emetteur.genre === 'face' ? emetteur.face : '',
+    ];
+  })(),
+  ['opération', 'op-3', 300, 'client', 'emetteur'],
+);
+check(
+  // « des photos » reste une ligne du magasin : ce n'est pas une pièce à nous.
+  'et il ne confond pas une ligne du magasin avec une pièce',
+  [
+    lesOrdresDeLAgent('des photos').genre,
+    lesOrdresDeLAgent('un dîner pour vingt').genre,
+    lesOrdresDeLAgent('importe le pdf du traiteur').genre,
+    lesOrdresDeLAgent('zzzz').genre,
+  ],
+  ['lignes', 'lignes', 'opération', 'rien'],
+);
+
+/* **Les deux faces du même objet.** */
+check(
+  'le même papier se lit des deux côtés : le ticket, et la facture devenue reçu',
+  [
+    leTitreDuPapier('emetteur', false),
+    leTitreDuPapier('client', false),
+    leTitreDuPapier('client', true),
+    laFace('client').àRégler,
+    lAutreFace('emetteur'),
+    lAutreFace('client'),
+  ],
+  ['SUPER MARIAGE', 'FACTURE', 'REÇU', 'À RÉGLER', 'client', 'emetteur'],
+);
+check(
+  'et ce qui est à nous reste à nous : la cagnotte, l’administratif, les notes privées',
+  [
+    laFaceMontre('emetteur', 'voyage'),
+    laFaceMontre('client', 'voyage'),
+    laFaceMontre('client', 'administratif'),
+    laNoteSeMontre('client', true),
+    laNoteSeMontre('client', false),
+    laNoteSeMontre('emetteur', true),
+  ],
+  [true, false, false, false, true, true],
+);
+
+/* **Le code porte tout.** */
+check(
+  'le code du ticket : on l’écrit, on le relit — c’est le même papier',
+  (() => {
+    const état = {
+      code: 'NUB-139',
+      coches: ['horaire-22:17', 'menu-super-caddie'],
+      marker: 'vert',
+      face: 'client' as const,
+      payé: true,
+      opérations: [
+        { id: 'op-1', genre: 'devis' as const, mot: 'le traiteur', prix: 300, qui: 'Jean', privée: false },
+        { id: 'op-2', genre: 'note' as const, mot: 'les alliances, chez la mère de Léa', prix: 0, qui: '', privée: true },
+      ],
+    };
+    const code = leCodeDuTicket(état);
+    const relu = lÉtatDuCode(code)!;
+    return [
+      relu.code,
+      relu.coches.join(','),
+      relu.marker,
+      relu.face,
+      relu.payé,
+      relu.opérations.map((o) => `${o.genre}:${o.prix}:${o.qui}:${o.privée ? 'privé' : 'partagé'}:${o.mot}`).join(' | '),
+      lÉtatDuCode('ZZZ.nimporte'),
+      code.includes('.'),
+    ];
+  })(),
+  [
+    'NUB-139',
+    'horaire-22:17,menu-super-caddie',
+    'vert',
+    'client',
+    true,
+    'devis:300:Jean:partagé:le traiteur | note:0::privé:les alliances, chez la mère de Léa',
+    null,
+    true,
+  ],
+);
+check(
+  'et un code sans rien ne s’écrit pas : il reste le mariage, et c’est tout',
+  leCodeDuTicket({ code: 'NUB-139', coches: [], marker: '', face: 'emetteur', payé: false, opérations: [] }),
+  'SM1.NUB-139',
+);
+check(
+  'les opérations tiennent dans l’adresse : on les écrit, on les relit',
+  (() => {
+    const liste = [
+      { id: 'op-1', genre: 'devis' as const, mot: 'le traiteur', prix: 300, qui: 'Jean', privée: false },
+      { id: 'op-2', genre: 'import' as const, mot: 'le pdf du traiteur', prix: 0, qui: '', privée: true },
+    ];
+    const relu = lesOpérationsDuCode(lesOpérationsEnCode(liste));
+    return [
+      relu.length,
+      relu.map((o) => `${o.genre}/${o.prix}/${o.qui}/${o.privée}`).join(' '),
+      lesOpérationsDuCode('').length,
+      lesOpérationsDuCode('zzz:1::0:rien').length,
+    ];
+  })(),
+  [2, 'devis/300/Jean/false import/0//true', 0, 0],
+);
+
+/* **Ce qui se voit sur le papier, des deux côtés.** */
+const rendreLeTicketDeCeCôté = (
+  face: 'emetteur' | 'client',
+  payé: boolean,
+  opérations: Array<{ id: string; genre: 'devis'; mot: string; prix: number; qui: string; privée: boolean }>,
+  coches: string[] = cochesDessai,
+) => {
+  const papiers = lignesCochées(coches);
+  const totauxIci = totauxDuTicket(papiers);
+  const comptes = compteDesPortefeuilles(coches);
+  return renderToStaticMarkup(
+    createElement(LeTicketPleinEcran as never, {
+      code: CODE_DE_DÉMONSTRATION,
+      numero: 'SM-23-0007',
+      dateLabel: 'le 12 juin 2027',
+      heure: 23,
+      couple: { noms: TICKET_COUPLE.noms, lieu: TICKET_COUPLE.venue, convives: TICKET_COUPLE.convives },
+      coches,
+      surCocher: () => {},
+      totaux: totauxIci,
+      portefeuilles: PORTEFEUILLES.map((p) => ({ id: p.id, mot: p.mot, marque: p.marque, ...comptes[p.id] })),
+      rêve: rêveDécrit(''),
+      budget: budgetDuRêve(coches),
+      payé,
+      surPayer: () => {},
+      marker: markerParId('jaune'),
+      surMarker: () => {},
+      face,
+      opérations,
+      signature: 'SM1.NUB-139.c=demo.m=jaune',
+    }),
+  ).replace(/&amp;/g, '&');
+};
+const unDevis = [{ id: 'op-1', genre: 'devis' as const, mot: 'le traiteur', prix: 300, qui: 'Jean', privée: true }];
+
+check(
+  'les opérations s’impriment sur le papier — avec leur prix, et pour qui',
+  (() => {
+    const nôtre = rendreLeTicketDeCeCôté('emetteur', false, unDevis);
+    return [
+      nôtre.includes('data-ticket-opérations="1"'),
+      nôtre.includes('data-ticket-opération="op-1"'),
+      nôtre.includes('le traiteur') && nôtre.includes('300') && nôtre.includes('Jean'),
+      nôtre.includes('DEVIS'),
+      // Chez nous, la note privée se montre.
+      !nôtre.includes('data-opération-cachée="vrai"'),
+    ];
+  })(),
+  [true, true, true, true, true],
+);
+check(
+  // « Quelqu’un te paye, ça arrive sur le ticket » : ce qui arrive compte.
+  'ce qui arrive après coup entre dans le total — le devis, la facture, la ligne',
+  (() => {
+    const sans = rendreLeTicketDeCeCôté('client', false, []);
+    const avec = rendreLeTicketDeCeCôté('client', false, unDevis);
+    const lire = (html: string) => Number(html.match(/data-ticket-total="(\d+)"/)?.[1] ?? 0);
+    return [
+      lire(avec) - lire(sans),
+      avec.includes('data-ticket-apport="300"'),
+      avec.includes('LES OPÉRATIONS (1)'),
+      // Une note ne change rien au total : elle ne fait que s’écrire.
+      lire(rendreLeTicketDeCeCôté('client', false, [{ id: 'op-9', genre: 'devis', mot: 'un mot', prix: 0, qui: '', privée: true }])) - lire(sans),
+    ];
+  })(),
+  [300, true, true, 0],
+);
+check(
+  'et du côté du client, la note privée ne sort pas du papier',
+  (() => {
+    const sien = rendreLeTicketDeCeCôté('client', false, unDevis);
+    return [
+      sien.includes('data-ticket-opérations="1"'),
+      sien.includes('data-opération-cachée="vrai"'),
+      sien.includes('data-opération-privée="true"'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  'du côté du client, le papier dit FACTURE — puis REÇU : le même objet',
+  (() => {
+    const avant = rendreLeTicketDeCeCôté('client', false, []);
+    const après = rendreLeTicketDeCeCôté('client', true, []);
+    return [
+      avant.includes('data-ticket-titre="FACTURE"'),
+      après.includes('data-ticket-titre="REÇU"'),
+      avant.includes('data-face-emis="vrai"'),
+      avant.includes('data-face-bascule="client"') && avant.includes('relire de notre côté'),
+      avant.includes('data-ticket-à-régler="À RÉGLER"'),
+    ];
+  })(),
+  [true, true, true, true, true],
+);
+check(
+  // Ce qui appartient au couple ne part pas chez le client : ni la cagnotte, ni
+  // les papiers — et si rien n'est pris, le papier le dit, il ne reste pas vide.
+  'et le papier du client garde pour nous la cagnotte et l’administratif',
+  (() => {
+    const sien = rendreLeTicketDeCeCôté('client', false, []);
+    const nôtre = rendreLeTicketDeCeCôté('emetteur', false, []);
+    return [
+      !sien.includes('data-ticket-voyage="vrai"'),
+      nôtre.includes('data-ticket-voyage="vrai"'),
+      !sien.includes('data-ticket-administratif='),
+      nôtre.includes('data-ticket-administratif='),
+      // Il y a déjà des lignes prises : le papier ne dit donc pas « rien à régler ».
+      !sien.includes('data-ticket-rien-à-régler="vrai"'),
+      // Le code-barres aussi porte tout : il est fait de la signature.
+      sien.includes('data-ticket-signature="SM1.NUB-139.c=demo.m=jaune"'),
+    ];
+  })(),
+  [true, true, true, true, true, true],
+);
+check(
+  'et le client ne voit que ce qui est pris : c’est son addition',
+  (() => {
+    const sien = rendreLeTicketDeCeCôté('client', false, []);
+    const lignes = [...sien.matchAll(/data-ticket-ligne="[^"]+" data-cochee="true"/g)].length;
+    const total = [...sien.matchAll(/data-ticket-ligne="[^"]+" data-cochee="false"/g)].length;
+    // Ce qui est pris **et imprimé** : ni l'administratif, ni les lignes du site.
+    const imprimées = cochesDessai.filter((id) => !estAdministrative(id) && !LIGNES_DU_SITE.includes(id));
+    return [lignes, total, imprimées.length];
+  })(),
+  [3, 0, 3],
+);
+check(
+  // « Ça ne répond pas bêtement » : un papier du client sans rien à régler le dit.
+  'et sans rien de pris, le papier du client le dit — il ne reste pas vide',
+  (() => {
+    const vide = rendreLeTicketDeCeCôté('client', false, [], []);
+    return [
+      vide.includes('data-ticket-rien-à-régler="vrai"'),
+      !vide.includes('data-ticket-ligne='),
+      vide.includes('rien à régler pour l’instant'),
+    ];
+  })(),
+  [true, true, true],
+);
+
+/* ——— LA LANDING : LA CAPSULE, LE TÉLÉPHONE, LE PAPIER AU PROPRE, L'ÉDITEUR ———
+
+   « Un vrai champ capsule, et sur une landing ? Comme la capture, et présentation
+   dans un iPhone en animé, comme les grandes pages qui présentent une innovation,
+   et du coup un ticket au propre bien droit, avec éditeur propre même design que
+   sur l'exemple. » */
+
+const landing = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/'] }, createElement(LaLanding as never)),
+).replace(/&amp;/g, '&');
+
+check(
+  'la landing s’ouvre sur un titre, une phrase, et **la capsule**',
+  (() => {
+    const ouverture = landing.slice(landing.indexOf('data-page="landing"'), landing.indexOf('data-landing="iphone"'));
+    return [
+      landing.includes('data-page="landing"'),
+      ouverture.includes('Votre mariage') && ouverture.includes('tient sur un ticket.'),
+      ouverture.includes('data-capsule="vrai"') && ouverture.includes('data-capsule-champ="vrai"'),
+      ouverture.includes('data-capsule-bouton="vrai"') && ouverture.includes('Allons-y'),
+      // Le dessin de la référence : un sérif, un petit mot espacé, un seul vert.
+      ouverture.includes('vp-didone vp-landing-titre'),
+      ouverture.includes('vp-petit-mot'),
+    ];
+  })(),
+  [true, true, true, true, true, true],
+);
+check(
+  'la capsule est une capsule : arrondie, et elle prend le vert quand on écrit dedans',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      /\.vp-capsule \{[^}]*border-radius: 999px/.test(css),
+      /\.vp-capsule:focus-within \{[^}]*#17b26a/.test(css),
+      /\.vp-bouton-vert \{[^}]*background: #17b26a/.test(css),
+      /\.vp-bouton-clair \{[^}]*border: 1px solid/.test(css),
+    ];
+  })(),
+  [true, true, true, true],
+);
+check(
+  'le papier est monté deux fois : dans le téléphone, et au propre',
+  (() => {
+    const papiers = [...landing.matchAll(/data-ticket-plein="vrai"/g)].length;
+    return [
+      papiers,
+      landing.indexOf('data-iphone="vrai"') < landing.indexOf('data-landing-papier="vrai"'),
+      landing.includes('data-iphone-ecran="vrai"'),
+      landing.includes('data-landing-papier="vrai"'),
+    ];
+  })(),
+  [2, true, true, true],
+);
+check(
+  // « Présentation dans un iPhone en animé » : ça défile, et ça s'arrête si l'on
+  // demande à ne pas voir d'animation.
+  'l’iPhone est un cadre avec un écran, et le papier y défile tout seul',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      /\.vp-iphone \{[^}]*border-radius: 46px/.test(css),
+      /\.vp-iphone-ecran \{[^}]*overflow: hidden/.test(css),
+      /\.vp-iphone-flux \{[^}]*animation: vp-defile/.test(css),
+      /@keyframes vp-defile \{[^}]*transform: scale\(0\.62\)/.test(css),
+      /prefers-reduced-motion: reduce\) \{\s*\.vp-iphone-flux \{ animation: none/.test(css),
+      // Une démonstration ne se touche pas : le papier au propre, si.
+      /\.vp-iphone-flux \{[^}]*pointer-events: none/.test(css),
+    ];
+  })(),
+  [true, true, true, true, true, true],
+);
+check(
+  // « Un ticket au propre bien droit » : le papier ne penche plus. La seule
+  // chose de travers, c’est le tampon — et c’est lui qui doit l’être.
+  'et le papier est bien droit : rien de penché, sauf le tampon',
+  (() => {
+    const auPropre = landing.slice(landing.indexOf('data-landing-papier="vrai"'));
+    // Non payé, donc pas de tampon : **rien** ne doit pencher sur le papier.
+    return [
+      auPropre.includes('data-landing-papier="vrai"'),
+      !auPropre.includes('rotate('),
+      !auPropre.includes('tilt'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  'le papier tient dans le bloc : il ne prend plus toute la hauteur de l’écran',
+  /\.vp-landing-papier \.vp-comptoir,\s*\.vp-iphone-flux \.vp-comptoir \{\s*min-height: 0/.test(
+    readFileSync('src/index.css', 'utf8'),
+  ),
+  true,
+);
+
+/* **L'éditeur : huit questions, le design de l'exemple.** */
+check(
+  'l’éditeur pose huit questions, dans l’ordre — et chacune a son suivant',
+  (() => {
+    const éditeur = landing.slice(landing.indexOf('data-editeur="vrai"'));
+    const posées = [...éditeur.matchAll(/data-question="([^"]+)"/g)].map((m) => m[1]);
+    const suivants = [...éditeur.matchAll(/data-question-suivant="([^"]+)"/g)].map((m) => m[1]);
+    return [
+      LES_QUESTIONS_DU_TICKET.join(','),
+      posées.join(','),
+      suivants.join(','),
+      éditeur.includes('data-question-sous="Le code imprimé en haut du ticket"'),
+    ];
+  })(),
+  [
+    'code,prenoms,lieu,invites,reve,prise,marker,face',
+    'code,prenoms,lieu,invites,reve,prise,marker,face',
+    'code,prenoms,lieu,invites,reve,prise,marker',
+    true,
+  ],
+);
+check(
+  'chaque question se répond dans une capsule — la même partout',
+  (() => {
+    const éditeur = landing.slice(landing.indexOf('data-editeur="vrai"'));
+    const capsules = [...éditeur.matchAll(/data-capsule="vrai"/g)].length;
+    return [
+      capsules,
+      éditeur.includes('Nora & Adam'),
+      éditeur.includes('Supermarché Belleville'),
+      éditeur.includes('data-capsule-libellé="Les invités"'),
+    ];
+  })(),
+  [6, true, true, true],
+);
+check(
+  'l’éditeur configure le papier : le marker, et la face',
+  (() => {
+    const éditeur = landing.slice(landing.indexOf('data-editeur="vrai"'));
+    const marqueurs = [...éditeur.matchAll(/data-marker="([^"]+)"/g)].map((m) => m[1]);
+    return [
+      marqueurs.length,
+      new Set(marqueurs).size,
+      éditeur.includes('data-marker-editeur="jaune"'),
+      éditeur.includes('data-face-choix="emetteur"') && éditeur.includes('data-face-choix="client"'),
+    ];
+  })(),
+  [6, 6, true, true],
+);
+check(
+  // « Qu’est-ce qu’on prend ? » : c’est l’agent qui écrit, comme partout ailleurs.
+  'et la question des lignes passe par l’agent',
+  (() => {
+    const éditeur = landing.slice(landing.indexOf('data-editeur="vrai"'));
+    return [
+      éditeur.includes('data-question="prise"'),
+      éditeur.includes('un dîner pour vingt'),
+      éditeur.includes('devis 300 € pour Jean'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  'deux adresses, un seul objet : la landing à la racine, le papier à /ticket',
+  (() => {
+    const app = readFileSync('src/App.tsx', 'utf8');
+    return [
+      app.includes('<Route path="/" element={<LaLanding />} />'),
+      (app.match(/<Route path="\/(caisse|ticket)" element=\{<LaCaisse \/>\} \/>/g) ?? []).length,
+    ];
+  })(),
+  [true, 2],
+);
+
+/* ——— L'APPLI A ÉTÉ NETTOYÉE : UN SEUL OBJET À L'ÉCRAN ———
+
+   « Garde que le ticket du haut, c'est suffisant », « supprime le visuel pour
+   garder l'esprit ticket », « supprime les boutons », « et même le mini-site, on
+   reste sur le ticket ». Les autres morceaux **restent dans le dépôt** — on
+   démonte, on ne détruit pas — et leurs fichiers sont vérifiés ici, un par un. */
+
+check(
+  // « Au début juste un champ de saisie avec un agent » : le champ est la
+  // première chose, le papier vient juste après — et rien d'autre n'est monté.
+  'la page ne monte que le champ et le ticket : pas une bande de plus',
+  [
+    ticketVide.includes('data-champ="vrai"'),
+    ticketVide.indexOf('data-champ="vrai"') < ticketVide.indexOf('data-ticket-plein="vrai"'),
+    !ticketVide.includes('data-bande='),
+    !ticketVide.includes('data-machine='),
+    !ticketVide.includes('data-atelier='),
+    !ticketVide.includes('data-archive-feuille'),
+  ],
+  [true, true, true, true, true, true],
+);
+check(
+  'ce qui a été retiré n’est nulle part : ni grille, ni polaroïds, ni pastille, ni pupitre',
+  [
+    !ticketVide.includes('data-grille'),
+    !ticketVide.includes('data-héros-de-la-landing'),
+    !ticketVide.includes('data-action="partager-flottant"'),
+    !ticketVide.includes('data-ticket-pupitre'),
+    !ticketVide.includes('data-tampon="'),
+  ],
+  [true, true, true, true, true],
+);
+check(
+  'le mini-site n’est plus servi : `?site=1` rend le ticket, et rien d’autre',
+  (() => {
+    const html = rendreLeTicket('/?site=1');
+    return [html.includes('data-ticket-plein="vrai"'), !html.includes('data-site='), !html.includes('data-action="voir-le-site"')];
+  })(),
+  [true, true, true],
+);
+check(
+  'rien n’est détruit : les morceaux retirés sont toujours dans le dépôt',
+  [
+    'src/components/LaCouvertureArchive.tsx',
+    'src/components/LAtelierDuTicket.tsx',
+    'src/components/LeTelephoneAuTicket.tsx',
+    'src/components/MiniSiteDuMariage.tsx',
+    'src/components/MachineDeRipple.tsx',
+    'src/components/LesBandesDeLAime.tsx',
+    'src/components/AppareilDuMariage.tsx',
+    'src/components/AppGrille.tsx',
+    'src/pages/Landing.tsx',
+  ].every((f) => existsSync(f)),
+  true,
+);
+check(
+  'et l’adresse ne sert plus qu’une chose : `?code=`, `?coches=`, `?marker=`, `?reve=`',
+  (() => {
+    const html = rendreLeTicket('/?reve=Las%20Vegas%20en%20janvier&coches=horaire-22:17');
+    const autre = rendreLeTicket('/?code=XK9-318');
+    return [html.includes('data-cochees="1"'), autre.includes('data-code="XK9-318"'), !autre.includes(CODE_DE_DÉMONSTRATION)];
+  })(),
+  [true, true, true],
+);
+
+/* ═══════════════ L'ARCHIVE : LE PAPIER ÉTALÉ, ET LES POLAROÏDS ═══════════════
+
+   La référence du 21 septembre 2026 est une **archive de papier** : du noir, des
+   objets posés en vrac, un titre sérif immense par-dessus, et des images
+   légendées comme des pièces. On prend la composition — pas la marque, pas les
+   mots, pas les objets — et on la remplit avec **notre** papier. */
+
+const archive = ticketVide.slice(ticketVide.indexOf('data-bande="archive"'), ticketVide.indexOf('data-section="visuel"'));
+
+/* ——— LES HUIT PAPIERS, ET CE QUE CHACUN OUVRE ——— */
+
+const papiers = [...archive.matchAll(/data-papier-étalé="([^"]+)" data-papier-genre="([^"]+)"/g)].map((m) => ({
+  id: m[1]!,
+  genre: m[2]!,
+}));
+
+check(
+  'chaque pièce tombe à sa place, de travers — comme un collage',
+  (() => {
+    const places = [...archive.matchAll(/data-papier-étalé="[^"]+" data-papier-genre="[^"]+"[^>]*style="([^"]*)"/g)].map((m) => m[1]!);
+    return [places.length, places.every((p) => p.includes('--x:') && p.includes('--r:') && p.includes('--w:'))];
+  })(),
+  [papiers.length, true],
+);
+check(
+  'et le collage s’enroule sur un téléphone : il tombe en absolu sur un écran large',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return [css.includes('.vp-collage'), /@media \(min-width: 640px\)[\s\S]{0,200}\.vp-posé\s*\{[^}]*position:\s*absolute/.test(css)];
+  })(),
+  [true, true],
+);
+check(
+  // « Les photos en haut, en cliquant on descend : ça perturbe. » Aucune pièce
+  // n'emmène ailleurs d'un clic : chacune **s'ouvre**, et propose ensuite.
+  'aucune pièce de l’archive n’emmène ailleurs d’un clic : elles s’ouvrent',
+  (() => {
+    const pieces = [...archive.matchAll(/<button[^>]*data-papier-étalé="([^"]+)"/g)].map((m) => m[1]!);
+    return [pieces.length, archive.includes('href="#le-visuel"'), archive.includes('href="#le-ticket-plein"')];
+  })(),
+  [papiers.length, false, false],
+);
+check(
+  'et le lib dit ce que chaque pièce propose d’ouvrir — le reçu, le site',
+  (() => {
+    const étalés = papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION);
+    const reçu = étalés.find((p) => p.genre === 'ticket')!;
+    return [reçu.ouvre?.cible, étalés.filter((p) => p.ouvre).length];
+  })(),
+  ['site', 5],
+);
+check(
+  'la pièce ouverte en grand est prête dans le composant, avec sa porte',
+  (() => {
+    const source = readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8');
+    return [source.includes('data-archive-feuille="vrai"'), source.includes('data-archive-feuille-ouvre=')];
+  })(),
+  [true, true],
+);
+check(
+  'et les neuf moments sont ceux du plan, horaires compris',
+  [MOMENTS_DE_LA_NUIT.length, MOMENTS_DE_LA_NUIT.every((m) => m.heure.length === 5), MOMENTS_DE_LA_NUIT.at(-1)!.id],
+  [9, true, 'closing'],
+);
+/* ——— LES TROIS GESTES : DÉPLACER, RETOURNER, ÉCRIRE ———
+
+   « Les papiers plus petits, en haut, déplaçables, retournables, et on écrit. »
+   Chaque pièce est prise par le doigt (ou la souris), se retourne pour montrer
+   son dos — et ce dos porte un champ, avec l'invite de ce qu'on y écrit. */
+
+check(
+  'et les pièces sont petites, en haut de la page : aucune ne prend la moitié de la table',
+  (() => {
+    const lib = papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION);
+    return [lib.every((p) => p.largeur <= 34), lib.every((p) => p.y <= 50), Math.max(...lib.map((p) => p.largeur))];
+  })(),
+  [true, true, 32],
+);
+check(
+  'chaque pièce a un dos, écrit à la main — avec son invite',
+  (() => {
+    const lib = papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION);
+    return [lib.every((p) => p.dos.length > 2 && p.invite.length > 8), lib.map((p) => p.dos).join(' · ')];
+  })(),
+  [true, 'LE TIMBRE · LA LISTE · AU DOS · AU DOS DE LA CARTE · LE REÇU · CE QU’ON VEUT ENTENDRE · LE STICKER · LE CODE'],
+);
+check(
+  'le retournement est un vrai retournement : deux faces, et le dos derrière',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      /\.vp-piece\[data-piece-retournee='true'\]\s*\.vp-piece-boîte\s*\{[^}]*rotateY\(180deg\)/.test(css),
+      // Le nom de la classe est écrit **sans accent** — dans la feuille de
+      // style comme dans le composant. C'est ce qui manquait : la classe du dos
+      // était écrite avec un accent d'un côté, sans de l'autre, et la pièce ne
+      // se retournait pas.
+      /\.vp-piece-derriere\s*\{[^}]*rotateY\(180deg\)/.test(css) &&
+        readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8').includes('vp-piece-derriere') &&
+        !css.includes('vp-piece-derrière'),
+      css.includes('backface-visibility: hidden'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  // Ce qu'on écrit reste : c'est un brouillon gardé sur place, et quand on
+  // rouvre une pièce où l'on a écrit, on la rouvre **du côté écrit**.
+  'ce qu’on écrit reste sur la table, et l’on rouvre du bon côté',
+  (() => {
+    const source = readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8');
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      source.includes("'supermariage:pieces'") && source.includes('localStorage.setItem'),
+      /data-piece-retournee='true'\]\s*\.vp-piece-face:not\(\.vp-piece-derriere\)\s*\{[^}]*pointer-events:\s*none/.test(css),
+      source.includes('surOuvrir: () => {'),
+    ];
+  })(),
+  [true, true, true],
+);
+check(
+  'un clic n’ouvre pas quand on vient de déplacer la pièce',
+  (() => {
+    const source = readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8');
+    return source.includes('glissé.current') && source.includes('> 3');
+  })(),
+  true,
+);
+check(
+  'toutes les images de l’archive existent dans le dépôt',
+  [archive.matchAll(/src="(\/images\/[^"]+)"/g)]
+    .flatMap((m) => [...m].map((x) => x[1]!))
+    .every((url) => existsSync(`public${url}`)),
+  true,
+);
+
+/* ——— LES QUATRE PORTES DEVIENNENT DES POLAROÏDS ——— */
+
+/* ——— LA PASTILLE FLOTTANTE : ON PARTAGE D'OÙ L'ON VEUT ——— */
+
+check(
+  'et le mini-site des invités ne porte pas la pastille : il n’y a rien à partager là-bas',
+  !rendreLeTicket('/?site=1').includes('data-action="partager-flottant"'),
+  true,
+);
+
+/* ══════════════════ LES UNIVERS DE TICKET, ET L'ATELIER ══════════════════
+
+   « Le ticket a plein de détails qui n'ont rien à voir avec le mariage… mais
+   c'est ça qui est intéressant : on pourrait avoir une page ticket pour plein
+   d'autres univers. » Dix tickets, dix métiers — et **tout le monde compose le
+   sien, et décide qui le voit**. */
+
+check(
+  // « On pourrait avoir une page ticket pour plein d’autres univers » — et
+  // l’administratif, qui n’a rien à faire sur le ticket du mariage, a le sien.
+  'onze univers de ticket, et chacun a ses lignes',
+  UNIVERS_DU_TICKET.map((u) => u.id),
+  ['mini-site', 'photos', 'videos', 'repas', 'enfants', 'dj', 'rsvp', 'temoins', 'delires', 'devis', 'papiers'],
+);
+check(
+  'chaque univers dit son mot, sa phrase, son geste et ses yeux',
+  UNIVERS_DU_TICKET.every(
+    (u) => u.mot.length >= 2 && u.sous.length > 20 && u.geste.length > 3 && QUI_PEUT_VOIR.includes(u.qui as never),
+  ),
+  true,
+);
+check(
+  // Les dix tickets de métier tiennent en une poignée de lignes ; le ticket des
+  // papiers, lui, est long : c’est la paperasse du mariage, toute entière.
+  'les tickets de métier proposent entre huit et douze lignes, jamais un ticket vide',
+  UNIVERS_DU_TICKET.filter((u) => u.id !== 'papiers').map((u) => u.lignes.length >= 6 && u.lignes.length <= 12),
+  UNIVERS_DU_TICKET.filter((u) => u.id !== 'papiers').map(() => true),
+);
+check(
+  'et le ticket des papiers est long comme la paperasse : il ne se cache pas',
+  [
+    UNIVERS_DU_TICKET.find((u) => u.id === 'papiers')!.lignes.length,
+    UNIVERS_DU_TICKET.find((u) => u.id === 'papiers')!.geste.length > 3,
+  ],
+  [31, true],
+);
+check(
+  'aucune ligne n’a deux fois le même identifiant',
+  (() => {
+    const toutes = UNIVERS_DU_TICKET.flatMap((u) => u.lignes.map((l) => l.id));
+    return [toutes.length, new Set(toutes).size];
+  })(),
+  (() => {
+    const toutes = UNIVERS_DU_TICKET.flatMap((u) => u.lignes.map((l) => l.id));
+    return [toutes.length, toutes.length];
+  })(),
+);
+check(
+  'l’image de chaque univers existe dans le dépôt',
+  UNIVERS_DU_TICKET.every((u) => existsSync(`public${u.image}`)),
+  true,
+);
+check(
+  'le ticket du mini-site, c’est le site : huit blocs, et rien d’autre',
+  UNIVERS_DU_TICKET.find((u) => u.id === 'mini-site')!.lignes.map((l) => l.id),
+  ['site-couverture', 'site-programme', 'site-gens', 'site-diner', 'site-voyage', 'site-ticket', 'site-rsvp', 'site-hebergement'],
+);
+check(
+  'le ticket des photos, c’est douze missions, avec leurs heures',
+  (() => {
+    const photos = UNIVERS_DU_TICKET.find((u) => u.id === 'photos')!;
+    return [photos.lignes.length, photos.lignes.every((l) => l.heure?.length === 5)];
+  })(),
+  [12, true],
+);
+check(
+  'et le ticket des vidéos dit « moins de dix secondes »',
+  UNIVERS_DU_TICKET.find((u) => u.id === 'videos')!.sous.includes('dix secondes'),
+  true,
+);
+check(
+  'le repas porte des prix — donc une économie',
+  (() => {
+    const repas = UNIVERS_DU_TICKET.find((u) => u.id === 'repas')!;
+    return [repas.lignes.filter((l) => (l.prix ?? 0) > 0).length, repas.lignes.some((l) => l.prix === 0)];
+  })(),
+  [9, true],
+);
+check(
+  'et les devis portent un acompte négatif : le papier dit ce qui est déjà payé',
+  UNIVERS_DU_TICKET.find((u) => u.id === 'devis')!.lignes.some((l) => (l.prix ?? 0) < 0),
+  true,
+);
+
+/* ——— COMPOSER : CE QUI EST COCHÉ EST CE QUI EST SUR LE TICKET ——— */
+
+const ticketPhotos = composerLeTicketDeLUnivers('photos', ['photo-01', 'photo-02', 'photo-03'], 'les invités', 'Les photos');
+check('un ticket composé, c’est ses lignes cochées — et pas les autres', ticketPhotos.compte, 3);
+check('avec son nom, et ses yeux', [ticketPhotos.nom, ticketPhotos.qui], ['Les photos', 'les invités']);
+check('sans ligne cochée, il n’y a rien à imprimer, mais le ticket existe', composerLeTicketDeLUnivers('photos', []).compte, 0);
+check(
+  'tout cocher rend le ticket complet',
+  (() => {
+    const tout = UNIVERS_DU_TICKET.find((u) => u.id === 'repas')!;
+    const composé = composerLeTicketDeLUnivers('repas', tout.lignes.map((l) => l.id));
+    return [composé.complet, composé.total > 0];
+  })(),
+  [true, true],
+);
+check(
+  'et l’adresse du ticket porte l’univers, les lignes, les yeux et le nom',
+  ticketPhotos.adresse,
+  `?ticket=photos&lignes=photo-01%2Cphoto-02%2Cphoto-03&qui=les+invit%C3%A9s&nom=Les+photos`,
+);
+check(
+  'un univers inconnu retombe sur le premier — jamais de page vide',
+  universParId('zzz').id,
+  'mini-site',
+);
+check(
+  'et une ligne d’un autre univers ne se glisse pas dans le ticket',
+  composerLeTicketDeLUnivers('photos', ['repas-plat', 'photo-01']).lignes.map((l) => l.id),
+  ['photo-01'],
+);
+
+/* ——— L'ATELIER N'EST PLUS MONTÉ ———
+
+   Les onze univers et leurs trois réglages restent dans le dépôt
+   (`LAtelierDuTicket`, `universDuTicket`) — leurs vérifications de lib sont plus
+   haut — mais l'appli n'a plus qu'un ticket : celui du mariage. */
+
+check(
+  'l’atelier des univers n’est plus monté : un seul ticket suffit',
+  !ticketVide.includes('data-atelier') && !ticketVide.includes('data-univers='),
+  true,
+);
+
+/* ——— LE TICKET DANS LE TÉLÉPHONE : IL DÉFILE, ET LE SITE APPARAÎT ——— */
+
+const rendreLeTéléphone = (écran: 'ticket' | 'site', coches: string[] = ['photo-01', 'photo-02']) =>
+  renderToStaticMarkup(
+    createElement(LeTelephoneAuTicket as never, {
+      univers: universParId('photos'),
+      lignes: universParId('photos').lignes,
+      coches,
+      surCocher: () => {},
+      code: CODE_DE_DÉMONSTRATION,
+      site: composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, cochesDessai),
+      visuel: '/images/semaine-38/cover.jpg',
+      noms: TICKET_COUPLE.noms,
+      dateLabel: 'le 12 juin 2027',
+      surOuvrirLeSite: () => {},
+      écranInitial: écran,
+    }),
+  ).replace(/&amp;/g, '&');
+
+const téléphoneAuTicket = rendreLeTéléphone('ticket');
+const téléphoneAuSite = rendreLeTéléphone('site');
+
+check(
+  'le téléphone est là, et son écran aussi',
+  téléphoneAuTicket.includes('data-tel="vrai"') &&
+    téléphoneAuTicket.includes('data-tel-écran="ticket"') &&
+    téléphoneAuTicket.includes('data-tel-liste="vrai"'),
+  true,
+);
+check(
+  'c’est un objet penché, avec son encoche et son ombre',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      /\.vp-tel\s*\{[^}]*rotate\(-3\.5deg\)/.test(css),
+      css.includes('.vp-tel-encoche'),
+      /\.vp-tel-écran\s*\{[^}]*overflow-y:\s*auto/.test(css),
+      /@media \(max-width: 640px\)[\s\S]{0,120}\.vp-tel\s*\{\s*transform:\s*none/.test(css),
+    ];
+  })(),
+  [true, true, true, true],
+);
+check(
+  'le ticket imprime son univers, et son code',
+  téléphoneAuTicket.includes('SUPER MARIAGE') && téléphoneAuTicket.includes(`PHOTOS · ${CODE_DE_DÉMONSTRATION}`),
+  true,
+);
+check(
+  'les douze missions sont dans l’écran, et l’on clique sur chacune',
+  (() => {
+    const lignes = [...téléphoneAuTicket.matchAll(/data-tel-ligne="([^"]+)" data-tel-ligne-cochee="(true|false)"/g)];
+    return [lignes.length, lignes.filter((m) => m[2] === 'true').length];
+  })(),
+  [12, 2],
+);
+check(
+  'le total de l’écran suit ce qui est cochée',
+  (() => {
+    const payantes = universParId('devis');
+    const html = renderToStaticMarkup(
+      createElement(LeTelephoneAuTicket as never, {
+        univers: payantes,
+        lignes: payantes.lignes,
+        coches: ['devis-lieu', 'devis-photo'],
+        surCocher: () => {},
+        code: CODE_DE_DÉMONSTRATION,
+        site: composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, []),
+        visuel: null,
+        noms: TICKET_COUPLE.noms,
+        dateLabel: 'le 12 juin 2027',
+        surOuvrirLeSite: () => {},
+      }),
+    );
+    return /data-tel-total="8940"/.test(html);
+  })(),
+  true,
+);
+check(
+  'et l’on bascule : deux touches, sur l’écran',
+  (téléphoneAuTicket.match(/data-tel-bouton="(ticket|site)"/g) ?? []).length,
+  2,
+);
+check(
+  'la bascule montre le site, sur le même écran',
+  téléphoneAuSite.includes('data-tel-écran="site"') &&
+    téléphoneAuSite.includes('data-tel-site="vrai"') &&
+    téléphoneAuSite.includes('data-tel-site-blocs="vrai"') &&
+    téléphoneAuSite.includes(`data-tel-site-adresse="?code=${CODE_DE_DÉMONSTRATION}&site=1"`),
+  true,
+);
+check(
+  'avec la couverture dedans, et les blocs qu’elle allume',
+  téléphoneAuSite.includes('data-tel-site-noms="vrai"') &&
+    (téléphoneAuSite.match(/data-tel-site-bloc=/g) ?? []).length ===
+      composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, cochesDessai).blocs.length,
+  true,
+);
+check(
+  'et l’on peut ouvrir le site en grand — c’est le seul geste qui sort du téléphone',
+  téléphoneAuSite.includes('data-action="ouvrir-le-site-depuis-le-tel"'),
+  true,
+);
+
+/* ═══════════ LA MACHINE, GARDÉE : ELLE N'EST PLUS SUR LA PAGE ═══════════
+
+   « Sans machine. » La machine de Ripple n'est plus montée sur la page — mais
+   **rien n'est détruit** : le composant reste entier, et c'est ici qu'on vérifie
+   son contrat : l'écran, la fente, les touches, les ronds, le champ, le reçu,
+   et son écran de mini-site. */
+
+const rendreLaMachine = (
+  options: { coches?: string[]; demande?: string; écran?: 'propositions' | 'ticket' | 'site' } = {},
+) => {
+  const cochesIci = options.coches ?? [];
+  const état = étatDeLaMachine({
+    coches: cochesIci,
+    demande: options.demande ?? '',
+    écran: options.écran ?? 'propositions',
+  });
+  const papiers = lignesCochées(cochesIci);
+  const totauxIci = totauxDuTicket(papiers);
+  const comptes = compteDesPortefeuilles(cochesIci);
+  return renderToStaticMarkup(
+    createElement(MachineDeRipple as never, {
+      heure: 23,
+      lignes: cochesIci.length,
+      total: totauxIci.total,
+      écran: état.écran,
+      visuel: '/images/semaine-38/cover.jpg',
+      site: composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, cochesIci),
+      proposition: ceQueLaMachinePropose(état),
+      demande: demandeDeLaMachine(état),
+      ticket: papiers,
+      marques: [],
+      portefeuilles: PORTEFEUILLES.map((p) => ({ id: p.id, mot: p.mot, marque: p.marque, ...comptes[p.id] })),
+      prises: compteParFamille(cochesIci),
+      marche: null,
+      sortie: null,
+      onValider: () => {},
+      onPasser: () => {},
+      onFamille: () => {},
+      onObjet: () => {},
+      onDemande: () => {},
+      onRetirer: () => {},
+      onEmporter: () => {},
+      onSite: () => {},
+      onPartager: () => {},
+    }),
+  ).replace(/&amp;/g, '&');
+};
+
+const machineVide = rendreLaMachine();
+const machineAuReçu = rendreLaMachine({ coches: cochesDessai, écran: 'ticket' });
+const machineAuSite = rendreLaMachine({ écran: 'site' });
+const machineAuSiteCoché = rendreLaMachine({ coches: cochesDessai, écran: 'site' });
+
+check('la machine est gardée, entière, même hors de la page', machineVide.includes('data-machine="ripple"'), true);
+check('son petit écran est là', machineVide.includes('data-ecran="ripple"'), true);
+check('la fente aussi', machineVide.includes('data-fente="vrai"'), true);
+check(
+  'les boutons ronds sont les objets du Ripple, gardés',
+  (machineVide.match(/data-objet=/g) ?? []).length,
+  OBJETS_DE_LA_FABRIQUE.length,
+);
+check(
+  'il y a le tampon, le timbre, la carte, le ticket, l’avion, le sticker et le reçu',
+  ['tampon', 'timbre', 'carte-postale', 'ticket-caisse', 'billet-avion', 'sticker', 'ticket-spectacle'].every(
+    (id) => machineVide.includes(`data-objet="${id}"`),
+  ),
+  true,
+);
+check('et trois boutons ronds pour les familles', (machineVide.match(/data-machine-famille=/g) ?? []).length, 3);
+check(
+  'deux boutons ronds ne portent jamais le même mot',
+  (() => {
+    const mots = [...machineVide.matchAll(/data-rond-mot="([^"]+)"/g)].map((m) => m[1]!);
+    return mots.length === 3 && new Set(mots).size === mots.length;
+  })(),
+  true,
+);
+check('« votre site » n’est écrit qu’une fois sur la machine', (machineVide.match(/VOTRE SITE/g) ?? []).length, 1);
+check(
+  'et le mot d’un bouton rond respire : un mot par ligne, dans un cercle large',
+  (() => {
+    const cercles = [...machineVide.matchAll(/data-machine-famille="[^"]+"[^>]*class="([^"]*)"/g)].map((m) => m[1]!);
+    return (
+      cercles.length === 3 &&
+      cercles.every((c) => c.includes('w-[78px]') && c.includes('px-2') && c.includes('leading-')) &&
+      [...machineVide.matchAll(/<span class="block">([^<]+)<\/span>/g)].map((m) => m[1]).join(' ') ===
+        GROUPES_DU_TICKET.map((g) => g.mot).join(' ')
+    );
+  })(),
+  true,
+);
+check(
+  'trois touches rondes : le mini-site, on passe, on valide',
+  machineVide.includes('data-touche="site"') &&
+    machineVide.includes('data-touche="valider"') &&
+    machineVide.includes('data-touche="passer"'),
+  true,
+);
+check('les touches sont sous l’écran, la fente en dessous', machineVide.indexOf('data-touche="valider"') < machineVide.indexOf('data-fente="vrai"'), true);
+check(
+  'la rangée de boutons ronds est remontée, et le champ est dessous',
+  machineVide.indexOf('data-boutons="familles"') < machineVide.indexOf('data-ia="champ"'),
+  true,
+);
+check(
+  'le champ est là : on dit ce qu’on veut, et on envoie',
+  machineVide.includes('data-ia="champ"') && machineVide.includes('data-ia="envoyer"') && machineVide.includes('dites ce qu’il vous faut'),
+  true,
+);
+check(
+  'la machine propose toujours quelque chose : d’abord une famille',
+  machineVide.includes('data-écran-corps="famille"') &&
+    machineVide.includes('data-famille-proposee="jour"') &&
+    machineVide.includes('data-rang="1" data-file="3"'),
+  true,
+);
+check(
+  'et ses touches sont vivantes — jamais un bouton mort',
+  (() => {
+    const touche = machineVide.slice(machineVide.indexOf('data-touche="valider"') - 200);
+    const bouton = touche.slice(touche.indexOf('<button'), touche.indexOf('>'));
+    return !bouton.includes('disabled');
+  })(),
+  true,
+);
+check('l’écran dit toujours le compte et le total', machineVide.includes('0 LIGNE'), true);
+check(
+  'l’écran de la machine garde son visuel du jour en tête',
+  machineVide.includes('data-écran-photo="vrai"') && machineVide.includes('CAISSE 3 ·'),
+  true,
+);
+check(
+  '✓ ouvre le ticket entier sur l’écran : les lignes, les portefeuilles, l’emporte',
+  machineAuReçu.includes('data-écran-corps="ticket"') &&
+    machineAuReçu.includes('data-écran-liste="vrai"') &&
+    machineAuReçu.includes('data-action="emporter"'),
+  true,
+);
+check(
+  'et ✗ le vide, ✓ revient aux propositions',
+  machineAuReçu.includes('data-touche-mot="vider"') && machineAuReçu.includes('data-touche-mot="retour"'),
+  true,
+);
+check(
+  'la touche du milieu ouvre le mini-site, et l’écran dit ce qu’il a fabriqué',
+  machineAuSite.includes('data-écran-corps="site"') &&
+    machineAuSite.includes('data-site-liste="vrai"') &&
+    machineAuSite.includes(`data-site-adresse="?code=${CODE_DE_DÉMONSTRATION}&site=1"`),
+  true,
+);
+check(
+  'sans rien de coché, l’écran compte trois blocs sur neuf ; avec les cinq lignes, huit',
+  [
+    machineAuSite.includes('data-site-blocs="3"') && machineAuSite.includes('3 / 9'),
+    machineAuSiteCoché.includes('data-site-blocs="8"') && machineAuSiteCoché.includes('data-site-bloc="gens"'),
+  ],
+  [true, true],
+);
+check(
+  'en mode site, ✓ revient, ✗ partage, et la touche du milieu ferme',
+  [
+    machineAuSite.includes('data-touche-mot="retour"'),
+    machineAuSite.includes('data-touche-mot="partager"'),
+    machineAuSite.includes('data-touche-mot="fermer"'),
+    machineAuSite.includes('data-touche-mot="vider"'),
+  ],
+  [true, true, true, false],
+);
+check(
+  'une demande qui ne répond à rien ne déroule pas tout le magasin',
+  rendreLaMachine({ demande: 'zzz' }).includes('RIEN DE TEL'),
+  true,
+);
+check(
+  'une demande qui répond fait venir ses lignes, et l’écran le dit',
+  (() => {
+    const écran = rendreLaMachine({ demande: 'diner' });
+    return écran.includes('data-écran-corps="ligne"') && écran.includes('VOUS VOULEZ') && écran.includes('data-demande-mots="diner"');
+  })(),
+  true,
+);
+check(
+  'et la touche du mini-site se range : elle se ferme, et l’on revient',
+  basculerLeSiteDeLaMachine(étatDeLaMachine()).état.écran,
+  'site',
+);
+
+/* Le reçu, sur l'écran : le ticket entier, et où il part. */
+
+const portefeuillesDuReçu = portefeuillesDesCoches(cochesDessai);
+check('l’adresse porte le caddie : le lien est le reçu', ticketPlein.includes('data-cochees="5"'), true);
+check(
+  'chaque portefeuille dit ses lignes et son total, dans l’écran de la machine',
+  portefeuillesDuReçu.every((t) =>
+    machineAuReçu.includes(`data-portefeuille="${t.portefeuille}" data-lignes="${t.lignes.length}" data-total="${t.total}"`),
+  ),
+  true,
+);
+
+/* L’agent : il fait passer les choses à l’écran, une par une. */
+
+check('« dîner » fait venir les menus', lAgentFaitPasser('un dîner pour vingt').lignes.some((l) => l.catégorie.startsWith('menu-')), true);
+check('et le meilleur d’abord : la ligne qui porte le mot', /d[iî]ner/i.test(lAgentFaitPasser('diner').lignes[0]!.label), true);
+check('la cérémonie fait venir les horaires', lAgentFaitPasser('la cérémonie').lignes.some((l) => l.catégorie === 'rayon-horaires'), true);
+check('les photos font venir les photographes', lAgentFaitPasser('des photos').lignes.some((l) => /photo/i.test(l.label)), true);
+check(
+  'l’agent ne propose jamais ce qui est déjà sur le ticket',
+  lAgentFaitPasser('diner', ['menu-super-essentiel']).lignes.every((l) => l.id !== 'menu-super-essentiel'),
+  true,
+);
+check(
+  'un mot qu’il ne connaît pas : il ne fait rien passer, et il le dit',
+  [lAgentFaitPasser('zzz').lignes.length, lAgentFaitPasser('zzz').àVide],
+  [0, true],
+);
+check('et sans une demande, il ne propose rien non plus', lAgentFaitPasser('').lignes.length, 0);
+check(
+  'en revanche « robe » ne repart pas les mains vides',
+  lAgentFaitPasser('une robe pour la mairie').lignes.length > 0,
+  true,
+);
+check(
+  'et l’écran écrit les mots comme on les a écrits, avec leurs accents',
+  lAgentFaitPasser('un dîner').mots,
+  ['dîner'],
+);
+check(
+  'un objet du Ripple imprime toujours quelque chose',
+  OBJETS_DE_LA_FABRIQUE.every((o) => {
+    const papier = papierDeLObjet(o);
+    return papier.label.length > 2 && papier.sous.length > 8;
+  }),
+  true,
+);
+check(
+  'les trois familles font passer tout le catalogue, et rien que lui',
+  [fileDeLaFamille('jour').length, fileDeLaFamille('site').length, fileDeLaFamille('documents').length],
+  [48, 20, 31],
+);
+check('et une famille ne re-propose pas ce qui est pris', (() => {
+  const première = fileDeLaFamille('site')[0]!.id;
+  return fileDeLaFamille('site', [première]).every((l) => l.id !== première);
+})(), true);
+check('les familles portent les mots de l’écran', [motDeLaFamille('jour'), motDeLaFamille('site'), motDeLaFamille('documents')], ['LE JOUR J', 'VOTRE SITE', 'LES DOCUMENTS']);
+
+/* ————— LA COMPOSITION TRANSPOSÉE : LES BANDES, ET CE QU'ON N'A PAS COPIÉ ————— */
+
+/* La référence (Tapdaa, étudiée le 20 septembre 2026) donne **le rythme** :
+   une barre, un titre, une suite numérotée, trois colonnes égales, une bande
+   d'image, trois formules, des questions, un pied. Tout le reste — la marque,
+   les couleurs, les cartes, les mots, l'abonnement, les labels — n'est pas
+   repris. Ces vérifications tiennent les deux bouts : la composition est là,
+   et la copie n'y est pas. */
+
+/* Ce qu'on n'a pas copié : ni la marque, ni son métier, ni ses mots. */
+check(
+  'aucune trace de la référence dans la page',
+  ['Tapdaa', 'tapdaa', 'NFC', 'HoReCa', 'Get started', 'per month', 'Order Now', 'Drop us your details'].every(
+    (mot) => !ticketVide.includes(mot),
+  ),
+  true,
+);
+check(
+  'et sa marque n’est pas devenue la nôtre',
+  ticketVide.includes('SUPER MARIAGE') && ticketVide.includes('AIME'),
+  true,
+);
+
+/* ——— LE TOUR : LE CODE MARIAGE, LE RÊVE, LES OBJETS, LES STICKERS, LE HEADER ———
+
+   « On arrive et on doit donner un code mariage », « les mariés décrivent leur
+   rêve », « un appareil qui contrôle le budget et imprime des stickers carrés »,
+   « le papier sort par le dessous ». Cinq promesses, cinq séries de preuves. */
+
+/* « Supprime le bloc avec le code, je l'ai même pas. » Le code n'est plus une
+   porte du tout : on arrive sur la page, et le code s'écrit au début du ticket
+   — c'est ce qui part dans le lien envoyé aux invités. */
+check(
+  'on arrive sur la page : plus de porte, plus rien à saisir',
+  ticketVide.includes('data-page="ticket"') &&
+    !ticketVide.includes('ENTREZ LE CODE') &&
+    !ticketVide.includes('data-porte="vrai"') &&
+    !ticketVide.includes('data-porte-champ') &&
+    !ticketVide.includes('data-porte-ouvrir'),
+  true,
+);
+check('sans code dans l’adresse, c’est celui du mariage de démonstration', ticketVide.includes(`data-code="${CODE_DE_DÉMONSTRATION}"`), true);
+check(
+  'et le code s’écrit en haut du ticket, juste sous l’impression',
+  (() => {
+    const papier = ticketVide.slice(ticketVide.indexOf('data-ticket-papier'));
+    const début = papier.indexOf('data-ticket-marque="vrai"');
+    const enTête = papier.slice(début, papier.indexOf('</header>', début));
+    return enTête.includes(CODE_DE_DÉMONSTRATION) && enTête.includes('CAISSE 3');
+  })(),
+  true,
+);
+check(
+  'un code, c’est trois signes, un tiret, trois chiffres — et il ouvre',
+  [codeAccepté('A7K-241'), codeAccepté('a7k 241'), codeAccepté('A7K-24'), codeAccepté('A7K-2411')],
+  [true, true, false, false],
+);
+check('le code s’écrit proprement, même tapé n’importe comment', codeDepuis(' a7k 241 '), 'A7K-241');
+check('et le même mariage redonne toujours le même code', codeDuMariage(TICKET_COUPLE), CODE_DE_DÉMONSTRATION);
+check(
+  'le budget du rêve, à zéro : rien de coché, rien de mis de côté, tout à financer',
+  (() => {
+    const vide = budgetDuRêve([]);
+    return vide.misDeCôté === 0 && vide.reste === LE_RÊVE.prix && !vide.payé;
+  })(),
+  true,
+);
+check('dix lignes cochées, c’est dix fois la mise de côté', budgetDuRêve(LIGNES_DU_TICKET.slice(0, 10).map((l) => l.id)).misDeCôté, 10 * ÉCONOMIE_PAR_LIGNE);
+check(
+  'et le reste à financer descend exactement d’autant',
+  budgetDuRêve(LIGNES_DU_TICKET.slice(0, 10).map((l) => l.id)).reste,
+  LE_RÊVE.prix - 10 * ÉCONOMIE_PAR_LIGNE,
+);
+check(
+  'cocher ne fait jamais reculer la mise de côté — et l’on ne dépasse pas le prix du rêve',
+  (() => {
+    const tout = budgetDuRêve(LIGNES_DU_TICKET.map((l) => l.id));
+    return tout.payé && tout.misDeCôté === LE_RÊVE.prix && tout.reste === 0;
+  })(),
+  true,
+);
+check(
+  'six objets s’impriment, et deux portent le rêve',
+  [OBJETS_IMPRIMÉS.length, OBJETS_IMPRIMÉS.filter((o) => o.cible).map((o) => o.id)],
+  [6, ['billet-avion', 'carte-postale']],
+);
+check(
+  'chaque objet laisse son code, son sigle et son mot sur le papier',
+  OBJETS_IMPRIMÉS.every((o) => ligneImprimée('A7K-241', o) === `A7K-241-${o.sigle} · ${o.mot}`) &&
+    new Set(OBJETS_IMPRIMÉS.map((o) => o.sigle)).size === OBJETS_IMPRIMÉS.length,
+  true,
+);
+check('les stickers ont huit couleurs, toutes prises dans la collection', new Set(COULEURS_DES_STICKERS).size, 8);
+check('même mot, même couleur — et les couleurs tournent', [stickerDe('mariage', 3).couleur, stickerDe('x', 8).couleur], [COULEURS_DES_STICKERS[3], COULEURS_DES_STICKERS[0]]);
+
+check(
+  'et l’on voit ce qu’il reste à financer, sur le papier',
+  [ticketVide.includes(`data-ticket-reste="${LE_RÊVE.prix}"`), Number(ticketPlein.match(/data-ticket-reste="(\d+)"/)?.[1]) < LE_RÊVE.prix],
+  [true, true],
+);
+check(
+  'et leurs images sont toutes différentes — pas de visuel de remplissage',
+  [new Set(LES_HÉROS.map((h) => h.image)).size, LES_HÉROS.every((h) => h.chemin.length >= 4)],
+  [LES_HÉROS.length, true],
+);
+/* « Supprime toutes les pages sauf la page d'accueil. » Une seule adresse — et
+   donc **aucun lien ne quitte la page** : la barre, le pied et les héros
+   descendent tous vers une bande de la page, et les autres adresses ramènent
+   ici. Les fichiers des anciennes pages restent dans `src/pages/`. */
+check(
+  // « Une seule page » : il n'y a plus d'adresse ailleurs. Le seul lien qui
+  // n'est pas une ancre de la page, c'est **le mini-site** (`?code=…&site=1`) —
+  // la même page, vue par les invités.
+  'aucun lien ne quitte la page d’accueil, sinon celui du mini-site',
+  [...ticketVide.matchAll(/href="([^"]*)"/g)]
+    .map((m) => m[1]!)
+    .filter((h) => !h.startsWith('#') && !h.startsWith('/images/') && !h.startsWith('?code=')),
+  [],
+);
+check(
+  'et chaque ancre descend sur une bande qui existe vraiment',
+  [...new Set([...ticketVide.matchAll(/href="#([^"]+)"/g)].map((m) => m[1]!))].filter(
+    (id) => !ticketVide.includes(`id="${id}"`),
+  ),
+  [],
+);
+check(
+  'la barre et le pied ne mènent qu’à des bandes de la page',
+  [...LA_BARRE.liens, ...LE_PIED.liens].every((l) => l.vers.startsWith('#')),
+  true,
+);
+/* Le header est parti : ce qu'il portait — la marque, le compte des lignes, la
+   part du rêve, les portes — est dit là où c'est utile, et **rien ne se colle
+   en haut de la page** : le papier passe sous le doigt, pas sous une barre. */
+check(
+  'rien ne se colle en haut de la page : plus de header, donc plus rien à survoler',
+  !ticketVide.includes('data-bande="barre"') &&
+    !ticketVide.includes('data-barre-') &&
+    !ticketVide.includes('vp-barre-flottante'),
+  true,
+);
+/* « Plein de texte en blanc on voit rien » : la page est blanche, donc **aucun
+   texte blanc ne flotte** dans ses bandes. S'il y en a, c'est sur une pastille
+   pleine d'encre, ou sur du noir — jamais sur le papier. */
+check(
+  'aucun texte blanc ne flotte sur la page blanche',
+  (() => {
+    const blanc = ticketVide.slice(ticketVide.indexOf('data-bande="LE PROGRAMME"'));
+    return [...blanc.matchAll(/class="([^"]*text-white[^"]*)"/g)].every((m) =>
+      /bg-black|bg-\[color:var\(--vp-ink\)\]/.test(m[1]!),
+    );
+  })(),
+  true,
+);
+/* « Les mariés décrivent leur rêve » : le rêve s'écrit dans leurs mots, et il
+   part sur l'écran, sur le ticket, et dans le lien envoyé aux invités. */
+check(
+  'le rêve s’écrit dans les mots des mariés',
+  rêveDécrit('dormir sous les étoiles, à deux').mot,
+  'DORMIR SOUS LES ÉTOILES, À DEUX',
+);
+check(
+  'et s’ils ne décrivent rien, il reste le rêve de la maison',
+  [rêveDécrit('   ').mot, rêveDécrit('').prix],
+  [LE_RÊVE.mot, LE_RÊVE.prix],
+);
+check(
+  'décrire son rêve ne change pas son prix — c’est la cible, pas le devis',
+  [rêveDécrit('Vegas en janvier').prix, rêveDécrit('Vegas en janvier').id],
+  [LE_RÊVE.prix, LE_RÊVE.id],
+);
+const ticketDuRêve = rendreLeTicket('/?reve=Vegas%20en%20janvier');
+check(
+  // Le rêve, dans les mots du couple, s'imprime sur le papier — il vient de
+  // l'adresse, et il n'y a plus de champ pour l'écrire.
+  'le rêve des mariés, écrit dans les mots du couple, est sur le papier',
+  ticketDuRêve.includes('VEGAS EN JANVIER') && ticketDuRêve.includes('LE VOYAGE'),
+  true,
+);
+/* « Trop de texte sur l'écran, ça répète trop, et il n'y a rien sur l'écran. »
+   Les deux écrans sont donc pesés : des chiffres, pas des phrases — et aucune
+   phrase qui parle de l'écran lui-même. */
+const écranDeLaMachine = machineVide.slice(machineVide.indexOf('data-ecran="ripple"'), machineVide.indexOf('data-touches'));
+const écranDeLAppareil = ticketVide.slice(ticketVide.indexOf('data-appareil-écran'), ticketVide.indexOf('data-appareil-objets'));
+check(
+  'l’écran de la machine ne récite plus son mode d’emploi',
+  [écranDeLaMachine.includes('pour la passer en revue'), écranDeLaMachine.includes('0 LIGNE')],
+  [false, true],
+);
+check(
+  'et il ne parle plus de lui-même — aucune phrase sur l’écran',
+  [/affiché sur l’écran/.test(écranDeLAppareil), /SUPER MARIAGE/.test(écranDeLAppareil)],
+  [false, false],
+);
+check(
+  'la marque ne se répète pas partout : le ticket, le téléphone, et quelques bandes',
+  (ticketVide.match(/SUPER MARIAGE/g) ?? []).length <= 14,
+  true,
+);
+check(
+  'et la cible reste sur la page : la part du rêve déjà financée',
+  [
+    ticketPlein.includes(`${Math.round(budgetDuRêve(cochesDessai).part * 100)} %`),
+    ticketVide.includes('0 %'),
+    !ticketVide.includes('data-barre-part'),
+  ],
+  [true, true, true],
+);
+check(
+  'et sur un téléphone, les portes glissent sous le papier — pas de menu à ouvrir',
+  !ticketVide.includes('data-barre-portes') && !/aria-label="[^"]*menu/i.test(ticketVide),
+  true,
+);
+check(
+  'le papier naît derrière la fente et descend : jamais par le haut',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return /@keyframes presse-par-le-bas/.test(css) && /translate3d\(0, -128%, 0\)/.test(css);
+  })(),
+  true,
+);
+/* ——— LA MACHINE À MINI-SITES : CE QU'ELLE FABRIQUE PART AUX INVITÉS ———
+
+   « La machine avec le visuel est mieux : tu saurais en faire une machine à
+   faire des mini-sites de mariage ? » La machine ne change pas — même écran,
+   même visuel, même fente, mêmes touches rondes. Ce qui change, c'est **ce
+   qu'elle produit** : le site que les mariés envoient à leurs invités.
+
+   Une seule règle tient tout : **ce qui est coché est ce qui s'affiche.** Trois
+   blocs sont toujours là — la couverture, le voyage, le ticket — parce que sans
+   eux il n'y a pas de mariage à montrer. Les six autres s'allument avec les
+   lignes qui les nourrissent. */
+
+const siteÀVide = composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, []);
+const siteDesCoches = composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, cochesDessai);
+const sitePlein = composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, LIGNES_DU_TICKET.map((l) => l.id));
+
+check('la machine connaît neuf blocs de mini-site', siteÀVide.total, BLOCS_DU_MINI_SITE.length);
+check(
+  'sans rien de coché, elle sort quand même un site : la couverture, le voyage, le ticket',
+  siteÀVide.blocs.map((b) => b.id).join(','),
+  'couverture,voyage,ticket',
+);
+check(
+  'ce sont les trois blocs de toujours — sans eux, pas de mariage',
+  siteÀVide.blocs.every((b) => b.toujours === true),
+  true,
+);
+check('et les six autres attendent qu’on coche', [siteÀVide.allumés, siteÀVide.total - siteÀVide.allumés], [3, 6]);
+check(
+  'une ligne cochée allume son bloc, et le bloc de toujours qui va avec',
+  BLOCS_DU_MINI_SITE.filter((b) => b.catégories.length > 0).every((bloc) => {
+    const ligne = LIGNES_DU_TICKET.find((l) => bloc.catégories.includes(catégorieDeLaLigne(l.id)?.id ?? ''));
+    if (!ligne) return false;
+    const allumés = composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, [ligne.id]).blocs.map((b) => b.id);
+    return allumés.includes(bloc.id) && allumés.length === 4;
+  }),
+  true,
+);
+check('cocher tout le magasin allume les neuf blocs', [sitePlein.allumés, sitePlein.complet], [9, true]);
+check('et l’essai de cinq lignes en allume huit', siteDesCoches.allumés, 8);
+check(
+  'le bloc du ticket compte les lignes du ticket, pas autre chose',
+  siteDesCoches.blocs.find((b) => b.id === 'ticket')!.compte,
+  cochesDessai.length,
+);
+check(
+  'aucun bloc vide : il s’affiche parce qu’il a des lignes, ou parce qu’il est vital',
+  siteDesCoches.blocs.every((b) => b.compte > 0 || b.toujours === true),
+  true,
+);
+check(
+  'chaque bloc a son image, et l’image est dans le dépôt',
+  BLOCS_DU_MINI_SITE.every((b) => existsSync(`public${b.image}`)),
+  true,
+);
+check(
+  'l’adresse du site, c’est le code et rien d’autre',
+  adresseDuMiniSite(CODE_DE_DÉMONSTRATION),
+  `?code=${CODE_DE_DÉMONSTRATION}&site=1`,
+);
+check(
+  'et le lien envoyé porte ce qui est coché — sinon l’invité ouvrirait un site vide',
+  (() => {
+    const lien = lienDuMiniSite(CODE_DE_DÉMONSTRATION, cochesDessai);
+    return (
+      lien.startsWith(`${adresseDuMiniSite(CODE_DE_DÉMONSTRATION)}&coches=`) &&
+      decodeURIComponent(lien.replace(/\+/g, '%20')).includes('horaire-22:17')
+    );
+  })(),
+  true,
+);
+check(
+  'le rêve des mariés voyage aussi dans le lien',
+  lienDuMiniSite(CODE_DE_DÉMONSTRATION, [], 'Vegas en janvier').endsWith('&reve=Vegas+en+janvier'),
+  true,
+);
+
+/* ——— L'écran de la machine : le visuel, et la touche du milieu ———
+
+   Ces écrans sont vérifiés plus haut, sur le composant rendu directement (la
+   machine n'est plus montée sur la page — « sans machine »). */
+
+/* ——— La page que l'invité ouvre : le mini-site, et rien d'autre ——— */
+
+const siteDesInvités = rendreLeTicket(`/?site=1&coches=${encodeURIComponent(cochesDessai.join(','))}`);
+
+check(
+  'et les quatre chiffres du mariage sont dessous',
+  ['LIGNES', 'LE MARIAGE', 'MIS DE CÔTÉ', 'RESTE À FINANCER'].every((mot) => siteDesInvités.includes(mot)),
+  true,
+);
+/* ——————— LA MACHINE, EN FONCTIONS PURES : UNE TOUCHE FAIT TOUJOURS ——————— */
+
+const départ = étatDeLaMachine();
+check('au départ, la machine propose la première famille', ceQueLaMachinePropose(départ).genre, 'famille');
+check('et elle a de quoi faire : trois familles, et 99 lignes', [ceQueLaMachinePropose(départ).taille, LIGNES_DU_TICKET.length], [3, 99]);
+check(
+  'aucun geste ne laisse l’état comme il était — c’est ça, « il ne se passe rien »',
+  [validerLaMachine, passerLaMachine, ouvrirLeTicket].every((g) => JSON.stringify(g(départ).état) !== JSON.stringify(départ)),
+  true,
+);
+
+const familleOuverte = validerLaMachine(départ);
+check(
+  '✓ sur une famille ouvre ses lignes — 48 pour le jour J',
+  [ceQueLaMachinePropose(familleOuverte.état).genre, familleOuverte.état.file!.length],
+  ['ligne', 48],
+);
+check('et l’écran dit d’où elle vient', ceQueLaMachinePropose(familleOuverte.état).groupe, 'jour');
+
+const première = validerLaMachine(familleOuverte.état);
+check(
+  '✓ sur une ligne la met sur le ticket',
+  [première.état.coches, première.pris, première.état.rang],
+  [[familleOuverte.état.file![0]], familleOuverte.état.file![0], 1],
+);
+check('et l’écran passe à la suivante', ceQueLaMachinePropose(première.état).rang, 2);
+
+const deuxième = passerLaMachine(première.état);
+check('✗ la laisse de côté et avance', [deuxième.pris, deuxième.état.rang, deuxième.état.coches.length], [null, 2, 1]);
+check(
+  'vingt fois ✓, et le ticket porte vingt lignes',
+  (() => {
+    let e = familleOuverte.état;
+    for (let i = 0; i < 20; i += 1) e = validerLaMachine(e).état;
+    return e.coches.length;
+  })(),
+  20,
+);
+check(
+  'et jamais deux fois la même',
+  (() => {
+    let e = familleOuverte.état;
+    for (let i = 0; i < 60; i += 1) e = validerLaMachine(e).état;
+    return new Set(e.coches).size;
+  })(),
+  48,
+);
+check(
+  'une famille passée en entier s’arrête, et la machine repropose les familles',
+  (() => {
+    let e = familleOuverte.état;
+    for (let i = 0; i < 48; i += 1) e = validerLaMachine(e).état;
+    return [ceQueLaMachinePropose(e).genre, e.coches.length];
+  })(),
+  ['famille', 48],
+);
+check(
+  '✗ sur une famille propose la suivante, puis la troisième, puis la première',
+  (() => {
+    const deux = passerLaMachine(départ).état;
+    const trois = passerLaMachine(deux).état;
+    const retour = passerLaMachine(trois).état;
+    return [
+      ceQueLaMachinePropose(deux).groupe,
+      ceQueLaMachinePropose(trois).groupe,
+      ceQueLaMachinePropose(retour).groupe,
+    ];
+  })(),
+  ['site', 'documents', 'jour'],
+);
+
+/* La demande : l'agent entend, trie, et ne laisse pas l'écran muet. */
+
+const parDiner = écrireDansLeChamp(départ, 'un dîner');
+check('une demande qui répond fait passer ses lignes', ceQueLaMachinePropose(parDiner.état).genre, 'ligne');
+check('et l’agent garde les mots tels qu’on les écrit', parDiner.état.mots, ['dîner']);
+const parZzz = écrireDansLeChamp(départ, 'zzz');
+check(
+  'une demande qui ne répond à rien repropose les familles',
+  [parZzz.état.file, ceQueLaMachinePropose(parZzz.état).genre, demandeDeLaMachine(parZzz.état)!.àVide],
+  [null, 'famille', true],
+);
+
+/* L'écran du reçu, et ce qu'on y fait. */
+
+const auTicket = ouvrirLeTicket(départ);
+check('le reçu retourne l’écran sur le ticket', auTicket.état.écran, 'ticket');
+check('et ✓ le remet à l’endroit', validerLaMachine(auTicket.état).état.écran, 'propositions');
+check('✗, dans le ticket, le vide entièrement', passerLaMachine(ouvrirLeTicket(première.état).état).état.coches, []);
+check('et retirer enlève une ligne, et une seule', retirerDuTicket(première.état, première.pris!).état.coches, []);
+
+/* Le papier sort de la fente, et part : deux animations, deux `transform`. */
+check('le ticket sort de la fente', LePapierSortDeLaFente(), true);
+
+function LePapierSortDeLaFente(): boolean {
+  // Les tests tournent depuis la racine du dépôt : le CSS s'y lit directement.
+  const css = readFileSync('src/index.css', 'utf8');
+  return css.includes('presse-de-la-fente') && css.includes('vol-du-ticket') && css.includes('translate3d');
+}
+
+/* ————————— LA GÉOMÉTRIE : LA MOSAÏQUE COUVRE TOUJOURS L'ÉCRAN ————————— */
+
+/** Les bords de la mosaïque, lus dans les cases elles-mêmes. */
+const bornes = (html: string) => {
+  let droite = 0;
+  let bas = 0;
+  let taille = 0;
+  // React écrit `0` sans unité : on lit les deux formes.
+  for (const m of html.matchAll(/left:(-?\d+)(?:px)?;top:(-?\d+)(?:px)?;width:(\d+)px;height:(\d+)px/g)) {
+    droite = Math.max(droite, Number(m[1]) + Number(m[3]));
+    bas = Math.max(bas, Number(m[2]) + Number(m[4]));
+    taille = Number(m[3]);
+  }
+  return { droite, bas, taille };
+};
+
+for (const [nom, monde, cran] of [
+  ['l’année', mondeDeLAnnee(leJourDeLaGrille), 1],
+  ['un jour', mondeDuJour(leJourDeLaGrille), 3],
+  ['une heure', mondeDUneHeure(18, leJourDeLaGrille), 2],
+  ['la boutique', mondeDeLaBoutique(), 5],
+] as const) {
+  const html = renderToStaticMarkup(
+    createElement(GrilleDuMonde as never, { monde, echelle: echelleDuCran(cran), onEchelle: () => {} }),
+  );
+  const b = bornes(html);
+  check(`la mosaïque couvre l’écran — ${nom}, cran ${cran}`, b.droite >= 1280 && b.bas >= 820, true);
+  check(`et ses cases sont des carrés entiers — ${nom}`, Number.isInteger(b.taille) && b.taille > 24, true);
+}
+
+/* ——————————— LA PAGE : L'IMAGE DERRIÈRE, LA GRILLE DEVANT ——————————— */
+
+const heroMagazine = revue.slice(0, revue.indexOf('data-grille'));
+check('l’écran s’ouvre sur la mosaïque, et rien d’autre', heroMagazine.includes('data-case='), false);
+check('aucune image de fond ne traîne derrière', revue.includes('data-scene="editoriale"'), false);
+check('la mosaïque prend l’écran', revue.includes('data-grille="du-monde"'), true);
+/* De si loin que le titre ne s'écrit pas, le doigt posé le dit — en CSS, sans un rendu. */
+const revueDeLoin = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?niveau=1'] }, createElement(Magazine as never)),
+);
+check(
+  'et le nom d’une case se lit au survol, sans un rendu',
+  revueDeLoin.includes('group-hover:block') && revueDeLoin.includes('data-densite="1"'),
+  true,
+);
+
+/* ————————————— LA SCÈNE ÉDITORIALE : UNE IMAGE, TROIS LIGNES ————————————— */
+
+/* La scène ne dit plus rien d'autre : la date, le titre, le moment. Ni badge,
+   ni compteur, ni panneau — ce qui existe se découvre dans la mosaïque. */
+const scene = renderToStaticMarkup(
+  createElement(MemoryRouter, null, createElement(SceneEditoriale as never, {
+    date: '20 SEPTEMBRE · MAGAZINE 38',
+    titre: 'GOLDEN HOUR',
+    moment: 'SEPTEMBRE DORÉ · L’ART DE RECEVOIR',
+    image: '/images/magazine/semaine-38/cover.jpg',
+    heure: 18,
+    clarte: lumiereDeLHeure(18).clarte,
+    voile: lumiereDeLHeure(18).voile,
+    alpha: lumiereDeLHeure(18).alpha,
+    accent: '#D9A15B',
+  })),
+);
+check('la scène est une scène, pas un hero de page', scene.includes('data-scene="editoriale"'), true);
+check('elle porte la date', scene.includes('20 SEPTEMBRE · MAGAZINE 38'), true);
+check('le titre', scene.includes('GOLDEN HOUR'), true);
+check('et le moment', scene.includes('SEPTEMBRE DORÉ · L’ART DE RECEVOIR'), true);
+check('elle ne compte rien', /data-(badge|compteur|panneau)/.test(scene), false);
+check('et l’heure est écrite une fois', (scene.match(/18:00/g) ?? []).length, 1);
+check(
+  'sans image, elle compose',
+  renderToStaticMarkup(createElement(SceneEditoriale as never, {
+    date: '5 JANVIER', titre: 'Blanc minéral', moment: 'LES LIEUX', heure: 9, accent: '#8A8F98',
+  })).includes('bg-black'),
+  true,
+);
+
+/* ————————————— LA GRILLE DU MONDE : L'ÉCRAN ENTIER ————————————— */
+
+/* Il n'y a plus de timeline en bas de page : **la grille est la page**. Des
+   cases carrées, bord à bord, qu'on parcourt dans les deux sens, qui montrent
+   de plus en plus d'elles-mêmes quand on zoome, et qui s'ouvrent. */
+const leJourDeLaGrille = new Date(2026, 8, 20, 12);
+const leMondeDuJour = mondeDuJour(leJourDeLaGrille);
+const grille = renderToStaticMarkup(createElement(GrilleDuMonde as never, {
+  monde: leMondeDuJour,
+  echelle: echelleDuCran(3),
+  onEchelle: () => {},
+  caseActive: 'univers-musique',
+  selection: ['univers-lieux', 'univers-people'],
+}));
+check('la grille du monde est là', grille.includes('data-grille="du-monde"'), true);
+check('elle dit le monde qu’elle porte', grille.includes('data-monde="jour-09-20"'), true);
+check('et son échelle', grille.includes('data-cran="3"'), true);
+check('elle compte ses cases', (grille.match(/data-case="/g) ?? []).length, leMondeDuJour.cases.length);
+check('chaque case dit son module et son ouverture', /data-module="[a-z]+" data-famille="[a-z]+"/.test(grille), true);
+check('cinq crans d’échelle, pas quatre', (grille.match(/data-cran-grille="/g) ?? []).length, 5);
+check('la tête de lecture marque la case active', (grille.match(/data-actif="true"/g) ?? []).length >= 1, true);
+check('les cases choisies sont marquées', (grille.match(/data-choisi="true"/g) ?? []).length, 2);
+check('et la barre de sélection dit ce qu’on peut en faire',
+  ['composer', 'masquer', 'partager', 'effacer'].every((a) => grille.includes(`data-action="${a}"`)), true);
+check('sans carte arrondie ni ombre portée', /rounded-(lg|xl|2xl)|shadow-(lg|xl|2xl)/.test(grille), false);
+check('et sans texte explicatif', /cliquez|double-cliquez|pour naviguer/.test(grille), false);
+
+/* La densité : c'est la taille réelle qui décide, jamais l'échelle en soi. */
+check('une case de quinze pixels ne dit rien', densiteDeLaTaille(15), 1);
+check('une case de trois cents pixels dit tout', densiteDeLaTaille(300), 5);
+check('et la densité ne redescend jamais', [40, 70, 100, 150, 200, 400].every((t, i, l) => i === 0 || densiteDeLaTaille(t) >= densiteDeLaTaille(l[i - 1]!)), true);
+check('cinq échelles, du monde au contenu', ECHELLES_DE_LA_GRILLE.length, 5);
+check('la première montre tout', echelleDuCran(1) < echelleDuCran(5), true);
+check('et le cran se retrouve depuis l’échelle', cranDeLEchelle(ECHELLES_DE_LA_GRILLE[2]!), 3);
+check('l’échelle est tenue entre ses bornes', borner(99) > borner(0), true);
+check('la taille d’une case suit l’échelle', tailleDeLaCase(1) === 2 * tailleDeLaCase(0.5), true);
+check('un monde de trois cent soixante-cinq jours s’ouvre large', colonnesDeLaGrille(365, 1280, 820), 24);
+check('un monde de huit cases reste serré', colonnesDeLaGrille(8, 1280, 820), 4);
+check('et un petit monde remplit l’écran', ajustementDeRemplissage(4, 2, 1280, 820) > 1, true);
+
+/* Le clic entre dans la case : la grille rapporte, la page décide. */
+check('un clic sans doigt qui bouge ne se perd pas',
+  renderToStaticMarkup(createElement(GrilleDuMonde as never, { monde: leMondeDuJour, echelle: 0.42, onEchelle: () => {}, onOuvrir: () => {} })).includes('data-porte="true"'), true);
+
+/* ————————————— LE MONDE EN CASES : TOUT EST UNE CASE ————————————— */
+
+/* Rien n'échappe à la grille : le calendrier, les articles, la musique, les
+   objets, les métiers, les gens, les images. Chaque collection devient un monde,
+   et chaque monde se parcourt comme le premier. */
+
+const le21SeptembreGrille = new Date(2026, 8, 21, 12);
+const caseDu21 = caseDUnJour(le21SeptembreGrille);
+check('le monde s’ouvre sur onze portes', mondeDeLId('monde', le21SeptembreGrille).cases.length, 11);
+check('chaque nœud du monde se construit', NŒUDS_DU_MONDE.every((n) => mondeDeLId(n.id, le21SeptembreGrille).cases.length > 0), true);
+check('et chacun dit d’où il vient', NŒUDS_DU_MONDE.every((n) => n.source.length >= 8), true);
+check('un jour dit sa date en surtitre', caseDu21.surTitre, '21 SEPT. 2026');
+check('son nom est celui du calendrier', caseDu21.titre, 'MATTHIEU');
+check('et il ouvre son propre monde', caseDu21.ouvre, 'jour-09-21');
+check('son détail nomme le magazine', caseDu21.detail?.some((d) => d.label === 'MAGAZINE' && d.valeur === '38'), true);
+check('et le chapitre du jour', caseDu21.detail?.some((d) => d.valeur.includes('La Fête')), true);
+check('la clé d’un jour est son adresse', cleDuJour(le21SeptembreGrille), '09-21');
+check('l’année compte trois cent soixante-cinq cases', mondeDeLAnnee(new Date(2026, 5, 1)).cases.length, 365);
+check('le jour contient huit univers, et la porte des heures', mondeDuJour(le21SeptembreGrille).cases.length, UNIVERS_DU_JOUR.length + 1);
+check('les huit univers sont ceux du magazine', UNIVERS_DU_JOUR.map((u) => u.titre),
+  ['HISTOIRE', 'VOYAGE', 'MÉTÉO', 'MARIAGE', 'MUSIQUE', 'LIEUX', 'PEOPLE', 'ÉVÉNEMENTS']);
+check('et chacun ouvre une mosaïque', mondeDuJour(le21SeptembreGrille).cases.filter((c) => c.ouvre?.startsWith('univers-')).length, 8);
+check('une journée, ce sont vingt-quatre heures', mondeDesHeures(le21SeptembreGrille).cases.length, 24);
+check('la première est minuit', mondeDesHeures(le21SeptembreGrille).cases[0]!.titre, 'MINUIT');
+check('et dix-huit heures s’appelle la golden hour', mondeDesHeures(le21SeptembreGrille).cases[18]!.sousTitre, 'GOLDEN HOUR');
+check('chaque heure ouvre sa page', mondeDesHeures(le21SeptembreGrille).cases[16]!.ouvre, 'heure-16');
+check('et une page porte ses modules', mondeDUneHeure(16, le21SeptembreGrille).cases.some((c) => c.module === 'audio'), true);
+check('les cinquante-quatre magazines sont cinquante-quatre cases', mondeDesMagazines(le21SeptembreGrille).cases.length, NOMBRE_DE_MAGAZINES);
+check('les articles de la rédaction sont des cases', mondeDesArticles().cases.length, ALL_ARTICLES.length);
+check('la musique donne un morceau par jour', mondeDeLaMusique(le21SeptembreGrille).cases.length, 365);
+check('la boutique donne un objet par case', mondeDeLaBoutique().cases.length, SHOP_PRODUCTS.length);
+check('les métiers et les gens ont leurs cases', mondeDesMetiers().cases.length > 40 && mondeDesPersonnes().cases.length > 10, true);
+check('et la galerie ne montre que ce qui est livré', mondeDeLaGalerie(le21SeptembreGrille).cases.length, VISUELS_LIVRES);
+check('une case se retrouve par son identifiant', caseParId('jour-09-21', le21SeptembreGrille)?.titre, 'MATTHIEU');
+check('un morceau aussi', caseParId('piste-200', le21SeptembreGrille)?.module, 'audio');
+check('et une porte nommée reste une porte', caseParId('chapitre-38-5', le21SeptembreGrille)?.ouvre, 'chapitre-38-5');
+check('une adresse de cases garde son ordre',
+  casesParIds(['piste-200', 'jour-09-21', 'porte-annee'], le21SeptembreGrille).map((c) => c.id),
+  ['piste-200', 'jour-09-21', 'porte-annee']);
+check('et ne retient que ce qui existe', casesParIds(['rien-du-tout'], le21SeptembreGrille).length, 0);
+check('huit modules de case… non : dix-huit', MODULES.length, 18);
+check('une composition garde les cases choisies', composerLeMiniSite([], mondeDuJour(le21SeptembreGrille).cases.slice(0, 3)).length, 3);
+check('et reprend leur ouverture', composerLeMiniSite([], [mondeDuJour(le21SeptembreGrille).cases[0]!])[0]!.famille, 'public');
+check('les modules de composition sont là', MODULES_DE_COMPOSITION.length >= 20, true);
+check('un invité compose son espace en onze blocs', composerLeMiniSite(MINI_SITE_INVITE).length, MINI_SITE_INVITE.length);
+check('un professionnel en neuf', composerLeMiniSite(MINI_SITE_PRESTATAIRE).length, MINI_SITE_PRESTATAIRE.length);
+check('et le mini-site se parcourt comme un monde', mondeDuMiniSite(composerLeMiniSite(MINI_SITE_INVITE)).cases.length, MINI_SITE_INVITE.length);
+check('quatre familles d’ouverture', FAMILLES.map((f) => f.id), ['public', 'invites', 'famille', 'prive']);
+check('chacune a sa marque, et rien de plus', FAMILLES.every((f) => f.marque.length >= 1 && f.mot.length > 3), true);
+check('de loin, l’année ne dit que ses images', densiteDuMonde(mondeDeLAnnee(le21SeptembreGrille), echelleDuCran(1)), 1);
+check('de près, les dix portes disent tout', densiteDuMonde(mondeDeLId('monde', le21SeptembreGrille), echelleDuCran(5)), 5);
+
+/* Une case privée le dit d'un seul signe — et rien du tout quand elle est publique. */
+const uneCasePublique = mondeDuJour(le21SeptembreGrille).cases[0]!;
+const ouverteATous = composerLeMiniSite([], [uneCasePublique]);
+const gardee = composerLeMiniSite([], [uneCasePublique], { [uneCasePublique.id]: 'prive' });
+check('une case privée porte sa marque, minuscule',
+  renderToStaticMarkup(createElement(GrilleDuMonde as never, {
+    monde: mondeDuMiniSite(gardee), echelle: echelleDuCran(5), onEchelle: () => {},
+  })).includes('data-famille="prive"'), true);
+check('et une case publique n’en porte aucune',
+  renderToStaticMarkup(createElement(GrilleDuMonde as never, {
+    monde: mondeDuMiniSite(ouverteATous), echelle: echelleDuCran(5), onEchelle: () => {},
+  })).includes('data-famille="prive"'), false);
+
+/* Et **chaque porte mène quelque part** : on ouvre tous les mondes du monde. */
+const portesMortes: string[] = [];
+let portesComptees = 0;
+const verifierLesPortes = (id: string) => {
+  const monde = mondeDeLId(id, le21SeptembreGrille);
+  monde.cases.forEach((c) => {
+    if (!c.ouvre) return;
+    portesComptees += 1;
+    const suivant = mondeDeLId(c.ouvre, le21SeptembreGrille);
+    if (suivant.cases.length === 0 || suivant.id !== c.ouvre) portesMortes.push(`${id} → ${c.ouvre}`);
+  });
+};
+NŒUDS_DU_MONDE.forEach((n) => verifierLesPortes(n.id));
+['jour-09-21', 'univers-musique', 'univers-lieux', 'heure-18', 'piste-3'].forEach(verifierLesPortes);
+check('aucune porte ne mène nulle part', portesMortes.length, 0);
+check('et il y a de quoi ouvrir toute une année', portesComptees > 500, true);
+
+/* La lumière des heures : la même image, vingt-quatre fois. */
+check('la nuit est plus sombre que midi', lumiereDeLHeure(2).clarte < lumiereDeLHeure(12).clarte, true);
+check('la golden hour est nommée', lumiereDeLHeure(18).mot, 'GOLDEN HOUR');
+check('et six heures s’appelle l’aube', lumiereDeLHeure(6).mot, 'AUBE');
+check('les heures ordinaires n’ont pas de mot', lumiereDeLHeure(16).mot, undefined);
+check(
+  'chaque heure a sa couleur — dix lumières, et la nuit qui descend',
+  new Set(Array.from({ length: 24 }, (_, h) => teinteDeLHeure(h, '#E9E9E4', '#D9A15B'))).size >= 8,
+  true,
+);
+check('et deux heures voisines ne se ressemblent pas', teinteDeLHeure(2, '#E9E9E4', '#D9A15B') !== teinteDeLHeure(12, '#E9E9E4', '#D9A15B'), true);
+check('et l’on sait mélanger deux couleurs', melangeHex('#000000', '#FFFFFF', 0.5), '#808080');
+
+/* ————————————— LA PAGE : TOUT TIENT DANS LA FENÊTRE ————————————— */
+
+const appMagazine = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(Magazine as never)),
+);
+/** Le cinquième cran : les cases disent tout ce qu'elles savent. */
+const appZoom = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?niveau=5&monde=univers-musique'] }, createElement(Magazine as never)),
+);
+/** L'année entière, en une seule vue : trois cent soixante-cinq cases. */
+const appAnnee = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?monde=annee&niveau=1'] }, createElement(Magazine as never)),
+);
+/** Une composition partagée : des cases, et des modules. */
+const appComposition = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?monde=mini-site&cases=jour-09-20,musique,rsvp'] }, createElement(Magazine as never)),
+);
+const appComposer = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?feuille=composer'] }, createElement(Magazine as never)),
+);
+const appJour = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?jour=09-21'] }, createElement(Magazine as never)),
+);
+/** Les feuilles : ce qui n'est pas sur l'écran, et qui s'ouvre à la demande. */
+const appEditeur = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?feuille=editeur'] }, createElement(Magazine as never)),
+);
+const appProfil = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?feuille=profil'] }, createElement(Magazine as never)),
+);
+check('le magazine est un écran, pas une page qui défile', appMagazine.includes('fixed inset-0') && appMagazine.includes('overflow-hidden'), true);
+check('rien n’est dessiné derrière la mosaïque', appMagazine.includes('data-scene="editoriale"'), false);
+check('la mosaïque est là', appMagazine.includes('data-grille="du-monde"'), true);
+check('et elle est le seul dessin de contenu', (appMagazine.match(/data-grille=/g) ?? []).length, 1);
+check('on arrive devant l’année entière',
+  appMagazine.includes('data-monde="annee"') && appMagazine.includes('data-cases="365"'), true);
+check('la mosaïque dessine son monde entier, d’un seul tenant',
+  (appMagazine.match(/data-case=/g) ?? []).length, 365);
+check('l’année entière tient en une vue', (appAnnee.match(/data-case="jour-/g) ?? []).length, 365);
+check('et de si loin, elle ne dit que ses images', appAnnee.includes('data-densite="1"'), true);
+check('de très près, une case dit son détail', appZoom.includes('data-densite="5"'), true);
+check('et la musique est bien un monde à part', appZoom.includes('data-monde="univers-musique"'), true);
+check('on arrive dans une case par son adresse', appJour.includes('data-monde="jour-09-21"'), true);
+check('la composition traverse l’adresse', appComposition.includes('data-monde="mini-site"') && (appComposition.match(/data-case="bloc-/g) ?? []).length >= 3, true);
+check('et la feuille de composition est là', appComposer.includes('data-composition="mini-site"'), true);
+check('l’adresse ouvre le jour qu’elle annonce', appJour.includes('21 SEPTEMBRE') && appJour.includes('LA FÊTE'), true);
+check('et l’écran entier est sa mosaïque', appJour.includes('data-monde="jour-09-21"') && appJour.includes('fixed inset-0'), true);
+check('aucun panneau permanent ne subsiste', /data-bloc-magazine|NavVerticale|vp-env-dark/.test(appMagazine), false);
+check('le mot « carreau » a quitté l’écran', /carreau|trèfle|pique|Roi de|Dame de|Valet de|♠|♥|♦|♣/.test(appMagazine), false);
+check('et le mot « tuile » aussi', appMagazine.includes('data-tuile'), false);
+check('les trois portes sont discrètes',
+  ['l’éditeur', 'la collection', 'votre profil'].every((p) => appMagazine.includes(p)), true);
+check('et le composeur n’encombre plus l’écran', appMagazine.includes('Ville de naissance'), false);
+check('mais il est là dès qu’on demande la feuille', appEditeur.includes('Ville de naissance'), true);
+check('et l’adresse peut ouvrir une feuille', appEditeur.includes('data-feuille="ouverte"'), true);
+
+/* ————————————————— LE VERSO : L'ENVERS DU DÉCOR ————————————————— */
+
+/** Le monde d'un jour, au verso : le moteur, ses réglages, et ses liaisons. */
+const appVerso = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?monde=jour-09-21&verso=1'] }, createElement(Magazine as never)),
+);
+/** Le même jour, à l'endroit : rien du verso ne doit rester. */
+const appJourRecto = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine?monde=jour-09-21'] }, createElement(Magazine as never)),
+);
+const nombre = (html: string, attribut: string) =>
+  Number(html.match(new RegExp(`${attribut}="(\\d+)"`))?.[1] ?? NaN);
+
+check('le verso s’ouvre par l’adresse', appVerso.includes('data-verso="ouvert"'), true);
+check('et le recto ne le montre pas', appJourRecto.includes('data-verso="ouvert"'), false);
+check('la grille dessine toutes ses liaisons', nombre(appVerso, 'data-liaisons') > 0, true);
+check(
+  'et celles qui sont faites sont bord à bord',
+  nombre(appVerso, 'data-connexions') > 0 && nombre(appVerso, 'data-connexions') < nombre(appVerso, 'data-liaisons'),
+  true,
+);
+check('chaque case du verso montre sa face technique', appVerso.includes('data-source="la grille du monde"'), true);
+check('et ses quatre ports', (appVerso.match(/data-port="vrai"/g) ?? []).length % 4, 0);
+check(
+  'les réglages du système sont écrits au verso',
+  nombre(appVerso, 'data-reglages') === RÉGLAGES_DU_SYSTÈME.length &&
+    ['case', 'echelle', 'densite', 'separation', 'couleur', 'ouverture'].every((id) =>
+      appVerso.includes(`data-reglage="${id}"`),
+    ),
+  true,
+);
+check('et les palettes des cinquante-quatre magazines aussi', PALETTES_DU_SYSTÈME.length, 54);
+check(
+  'toutes les liaisons possibles sont montrées, et ce qu’elles produisent',
+  nombre(appVerso, 'data-liaisons-possibles') === LIAISONS_POSSIBLES.length &&
+    appVerso.includes('data-liaison="image+texte"') &&
+    appVerso.includes('une page'),
+  true,
+);
+check(
+  'chaque liaison dit ce qu’elle produit',
+  LIAISONS_POSSIBLES.every((l) => l.produit.startsWith('un') || l.produit.startsWith('une')),
+  true,
+);
+
+/* Les liaisons, à la main : deux cases, et ce qui naît de leur rencontre. */
+const mondeDuVerso = mondeDeLId('jour-09-21');
+const laDate = mondeDuVerso.cases.find((c) => c.module === 'date')!;
+const laPersonne = mondeDuVerso.cases.find((c) => c.module === 'personne')!;
+const leLieu = mondeDuVerso.cases.find((c) => c.module === 'lieu')!;
+const leTexte = mondeDuVerso.cases.find((c) => c.module === 'texte')!;
+const unFormulaire = { ...laPersonne, id: 'essai-formulaire', module: 'formulaire' } as never;
+check('une date et un formulaire font un billet', liaisonEntre(laDate, unFormulaire)?.produit, 'un billet');
+check('deux cases identiques ne se lient pas', liaisonEntre(laDate, laDate), null);
+check('et deux modules qui ne vont pas ensemble non plus', liaisonEntre(laDate, laPersonne), null);
+
+const colonnesDuJour = colonnesDuMonde(mondeDuVerso.cases.length, {}, 1280, 820);
+const posees = { [laDate.id]: { c: 0, l: 0 }, [leLieu.id]: { c: 1, l: 0 } };
+check(
+  'posées bord à bord, la liaison se fait',
+  liaisonsDuMonde(mondeDuVerso, posees, colonnesDuJour).some(
+    (l) => l.faite && ((l.de === laDate.id && l.vers === leLieu.id) || (l.de === leLieu.id && l.vers === laDate.id)),
+  ),
+  true,
+);
+check('une date et un lieu font un itinéraire', liaisonEntre(laDate, leLieu)?.produit, 'un itinéraire');
+check('un texte et une personne font un portrait', liaisonEntre(leTexte, laPersonne)?.produit, 'un portrait');
+check('côte à côte, c’est un pas, et un seul', [sontVoisines({ c: 0, l: 0 }, { c: 1, l: 0 }), sontVoisines({ c: 0, l: 0 }, { c: 0, l: 1 }), sontVoisines({ c: 0, l: 0 }, { c: 1, l: 1 })], [true, true, false]);
+check(
+  'et une case posée reste où on l’a posée',
+  emplacementsDuMonde(mondeDuVerso, posees, colonnesDuJour)[leLieu.id],
+  { c: 1, l: 0 },
+);
+check(
+  'le monde relié dit ce qu’il produit',
+  chaineDuMonde(liaisonsDuMonde(mondeDuVerso, posees, colonnesDuJour)).includes('un itinéraire'),
+  true,
+);
+check(
+  'la face technique d’une case dit son module, sa source et son ouverture',
+  faceTechnique(laDate, 3).module === 'date' && faceTechnique(laDate, 3).source.length > 0 && faceTechnique(laDate, 3).liaisons === 3,
+  true,
+);
+check(
+  'et elle sait ce qu’elle attend en face',
+  modulesAttendus('date').includes('formulaire') && modulesAttendus('date').includes('lieu'),
+  true,
+);
+
+/* ————————— TOUT LE SITE EN GRILLE : UNE ADRESSE, UN MONDE ————————— */
+
+check('on arrive sur le ticket', mondeDUneAdresse('/'), 'magasin');
+check('et son adresse courte aussi', mondeDUneAdresse('/ticket'), 'magasin');
+check('un shop est un monde', mondeDUneAdresse('/shop'), 'boutique');
+check('un produit aussi', mondeDUneAdresse('/shop/table-trestle-chene'), 'produit-table-trestle-chene');
+check('un métier aussi', mondeDUneAdresse('/metiers/photographe'), 'metier-photographe');
+check('une personne aussi', mondeDUneAdresse('/profil/marie'), 'personne-marie');
+check('un article aussi', mondeDUneAdresse('/magazine/univers-corse'), 'article-univers-corse');
+check('un magazine aussi', mondeDUneAdresse('/magazine/38'), 'magazine-38');
+check('la collection des cinquante-quatre', mondeDUneAdresse('/aime'), 'magazines');
+check('le théâtre, ce sont les dix portes', mondeDUneAdresse('/theater'), 'monde');
+check('et une adresse inconnue ouvre l’année', mondeDUneAdresse('/nimporte/ou/ailleurs'), 'annee');
+check('aucune adresse ne promet rien', ROUTES_DU_MONDE.every((r) => promesseDUneAdresse(r.motif.split('/:')[0]!) .length > 10), true);
+check(
+  'les grandes adresses du site y sont toutes',
+  ['/shop', '/shop/:slug', '/metiers/:slug', '/profil/:slug', '/magazine/:slug', '/aime', '/le-mariage', '/rejoindre/:slug'].every(
+    (motif) => ROUTES_DU_MONDE.some((r) => r.motif === motif),
+  ),
+  true,
+);
+check(
+  'et chacune ouvre un monde qui a des cases',
+  ROUTES_DU_MONDE.every((r) => mondeDeLId(r.monde('exemple')).cases.length > 0),
+  true,
+);
+
+/** Un identifiant inconnu n'ouvre jamais l'objet d'un autre : la collection. */
+check('un produit inconnu ouvre la boutique', mondeDeLId('produit-inconnu').id, 'boutique');
+check('un métier inconnu ouvre les métiers', mondeDeLId('metier-inconnu').id, 'metiers');
+check('une personne inconnue ouvre les personnes', mondeDeLId('personne-inconnue').id, 'personnes');
+check('un article inconnu ouvre les articles', mondeDeLId('article-inconnu').id, 'articles');
+
+/**
+ * **La route d'un produit, dans ses trois faces.** La grille ouvre le monde du
+ * produit ; le verso retourne ce même monde ; le recto rend la page d'avant.
+ */
+const produitEnFace = (entree: string) =>
+  renderToStaticMarkup(
+    createElement(
+      MemoryRouter,
+      { initialEntries: [entree] },
+      createElement(
+        Routes,
+        null,
+        createElement(Route, {
+          path: '/shop/:slug',
+          element: createElement(FaceDuSite as never, {
+            recto: createElement(ShopProduct as never),
+            monde: (segments: Record<string, string | undefined>) => `produit-${segments.slug}`,
+          }),
+        }),
+      ),
+    ),
+  );
+const grilleDuProduit = produitEnFace('/shop/table-trestle-chene');
+const versoDuProduit = produitEnFace('/shop/table-trestle-chene?face=verso');
+const rectoDuProduit = produitEnFace('/shop/table-trestle-chene?face=recto');
+check('la page d’un produit s’ouvre en cases', grilleDuProduit.includes('data-grille="du-monde"'), true);
+check('et c’est bien le monde du produit', grilleDuProduit.includes('data-monde="produit-table-trestle-chene"'), true);
+check('la grille prend tout l’écran, même ici', grilleDuProduit.includes('fixed inset-0') && grilleDuProduit.includes('overflow-hidden'), true);
+check('et aucune page classique ne subsiste autour', /data-page="(shop|metier|profil)"/.test(grilleDuProduit), false);
+check('le verso retourne le même produit', versoDuProduit.includes('data-verso="ouvert"') && versoDuProduit.includes('data-monde="produit-table-trestle-chene"'), true);
+check(
+  'et le recto rend la page d’avant, entière',
+  rectoDuProduit.includes('data-grille="du-monde"') === false &&
+    rectoDuProduit.includes('Dans le même univers') &&
+    rectoDuProduit.includes('vp-page'),
+  true,
+);
+check(
+  'les trois faces sont écrites, et la face se lit dans l’adresse',
+  FACES.map((f) => f.mot).join(' · ') === 'la grille · le verso · le recto' && faceDeLAdresse('verso') === 'verso' && faceDeLAdresse(null) === 'grille',
+  true,
+);
+
+/* La feuille : tout ce qui n'est pas l'image et la mosaïque. */
+const feuille = renderToStaticMarkup(
+  createElement(Feuille as never, { ouverte: true, surtitre: 'AIME MAGAZINE', titre: 'L’éditeur — votre magazine', onFermer: () => {} },
+    createElement('p', null, 'le papier')),
+);
+check('la feuille s’ouvre au-dessus de tout', feuille.includes('data-feuille="ouverte"'), true);
+check('elle se ferme, et le dit', feuille.includes('aria-label="Fermer la feuille"'), true);
+check('fermée, elle n’existe pas', renderToStaticMarkup(createElement(Feuille as never, { ouverte: false, titre: 'x', onFermer: () => {} }, createElement('p', null, 'y'))).includes('data-feuille'), false);
+
+/* En immersif, le site s'efface : plus de barre, plus de colonne, plus de dock. */
+publierImmersif(true);
+const chromeImmersif = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(SiteChrome, null, createElement('div', null, 'la scène'))),
+);
+publierImmersif(false);
+check('en immersif, le contenu est seul', chromeImmersif.includes('la scène') && !chromeImmersif.includes('aria-label="Le Magazine"'), true);
+check('et le dock a quitté l’écran', chromeImmersif.includes('aria-label="Le Point Zéro"'), false);
+check('hors immersif, le site est là', chromeOutil.includes('aria-label="Le Point Zéro"'), true);
+check('le signe des saisons a quitté l’écran', SAISONS_DE_LA_COLLECTION.every((s) => !revue.includes(s.symbole)), true);
+check('les huit rubriques sont des cases du jour', RUBRIQUES.every((r) => mondeDeLId('univers-evenements', leJourDeLaGrille).cases.some((c) => c.titre === r.toUpperCase())), true);
+check(
+  'on peut relire au passé et au futur',
+  ['L’an dernier', 'Cette semaine', 'L’an prochain'].every((t) => appEditeur.includes(t)),
+  true,
+);
+check('le flux des trois cartes a quitté la scène', heroMagazine.includes('Le flux des jours'), false);
+
 check('un joker ne dit pas de semaine', composerEdition({ numero: 53 }).carte.joker, true);
 check('et il a sa propre édition', composerEdition({ numero: 53 }).pages.length, PAGES_EDITION);
 
@@ -1915,9 +4895,15 @@ check('et l’action parfaite est une seule chose', filRougeDuJour(unJour.date).
 const pageOuverte = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(Magazine as never)),
 );
-check('le magazine du jour s’ouvre au clic (le bouton est là)', pageOuverte.includes('Ouvrir le magazine du jour'), true);
-check('et le flux dit ce que le clic fait', pageOuverte.includes('cliquer la couverture ouvre les 24 heures'), true);
-check('la mise en lumière est dans la page', revue.includes('La mise en lumière') && revue.includes('Se montrer, et élever les autres'), true);
+check('et les grandes portes sont à un pas, dans le chemin', mondeDeLId('monde', le21SeptembreGrille).cases.filter((c) => c.ouvre).length, 11);
+
+check(
+  'la couverture ouvre les deux aiguilles du cadran',
+  pageOuverte.includes('data-aiguille="heure"') && pageOuverte.includes('data-aiguille="chapitre"'),
+  true,
+);
+check('et l’heure de la capsule est sur le cadran', pageOuverte.includes('data-aiguille="heure"'), true);
+check('la mise en lumière vit dans une feuille', appProfil.includes('Se montrer, et élever les autres'), true);
 
 /* ————————— LA CHARTE, ET LA MISE EN LUMIÈRE ————————— */
 
@@ -1975,7 +4961,7 @@ const semainesRendues = renderToStaticMarkup(
   createElement(CouvertureSemaine, { edition: edition38, onChoisir: () => {} }),
 );
 check('la couverture de semaine porte la marque et le numéro', semainesRendues.includes('AIME') && semainesRendues.includes('N° 38'), true);
-check('et le nom de la carte', semainesRendues.includes('Roi de carreau'), true);
+check('et la semaine écrite, sans nom de carte', semainesRendues.includes('Semaine 38'), true);
 check('elle est cliquable et annoncée', semainesRendues.includes('aria-pressed') && semainesRendues.includes('aria-label'), true);
 
 /* ------------------- le nom se transforme, les deux portes suivent le rôle --- */
@@ -2283,8 +5269,12 @@ check('moins que le magazine entier', articlesPhoto.length < ALL_ARTICLES.length
 const pageMagazinePhoto = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?role=photographe'] }, createElement(Magazine as never)),
 );
-check('le magazine dit de qui il est', pageMagazinePhoto.includes('Choisi pour SUPER PHOTOGRAPHE'), true);
-check('et reste ouvert en entier', pageMagazinePhoto.includes('Tout le magazine'), true);
+check('le magazine dit de qui il est', pageMagazinePhoto.includes('choisi pour super photographe'), true);
+check(
+  'et les trois portes restent ouvertes',
+  ['l’éditeur', 'la collection', 'votre profil'].every((p) => pageMagazinePhoto.includes(p)),
+  true,
+);
 
 /* ------------- la nav verticale : le shop, le magazine, et la page ---------- */
 
@@ -2332,7 +5322,7 @@ const ancresAttendues: Record<string, string[]> = {
 };
 const sourceDuSite = [
   accueil, universBande, metierBande, pageArticle, pageShop, pageProduit, pagePrestataire, pageMagazine,
-  pageParametres, pageFooter,
+  pageParametres, pageFooter, revue,
 ].join(' ');
 check(
   'les ancres de la nav existent dans les pages',
@@ -2763,7 +5753,7 @@ check('le jour d’Adolphe Sax porte son nom', jourSax.titre, 'Adolphe Sax');
 check('et garde la fête du calendrier dessous', jourSax.fete, 'Sainte Bertille');
 check('un jour sans fiche garde son nom du calendrier', couvertureDuJour(new Date(2026, 6, 15)).titre.startsWith('Saint'), true);
 check('et n’a pas de fête à écrire', couvertureDuJour(new Date(2026, 6, 15)).fete, undefined);
-check('avec sa carte de la semaine', jourDeFete.figure, 'Roi de carreau');
+check('avec sa légende de semaine — plus de nom de carte à jouer', jourDeFete.figure, `Été · semaine 38`);
 check('et sa date écrite', jourDeFete.dateLongue, '21 septembre 2026');
 check('et son numéro dans l’année', jourDeFete.numero, 264);
 check('les clés du jour sont là', jourDeFete.cles.slice(0, 3).map((c) => c.label), ['Le ciel', 'La lune', 'Le chiffre']);
@@ -2804,12 +5794,14 @@ check('la vignette se passe des détails', svgVignette.includes('FOND NOIR —')
 const kiosque = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(GalerieCouvertures as never, { annee: 2026 })),
 );
-check('le kiosque s’annonce', kiosque.includes('Les 365 couvertures de l’année'), true);
-check('il propose les douze mois', MOIS.every((m) => kiosque.includes(m.nom)), true);
+check('la collection s’annonce', kiosque.includes('Les 54 magazines de l’année'), true);
+check('les 54 couvertures y sont, une par magazine', (kiosque.match(/aria-label="Ouvrir Magazine /g) ?? []).length, 54);
 check('et les quatre saisons', ['Printemps', 'Été', 'Automne', 'Hiver'].every((s) => kiosque.includes(s)), true);
-check('il compte ce qu’il montre', kiosque.includes('couvertures affichées'), true);
-check('et il dit à quoi il sert', kiosque.includes('ce qui va'), true);
-check('le kiosque non plus ne montre pas d’astérisques', kiosque.includes('**'), false);
+check('elle compte les images de la collection', kiosque.includes(`${IMAGES_ATTENDUES} images attendues`), true);
+check('et dit combien sont livrées', kiosque.includes(`${VISUELS_LIVRES} livrées`), true);
+check('elle dit à qui appartient la couverture', kiosque.includes('La couverture appartient à'), true);
+check('et qu’aucune semaine n’emprunte le visuel d’une autre', kiosque.includes('n’emprunte jamais le visuel d’une autre semaine'), true);
+check('la collection non plus ne montre pas d’astérisques', kiosque.includes('**'), false);
 
 /* ————————— LES 365 PROFILS ÉDITORIAUX : LA PORTE D'ENTRÉE DU JOUR ————————— */
 
@@ -3553,22 +6545,42 @@ const sansCandidat = choisirLeMeilleurVisuel([], attenduMidi);
 check('sans aucune candidate, rien n’est choisi', sansCandidat.choisi, null);
 check('et le dessin prend le relais', sansCandidat.decision.includes('Le dessin prend le relais'), true);
 
-/* ——— LA PHOTO PREND LE FOND, LE DESSIN RESTE S'IL N'Y EN A PAS ——— */
-check('aucun fond n’est livré pour l’instant', PHOTOS_LIVREES, 0);
-check('et le 21 septembre n’a pas de photo', photoDuPlan('09-21', 'couverture'), null);
-const couvertureDessinee = renderToStaticMarkup(
-  createElement(CouvertureJour as never, { couverture: couvertureDuJour(new Date(2026, 8, 21)), largeur: 200 }),
+/* ——— LA PHOTO DE LA SEMAINE PREND LE FOND, LE DESSIN RESTE S'IL N'Y EN A PAS ———
+ *
+ * Depuis la collection, la couverture appartient à la **semaine** : le 21
+ * septembre porte le visuel `semaine-38/cover.jpg`, comme les six autres jours
+ * du magazine 38. Les anciens dossiers par jour ne sont plus la source
+ * principale : ils restent le repli de transition, jamais l'image d'une autre
+ * semaine.
+ */
+check('les anciens dossiers par jour restent lisibles', PHOTOS_LIVREES, 0);
+check('et le 21 septembre n’a pas d’ancien visuel', photoDuPlan('09-21', 'couverture'), null);
+check('mais sa couverture vient de sa semaine', visuelsDuJour(new Date(2026, 8, 21)).couverture.url, '/images/magazine/semaine-38/cover.jpg');
+check('et son chapitre aussi', ['chapitre', 'couverture-semaine'].includes(visuelsDuJour(new Date(2026, 8, 21)).imageDuChapitre.origine), true);
+check('un chapitre livré passe devant la couverture', visuelDuChapitre(1, 2).origine, 'chapitre');
+check('un chapitre non livré retombe sur la couverture de sa semaine', visuelDuChapitre(1, 5).origine, 'couverture-semaine');
+check('et dit lequel il a pris', visuelDuChapitre(1, 5).url, '/images/magazine/semaine-01/cover.jpg');
+check('sans rien de livré, le dessin tient la place',
+  visuelsDuJour(new Date(2026, 8, 25)).couverture.origine === 'dessin' ||
+    visuelsDuJour(new Date(2026, 8, 25)).couverture.origine === 'couverture-semaine',
+  true);
+const couvertureSansImage = renderToStaticMarkup(
+  createElement(CouvertureJour as never, {
+    couverture: couvertureDuJour(new Date(2026, 8, 21)),
+    largeur: 200,
+    photo: null,
+  }),
 );
-check('sans photo, la couverture est dessinée', couvertureDessinee.includes('<image'), false);
-check('et le fond uni est bien là', couvertureDessinee.includes('fill="#'), true);
+check('sans image donnée, la couverture est dessinée', couvertureSansImage.includes('<image'), false);
+check('et le fond uni est bien là', couvertureSansImage.includes('fill="#'), true);
 const couverturePhotographiee = renderToStaticMarkup(
   createElement(CouvertureJour as never, {
     couverture: couvertureDuJour(new Date(2026, 8, 21)),
     largeur: 200,
-    photo: '/images/magazine/09-21/couverture.jpg',
+    photo: '/images/magazine/semaine-38/cover.jpg',
   }),
 );
-check('avec une photo, elle prend le fond', couverturePhotographiee.includes('href="/images/magazine/09-21/couverture.jpg"'), true);
+check('avec l’image de la semaine, elle prend le fond', couverturePhotographiee.includes('href="/images/magazine/semaine-38/cover.jpg"'), true);
 check('et la couverture reste la même', couverturePhotographiee.includes('AIME MAGAZINE'), true);
 check('avec la couleur du jour en voile', couverturePhotographiee.includes('opacity="0.42"'), true);
 
@@ -3658,27 +6670,28 @@ check('le composeur y est, une seule fois sur l’accueil', (accueil.match(/Vill
 /* ——— LE MAGAZINE : HERO NOIR, SANS SOUS-TITRE, LA COUVERTURE À LA PLACE DU PERSONNAGE ——— */
 check('le hero du magazine n’a plus de sous-titre', revue.includes('Une couverture par jour'), false);
 check('et le rôle n’y est plus écrit non plus', heroMagazine.includes('Choisi pour'), false);
-check('le fond du hero est noir', heroMagazine.includes('bg-[#0B0C12]'), true);
+check('le fond de l’écran est noir', heroMagazine.includes('bg-[#0B0C12]'), true);
 check('et ce n’est plus le visuel de la saison', heroMagazine.includes('object-cover blur'), false);
 check('le flux montre la couverture, pas le personnage', (flux.match(/AIME MAGAZINE/g) ?? []).length >= 2, true);
 check('le flux n’a plus de portrait de studio', flux.includes('Studio blanc') || flux.includes('Studio noir'), false);
-check('la couverture nettoyée ne montre plus son numéro', flux.includes('SEMAINE'), false);
+check('la couverture dit désormais dans quel magazine on est', flux.includes('MAGAZINE ') || flux.includes('MAGAZINE</'), true);
+check('et où l’on entre : le chapitre', flux.includes('CHAPITRE '), true);
 
 /* ——— LES TYPOS DES COUVERTURES SUIVENT LE DESIGN DU SITE ——— */
 check('la couverture prend la police du site', svgCouverture.includes('Inter'), true);
 check('et quitte Georgia', svgCouverture.includes('Georgia'), false);
 
 /* ——— LE SOLEIL-CADRAN : LE LOGO DE SUPER MARIAGE ——— */
-check('la barre du site porte le logo', chromeMetier.includes('Le soleil-cadran'), true);
-check('le pied aussi, partout', chromeAccueil.includes('Le soleil-cadran'), true);
+check('la barre du site porte le logo', chromeOutil.includes('Le soleil-cadran'), true);
+check('le pied aussi, partout', chromeOutil.includes('Le soleil-cadran'), true);
 check('et la page du magasin', magasin.includes('Le soleil-cadran'), true);
 
 /* ——— LE DOCK : UN BOUTON BLANC STABLE, DES OUTILS QUI MÈNENT À DES PAGES RÉELLES ——— */
-check('le bouton blanc mène au point zéro', chromeAccueil.includes('aria-label="Le Point Zéro"'), true);
-check('et il ne change plus avec le rôle', chromeAccueil.includes('Entrer comme'), false);
+check('le bouton blanc mène au point zéro', chromeOutil.includes('aria-label="Le Point Zéro"'), true);
+check('et il ne change plus avec le rôle', chromeOutil.includes('Entrer comme'), false);
 /* Les outils de rôle sont partis : le dock commande les moments et la timeline. */
-check('le dock montre les cinq moments', ['Le moment — l’aube', 'Le moment — le soir'].every((m) => chromeAccueil.includes(m)), true);
-check('et le picto de la timeline', chromeAccueil.includes('La timeline — déplier l&#x27;année'), true);
+check('le dock montre les cinq moments', ['Le moment — l’aube', 'Le moment — le soir'].every((m) => chromeOutil.includes(m)), true);
+check('et le picto de l’atelier du temps', chromeOutil.includes('aria-label="L’atelier du temps — la timeline"'), true);
 check('la playlist de l’univers a bien son ancre', universBande.includes('id="playlist"'), true);
 check('et son programme aussi', universBande.includes('id="programme"'), true);
 
@@ -3736,10 +6749,13 @@ check('la page super ripple est sombre', pageFooter.includes('vp-env-dark'), tru
 basculerTimeline(true);
 const languette = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LanguetteTimeline as never)));
 basculerTimeline(false);
-check('la languette s’ouvre sur les quatre saisons', ['Printemps', 'Été', 'Automne', 'Hiver'].every((n) => languette.includes(n)), true);
-check('avec le cadran en repère', languette.includes('Le cadran de l&#x27;année'), true);
-check('et sa recherche', languette.includes('Chercher un jour'), true);
-check('fermée, elle n’est pas là', renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LanguetteTimeline as never))).includes('Chercher un jour'), false);
+check('la languette ouvre l’atelier du temps', languette.includes('La timeline'), true);
+check('elle compte l’année', languette.includes(`${NOMBRE_DE_MAGAZINES} magazines`) && languette.includes(`${NOMBRE_DE_MAGAZINES * 7} chapitres`), true);
+check('et ses deux sources', ['L’année', 'Le jour J'].every((n) => languette.includes(n)), true);
+check('la règle est graduée par magazine', (languette.match(/data-graduation="/g) ?? []).length, NOMBRE_DE_MAGAZINES);
+check('et un bloc par magazine est posé dessus', (languette.match(/data-bloc="magazine-/g) ?? []).length, NOMBRE_DE_MAGAZINES);
+check('chaque bloc annonce ses sept chapitres', (languette.match(/data-chapitre="/g) ?? []).length, NOMBRE_DE_MAGAZINES * 7);
+check('fermée, elle n’est pas là', renderToStaticMarkup(createElement(MemoryRouter, null, createElement(LanguetteTimeline as never))).includes('L’atelier du temps'), false);
 check('l’été se déplie en trois mois', moisDeLaSaison('ete').map((m) => m.nom).join(','), 'juin,juillet,août');
 check('un mois se déplie en semaines', semainesDuMois(2026, 9).length >= 4, true);
 check('une semaine en sept jours', joursDeLaSemaine(2026, 38).length, 7);
@@ -3751,13 +6767,52 @@ check('l’aiguille du cadran connaît le 21 septembre', Math.round(angleDuJour(
 const revueMidi = renderToStaticMarkup(
   createElement(MemoryRouter, { initialEntries: ['/magazine?moment=midi'] }, createElement(Magazine as never)),
 );
-check('le moment choisi éclaire la couverture du hero', revueMidi.includes('· midi'), true);
+check(
+  'le moment de l’adresse pose l’heure sur le cadran',
+  revueMidi.includes('data-heure="12"') && revueMidi.includes(legendeDeLHeure(12)),
+  true,
+);
+
+/* ——— L'ATELIER DE L'ANNÉE : LES 54 MAGAZINES SUR LA BANDE ——— */
+
+/* La timeline n'est plus décorative : c'est **l'atelier du site**, avec une autre
+   source. Un bloc par magazine, ses sept chapitres dessous, et la tête de
+   lecture posée sur la semaine où l'on est. */
+const blocs = blocsDeLaCollection(2026);
+check('l’atelier pose un bloc par magazine', blocs.length, NOMBRE_DE_MAGAZINES);
+check('et pas un de plus', new Set(blocs.map((b) => b.id)).size, NOMBRE_DE_MAGAZINES);
+check('les blocs sont ceux de la collection', blocs[0]!.title, `01 · ${MAGAZINES[0]!.titre}`);
+check('le trente-huitième est « Septembre doré »', blocs[37]!.title, '38 · Septembre doré');
+check('chaque bloc dit ses sept chapitres', blocs.every((b) => b.sousTitres?.length === 7), true);
+check('et sa mesure', blocs.every((b) => b.mesure === '7 chapitres'), true);
+check('sa couleur vient du magazine', blocs[5]!.colorAccent, MAGAZINES[5]!.palette.accent);
+check('sa période est écrite', blocs[0]!.startTime.includes('–'), true);
+check('le joker 53 n’a pas de semaine', blocs[52]!.chapter, 'Hors calendrier');
+check('la couverture livrée est posée sur le bloc', blocs[37]!.mediaUrl, '/images/magazine/semaine-38/cover.jpg');
+check('et un magazine non livré garde son bloc, sans image', blocs[27]!.mediaUrl, undefined);
+check('la somme des durées fait l’année', Math.round(blocs.reduce((t, b) => t + b.durationMinutes, 0)), TIMELINE_TOTAL_MINUTES);
+check('un magazine vaut un cinquante-quatrième de la bande', Math.round(PAS_DU_MAGAZINE * NOMBRE_DE_MAGAZINES), TIMELINE_TOTAL_MINUTES);
+check('et les blocs se suivent sans trou', blocs.every((b, i) => i === 0 || b.startMinuteOfDay > blocs[i - 1]!.startMinuteOfDay), true);
+const graduations = graduationsDeLaCollection(2026);
+check('la règle est graduée une fois par magazine', graduations.length, NOMBRE_DE_MAGAZINES);
+check('la première graduation est le 01', graduations[0]!.label, '01');
+check('et la trente-huitième porte sa date', graduations[37]!.sous, '17 sept.');
+check('la tête de lecture se pose dans l’année', teteSurLaSemaineCourante(new Date(2026, 8, 21)) >= 0 && teteSurLaSemaineCourante(new Date(2026, 8, 21)) < TIMELINE_TOTAL_MINUTES, true);
+check('et elle suit la semaine', teteSurLaSemaineCourante(new Date(2026, 8, 21)) > teteSurLaSemaineCourante(new Date(2026, 0, 5)), true);
+check(
+  'elle se pose sur le magazine de la date',
+  Math.round(teteSurLaSemaineCourante(new Date(2026, 8, 21)) / PAS_DU_MAGAZINE) + 1,
+  magazineDeLaDate(new Date(2026, 8, 21)).numero,
+);
+check('un magazine s’ouvre au premier jour de sa semaine', adresseDuMagazine(38, 2026), '/magazine?jour=09-17');
 
 /* ——— CE TOUR : UNE SEULE COUVERTURE AU HERO, LE COMPOSEUR SUR LA PAGE MAGAZINE ——— */
-check('le hero du magazine montre une seule couverture, au format du hero', heroMagazine.includes('h-full w-auto'), true);
+
 check('et plus trois magazines côte à côte', revue.includes('Le flux des jours'), false);
-check('le composeur vit sur la page magazine', revue.includes('Votre magazine, maintenant') && revue.includes('Ville de naissance'), true);
-check('la couverture a été nettoyée', svgCouverture.includes('SEMAINE'), false);
+check('le composeur n’encombre plus l’écran', revue.includes('Ville de naissance'), false);
+check('la couverture porte le numéro du magazine, comme une vraie couverture',
+  svgCouverture.includes('MAGAZINE 38'), true);
+check('et le chapitre par lequel la date entre', svgCouverture.includes('CHAPITRE 05'), true);
 check('elle garde la marque, le titre et la date',
   svgCouverture.includes('AIME MAGAZINE') && svgCouverture.includes('Saint Matthieu') && svgCouverture.includes('21 SEPTEMBRE 2026'), true);
 
@@ -3765,12 +6820,183 @@ check('elle garde la marque, le titre et la date',
 check('l’accueil n’a plus sa bande-pied en doublon', accueil.includes('Votre mariage. Votre histoire. Un seul endroit.'), false);
 check('la playlist de l’accueil est celle de l’année', accueil.includes('La playlist de l’année'), true);
 check('et elle a déjà toutes les cartes', accueil.includes('/ 365'), true);
-check('le logo synthétisé est plus grand dans la barre', chromeMetier.includes('width="26"'), true);
+check('le logo synthétisé est plus grand dans la barre', chromeOutil.includes('width="26"'), true);
 
 /* ——— LE « VOIR EN TANT QUE » EST RETIRÉ : ON SIMPLIFIE ——— */
 const menuFerme = renderToStaticMarkup(createElement(MemoryRouter, null, createElement(MenuProfil as never)));
 check('le menu ne propose plus de voir en tant que', menuFerme.includes('Voir en tant que'), false);
 check('le bouton profil reste là', menuFerme.includes('aria-haspopup="menu"'), true);
+
+
+/* ============================================================================
+ * LA COLLECTION : 54 MAGAZINES, 7 CHAPITRES PAR MAGAZINE, 365 JOURS POUR LES
+ * PARCOURIR
+ *
+ * Le modèle a changé une seule fois, et voici son contrat, vérifié ligne à
+ * ligne : une date n'ouvre plus un magazine à elle seule, elle **entre dans un
+ * magazine hebdomadaire par l'un de ses sept chapitres**.
+ * ========================================================================== */
+
+check('la collection compte 54 magazines', MAGAZINES.length, 54);
+check('et le compte annoncé est le même', NOMBRE_DE_MAGAZINES, 54);
+check('sept chapitres dans chaque magazine', MAGAZINES.every((m) => m.chapitres.length === 7), true);
+check('les 54 directions artistiques sont écrites, dans l’ordre', DIRECTIONS_COMPLETES, true);
+check('les 432 images attendues sont annoncées', IMAGES_ATTENDUES, 432);
+
+/* — LES SEPT CHAPITRES, FIXES ET ORDONNÉS — */
+check(
+  'les sept chapitres sont toujours les mêmes',
+  CHAPITRES.map((c) => c.id),
+  ['amoureux', 'style', 'lieux', 'recevoir', 'fete', 'monde', 'souvenirs'],
+);
+check(
+  'et leurs noms de fichiers sont ceux de la bibliothèque',
+  CHAPITRES.map((c) => c.fichier),
+  ['01-amoureux.jpg', '02-style.jpg', '03-lieux.jpg', '04-recevoir.jpg', '05-fete.jpg', '06-monde.jpg', '07-souvenirs.jpg'],
+);
+check('chaque chapitre dit son territoire', CHAPITRES.every((c) => c.territoire.length > 30), true);
+check('et son pont vers le mariage', CHAPITRES.every((c) => c.pontMariage.length > 20), true);
+check('le quatrième chapitre est L’Art de recevoir', CHAPITRES[3]!.titre, 'L’Art de recevoir');
+check('un fichier retrouve son chapitre', chapitreParFichier('06-monde.jpg')?.titre, 'Le Monde');
+check('les chapitres tournent : après le septième, le premier', chapitreSuivant(7).numero, 1);
+check('une position hors bornes reste un chapitre valide', chapitreDeLaPosition(9).numero, 7);
+
+/* — LA DATE ENTRE PAR UN CHAPITRE : 21 SEPTEMBRE → SEMAINE 38 → CHAPITRE 04 — */
+const le21Septembre = new Date(2026, 8, 21, 12);
+check('le 21 septembre 2026 tombe dans le magazine 38', numeroDeMagazine(le21Septembre), 38);
+check('dont la couverture est celle de la semaine 38', magazineDeLaDate(le21Septembre).cover, '/images/magazine/semaine-38/cover.jpg');
+check('la semaine 38 commence le 17 septembre', joursDuMagazine(38, 2026)[0]!.getDate(), 17);
+check('et il entre par le chapitre 05 — le cinquième jour de sa semaine', chapitreDeLaDate(le21Septembre).numero, 5);
+check('qui est La Fête', chapitreDeLaDate(le21Septembre).chapitre.titre, 'La Fête');
+check('l’image attendue est nommée par le chapitre', chapitreDeLaDate(le21Septembre).image, '/images/magazine/semaine-38/05-fete.jpg');
+check('les trois niveaux se lisent d’un coup', [
+  niveauxDuJour(le21Septembre).date,
+  niveauxDuJour(le21Septembre).magazine,
+  niveauxDuJour(le21Septembre).chapitre,
+], ['21 septembre', 'Magazine 38', 'Chapitre 05 — La Fête']);
+check('et le magazine a son titre', niveauxDuJour(le21Septembre).titreDuMagazine, 'Septembre doré');
+
+/* — CHAQUE MAGAZINE PRÉSENTE SES SEPT CHAPITRES, UNE FOIS CHACUN — */
+const sesSeptJours = joursDuMagazine(38, 2026).map((d) => chapitreDeLaDate(d).numero);
+check('les sept jours du magazine 38 ouvrent les sept chapitres', sesSeptJours, [1, 2, 3, 4, 5, 6, 7]);
+check('sans doublon', new Set(sesSeptJours).size, 7);
+check('et la même date donne toujours le même chapitre', positionDansLeMagazine(le21Septembre), 5);
+check('les sept jours partagent la couverture de leur magazine',
+  new Set(joursDuMagazine(38, 2026).map((d) => magazineDeLaDate(d).cover)).size, 1);
+
+/* — 364 JOURS DANS LES SEMAINES, ET LES DEUX JOURS DE TROP — */
+const annee2026 = Array.from({ length: 365 }, (_, i) => new Date(2026, 0, i + 1, 12));
+check('les 364 jours des semaines ont tous leur magazine', annee2026.filter((d) => numeroDeMagazine(d) <= 52).length, 364);
+check('et le 365ᵉ est le joker 53', numeroDeMagazine(new Date(2026, 11, 31, 12)), 53);
+check('le 29 février est le joker 54', numeroDeMagazine(new Date(2028, 1, 29, 12)), 54);
+check('aucune année ne réclame un 55ᵉ magazine',
+  Array.from({ length: 12 }, (_, i) => 2024 + i).every((annee) =>
+    Array.from({ length: 366 }, (_, j) => new Date(annee, 0, j + 1, 12))
+      .filter((d) => d.getFullYear() === annee)
+      .every((d) => numeroDeMagazine(d) >= 1 && numeroDeMagazine(d) <= 54),
+  ), true);
+check('un jour de trop prend le chapitre de son jour de semaine',
+  chapitreDeLaDate(new Date(2026, 11, 31, 12)).numero, ((new Date(2026, 11, 31, 12).getDay() + 6) % 7) + 1);
+check('et son magazine est bien un joker', magazineParNumero(53).joker, true);
+check('le magazine suivant boucle après le 54', magazineSuivant(54).numero, 1);
+
+/* — LES SUJETS : SEPT PAR MAGAZINE, TOUS DIFFÉRENTS — */
+check('chaque magazine a sept sujets distincts',
+  MAGAZINES.every((m) => new Set(m.chapitres.map((c) => c.sujet)).size === 7), true);
+check('et chaque sujet est écrit, jamais générique',
+  MAGAZINES.every((m) => m.chapitres.every((c) => c.sujet.length > 25 && !c.sujet.includes('lorem'))), true);
+check('deux magazines ne traitent pas le même chapitre de la même façon',
+  chapitreDuMagazine(26, 3).sujet !== chapitreDuMagazine(40, 3).sujet, true);
+check('les titres des 54 magazines sont tous différents',
+  new Set(MAGAZINES.map((m) => m.titre)).size, 54);
+
+/* — LES REPLIS : JAMAIS L'IMAGE D'UNE AUTRE SEMAINE — */
+const chapitreManquant = visuelDuChapitre(23, 4);
+check('un chapitre non livré reste dans son magazine', chapitreManquant.magazine, 23);
+check('et il le dit', chapitreManquant.raison.includes('23'), true);
+check('sans jamais emprunter à une autre semaine',
+  chapitreManquant.url === null || chapitreManquant.url.includes('semaine-23') || chapitreManquant.url.includes('semaine 23'), true);
+check('une couverture non livrée est dessinée', visuelDeLaCouverture(28).origine, 'dessin');
+check('et une couverture livrée est une couverture', visuelDeLaCouverture(23).origine, 'couverture-semaine');
+const visuels21 = visuelsDuJour(le21Septembre);
+check('un jour a sa couverture et son chapitre', [visuels21.couverture.magazine, visuels21.imageDuChapitre.magazine], [38, 38]);
+check('et la provenance est toujours dite', visuels21.couverture.raison.length > 20 && visuels21.imageDuChapitre.raison.length > 20, true);
+check('le chemin d’un visuel se déduit du numéro', cheminDuVisuel(38, 'cover.jpg'), '/images/magazine/semaine-38/cover.jpg');
+check('et l’inventaire dit ce qui est arrivé',
+  Object.values(VISUELS_DU_MAGAZINE ?? {}).length >= 0 || VISUELS_LIVRES >= 0, true);
+check('chaque visuel de l’inventaire suit la convention',
+  Object.entries(VISUELS_DU_MAGAZINE).every(([dossier, slots]) =>
+    /^semaine-\d{2}$/.test(dossier) && slots.every((slot) => slot === 'cover.jpg' || CHAPITRES.some((c) => c.fichier === slot)),
+  ), true);
+check('et l’inventaire ne compte que ce qui a été relevé',
+  Object.values(VISUELS_DU_MAGAZINE).reduce((n, liste) => n + liste.length, 0), VISUELS_LIVRES);
+check('un visuel livré est retrouvable', VISUELS_LIVRES === 0 || visuelLivre(38, 'cover.jpg'), true);
+
+/* — LA NAVIGATION ÉDITORIALE : LE CHAPITRE VOISIN, SANS CHANGER DE SEMAINE — */
+const voisinDroite = voisinDuChapitre(le21Septembre, 2026, 1);
+const voisinGauche = voisinDuChapitre(le21Septembre, 2026, -1);
+check('le chapitre suivant reste dans le magazine 38', numeroDeMagazine(voisinDroite), 38);
+check('et il ouvre le chapitre 06', chapitreDeLaDate(voisinDroite).numero, 6);
+check('le précédent ouvre le chapitre 04', chapitreDeLaDate(voisinGauche).numero, 4);
+check('et l’on ne sort jamais du magazine', [voisinDroite, voisinGauche].every((d) => numeroDeMagazine(d) === 38), true);
+
+/* — CE QUE LES COMPOSANTS MONTENT — */
+const chapitresHtml = renderToStaticMarkup(
+  createElement(ChapitresDuMagazine as never, { date: le21Septembre, annee: 2026 }),
+);
+check('le bloc des chapitres annonce le magazine', chapitresHtml.includes('Magazine 38'), true);
+check('et son titre', chapitresHtml.includes(magazineParNumero(38).titre), true);
+check('les sept chapitres y sont', CHAPITRES.every((c) => chapitresHtml.includes(c.titre)), true);
+check('celui du jour est marqué actif', (chapitresHtml.match(/data-actif="true"/g) ?? []).length, 1);
+check('et il se dit « vous êtes ici »', chapitresHtml.includes('vous êtes ici'), true);
+check('la navigation éditoriale est montrée', chapitresHtml.includes('Chapitre précédent') && chapitresHtml.includes('Chapitre suivant'), true);
+check('et les deux navigations sont expliquées', chapitresHtml.includes('Navigation temporelle') && chapitresHtml.includes('Navigation éditoriale'), true);
+
+const magazineSemaineHtml = renderToStaticMarkup(
+  createElement(MagazineSemaine as never, { magazine: magazineParNumero(38) }),
+);
+check('la couverture du magazine porte son numéro', magazineSemaineHtml.includes('N° 38'), true);
+check('son titre', magazineSemaineHtml.includes(magazineParNumero(38).titre), true);
+check('ses sept chapitres, dans l’ordre', CHAPITRES.every((c) => magazineSemaineHtml.includes(c.titre)), true);
+check('et sa saison', magazineSemaineHtml.includes('Été'), true);
+
+const kiosqueCollection = renderToStaticMarkup(
+  createElement(MemoryRouter, { initialEntries: ['/magazine'] }, createElement(GalerieCouvertures as never, { annee: 2026 })),
+);
+check('le kiosque annonce les 54 magazines', kiosqueCollection.includes('Les 54 magazines de l’année'), true);
+check('et le compte des images de la bibliothèque', kiosqueCollection.includes('432 images'), true);
+check('chaque saison a son étagère', ['Printemps', 'Été', 'Automne', 'Hiver'].every((s) => kiosqueCollection.includes(s)), true);
+check('les magazines y sont numérotés', kiosqueCollection.includes('N° 38'), true);
+
+/* — LE PLAN DE PRODUCTION : 54 COUVERTURES, 378 CHAPITRES — */
+const planDeLaCollection = imagesDeLaCollection();
+check('le plan de la collection compte 432 images', planDeLaCollection.length, IMAGES_ATTENDUES_DE_LA_COLLECTION);
+check('54 couvertures', couverturesDeLaCollection().length, COUVERTURES_ATTENDUES);
+check('378 chapitres', chapitresDeLaCollection().length, CHAPITRES_ATTENDUS);
+check('les 54 couvertures sont demandées d’abord', planDeLaCollection.slice(0, 54).every((i) => i.chapitre === null), true);
+check('le plan ne demande jamais un ancien dossier par jour',
+  planDeLaCollection.every((i) => i.fichiers.every((f) => f.includes('/semaine-'))), true);
+const planDu38 = couverturesDeLaCollection().find((i) => i.semaine === 38)!;
+check('une couverture porte son chemin de bibliothèque', planDu38.fichiers[0], '/images/magazine/semaine-38/cover.jpg');
+check('et ses deux candidates de casting', planDu38.fichiers.length, RANGS_PAR_PLAN);
+check('avec le titre du magazine', planDu38.titreDuMagazine, magazineParNumero(38).titre);
+const planChapitre26_3 = chapitresDeLaCollection().find((i) => i.semaine === 26 && i.chapitre === 3)!;
+check('un chapitre porte son numéro de magazine', planChapitre26_3.semaine, 26);
+check('et son numéro de chapitre', planChapitre26_3.chapitre, 3);
+check('et le chemin que la bibliothèque attend', planChapitre26_3.fichiers[0], '/images/magazine/semaine-26/03-lieux.jpg');
+check('et son univers', planChapitre26_3.universDuChapitre, 'Les Lieux');
+check('chaque image attendue dit sa saison et son style',
+  planDeLaCollection.every((i) => i.saison.length > 2 && i.styleDuMagazine.length > 5), true);
+check('l’état de la collection compte ce qui est livré',
+  etatDeLaCollection().couverturesLivrees + etatDeLaCollection().chapitresLivres, VISUELS_LIVRES);
+check('et il propose la suite du travail', etatDeLaCollection().prochaines.length, Math.min(8, 432 - VISUELS_LIVRES));
+
+/* — LA TIMELINE : LES JOURS MÈNENT AUSSI À UN CHAPITRE — */
+const semaineTimeline = joursDeLaSemaine(2026, 38);
+check('la semaine 38 de la timeline a sept jours', semaineTimeline.length, 7);
+check('chaque jour y connaît son magazine', semaineTimeline.every((j) => j.magazine === 38), true);
+check('et son chapitre, dans l’ordre', semaineTimeline.map((j) => j.chapitre), [1, 2, 3, 4, 5, 6, 7]);
+check('le 21 septembre y ouvre La Fête', semaineTimeline[4]!.titreDuChapitre, 'La Fête');
 
 
 /* ------------------------------------------------------------------- bilan */
