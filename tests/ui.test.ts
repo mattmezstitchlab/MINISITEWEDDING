@@ -175,6 +175,12 @@ import {
   lignesCochées,
 } from '../src/lib/categoriesDuTicket';
 import { numeroDuTicket, portefeuillesDesCoches, portefeuillesVisés, totauxDuTicket } from '../src/lib/portefeuille';
+import {
+  BLOCS_DU_MINI_SITE,
+  adresseDuMiniSite,
+  composerLeMiniSiteDeMariage,
+  lienDuMiniSite,
+} from '../src/lib/miniSiteDuMariage';
 import LeMariage from '../src/pages/LeMariage';
 import {
   PLAYLIST_DEPART, chargerPlaylist, chercherMorceaux, morceauParId, morceauxDeLaPlaylist,
@@ -2098,9 +2104,14 @@ check(
   true,
 );
 check(
-  'autour d’elle, un fond blanc — aucun visuel, aucun texte',
+  // « La machine avec le visuel est mieux » : l'écran montre le jour, et la
+  // machine reste seule sur son fond blanc — une seule image, dans l'écran.
+  'autour d’elle, un fond blanc — et le visuel est dedans, dans son écran',
   // Attention : `<path>` des icônes commence aussi par `<p` — on vise la balise.
-  zoneMachine.includes('bg-white') && !zoneMachine.includes('<img') && !/<p[\s>]/.test(zoneMachine),
+  zoneMachine.includes('bg-white') &&
+    (zoneMachine.match(/<img/g) ?? []).length === 1 &&
+    zoneMachine.indexOf('<img') > zoneMachine.indexOf('data-écran-photo') &&
+    !/<p[\s>]/.test(zoneMachine),
   true,
 );
 check('et rien ne s’affiche avant elle, sinon la barre', ticketVide.indexOf('data-bande="barre"') < ticketVide.indexOf('id="la-machine"'), true);
@@ -2574,10 +2585,13 @@ check(
    descendent tous vers une bande de la page, et les autres adresses ramènent
    ici. Les fichiers des anciennes pages restent dans `src/pages/`. */
 check(
-  'aucun lien ne quitte la page d’accueil',
+  // « Une seule page » : il n'y a plus d'adresse ailleurs. Le seul lien qui
+  // n'est pas une ancre de la page, c'est **le mini-site** (`?code=…&site=1`) —
+  // la même page, vue par les invités.
+  'aucun lien ne quitte la page d’accueil, sinon celui du mini-site',
   [...ticketVide.matchAll(/href="([^"]*)"/g)]
     .map((m) => m[1]!)
-    .filter((h) => !h.startsWith('#') && !h.startsWith('/images/')),
+    .filter((h) => !h.startsWith('#') && !h.startsWith('/images/') && !h.startsWith('?code=')),
   [],
 );
 check(
@@ -2714,6 +2728,209 @@ check(
 check(
   'et sous l’appareil, la planche de stickers attend d’être remplie',
   ticketVide.includes('data-stickers="vrai"') && ticketVide.includes('aucun sticker'),
+  true,
+);
+
+/* ——— LA MACHINE À MINI-SITES : CE QU'ELLE FABRIQUE PART AUX INVITÉS ———
+
+   « La machine avec le visuel est mieux : tu saurais en faire une machine à
+   faire des mini-sites de mariage ? » La machine ne change pas — même écran,
+   même visuel, même fente, mêmes touches rondes. Ce qui change, c'est **ce
+   qu'elle produit** : le site que les mariés envoient à leurs invités.
+
+   Une seule règle tient tout : **ce qui est coché est ce qui s'affiche.** Trois
+   blocs sont toujours là — la couverture, le voyage, le ticket — parce que sans
+   eux il n'y a pas de mariage à montrer. Les six autres s'allument avec les
+   lignes qui les nourrissent. */
+
+const siteÀVide = composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, []);
+const siteDesCoches = composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, cochesDessai);
+const sitePlein = composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, LIGNES_DU_TICKET.map((l) => l.id));
+
+check('la machine connaît neuf blocs de mini-site', siteÀVide.total, BLOCS_DU_MINI_SITE.length);
+check(
+  'sans rien de coché, elle sort quand même un site : la couverture, le voyage, le ticket',
+  siteÀVide.blocs.map((b) => b.id).join(','),
+  'couverture,voyage,ticket',
+);
+check(
+  'ce sont les trois blocs de toujours — sans eux, pas de mariage',
+  siteÀVide.blocs.every((b) => b.toujours === true),
+  true,
+);
+check('et les six autres attendent qu’on coche', [siteÀVide.allumés, siteÀVide.total - siteÀVide.allumés], [3, 6]);
+check(
+  'une ligne cochée allume son bloc, et le bloc de toujours qui va avec',
+  BLOCS_DU_MINI_SITE.filter((b) => b.catégories.length > 0).every((bloc) => {
+    const ligne = LIGNES_DU_TICKET.find((l) => bloc.catégories.includes(catégorieDeLaLigne(l.id)?.id ?? ''));
+    if (!ligne) return false;
+    const allumés = composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, [ligne.id]).blocs.map((b) => b.id);
+    return allumés.includes(bloc.id) && allumés.length === 4;
+  }),
+  true,
+);
+check('cocher tout le magasin allume les neuf blocs', [sitePlein.allumés, sitePlein.complet], [9, true]);
+check('et l’essai de cinq lignes en allume huit', siteDesCoches.allumés, 8);
+check(
+  'le bloc du ticket compte les lignes du ticket, pas autre chose',
+  siteDesCoches.blocs.find((b) => b.id === 'ticket')!.compte,
+  cochesDessai.length,
+);
+check(
+  'aucun bloc vide : il s’affiche parce qu’il a des lignes, ou parce qu’il est vital',
+  siteDesCoches.blocs.every((b) => b.compte > 0 || b.toujours === true),
+  true,
+);
+check(
+  'chaque bloc a son image, et l’image est dans le dépôt',
+  BLOCS_DU_MINI_SITE.every((b) => existsSync(`public${b.image}`)),
+  true,
+);
+check(
+  'l’adresse du site, c’est le code et rien d’autre',
+  adresseDuMiniSite(CODE_DE_DÉMONSTRATION),
+  `?code=${CODE_DE_DÉMONSTRATION}&site=1`,
+);
+check(
+  'et le lien envoyé porte ce qui est coché — sinon l’invité ouvrirait un site vide',
+  (() => {
+    const lien = lienDuMiniSite(CODE_DE_DÉMONSTRATION, cochesDessai);
+    return (
+      lien.startsWith(`${adresseDuMiniSite(CODE_DE_DÉMONSTRATION)}&coches=`) &&
+      decodeURIComponent(lien.replace(/\+/g, '%20')).includes('horaire-22:17')
+    );
+  })(),
+  true,
+);
+check(
+  'le rêve des mariés voyage aussi dans le lien',
+  lienDuMiniSite(CODE_DE_DÉMONSTRATION, [], 'Vegas en janvier').endsWith('&reve=Vegas+en+janvier'),
+  true,
+);
+
+/* ——— L'écran de la machine : le visuel, et la touche du milieu ——— */
+
+const écranDuSite = rendreLeTicket('/?ecran=site');
+const écranDuSiteCoché = rendreLeTicket(`/?ecran=site&coches=${encodeURIComponent(cochesDessai.join(','))}`);
+
+check(
+  'l’écran de la machine garde son visuel du jour en tête',
+  ticketVide.includes('data-écran-photo="vrai"') && ticketVide.includes('CAISSE 3 ·'),
+  true,
+);
+check(
+  'la touche du milieu ouvre le mini-site',
+  ticketVide.includes('data-touche="site"') && ticketVide.includes('data-touche-mot="site"'),
+  true,
+);
+check('trois touches rondes, jamais deux', (ticketVide.match(/data-touche=/g) ?? []).length, 3);
+check(
+  'l’écran, en mode site, dit ce qu’elle a fabriqué et où c’est',
+  écranDuSite.includes('data-écran-corps="site"') &&
+    écranDuSite.includes('data-site-liste="vrai"') &&
+    écranDuSite.includes(`data-site-adresse="?code=${CODE_DE_DÉMONSTRATION}&site=1"`),
+  true,
+);
+check(
+  'sans rien de coché, l’écran compte trois blocs sur neuf',
+  [écranDuSite.includes('data-site-blocs="3"'), écranDuSite.includes('3 / 9')],
+  [true, true],
+);
+check(
+  'avec les lignes de l’essai, huit — et chaque bloc dit son compte',
+  [écranDuSiteCoché.includes('data-site-blocs="8"'), écranDuSiteCoché.includes('data-site-bloc="gens"')],
+  [true, true],
+);
+check(
+  'en mode site, ✓ revient, ✗ partage, et la touche du milieu ferme',
+  [
+    écranDuSite.includes('data-touche-mot="retour"'),
+    écranDuSite.includes('data-touche-mot="partager"'),
+    écranDuSite.includes('data-touche-mot="fermer"'),
+    écranDuSite.includes('data-touche-mot="vider"'),
+  ],
+  [true, true, true, false],
+);
+
+/* ——— La page que l'invité ouvre : le mini-site, et rien d'autre ——— */
+
+const siteDesInvités = rendreLeTicket(`/?site=1&coches=${encodeURIComponent(cochesDessai.join(','))}`);
+const siteDesInvitésÀVide = rendreLeTicket('/?site=1');
+
+check(
+  'le lien ouvre le mini-site, et la machine n’y est plus',
+  [siteDesInvités.includes('data-site="invités"'), siteDesInvités.includes('data-machine="ripple"')],
+  [true, false],
+);
+check('il porte son code, écrit en haut', siteDesInvités.includes(`data-site-code="${CODE_DE_DÉMONSTRATION}"`), true);
+check(
+  'la couverture, c’est le visuel du jour, avec les noms dessus',
+  siteDesInvités.includes('data-site-visuel="jour"') &&
+    siteDesInvités.includes('data-site-noms="vrai"') &&
+    siteDesInvités.includes(TICKET_COUPLE.noms),
+  true,
+);
+check(
+  'et les quatre chiffres du mariage sont dessous',
+  ['LIGNES', 'LE MARIAGE', 'MIS DE CÔTÉ', 'RESTE À FINANCER'].every((mot) => siteDesInvités.includes(mot)),
+  true,
+);
+check(
+  'le programme ne s’affiche que si des horaires sont cochés',
+  [
+    siteDesInvités.includes('data-site-programme="vrai"'),
+    siteDesInvitésÀVide.includes('data-site-programme'),
+    siteDesInvités.includes('data-site-horaire="horaire-22:17"'),
+  ],
+  [true, false, true],
+);
+check(
+  'un bloc, une carte : celles qui sont allumées, et pas une de plus',
+  [
+    (siteDesInvités.match(/data-site-bloc-carte=/g) ?? []).length,
+    siteDesInvités.includes('data-site-bloc-carte="diner"'),
+  ],
+  [siteDesCoches.allumés, false],
+);
+check(
+  'le voyage est toujours là, avec le rêve écrit dessus',
+  siteDesInvités.includes('data-site-voyage="vrai"') && siteDesInvités.includes(LE_RÊVE.mot),
+  true,
+);
+check(
+  'et le ticket est sur le site, tel qu’il sort de la fente',
+  siteDesInvités.includes('data-site-ticket="vrai"') && /SM-\d\d-[A-Z0-9]{4}/.test(siteDesInvités),
+  true,
+);
+check('on peut revenir à la machine depuis le site', siteDesInvités.includes('data-action="quitter-le-site"'), true);
+check(
+  'et l’on peut voir le site avant de l’envoyer : le lien est écrit sur la page',
+  [
+    ticketVide.includes('data-action="voir-le-site"'),
+    ticketVide.includes(`href="?code=${CODE_DE_DÉMONSTRATION}&site=1"`),
+    ticketVide.includes('voir le site des invités'),
+  ],
+  [true, true, true],
+);
+check(
+  'ce lien-là porte aussi ce qui est coché — c’est le site, pas la page',
+  (() => {
+    const lien = ticketPlein.match(/data-action="voir-le-site" href="([^"]*)"/)?.[1] ?? '';
+    return lien.includes('&site=1&coches=') && decodeURIComponent(lien.replace(/\+/g, '%20')).includes('sup-caddie');
+  })(),
+  true,
+);
+check(
+  'et le partage aux invités envoie le mini-site, pas autre chose',
+  readFileSync('src/pages/LaCaisse.tsx', 'utf8').includes('${site.lien}'),
+  true,
+);
+check(
+  'le site a son pied, et rien qui mène ailleurs',
+  siteDesInvités.includes('data-site-pied="vrai"') &&
+    [...siteDesInvités.matchAll(/href="([^"]*)"/g)].every(
+      (m) => m[1]!.startsWith('#') || m[1]!.startsWith('/images/'),
+    ),
   true,
 );
 

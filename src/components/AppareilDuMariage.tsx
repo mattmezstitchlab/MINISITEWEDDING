@@ -5,6 +5,7 @@ import { LIGNES_DU_TICKET, type LigneDuTicket } from '../lib/categoriesDuTicket'
 import type { BudgetDuRêve, Rêve, Sticker } from '../lib/codeDuMariage';
 import { LE_RÊVE, OBJETS_IMPRIMÉS, ligneImprimée, partDuRêve } from '../lib/codeDuMariage';
 import { LES_HÉROS, LE_SPÉCIALISTE, type HérosDeLaLanding } from '../lib/bandesDeLAime';
+import { lienDuMiniSite } from '../lib/miniSiteDuMariage';
 import { euros } from '../lib/superMariage';
 
 /* L'APPAREIL DU MARIAGE — LE TICKET, LE BUDGET, LES STICKERS
@@ -397,8 +398,17 @@ export default function AppareilDuMariage({
                 onClick={surPartager}
                 className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-ink)] underline decoration-[color:var(--vp-line)] underline-offset-4 transition hover:decoration-[color:var(--vp-ink)]"
               >
-                partager aux invités — le lien, avec le code
+                partager aux invités — le lien du mini-site
               </button>
+              {/* **Ce que la machine a fabriqué se regarde** : le lien du site,
+                  tel qu'il partira — le code, et les lignes cochées. */}
+              <a
+                data-action="voir-le-site"
+                href={lienDuMiniSite(code, ticket.map((l) => l.id), description)}
+                className="font-mono text-[10px] uppercase tracking-[0.14em] text-[color:var(--vp-muted)] underline decoration-[color:var(--vp-line)] underline-offset-4 transition hover:text-[color:var(--vp-ink)] hover:decoration-[color:var(--vp-ink)]"
+              >
+                voir le site des invités
+              </a>
             </div>
           </div>
         </div>

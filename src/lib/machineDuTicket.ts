@@ -82,8 +82,8 @@ export interface ÉtatDeLaMachine {
   /** La demande écrite, et les mots que l'agent a entendus. */
   demande: string;
   mots: string[];
-  /** L'écran : les propositions, ou le ticket entier. */
-  écran: 'propositions' | 'ticket';
+  /** L'écran : les propositions, le ticket entier, ou le mini-site composé. */
+  écran: 'propositions' | 'ticket' | 'site';
 }
 
 /** Ce qu'un geste laisse derrière lui. */
@@ -97,7 +97,9 @@ export interface Geste {
 }
 
 /** **L'état du départ.** La machine propose la première famille, et rien d'autre. */
-export function étatInitial(options: { coches?: string[]; demande?: string; écran?: 'propositions' | 'ticket' } = {}): ÉtatDeLaMachine {
+export function étatInitial(
+  options: { coches?: string[]; demande?: string; écran?: 'propositions' | 'ticket' | 'site' } = {},
+): ÉtatDeLaMachine {
   const coches = options.coches ?? [];
   const texte = (options.demande ?? '').trim();
   const entendue = texte ? lAgentFaitPasser(texte, coches) : null;
@@ -108,7 +110,7 @@ export function étatInitial(options: { coches?: string[]; demande?: string; éc
     famille: 0,
     demande: texte,
     mots: entendue?.mots ?? [],
-    écran: options.écran === 'ticket' ? 'ticket' : 'propositions',
+    écran: options.écran === 'ticket' || options.écran === 'site' ? options.écran : 'propositions',
   };
 }
 
@@ -185,7 +187,7 @@ export function écrireLaDemande(état: ÉtatDeLaMachine, texte: string): Geste 
 
 /** **✓** — on prend ce qui est proposé. */
 export function valider(état: ÉtatDeLaMachine): Geste {
-  if (état.écran === 'ticket') {
+  if (état.écran === 'ticket' || état.écran === 'site') {
     return { état: { ...état, écran: 'propositions' }, pris: null, mot: 'retour aux propositions' };
   }
   const proposition = propositionDeLÉtat(état);
@@ -205,6 +207,9 @@ export function valider(état: ÉtatDeLaMachine): Geste {
 
 /** **✗** — on passe. Sur une famille, on passe à la famille suivante. */
 export function passer(état: ÉtatDeLaMachine): Geste {
+  if (état.écran === 'site') {
+    return { état: { ...état, écran: 'propositions' }, pris: null, mot: 'retour aux propositions' };
+  }
   if (état.écran === 'ticket') {
     return { état: { ...état, coches: [] }, pris: null, mot: 'ticket vidé' };
   }
@@ -230,6 +235,19 @@ export function basculerLeTicket(état: ÉtatDeLaMachine): Geste {
     état: { ...état, écran: ouvert ? 'propositions' : 'ticket' },
     pris: null,
     mot: ouvert ? 'retour aux propositions' : 'le ticket, entier',
+  };
+}
+
+/**
+ * **Le bouton rond du mini-site** : l'écran montre ce que la machine a composé
+ * pour les invités — les blocs allumés, et l'adresse à envoyer.
+ */
+export function basculerLeSite(état: ÉtatDeLaMachine): Geste {
+  const ouvert = état.écran === 'site';
+  return {
+    état: { ...état, écran: ouvert ? 'propositions' : 'site' },
+    pris: null,
+    mot: ouvert ? 'retour aux propositions' : 'le mini-site des invités',
   };
 }
 

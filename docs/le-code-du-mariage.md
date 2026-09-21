@@ -2,7 +2,8 @@
 
 Un mini-site de mariage se **partage** : il y a un couple, une date, un lieu, et
 un code. Le code est ce qui rend le mariage reconnaissable — il s'écrit **au
-début du ticket** et il voyage dans le lien qu'on envoie aux invités.
+début du ticket**, et il ouvre le lien qu'on envoie aux invités
+(`?code=A7K-241&site=1` : le **mini-site**, composé par la machine).
 
 **Ce n'est pas une condition d'entrée.** « Supprime le bloc avec le code, je
 l'ai même pas » : la porte qui demandait le code a été retirée le 21 septembre.
@@ -28,8 +29,10 @@ A7K-241
 
 **Ce n'est pas un mot de passe** : un code bien formé ouvre. Ce qui compte, c'est
 qu'on ne puisse pas *tomber* sur la page — il faut le lien que le couple a
-envoyé. Le couple partage donc une adresse : `https://…/?code=A7K-241`, et
-l'invité qui l'ouvre est dedans.
+envoyé. Le couple partage donc une adresse : `https://…/?code=A7K-241&site=1`, et
+l'invité qui l'ouvre est dans le mini-site de ce mariage (sans `&site=1`, la
+même adresse ouvre la page des mariés : la machine, et tout ce qu'elle sait
+faire).
 
 ## 2. Le code n'est plus une porte
 
@@ -39,9 +42,10 @@ une condition** :
 
 | Où le code vit | Ce qu'il y fait |
 | --- | --- |
-| l'adresse (`?code=A7K-241`) | c'est le lien que le couple envoie : l'invité qui l'ouvre voit le mariage de ce couple |
+| l'adresse (`?code=A7K-241`) | c'est la signature du mariage : l'invité qui l'ouvre voit ce mariage-là, pas un autre |
+| l'adresse du mini-site (`?code=A7K-241&site=1`) | **le lien que le couple envoie** : il ouvre directement le site des invités, avec ses blocs et ses lignes |
 | le début du ticket | juste sous la marque, à côté de `SUPER MARIAGE` — c'est ce qui identifie le papier |
-| le bouton « partager aux invités » | le lien recopié part avec le code dedans |
+| le bouton « partager aux invités » | le lien recopié part complet : le code, `site=1`, les lignes cochées, et le rêve s'il est décrit |
 
 Sans code dans l'adresse, la page prend **celui du mariage de démonstration**
 (calculé depuis le couple et sa date, comme les autres). Un lien avec un autre
@@ -60,7 +64,7 @@ décrit l'écran lui-même. Ce qu'on y lit, dans l'ordre :
 
 | L'écran | Ce qu'il montre |
 | --- | --- |
-| **la machine** | l'en-tête (`SUPER MARIAGE`, la caisse, l'heure), la proposition en cours (`LE JOUR J`, son compte de lignes), et **le total en gros** avec le nombre de lignes |
+| **la machine** | l'en-tête (`SUPER MARIAGE`, la caisse, l'heure), **le visuel du jour** en tête, la proposition en cours (`LE JOUR J`, son compte de lignes), et **le total en gros** avec le nombre de lignes — et, en mode site, les blocs qu'elle vient de composer et l'adresse du mini-site |
 | **l'appareil** | la catégorie en haut à gauche, le code à droite, **le rêve sur l'image**, puis le pourcentage financé, la jauge, le reste à financer et le total du mariage |
 
 Un test le tient : l'écran de l'appareil doit porter le pourcentage, le reste et
@@ -126,7 +130,41 @@ l'appareil (`data-fente-bas="vrai"`), et le papier **naît derrière elle puis
 descend** (`presse-par-le-bas`, 760 ms). On ne le voit donc jamais apparaître par
 le haut.
 
-## 8. Où c'est écrit
+## 8. Le mini-site : ce que le code ouvre
+
+Le code ne sert pas qu'à signer un papier : il ouvre **le site que les mariés
+envoient à leurs invités**. Depuis le 21 septembre 2026, la machine ne fabrique
+plus seulement un ticket — elle compose ce site.
+
+**Une seule règle : ce qui est coché est ce qui s'affiche.** La machine connaît
+neuf blocs ; trois sont toujours là, parce que sans eux il n'y a pas de mariage à
+montrer :
+
+| Le bloc | Ce qui l'allume |
+| --- | --- |
+| **LA COUVERTURE** | toujours — l'image du jour, les noms, la date, le lieu |
+| LE PROGRAMME | une ligne du rayon des horaires |
+| LES GENS | un métier (les dix rayons de métiers) |
+| LE DÎNER | un des trois menus |
+| LES PETITS PRIX | une ligne des suppléments |
+| LES BLOCS DU SITE | une ligne de `VOTRE SITE` |
+| LES DOCUMENTS | une ligne des documents |
+| **LE VOYAGE** | toujours — le rêve, sa jauge, ce qu'il reste à financer |
+| **LE TICKET** | toujours — le papier entier, ligne à ligne |
+
+`composerLeMiniSiteDeMariage(code, cochées)` rend les blocs allumés (avec leur
+compte de lignes), l'adresse courte (`?code=A7K-241&site=1`, celle qu'on lit sur
+l'écran de la machine) et **le lien complet**, celui qui part :
+`?code=A7K-241&site=1&coches=…&reve=…` — sans les lignes cochées, l'invité
+ouvrirait un site vide.
+
+Sur la machine, **la touche du milieu** ouvre cet écran (`site` → `fermer`), et
+la touche ✗ devient **partager** : le lien complet est copié tel qu'il partira.
+Sur la page, sous l'appareil, un lien discret — « voir le site des invités » —
+ouvre le mini-site avant de l'envoyer ; et le bouton « partager aux invités »
+recopie ce même lien.
+
+## 9. Où c'est écrit
 
 | Le morceau | Le fichier |
 | --- | --- |
@@ -135,14 +173,19 @@ le haut.
 | le métier, la marque, les héros | `src/lib/bandesDeLAime.ts` |
 | l'ordre de la page | `src/pages/LaCaisse.tsx` |
 | la page unique (les routes) | `src/App.tsx` — `/`, `/ticket`, `/caisse`, et tout le reste renvoie à `/` |
-| les preuves | `tests/ui.test.ts` — « le tour : le code mariage, le rêve, les objets, les stickers, le header » |
+| le mini-site composé, ses blocs, ses adresses | `src/lib/miniSiteDuMariage.ts` |
+| la machine (l'écran, le visuel, la fente, les trois touches) | `src/components/MachineDeRipple.tsx` |
+| le site des invités, tel qu'il s'ouvre | `src/components/MiniSiteDuMariage.tsx` |
+| les preuves | `tests/ui.test.ts` — « le tour : le code mariage, le rêve, les objets, les stickers, le header » et « la machine à mini-sites » |
 
-## 9. Aller voir
+## 10. Aller voir
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |
 | `/` | le site, tout de suite — une seule page (code de démonstration) |
 | `/?code=A7K-241` | le même site, avec le code d'un autre mariage sur le ticket |
+| `/?code=A7K-241&site=1` | **le mini-site des invités** — ce que la machine a fabriqué |
+| `/?code=A7K-241&site=1&coches=…&reve=…` | le mini-site complet, tel qu'il part dans le lien |
 | `/?coches=…` | le site avec un ticket déjà rempli |
 | `/?reve=…` | le site avec le rêve, dans les mots des mariés |
 | `/?face=recto` | la page d'avant de l'accueil |

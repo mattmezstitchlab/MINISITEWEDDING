@@ -6,6 +6,7 @@ import {
   demandeDeLÉtat,
   étatInitial,
   écrireLaDemande,
+  basculerLeSite,
   ouvrirLaFamille,
   passer,
   propositionDeLÉtat,
@@ -45,6 +46,7 @@ import CadranDuMagazine from '../components/CadranDuMagazine';
 import MachineDeRipple, { type SortieDeLaFente } from '../components/MachineDeRipple';
 import TicketCaisse from '../components/TicketCaisse';
 import AppareilDuMariage from '../components/AppareilDuMariage';
+import MiniSiteDuMariage from '../components/MiniSiteDuMariage';
 import {
   BarreDeLAime,
   LePied,
@@ -56,11 +58,15 @@ import {
   LesTroisFamilles,
 } from '../components/LesBandesDeLAime';
 import { LE_SPÉCIALISTE } from '../lib/bandesDeLAime';
+import { composerLeMiniSiteDeMariage } from '../lib/miniSiteDuMariage';
 
 /* LE SPÉCIALISTE DU TICKET DE CAISSE — LA PAGE D'ENTRÉE
  *
- * On arrive avec **un code mariage** (`?code=A7K-241`) : c'est la porte. Derrière
- * la porte, la page se lit par bandes, dans cet ordre :
+ * On arrive **directement** : plus de porte, plus rien à saisir (le 21 septembre,
+ * « supprime le bloc avec le code, je l'ai même pas »). `?code=A7K-241` ne
+ * demande rien — c'est la signature du mariage, celle qui part dans le lien.
+ *
+ * La page se lit par bandes, dans cet ordre :
  *
  * 1. **la machine de Ripple**, seule sur un fond blanc — l'entrée du produit :
  *    elle propose, on valide, le papier sort de la fente ;
@@ -77,8 +83,15 @@ import { LE_SPÉCIALISTE } from '../lib/bandesDeLAime';
  * se payer le voyage de rêve.** Le ticket dit le prix du mariage, et ce qui
  * reste pour Joshua Tree.
  *
+ * **Et la machine fabrique un mini-site** : ce qui est coché est ce qui
+ * s'affiche. La touche du milieu montre les blocs composés, leur compte, et
+ * l'adresse ; ✗ copie le lien complet. `?code=…&site=1&coches=…&reve=…` ouvre
+ * **le site que les invités reçoivent** (`MiniSiteDuMariage`) : la même page,
+ * vue de l'autre côté.
+ *
  * L'adresse porte tout : `?code=` le mariage, `?coches=` le caddie,
- * `?demande=` la demande faite à l'agent, `?ecran=ticket` l'écran de la machine.
+ * `?demande=` la demande faite à l'agent, `?ecran=ticket|site` l'écran de la
+ * machine, `?site=1` le site des invités, `?reve=` le rêve des mariés.
  */
 
 /** Le caddie de l'adresse : ce qui est coché, dans l'ordre du catalogue. */
@@ -114,7 +127,7 @@ export default function LaCaisse() {
     étatInitial({
       coches: cochesDeLAdresse(params.get('coches')),
       demande: params.get('demande') ?? '',
-      écran: params.get('ecran') === 'ticket' ? 'ticket' : 'propositions',
+      écran: params.get('ecran') === 'ticket' ? 'ticket' : params.get('ecran') === 'site' ? 'site' : 'propositions',
     }),
   );
 
@@ -142,6 +155,9 @@ export default function LaCaisse() {
   const compte = compteParCatégorie(coches);
   const prises = compteParFamille(coches);
   const budget = budgetDuRêve(coches, rêve);
+  /** **Ce que la machine fabrique** : le mini-site des invités, composé du ticket. */
+  const site = useMemo(() => composerLeMiniSiteDeMariage(code, coches, description), [code, coches, description]);
+  const programme = useMemo(() => lignesCochées.filter((l) => l.catégorie === 'rayon-horaires'), [lignesCochées]);
   const comptesDesPortefeuilles = useMemo(() => compteDesPortefeuilles(coches), [coches]);
   const portefeuilles = PORTEFEUILLES.map((p) => ({
     id: p.id,
@@ -156,8 +172,8 @@ export default function LaCaisse() {
     else suite.delete('coches');
     if (état.demande) suite.set('demande', état.demande);
     else suite.delete('demande');
-    if (état.écran === 'ticket') suite.set('ecran', 'ticket');
-    else suite.delete('ecran');
+    if (état.écran === 'propositions') suite.delete('ecran');
+    else suite.set('ecran', état.écran);
     if (rêve.mot !== LE_RÊVE.mot) suite.set('reve', description);
     else suite.delete('reve');
     setParams(suite, { replace: true });
@@ -275,6 +291,32 @@ export default function LaCaisse() {
     unMot(toutes ? 'rayon vidé' : 'rayon pris en entier');
   };
 
+  /** **Le bouton rond du milieu** : l'écran passe au mini-site, et le papier suit. */
+  const ouvrirLeSite = () => {
+    geste(basculerLeSite(état));
+    if (état.écran !== 'site') {
+      passage.current += 1;
+      const cle = `site-${passage.current}`;
+      setPapier({
+        cle,
+        sortie: {
+          label: 'LE MINI-SITE',
+          prix: `${site.allumés} BLOCS`,
+          sous: site.adresse,
+        },
+      });
+      window.setTimeout(() => setPapier((p) => (p && p.cle === cle ? null : p)), 2600);
+    }
+  };
+
+  /** **✗ en mode site : on partage.** Le lien part complet : le code, le site,
+   *  et tout ce qui est coché — l'invité ouvre le mariage tel qu'il est. */
+  const partagerLeMiniSite = () => {
+    const lien = `${window.location.origin}${window.location.pathname}${site.lien}`;
+    void navigator.clipboard?.writeText(lien);
+    unAvis(`le mini-site est copié — ${site.allumés} blocs, ${coches.length} lignes`);
+  };
+
   const ouvrirLeTicketDeLaMachine = () => {
     geste(basculerLeTicket(état));
     document.getElementById('la-machine')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -283,6 +325,50 @@ export default function LaCaisse() {
   const papierDuCouple = portefeuillesDesCoches(coches).find((p) => p.portefeuille === 'couple')
     ?? portefeuillesDesCoches(coches)[0]
     ?? null;
+
+  /* ═════════════════════════ LE MINI-SITE, TEL QU'ON L'ENVOIE ═════════════════════════ */
+
+  if (params.get('site') === '1') {
+    return (
+      <MiniSiteDuMariage
+        code={code}
+        avatar={{
+          noms: TICKET_COUPLE.noms,
+          dateLabel: formatDateLong(TICKET_COUPLE.date),
+          lieu: TICKET_COUPLE.venue,
+          convives: TICKET_COUPLE.convives,
+        }}
+        visuel={visuel ?? couverture}
+        site={site}
+        rêve={rêve}
+        budget={budget}
+        programme={programme}
+        ticket={{
+          variante: papierDuCouple?.papier ?? 'couple',
+          magasin: MAGASIN,
+          couple: TICKET_COUPLE,
+          numero: papierDuCouple?.numero ?? 'SM-00-0000',
+          dateLabel: formatDateLong(TICKET_COUPLE.date),
+          heureLabel: `${String(heure).padStart(2, '0')}:00`,
+          paye: coches.length > 0,
+          lignes: papierDuCouple?.papierLignes ?? [],
+          total: {
+            sousTotal: totaux.sousTotal,
+            remise: totaux.remise,
+            tva: totaux.tva,
+            total: totaux.total,
+            articles: totaux.articles,
+          },
+        }}
+        surQuitter={() => {
+          const suite = new URLSearchParams(params);
+          suite.delete('site');
+          setParams(suite, { replace: true });
+          window.scrollTo(0, 0);
+        }}
+      />
+    );
+  }
 
   /* ═════════════════════════ LA PAGE ═════════════════════════ */
 
@@ -314,6 +400,8 @@ export default function LaCaisse() {
             lignes={coches.length}
             total={totaux.total}
             écran={état.écran}
+            visuel={visuel ?? couverture ?? ''}
+            site={site}
             proposition={propositionDeLÉtat(état)}
             demande={demandeDeLÉtat(état)}
             ticket={lignesCochées}
@@ -328,6 +416,8 @@ export default function LaCaisse() {
             onObjet={poserUnObjet}
             onDemande={(texte) => geste(écrireLaDemande(état, texte))}
             onRetirer={(id) => geste(retirer(état, id))}
+            onSite={ouvrirLeSite}
+            onPartager={partagerLeMiniSite}
             onEmporter={() => {
               const adresse = `${window.location.origin}${window.location.pathname}?code=${code}&coches=${coches.join(',')}`;
               void navigator.clipboard?.writeText(adresse);
@@ -429,11 +519,10 @@ export default function LaCaisse() {
         description={description}
         surDécrire={setDescription}
         surPartager={() => {
-          const adresse = `${window.location.origin}${window.location.pathname}?code=${code}${
-            coches.length ? `&coches=${coches.join(',')}` : ''
-          }${rêve.mot !== LE_RÊVE.mot ? `&reve=${encodeURIComponent(description)}` : ''}`;
-          void navigator.clipboard?.writeText(adresse);
-          unAvis('le lien du mariage est copié — envoyez-le aux invités');
+          // **C'est le mini-site qui part**, pas la page : le lien ouvre
+          // directement ce que les mariés ont composé, code compris.
+          void navigator.clipboard?.writeText(`${window.location.origin}${window.location.pathname}${site.lien}`);
+          unAvis('le lien du mini-site est copié — envoyez-le aux invités');
         }}
         budget={budget}
         cible={cible}

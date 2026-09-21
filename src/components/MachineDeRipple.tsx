@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Check, CornerDownLeft, X } from 'lucide-react';
+import { AppWindow, Check, CornerDownLeft, X } from 'lucide-react';
 import { OBJETS_DE_LA_FABRIQUE, pictoDuRipple } from '../lib/ripple';
 import { GROUPES_DU_TICKET, type CatégorieDuTicket, type LigneDuTicket } from '../lib/categoriesDuTicket';
 import { motDeLaFamille } from '../lib/agentDuTicket';
 import type { DemandeEntendue, Proposition } from '../lib/machineDuTicket';
 import { motDuPortefeuille } from '../lib/portefeuille';
 import { euros } from '../lib/superMariage';
+import type { MiniSite } from '../lib/miniSiteDuMariage';
 
 /* LA MACHINE — L'ÉCRAN, LA FENTE, LES BOUTONS RONDS, ET LE CHAMP
  *
@@ -30,10 +31,17 @@ import { euros } from '../lib/superMariage';
  *   (LE JOUR J)(VOTRE SITE)(LES DOCUMENTS)      un mot par ligne, dans le cercle
  *   ┌────────────────────────────────┐  (→)     le champ — on dit ce qu'on veut
  *   └────────────────────────────────┘
+ *   (site)(✗)(✓)                                 le milieu montre le mini-site
  * ```
  *
- * Le bouton rond du **reçu** ouvre le ticket entier sur l'écran : les lignes,
- * les marques posées, les portefeuilles — et l'on retire une ligne d'un clic.
+ * Trois touches rondes, et chacune fait quelque chose : **la touche du milieu**
+ * ouvre ce que la machine fabrique — **le mini-site des invités** (`site` →
+ * `fermer`), et, dans ce mode, ✗ devient **partager** (le lien complet est
+ * copié) ; ✓ ouvre le ticket entier, où l'on retire une ligne d'un clic.
+ *
+ * **Elle montre d'abord le jour** : en tête de l'écran, le visuel du jour, sous
+ * la ligne de la caisse. C'est ce qui a été validé — « la machine avec le
+ * visuel, c'est mieux ».
  */
 
 export interface SortieDeLaFente {
@@ -51,8 +59,12 @@ export interface MachineDeRippleProps {
   /** Ce qui est pris, et ce que ça coûte. */
   lignes: number;
   total: number;
-  /** L'écran : les propositions, ou le ticket entier. */
-  écran: 'propositions' | 'ticket';
+  /** L'écran : les propositions, le ticket entier, ou le mini-site composé. */
+  écran: 'propositions' | 'ticket' | 'site';
+  /** **Le visuel de l'écran** : l'image du jour, sous la ligne de la caisse. */
+  visuel: string;
+  /** **Le mini-site que la machine vient de composer** — ce qu'elle fabrique. */
+  site: MiniSite;
   /** Ce que la machine propose maintenant — il y a toujours quelque chose. */
   proposition: Proposition;
   /** La demande entendue, quand il y en a une. */
@@ -77,6 +89,10 @@ export interface MachineDeRippleProps {
   onDemande: (texte: string) => void;
   onRetirer: (id: string) => void;
   onEmporter: () => void;
+  /** Le bouton rond du milieu : l'écran passe au mini-site, et revient. */
+  onSite: () => void;
+  /** En mode site, ✗ partage : le lien du mini-site est copié. */
+  onPartager: () => void;
 }
 
 /** Le prix d'une ligne, écrit comme sur le papier — jamais autrement. */
@@ -89,6 +105,8 @@ export default function MachineDeRipple({
   lignes,
   total,
   écran,
+  visuel,
+  site,
   proposition,
   demande,
   ticket,
@@ -104,14 +122,18 @@ export default function MachineDeRipple({
   onDemande,
   onRetirer,
   onEmporter,
+  onSite,
+  onPartager,
 }: MachineDeRippleProps) {
   /** Ce qui est en train de s'écrire dans le champ : ça n'appartient qu'à l'écran. */
   const [texte, setTexte] = useState('');
 
   const auTicket = écran === 'ticket';
-  const motValider = auTicket ? 'retour' : 'valider';
-  const motPasser = auTicket ? 'vider' : 'passer';
-  const corps = auTicket ? 'ticket' : proposition.genre;
+  const auSite = écran === 'site';
+  const motValider = auTicket || auSite ? 'retour' : 'valider';
+  const motPasser = auSite ? 'partager' : auTicket ? 'vider' : 'passer';
+  const motSite = auSite ? 'fermer' : 'site';
+  const corps = auSite ? 'site' : auTicket ? 'ticket' : proposition.genre;
 
   const envoyer = () => {
     const propre = texte.trim();
@@ -129,12 +151,26 @@ export default function MachineDeRipple({
         {/* ————————————————— LE PETIT ÉCRAN ————————————————— */}
         <div
           data-ecran="ripple"
-          className="flex h-[196px] flex-col rounded-[14px] border border-white/10 bg-[#06120C] px-3 py-2.5 font-mono text-[10.5px] leading-relaxed text-[#7DE2B0] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]"
+          className="flex h-[244px] flex-col rounded-[14px] border border-white/10 bg-[#06120C] px-3 py-2.5 font-mono text-[10.5px] leading-relaxed text-[#7DE2B0] shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]"
         >
-          <span className="flex items-baseline justify-between gap-3 text-[#7DE2B0]/60">
-            <span className="uppercase tracking-[0.18em]">SUPER MARIAGE</span>
-            <span className="uppercase tracking-[0.16em]">
-              CAISSE 3 · {String(heure).padStart(2, '0')}:00
+          {/* **Le visuel de l'écran** : l'image du jour, sous la ligne de la caisse. */}
+          <span data-écran-photo="vrai" className="relative mb-2 block h-[54px] shrink-0 overflow-hidden rounded-[7px]">
+            <img
+              src={visuel}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ filter: 'brightness(0.66) saturate(0.92)' }}
+            />
+            <span
+              aria-hidden="true"
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(to top, rgba(6,18,12,0.72), rgba(6,18,12,0.16))' }}
+            />
+            <span className="absolute inset-x-2 bottom-1 flex items-baseline justify-between gap-3 text-[8.5px] uppercase tracking-[0.16em] text-[#9BF3C6]/90">
+              <span>SUPER MARIAGE</span>
+              <span>
+                CAISSE 3 · {String(heure).padStart(2, '0')}:00
+              </span>
             </span>
           </span>
 
@@ -198,6 +234,38 @@ export default function MachineDeRipple({
                     entendu : « {proposition.motif} »
                   </span>
                 )}
+              </span>
+            )}
+
+            {corps === 'site' && (
+              <span className="flex h-full flex-col">
+                <span className="flex items-baseline justify-between gap-2 text-[9.5px] uppercase tracking-[0.14em] text-[#7DE2B0]/55">
+                  <span>LE MINI-SITE DES INVITÉS</span>
+                  <span data-site-blocs={site.allumés} className="shrink-0 tabular-nums">
+                    {site.allumés} / {site.total} BLOCS
+                  </span>
+                </span>
+                <span
+                  data-site-adresse={site.adresse}
+                  className="mt-1 block truncate text-[11.5px] text-[#9BF3C6]"
+                >
+                  {site.adresse}
+                </span>
+                <span data-site-liste="vrai" className="mt-1 min-h-0 flex-1 overflow-y-auto pr-1">
+                  {site.blocs.map((bloc) => (
+                    <span
+                      key={bloc.id}
+                      data-site-bloc={bloc.id}
+                      data-site-compte={bloc.compte}
+                      className="flex items-baseline justify-between gap-2 py-[1px] text-[10.5px] text-[#9BF3C6]/85"
+                    >
+                      <span className="truncate">{bloc.mot}</span>
+                      <span className="shrink-0 tabular-nums text-[#7DE2B0]/55">
+                        {bloc.compte > 0 ? bloc.compte : '—'}
+                      </span>
+                    </span>
+                  ))}
+                </span>
               </span>
             )}
 
@@ -280,14 +348,28 @@ export default function MachineDeRipple({
           </span>
         </div>
 
-        {/* ——————————————— LES DEUX TOUCHES RONDES ——————————————— */}
-        <div data-touches="vrai" className="mt-2.5 flex items-center justify-center gap-5">
+        {/* ——————————————— LES TROIS TOUCHES RONDES ——————————————— */}
+        <div data-touches="vrai" className="mt-2.5 flex items-center justify-center gap-4">
+          <button
+            type="button"
+            data-touche="site"
+            data-touche-mot={motSite}
+            onClick={onSite}
+            className={`flex h-[52px] w-[52px] flex-col items-center justify-center gap-0.5 rounded-full border transition ${
+              auSite
+                ? 'border-[#00FF88]/60 bg-[#00FF88] text-black'
+                : 'border-white/15 text-white/55 hover:border-white/50 hover:text-white'
+            }`}
+          >
+            <AppWindow size={14} />
+            <span className="font-mono text-[7.5px] uppercase tracking-[0.08em]">{motSite}</span>
+          </button>
           <button
             type="button"
             data-touche="passer"
             data-touche-mot={motPasser}
             disabled={auTicket && lignes === 0}
-            onClick={onPasser}
+            onClick={auSite ? onPartager : onPasser}
             className="flex h-[52px] w-[52px] flex-col items-center justify-center gap-0.5 rounded-full border border-white/15 text-white/55 transition hover:border-white/50 hover:text-white disabled:opacity-25 disabled:hover:border-white/15 disabled:hover:text-white/55"
           >
             <X size={14} />

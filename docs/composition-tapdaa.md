@@ -33,6 +33,8 @@ Trois principes plus fins tiennent l'ensemble :
 | Le principe | Chez nous | Où |
 | --- | --- | --- |
 | la barre collante | marque `AIME`, quatre portes, **la cible** (la part du rêve déjà financée), **l'état du ticket** (le compte, le total), le code du mariage, pastille d'encre « Ouvrir le ticket » ; elle **se resserre quand on descend**, et sur un téléphone les portes glissent sous la marque, sans menu à ouvrir | `BarreDeLAime` |
+| une **machine** qui fabrique quelque chose | la machine de Ripple : son écran, **le visuel du jour en tête**, trois touches rondes (le mini-site, on passe, on valide), la fente, et le papier qui sort — **ce qu'elle produit part chez les invités** | `MachineDeRipple` |
+| une bande = une idée, jusqu'au bout | **le mini-site des invités** reprend la même charpente : la couverture plein écran, les chiffres, les blocs en **trois colonnes égales**, une bande pour le voyage, une pour le ticket | `MiniSiteDuMariage` |
 | le titre unique et sa phrase | « Tout le mariage, sur un seul ticket. » | `LeTitre` |
 | la suite numérotée | **quatre gestes** 01→04 : on coche, le ticket calcule, il sort de la fente, chacun a son papier | `LesGestes` |
 | trois colonnes égales | **les trois familles** : LE JOUR J (48), VOTRE SITE (20), LES DOCUMENTS (31), chacune avec sa porte | `LesTroisFamilles` |
@@ -100,13 +102,34 @@ les portefeuilles    là où le ticket arrive
 l'addition           les trois menus, au même poids
 questions            cinq réponses
 le pied              la marque, les portes
+
+et au bout de la chaîne, à la même adresse : le mini-site des invités
+                     `?code=A7K-241&site=1` — ce que la machine a composé
 ```
 
 **Deux règles tiennent cet ordre**, et le test « l'ordre des bandes » les
 vérifie : la barre passe avant tout, et **le site ne commence qu'après la
 machine** — le premier écran ne contient qu'elle.
 
-## 6. Une seule page
+## 6. La machine fabrique un mini-site
+
+Depuis le 21 septembre 2026, la machine ne s'arrête pas au ticket : **elle
+compose le site que les mariés envoient à leurs invités** (`?code=A7K-241&site=1`),
+et l'écran du milieu montre ce qu'elle vient de fabriquer — les blocs allumés, et
+l'adresse.
+
+**Une seule règle : ce qui est coché est ce qui s'affiche.** Neuf blocs, dont
+trois toujours là (la couverture, le voyage, le ticket) ; les six autres
+s'allument avec les lignes qui les nourrissent. Le site lui-même applique la
+charpente de cette page : une couverture qui prend l'écran, les chiffres du
+mariage, des blocs en trois colonnes égales, une bande pour le voyage, une pour le
+ticket — **une bande = une idée**, et rien qui parle du produit.
+
+C'est le lien qui part : `?code=A7K-241&site=1&coches=…&reve=…`. Le code ouvre,
+les lignes cochées remplissent, le rêve donne la cible. Sans elles, l'invité
+ouvrirait un site vide — le test le refuse.
+
+## 7. Une seule page
 
 Depuis le 21 septembre 2026, le site **n'a plus qu'une adresse : la page
 d'accueil**. Le magazine, le shop, les métiers, le mariage, le ripple, l'atelier,
@@ -122,11 +145,13 @@ Ce qui a changé sur la page pour que ça tienne debout :
 - les **fichiers** des anciennes pages sont restés dans `src/pages/` : rien n'a
   été détruit, et une ligne de route suffit à en remonter une.
 
-Trois vérifications tiennent ça : aucun lien ne quitte la page, chaque ancre
-descend sur une bande qui existe, et la table des routes ne contient plus que
-`/`, `/ticket`, `/caisse` et le renvoi de tout le reste.
+Trois vérifications tiennent ça : **aucun lien ne quitte la page** (le seul lien
+qui n'est pas une ancre, c'est celui du mini-site — `?code=…&site=1`, la même
+page vue par les invités), chaque ancre descend sur une bande qui existe, et la
+table des routes ne contient plus que `/`, `/ticket`, `/caisse` et le renvoi de
+tout le reste.
 
-## 7. Aller voir
+## 8. Aller voir
 
 | Adresse | Ce qu'on y voit |
 | --- | --- |
@@ -136,14 +161,17 @@ descend sur une bande qui existe, et la table des routes ne contient plus que
 | `/#on-coche` | les 17 catégories et leurs 99 lignes |
 | `/?face=recto` | la page d'avant, telle quelle — le seul endroit où elle vit encore |
 | `/?code=A7K-241` | la même page, avec le code d'un autre mariage sur le ticket |
+| `/?code=A7K-241&site=1` | **le mini-site des invités** — ce que la machine fabrique ; `&coches=…&reve=…` le remplit |
 
-## 8. Ce que la référence ne donne pas, et qu'on garde à nous
+## 9. Ce que la référence ne donne pas, et qu'on garde à nous
 
 La composition est une **charpente**, pas un produit. Ce qui reste proprement
 AIME, et que la référence n'a pas :
 
-- **la machine** : un écran, deux touches, une fente — et l'agent qui fait
-  passer les lignes une par une ;
+- **la machine** : un écran, **le visuel du jour dedans**, trois touches, une
+  fente — et l'agent qui fait passer les lignes une par une ;
+- **le mini-site** : ce que la machine compose, bloc par bloc, et que le couple
+  envoie — le ticket montré aux invités, chiffré et partagé ;
 - **le ticket** : le seul objet que le couple, l'invité, le DJ et le métier
   tiennent en main, et le seul endroit qui calcule ;
 - **les portefeuilles** : cinq papiers, cinq adresses, le lien qui est le reçu ;
