@@ -484,6 +484,28 @@ de la nuit en musique, et le code — sous un titre sérif immense, posé
 légendés, et une **pastille unique** est collée en bas à droite : elle partage le
 mini-site.
 
-Chaque papier **ouvre ce qu'il annonce** : le reçu mène au ticket, le polaroïd au
-visuel du jour, la carte postale au voyage. Le détail de la référence (et de ce
+**Un clic fait ce qu'il dit** : chaque pièce **s'ouvre en grand** (une feuille,
+sur le noir), et c'est **là** qu'on propose d'aller voir ce qu'elle annonce — le
+reçu propose le site, la carte postale le voyage, le polaroïd le visuel du jour.
+Aucun clic ne fait sauter la page ailleurs. Le détail de la référence (et de ce
 qui n'a **pas** été copié) est dans **`docs/l-archive-du-mariage.md`**.
+
+## 9. Les univers de ticket, et l'atelier (21 septembre 2026)
+
+> « Le ticket a plein de détails qui n'ont rien à voir avec le mariage… mais
+> c'est ça qui est intéressant : on pourrait avoir une page ticket pour plein
+> d'autres univers. »
+
+**Le ticket n'est pas un objet de mariage : c'est un objet de métier.** Dix
+univers — mini-site, photos, vidéos, repas, enfants, DJ, RSVP, témoins, délires,
+devis — chacun avec ses lignes, son geste (`PRENDRE`, `PRÉPARER`, `AJOUTER`…) et
+ses yeux. Et **l'atelier** : on choisit l'univers, on coche les lignes, on dit
+qui le voit et comment il s'appelle — le lien s'écrit tout seul
+(`?ticket=photos&lignes=…&qui=…&nom=…`).
+
+À côté des réglages, **un iPhone posé penché** : le ticket défile dans son
+écran, on clique les lignes (elles passent au fluo), et l'on bascule sur
+`LE SITE` — le site apparaît alors **dans le même écran**. Un seul geste en
+sort : « voir le site en grand ».
+
+Tout est dans **`docs/les-univers-de-ticket.md`**.

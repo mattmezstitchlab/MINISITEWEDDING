@@ -1,4 +1,5 @@
-import { Stamp } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Stamp, X } from 'lucide-react';
 import { pictoDuRipple } from '../lib/ripple';
 import { marqueDuTampon } from '../lib/marquesDuTicket';
 import { MOMENTS_DE_LA_NUIT, papiersDeLaCouverture, type PapierÉtalé } from '../lib/archiveDuMariage';
@@ -39,21 +40,28 @@ export interface LaCouvertureArchiveProps {
   total: string;
   /** Descendre : le premier geste de la page. */
   surDescendre: () => void;
+  /** **Ouvrir pour de vrai** ce qu'une pièce annonce (`site`, ou une bande). */
+  surOuvrir: (cible: string) => void;
 }
 
-export default function LaCouvertureArchive({
-  code,
-  dateLabel,
-  visuelDuJour,
+/** **Un papier de l'archive**, quel qu'il soit : sa matière, son mot, sa place.
+ *  Il se clique — et il s'ouvre en grand (voir la feuille, plus bas). */
+function Papier({
+  papier,
   lignes,
   total,
-  surDescendre,
-}: LaCouvertureArchiveProps) {
-  const papiers = papiersDeLaCouverture(visuelDuJour, code);
+  code,
+  dateLabel,
+  surOuvrir,
+}: {
+  papier: PapierÉtalé;
+  lignes: number;
+  total: string;
+  code: string;
+  dateLabel: string;
+  surOuvrir: (papier: PapierÉtalé) => void;
+}) {
   const Reçu = pictoDuRipple('recu').Icone;
-
-  /** Un papier, quel qu'il soit : sa matière, son mot, et sa place. */
-  const Papier = ({ papier }: { papier: PapierÉtalé }) => {
     const commun = {
       'data-papier-étalé': papier.id,
       'data-papier-genre': papier.genre,
@@ -156,19 +164,36 @@ export default function LaCouvertureArchive({
               </span>
             </span>
           );
-      }
-    })();
-
-    if (papier.vers) {
-      return (
-        <a {...commun} href={papier.vers} aria-label={`${papier.mot} — ${papier.sous ?? ''}`}>
-          {dedans}
-        </a>
-      );
     }
-    return <span {...commun}>{dedans}</span>;
-  };
+  })();
 
+  return (
+    <button
+      {...commun}
+      type="button"
+      aria-label={`${papier.mot} — ${papier.sous ?? ''}`}
+      onClick={() => surOuvrir(papier)}
+      className={`${commun.className} cursor-pointer text-left`}
+    >
+      {dedans}
+    </button>
+  );
+}
+
+
+export default function LaCouvertureArchive({
+  code,
+  dateLabel,
+  visuelDuJour,
+  lignes,
+  total,
+  surDescendre,
+  surOuvrir,
+}: LaCouvertureArchiveProps) {
+  const papiers = papiersDeLaCouverture(visuelDuJour, code);
+  /** **La pièce ouverte en grand.** Le clic ouvre le papier, jamais ailleurs :
+   *  « les photos en haut, en cliquant on descend, ça perturbe ». */
+  const [ouverte, setOuverte] = useState<PapierÉtalé | null>(null);
   const noteObjets = papiers.find((p) => p.genre === 'note');
 
   return (
@@ -194,7 +219,15 @@ export default function LaCouvertureArchive({
       {/* ——————————————— LE PAPIER ÉTALÉ ——————————————— */}
       <div data-collage="vrai" className="vp-collage relative z-10 mt-8 sm:mt-0 sm:h-[74svh]">
         {papiers.map((papier) => (
-          <Papier key={papier.id} papier={papier} />
+          <Papier
+            key={papier.id}
+            papier={papier}
+            lignes={lignes}
+            total={total}
+            code={code}
+            dateLabel={dateLabel}
+            surOuvrir={setOuverte}
+          />
         ))}
       </div>
 
@@ -220,6 +253,59 @@ export default function LaCouvertureArchive({
           ↓ les décors
         </button>
       </div>
+
+      {/* ——————————————— LA PIÈCE OUVERTE EN GRAND ———————————————
+          On clique un papier, **il s'ouvre** — et c'est seulement là, sur la
+          pièce, qu'on propose d'aller voir ce qu'elle annonce. Aucun clic ne
+          fait sauter la page ailleurs. */}
+      {ouverte && (
+        <div
+          data-archive-feuille="vrai"
+          data-archive-feuille-piece={ouverte.id}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+        >
+          <div className="relative w-full max-w-[420px]">
+            <button
+              type="button"
+              data-action="fermer-la-pièce"
+              onClick={() => setOuverte(null)}
+              aria-label="fermer la pièce"
+              className="absolute -right-1 -top-9 flex h-7 w-7 items-center justify-center rounded-full border border-white/25 text-white/70 transition hover:border-white hover:text-white"
+            >
+              <X size={13} />
+            </button>
+            <Papier
+              papier={ouverte}
+              lignes={lignes}
+              total={total}
+              code={code}
+              dateLabel={dateLabel}
+              surOuvrir={() => setOuverte(null)}
+            />
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/60">
+                {ouverte.mot}
+                {ouverte.sous ? ` · ${ouverte.sous}` : ''}
+              </p>
+              {ouverte.ouvre && (
+                <button
+                  type="button"
+                  data-archive-feuille-ouvre={ouverte.ouvre.cible}
+                  onClick={() => {
+                    const cible = ouverte.ouvre!.cible;
+                    setOuverte(null);
+                    surOuvrir(cible);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[color:var(--vp-ink)] transition hover:brightness-95"
+                >
+                  {ouverte.ouvre.mot}
+                  <ArrowRight size={12} />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Ce que le sticker dit vraiment : la marque du tampon, sur le noir. */}
       <p data-archive-marque="vrai" className="sr-only">

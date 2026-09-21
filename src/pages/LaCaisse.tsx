@@ -36,6 +36,8 @@ import { formatDateLong } from '../lib/format';
 import CadranDuMagazine from '../components/CadranDuMagazine';
 import LeTicketPleinEcran from '../components/LeTicketPleinEcran';
 import LaCouvertureArchive from '../components/LaCouvertureArchive';
+import LAtelierDuTicket from '../components/LAtelierDuTicket';
+import { universParId } from '../lib/universDuTicket';
 import { marqueDuTampon } from '../lib/marquesDuTicket';
 import { type SortieDeLaFente } from '../components/MachineDeRipple';
 import TicketCaisse from '../components/TicketCaisse';
@@ -128,6 +130,15 @@ export default function LaCaisse() {
    *  comme le caddie : ce qu'on partage aux invités, c'est le mariage entier. */
   const [description, setDescription] = useState(() => params.get('reve') ?? '');
   const [stickers, setStickers] = useState<Sticker[]>([]);
+  /** **L'atelier du ticket** : l'univers, ses lignes, qui le voit, son nom.
+   *  N'importe qui compose un ticket — et le lien se compose tout seul. */
+  const [universDuTicket, setUniversDuTicket] = useState(() => universParId(params.get('ticket') ?? '').id);
+  const [lignesCochéesDUnivers, setLignesCochéesDUnivers] = useState<string[]>(() => {
+    const demandées = (params.get('lignes') ?? '').split(',').map((l) => l.trim()).filter(Boolean);
+    return universParId(params.get('ticket') ?? '').lignes.filter((l) => demandées.includes(l.id)).map((l) => l.id);
+  });
+  const [quiLeVoit, setQuiLeVoit] = useState(() => params.get('qui') ?? '');
+  const [nomDuTicket, setNomDuTicket] = useState(() => params.get('nom') ?? '');
   const [heure] = useState(() => Math.floor(heureDeLaCapsule()));
   const passage = useRef(0);
   const rangSticker = useRef(0);
@@ -160,10 +171,20 @@ export default function LaCaisse() {
     else suite.delete('demande');
     if (rêve.mot !== LE_RÊVE.mot) suite.set('reve', description);
     else suite.delete('reve');
+    /* **L'atelier du ticket** : ce que chacun a composé. Le premier univers ne
+       s'écrit pas — c'est celui par défaut. */
+    if (universDuTicket !== universParId('').id) suite.set('ticket', universDuTicket);
+    else suite.delete('ticket');
+    if (lignesCochéesDUnivers.length) suite.set('lignes', lignesCochéesDUnivers.join(','));
+    else suite.delete('lignes');
+    if (quiLeVoit) suite.set('qui', quiLeVoit);
+    else suite.delete('qui');
+    if (nomDuTicket.trim()) suite.set('nom', nomDuTicket.trim());
+    else suite.delete('nom');
     setParams(suite, { replace: true });
     // L'adresse est la sortie, jamais l'entrée : on ne suit que ce qu'on coche.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coches, état.demande, rêve.mot, description]);
+  }, [coches, état.demande, rêve.mot, description, universDuTicket, lignesCochéesDUnivers, quiLeVoit, nomDuTicket]);
 
   /* ——————————————— LA LUMIÈRE, LE MAGAZINE, LE VISUEL ——————————————— */
 
@@ -302,6 +323,26 @@ export default function LaCaisse() {
   };
 
   /** **✓ sur le pupitre** : le papier du ticket entier, à l'écran. */
+  /* —————————————— L'ATELIER : ON CHOISIT, DONC ON COMPOSE —————————————— */
+
+  /** **Changer d'univers, c'est changer de ticket** : les lignes d'un autre
+   *  univers ne veulent rien dire ici, on repart de son papier. */
+  const choisirLUnivers = (id: string) => {
+    setUniversDuTicket(universParId(id).id);
+    setLignesCochéesDUnivers([]);
+    unMot(`ticket ${universParId(id).mot} — ${universParId(id).lignes.length} lignes`);
+  };
+
+  /** Une ligne de l'atelier, ou du téléphone : **elle se coche, et c'est tout.** */
+  const cocherLaLigneDUnivers = (id: string) => {
+    const déjàPrise = lignesCochéesDUnivers.includes(id);
+    setLignesCochéesDUnivers(
+      déjàPrise ? lignesCochéesDUnivers.filter((l) => l !== id) : [...lignesCochéesDUnivers, id],
+    );
+    tirerUnSticker(universParId(universDuTicket).mot);
+    unMot(déjàPrise ? 'ligne retirée du ticket' : 'ligne sur le ticket');
+  };
+
   const ouvrirLeTicketDeLaMachine = () => {
     geste(basculerLeTicket(état));
     document.getElementById('le-ticket')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -413,6 +454,38 @@ export default function LaCaisse() {
         lignes={lignesCochées.length}
         total={euros(totaux.total)}
         surDescendre={() => document.getElementById('le-visuel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        surOuvrir={(cible) => {
+          if (cible === 'site') {
+            ouvrirLeSiteDesInvités();
+            return;
+          }
+          document.getElementById(cible)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }}
+      />
+
+      {/* ═════════════════════════════════════════════════════════════════════
+          L'ATELIER DU TICKET — DIX UNIVERS, ET CHACUN LE SIEN
+          Le ticket n'est pas qu'un mariage : c'est un métier. Dix univers (le
+          mini-site, les photos, les vidéos, les repas, les enfants, le DJ, les
+          RSVP, les témoins, les délires, les devis), trois réglages — les
+          lignes, qui le voit, son nom — et le lien s'écrit tout seul. Le
+          téléphone, à droite, montre ce que l'autre verra.
+          ═════════════════════════════════════════════════════════════════════ */}
+      <LAtelierDuTicket
+        univers={universDuTicket}
+        lignes={lignesCochéesDUnivers}
+        qui={quiLeVoit}
+        nom={nomDuTicket}
+        surUnivers={choisirLUnivers}
+        surLigne={cocherLaLigneDUnivers}
+        surQui={setQuiLeVoit}
+        surNom={setNomDuTicket}
+        code={code}
+        site={site}
+        visuel={visuel ?? couverture ?? null}
+        noms={TICKET_COUPLE.noms}
+        dateLabel={formatDateLong(TICKET_COUPLE.date)}
+        surOuvrirLeSite={ouvrirLeSiteDesInvités}
       />
 
       {/* ═════════════════════ LE VISUEL DU JOUR, LES INFOS DESSUS ═════════════════════ */}

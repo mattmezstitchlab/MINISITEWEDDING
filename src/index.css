@@ -1098,3 +1098,70 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
   outline-offset: -4px;
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.5);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════ *
+ *  LE TÉLÉPHONE — le ticket dans l'écran
+ *
+ *  Un objet posé sur la page, penché de trois degrés et demi, avec son
+ *  ombre : la coque noire, l'encoche, l'écran ivoire qui défile, la barre
+ *  des deux touches. Sur un ordinateur il penche ; sur un téléphone il se
+ *  redresse — c'est ainsi qu'on le tient.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.vp-tel {
+  transform: rotate(-3.5deg);
+  transition: transform 320ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+.vp-tel:hover { transform: rotate(-1.5deg) translateY(-4px); }
+@media (max-width: 640px) {
+  .vp-tel { transform: none; }
+}
+
+.vp-tel-coque {
+  position: relative;
+  padding: 0.65rem 0.55rem 0.5rem;
+  border-radius: 2.5rem;
+  background: linear-gradient(160deg, #23252c, #0d0e12 60%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 40px 70px rgba(11, 12, 18, 0.35),
+    0 8px 16px rgba(11, 12, 18, 0.25);
+}
+
+/* L'encoche : le petit trait noir, en haut au milieu. */
+.vp-tel-encoche {
+  position: absolute;
+  left: 50%;
+  top: 0.65rem;
+  transform: translateX(-50%);
+  width: 5.2rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  background: #08090c;
+  z-index: 30;
+}
+
+/* L'écran : du papier ivoire, qui défile — et qui garde ses deux touches. */
+.vp-tel-écran {
+  position: relative;
+  height: 24rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.9rem 0.9rem 0.9rem;
+  border-radius: 1.95rem;
+  background: #fffef7;
+  color: var(--vp-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Roboto Mono", monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  scrollbar-width: none;
+}
+.vp-tel-écran::-webkit-scrollbar { display: none; }
+
+.vp-tel-barre {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+  padding: 0.2rem 0.35rem;
+}

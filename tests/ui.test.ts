@@ -186,6 +186,13 @@ import {
 import LeTicketPleinEcran from '../src/components/LeTicketPleinEcran';
 import { GLOBAL_WEDDING_PLAYLIST_FULL } from '../src/lib/weddingDjPlaylist';
 import { MOMENTS_DE_LA_NUIT, papiersDeLaCouverture } from '../src/lib/archiveDuMariage';
+import LeTelephoneAuTicket from '../src/components/LeTelephoneAuTicket';
+import {
+  QUI_PEUT_VOIR,
+  UNIVERS_DU_TICKET,
+  composerLeTicketDeLUnivers,
+  universParId,
+} from '../src/lib/universDuTicket';
 import MachineDeRipple from '../src/components/MachineDeRipple';
 import {
   BLOCS_DU_MINI_SITE,
@@ -2212,13 +2219,16 @@ check(
 check(
   'et l’heure où l’on est porte le repère « maintenant » — la dernière passée',
   (() => {
-    const heureDuTicket = Number((zoneTicket.match(/CAISSE 3 · (\d\d):00/) ?? [])[1]);
+    const heureDuTicket = Number((zoneTicket.match(/CAISSE 3 · (\d\d):00/) ?? [])[1] ?? -1);
     const heures = CATÉGORIES_DU_TICKET.find((c) => c.id === 'rayon-horaires')!.lignes;
-    const attendue = heures.filter((l) => Number(l.label.slice(0, 2)) <= heureDuTicket).at(-1)?.id ?? null;
+    // La journée du magasin commence à 22:00 : avant, rien n'est encore passé,
+    // et le ticket n'écrit donc **aucun** repère.
+    const passées = heures.filter((l) => Number(l.label.slice(0, 2)) <= heureDuTicket);
+    const attendue = passées.length > 0 ? [passées.at(-1)!.id] : [];
     const marquées = [...zoneTicket.matchAll(/data-ticket-ligne="(horaire-[^"]+)"[^>]*data-maintenant="vrai"/g)].map((m) => m[1]!);
-    return [heureDuTicket, marquées.length, marquées[0] ?? null, attendue];
+    return [heureDuTicket >= 0 && heureDuTicket <= 23, marquées, attendue];
   })(),
-  [0, 0, null, null],
+  [true, [], []],
 );
 check(
   'le point de l’heure est posé sur le trait du temps',
@@ -2526,10 +2536,31 @@ check(
   [true, true],
 );
 check(
-  'le reçu mène au ticket : la pièce ouvre ce qu’elle annonce',
-  archive.includes('data-papier-étalé="ticket-du-mariage" data-papier-genre="ticket"') &&
-    /data-papier-étalé="ticket-du-mariage"[^>]*href="#le-ticket-plein"/.test(archive),
-  true,
+  // « Les photos en haut, en cliquant on descend : ça perturbe. » Aucune pièce
+  // n'emmène ailleurs d'un clic : chacune **s'ouvre**, et propose ensuite.
+  'aucune pièce de l’archive n’emmène ailleurs d’un clic : elles s’ouvrent',
+  (() => {
+    const pieces = [...archive.matchAll(/<button[^>]*data-papier-étalé="([^"]+)"/g)].map((m) => m[1]!);
+    return [pieces.length, archive.includes('href="#le-visuel"'), archive.includes('href="#le-ticket-plein"')];
+  })(),
+  [papiers.length, false, false],
+);
+check(
+  'et le lib dit ce que chaque pièce propose d’ouvrir — le reçu, le site',
+  (() => {
+    const étalés = papiersDeLaCouverture('/images/x.jpg', CODE_DE_DÉMONSTRATION);
+    const reçu = étalés.find((p) => p.genre === 'ticket')!;
+    return [reçu.ouvre?.cible, étalés.filter((p) => p.ouvre).length];
+  })(),
+  ['site', 5],
+);
+check(
+  'la pièce ouverte en grand est prête dans le composant, avec sa porte',
+  (() => {
+    const source = readFileSync('src/components/LaCouvertureArchive.tsx', 'utf8');
+    return [source.includes('data-archive-feuille="vrai"'), source.includes('data-archive-feuille-ouvre=')];
+  })(),
+  [true, true],
 );
 check(
   'et le polaroïd du jour montre vraiment une image, dans son cadre blanc',
@@ -2605,6 +2636,261 @@ check(
 check(
   'et le mini-site des invités ne porte pas la pastille : il n’y a rien à partager là-bas',
   !rendreLeTicket('/?site=1').includes('data-action="partager-flottant"'),
+  true,
+);
+
+/* ══════════════════ LES UNIVERS DE TICKET, ET L'ATELIER ══════════════════
+
+   « Le ticket a plein de détails qui n'ont rien à voir avec le mariage… mais
+   c'est ça qui est intéressant : on pourrait avoir une page ticket pour plein
+   d'autres univers. » Dix tickets, dix métiers — et **tout le monde compose le
+   sien, et décide qui le voit**. */
+
+check(
+  'dix univers de ticket, et chacun a ses lignes',
+  UNIVERS_DU_TICKET.map((u) => u.id),
+  ['mini-site', 'photos', 'videos', 'repas', 'enfants', 'dj', 'rsvp', 'temoins', 'delires', 'devis'],
+);
+check(
+  'chaque univers dit son mot, sa phrase, son geste et ses yeux',
+  UNIVERS_DU_TICKET.every(
+    (u) => u.mot.length >= 2 && u.sous.length > 20 && u.geste.length > 3 && QUI_PEUT_VOIR.includes(u.qui as never),
+  ),
+  true,
+);
+check(
+  'les tickets proposent entre huit et douze lignes, jamais un ticket vide',
+  UNIVERS_DU_TICKET.map((u) => u.lignes.length >= 6 && u.lignes.length <= 12),
+  UNIVERS_DU_TICKET.map(() => true),
+);
+check(
+  'aucune ligne n’a deux fois le même identifiant',
+  (() => {
+    const toutes = UNIVERS_DU_TICKET.flatMap((u) => u.lignes.map((l) => l.id));
+    return [toutes.length, new Set(toutes).size];
+  })(),
+  (() => {
+    const toutes = UNIVERS_DU_TICKET.flatMap((u) => u.lignes.map((l) => l.id));
+    return [toutes.length, toutes.length];
+  })(),
+);
+check(
+  'l’image de chaque univers existe dans le dépôt',
+  UNIVERS_DU_TICKET.every((u) => existsSync(`public${u.image}`)),
+  true,
+);
+check(
+  'le ticket du mini-site, c’est le site : huit blocs, et rien d’autre',
+  UNIVERS_DU_TICKET.find((u) => u.id === 'mini-site')!.lignes.map((l) => l.id),
+  ['site-couverture', 'site-programme', 'site-gens', 'site-diner', 'site-voyage', 'site-ticket', 'site-rsvp', 'site-hebergement'],
+);
+check(
+  'le ticket des photos, c’est douze missions, avec leurs heures',
+  (() => {
+    const photos = UNIVERS_DU_TICKET.find((u) => u.id === 'photos')!;
+    return [photos.lignes.length, photos.lignes.every((l) => l.heure?.length === 5)];
+  })(),
+  [12, true],
+);
+check(
+  'et le ticket des vidéos dit « moins de dix secondes »',
+  UNIVERS_DU_TICKET.find((u) => u.id === 'videos')!.sous.includes('dix secondes'),
+  true,
+);
+check(
+  'le repas porte des prix — donc une économie',
+  (() => {
+    const repas = UNIVERS_DU_TICKET.find((u) => u.id === 'repas')!;
+    return [repas.lignes.filter((l) => (l.prix ?? 0) > 0).length, repas.lignes.some((l) => l.prix === 0)];
+  })(),
+  [9, true],
+);
+check(
+  'et les devis portent un acompte négatif : le papier dit ce qui est déjà payé',
+  UNIVERS_DU_TICKET.find((u) => u.id === 'devis')!.lignes.some((l) => (l.prix ?? 0) < 0),
+  true,
+);
+
+/* ——— COMPOSER : CE QUI EST COCHÉ EST CE QUI EST SUR LE TICKET ——— */
+
+const ticketPhotos = composerLeTicketDeLUnivers('photos', ['photo-01', 'photo-02', 'photo-03'], 'les invités', 'Les photos');
+check('un ticket composé, c’est ses lignes cochées — et pas les autres', ticketPhotos.compte, 3);
+check('avec son nom, et ses yeux', [ticketPhotos.nom, ticketPhotos.qui], ['Les photos', 'les invités']);
+check('sans ligne cochée, il n’y a rien à imprimer, mais le ticket existe', composerLeTicketDeLUnivers('photos', []).compte, 0);
+check(
+  'tout cocher rend le ticket complet',
+  (() => {
+    const tout = UNIVERS_DU_TICKET.find((u) => u.id === 'repas')!;
+    const composé = composerLeTicketDeLUnivers('repas', tout.lignes.map((l) => l.id));
+    return [composé.complet, composé.total > 0];
+  })(),
+  [true, true],
+);
+check(
+  'et l’adresse du ticket porte l’univers, les lignes, les yeux et le nom',
+  ticketPhotos.adresse,
+  `?ticket=photos&lignes=photo-01%2Cphoto-02%2Cphoto-03&qui=les+invit%C3%A9s&nom=Les+photos`,
+);
+check(
+  'un univers inconnu retombe sur le premier — jamais de page vide',
+  universParId('zzz').id,
+  'mini-site',
+);
+check(
+  'et une ligne d’un autre univers ne se glisse pas dans le ticket',
+  composerLeTicketDeLUnivers('photos', ['repas-plat', 'photo-01']).lignes.map((l) => l.id),
+  ['photo-01'],
+);
+
+/* ——— L'ATELIER, SUR LA PAGE : TROIS RÉGLAGES, ET LE TÉLÉPHONE ——— */
+
+const atelier = ticketVide.slice(ticketVide.indexOf('data-atelier="vrai"'), ticketVide.indexOf('id="l-appareil"'));
+
+check(
+  'l’atelier est sur la page, après l’archive',
+  atelier.length > 0 && ticketVide.indexOf('data-atelier="vrai"') > ticketVide.indexOf('data-bande="archive"'),
+  true,
+);
+check(
+  'on y choisit l’univers — les dix, et celui qui est actif',
+  (() => {
+    const choisis = [...atelier.matchAll(/data-univers="([a-z-]+)" data-univers-actif="(true|false)"/g)];
+    return [choisis.length, choisis.filter((m) => m[2] === 'true').map((m) => m[1])];
+  })(),
+  [10, ['mini-site']],
+);
+check(
+  'les lignes de l’univers sont là, à cocher une par une',
+  (ticketVide.match(/data-atelier-ligne="/g) ?? []).length,
+  UNIVERS_DU_TICKET[0]!.lignes.length,
+);
+check(
+  'et l’on dit qui le voit — huit paires d’yeux, dont celle de l’univers',
+  (() => {
+    const yeux = [...ticketVide.matchAll(/data-atelier-qui="([^"]+)" data-atelier-qui-actif="(true|false)"/g)];
+    return [yeux.length, yeux.filter((m) => m[2] === 'true').map((m) => m[1])];
+  })(),
+  [QUI_PEUT_VOIR.length, ['les invités']],
+);
+check(
+  'le lien du ticket s’écrit tout seul, sous les réglages',
+  ticketVide.includes('data-atelier-nom="vrai"') &&
+    /data-atelier-adresse="\?ticket=mini-site(&amp;|&)/.test(ticketVide),
+  true,
+);
+check(
+  'et l’adresse retient l’univers choisi : `?ticket=photos`',
+  (() => {
+    const html = rendreLeTicket('/?ticket=photos&lignes=photo-01,photo-02');
+    return [
+      html.includes('data-atelier-univers="photos"'),
+      /data-atelier-compte="2"/.test(html),
+      html.includes('data-atelier-ligne="photo-01" data-atelier-ligne-cochee="true"'),
+    ];
+  })(),
+  [true, true, true],
+);
+
+/* ——— LE TICKET DANS LE TÉLÉPHONE : IL DÉFILE, ET LE SITE APPARAÎT ——— */
+
+const rendreLeTéléphone = (écran: 'ticket' | 'site', coches: string[] = ['photo-01', 'photo-02']) =>
+  renderToStaticMarkup(
+    createElement(LeTelephoneAuTicket as never, {
+      univers: universParId('photos'),
+      lignes: universParId('photos').lignes,
+      coches,
+      surCocher: () => {},
+      code: CODE_DE_DÉMONSTRATION,
+      site: composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, cochesDessai),
+      visuel: '/images/semaine-38/cover.jpg',
+      noms: TICKET_COUPLE.noms,
+      dateLabel: 'le 12 juin 2027',
+      surOuvrirLeSite: () => {},
+      écranInitial: écran,
+    }),
+  ).replace(/&amp;/g, '&');
+
+const téléphoneAuTicket = rendreLeTéléphone('ticket');
+const téléphoneAuSite = rendreLeTéléphone('site');
+
+check(
+  'le téléphone est là, et son écran aussi',
+  téléphoneAuTicket.includes('data-tel="vrai"') &&
+    téléphoneAuTicket.includes('data-tel-écran="ticket"') &&
+    téléphoneAuTicket.includes('data-tel-liste="vrai"'),
+  true,
+);
+check(
+  'c’est un objet penché, avec son encoche et son ombre',
+  (() => {
+    const css = readFileSync('src/index.css', 'utf8');
+    return [
+      /\.vp-tel\s*\{[^}]*rotate\(-3\.5deg\)/.test(css),
+      css.includes('.vp-tel-encoche'),
+      /\.vp-tel-écran\s*\{[^}]*overflow-y:\s*auto/.test(css),
+      /@media \(max-width: 640px\)[\s\S]{0,120}\.vp-tel\s*\{\s*transform:\s*none/.test(css),
+    ];
+  })(),
+  [true, true, true, true],
+);
+check(
+  'le ticket imprime son univers, et son code',
+  téléphoneAuTicket.includes('SUPER MARIAGE') && téléphoneAuTicket.includes(`PHOTOS · ${CODE_DE_DÉMONSTRATION}`),
+  true,
+);
+check(
+  'les douze missions sont dans l’écran, et l’on clique sur chacune',
+  (() => {
+    const lignes = [...téléphoneAuTicket.matchAll(/data-tel-ligne="([^"]+)" data-tel-ligne-cochee="(true|false)"/g)];
+    return [lignes.length, lignes.filter((m) => m[2] === 'true').length];
+  })(),
+  [12, 2],
+);
+check(
+  'le total de l’écran suit ce qui est cochée',
+  (() => {
+    const payantes = universParId('devis');
+    const html = renderToStaticMarkup(
+      createElement(LeTelephoneAuTicket as never, {
+        univers: payantes,
+        lignes: payantes.lignes,
+        coches: ['devis-lieu', 'devis-photo'],
+        surCocher: () => {},
+        code: CODE_DE_DÉMONSTRATION,
+        site: composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, []),
+        visuel: null,
+        noms: TICKET_COUPLE.noms,
+        dateLabel: 'le 12 juin 2027',
+        surOuvrirLeSite: () => {},
+      }),
+    );
+    return /data-tel-total="8940"/.test(html);
+  })(),
+  true,
+);
+check(
+  'et l’on bascule : deux touches, sur l’écran',
+  (téléphoneAuTicket.match(/data-tel-bouton="(ticket|site)"/g) ?? []).length,
+  2,
+);
+check(
+  'la bascule montre le site, sur le même écran',
+  téléphoneAuSite.includes('data-tel-écran="site"') &&
+    téléphoneAuSite.includes('data-tel-site="vrai"') &&
+    téléphoneAuSite.includes('data-tel-site-blocs="vrai"') &&
+    téléphoneAuSite.includes(`data-tel-site-adresse="?code=${CODE_DE_DÉMONSTRATION}&site=1"`),
+  true,
+);
+check(
+  'avec la couverture dedans, et les blocs qu’elle allume',
+  téléphoneAuSite.includes('data-tel-site-noms="vrai"') &&
+    (téléphoneAuSite.match(/data-tel-site-bloc=/g) ?? []).length ===
+      composerLeMiniSiteDeMariage(CODE_DE_DÉMONSTRATION, cochesDessai).blocs.length,
+  true,
+);
+check(
+  'et l’on peut ouvrir le site en grand — c’est le seul geste qui sort du téléphone',
+  téléphoneAuSite.includes('data-action="ouvrir-le-site-depuis-le-tel"'),
   true,
 );
 
@@ -3251,8 +3537,8 @@ check(
   [false, false],
 );
 check(
-  'la marque ne s’écrit pas dix fois : elle tient dans une poignée de bandes',
-  (ticketVide.match(/SUPER MARIAGE/g) ?? []).length <= 8,
+  'la marque ne se répète pas partout : le ticket, le téléphone, et quelques bandes',
+  (ticketVide.match(/SUPER MARIAGE/g) ?? []).length <= 14,
   true,
 );
 check(

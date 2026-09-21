@@ -59,8 +59,12 @@ export interface PapierÉtalé {
   sous?: string;
   /** L'image, pour les papiers qui en portent une. */
   image?: string;
-  /** Ce qu'il ouvre quand on clique : une bande de la page, ou le mini-site. */
-  vers?: string;
+  /**
+   * **Ce qu'on peut ouvrir depuis la pièce** — mais jamais d'un clic direct :
+   * le clic ouvre la pièce en grand, et c'est **là** qu'on propose d'aller voir.
+   * « Les photos en haut, en cliquant on descend : ça perturbe. »
+   */
+  ouvre?: { mot: string; cible: string };
   /** Où il tombe, en pour cent de la bande : `x`, `y`, et son inclinaison. */
   x: number;
   y: number;
@@ -98,7 +102,7 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
       genre: 'note',
       mot: 'TAMPON · TIMBRE · CARTE',
       sous: 'sept objets, sept marques',
-      vers: '#l-appareil',
+      ouvre: { mot: 'voir les sept objets', cible: 'l-appareil' },
       x: 27,
       y: 2,
       tour: 5,
@@ -112,7 +116,7 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
             mot: 'LE JOUR',
             sous: 'le mariage, tel qu’il est',
             image: visuelDuJour,
-            vers: '#le-visuel',
+            ouvre: { mot: 'voir le visuel du jour', cible: 'le-visuel' },
             x: 60,
             y: 2,
             tour: 3,
@@ -126,7 +130,7 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
       mot: 'CARTE POSTALE',
       sous: 'le voyage, écrit le jour même',
       image: '/images/desert-star-dance.jpg',
-      vers: '#l-appareil',
+      ouvre: { mot: 'voir le voyage', cible: 'l-appareil' },
       x: 84,
       y: 8,
       tour: -7,
@@ -137,7 +141,7 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
       genre: 'ticket',
       mot: 'LE TICKET',
       sous: code,
-      vers: '#le-ticket-plein',
+      ouvre: { mot: 'voir le site des invités', cible: 'site' },
       x: 5,
       y: 55,
       tour: -4,
@@ -148,7 +152,7 @@ export function papiersDeLaCouverture(visuelDuJour: string | null, code: string)
       genre: 'bande',
       mot: 'LA NUIT, EN MUSIQUE',
       sous: 'neuf moments, seize morceaux',
-      vers: '#le-ticket-plein',
+      ouvre: { mot: 'voir la musique, sur le ticket', cible: 'le-ticket-plein' },
       x: 36,
       y: 68,
       tour: 2.5,
